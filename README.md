@@ -20,7 +20,7 @@
 
 <br/><br/>
 
-**[Télécharger ErgoNote v1.5 pour Windows (.exe)](https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.5-Windows-x86_64.exe)** · **[Télécharger ErgoNote v1.5 pour Android (.apk)](https://github.com/Masterz42/ErgoNote/releases)** · **[Télécharger ErgoNote v1.5 pour Linux](https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.5-Linux-x86_64)** · **[Toutes les versions](https://github.com/Masterz42/ErgoNote/releases)**
+**[Télécharger ErgoNote v1.5 pour Windows (.exe)](https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.5-Windows-x86_64.exe)** · **[Télécharger ErgoNote v1.5 pour Android (.apk)](https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.5-Android.apk)** · **[Télécharger ErgoNote v1.5 pour Linux](https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.5-Linux-x86_64)** · **[Toutes les versions](https://github.com/Masterz42/ErgoNote/releases)**
 
 </div>
 
@@ -74,6 +74,7 @@ Les logiciels de prise de notes classiques sont souvent **surchargés d'icônes*
 - **Feuilles ajoutées conservées** : le bouton `+ Feuille` garde la feuille avec sa page, après un changement de page comme après un redémarrage.
 - **Date de page dans la langue de l'interface** : une page créée en français affiche `jeudi 19 novembre 2026, 17:30`, plus de date anglaise.
 - **Interface français / anglais uniquement** : le menu de langue ne propose plus que les deux langues maintenues ; accords et libellés corrigés (« Ajouter à l'intérieur de cette section », « couleur Bleu », « sous licence MIT », « Enregistré à 16:17 »).
+- **Android** : l'APK v1.5 est signé avec une clé de compilation ; sur un téléphone qui a déjà la v1.4, désinstaller une fois l'application avant d'installer la v1.5 (les classeurs sont conservés).
 
 ### `v1.4` — Gras/Italique fiabilisé, touche Entrée corrigée & expérience mobile Android
 - **Mise en forme Gras / Italique et touche Entrée fiabilisées** : coupure propre des lignes sur Entrée sans étoiles résiduelles (`**`) ni blocage, placement sécurisé du curseur hors des balises de formatage et vraie police grasse intégrée (`LiberationSans-Bold`).
