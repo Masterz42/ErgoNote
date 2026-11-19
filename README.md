@@ -10,7 +10,7 @@
 [![Public](https://img.shields.io/badge/Approche-Ergoth%C3%A9rapie%20scolaire-16a34a?style=for-the-badge)](#-adaptations-tnd-int%C3%A9gr%C3%A9es)
 [![Windows](https://img.shields.io/badge/Windows-64%20bits%20(.exe)-0078D6?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/Masterz42/ErgoNote/releases/latest)
 [![Linux](https://img.shields.io/badge/Linux-x86__64-FCC624?style=for-the-badge&logo=linux&logoColor=black)](https://github.com/Masterz42/ErgoNote/releases/latest)
-[![Android](https://img.shields.io/badge/Android-Tablette%20&%20Stylet-3DDC84?style=for-the-badge&logo=android&logoColor=white)](#-compatibilit%C3%A9-multi-supports)
+[![Android](https://img.shields.io/badge/Android-Smartphone%20&%20Tablette%20(.apk)-3DDC84?style=for-the-badge&logo=android&logoColor=white)](https://github.com/Masterz42/ErgoNote/releases/latest)
 
 <br/>
 
@@ -20,7 +20,7 @@
 
 <br/><br/>
 
-**[Télécharger ErgoNote v1.3 pour Windows (.exe)](https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.3-Windows-x86_64.exe)** · **[Télécharger ErgoNote v1.3 pour Linux](https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.3-Linux-x86_64)** · **[Toutes les versions](https://github.com/Masterz42/ErgoNote/releases)**
+**[Télécharger ErgoNote v1.3 pour Windows (.exe)](https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.3-Windows-x86_64.exe)** · **[Télécharger ErgoNote v1.3 pour Android (.apk)](https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.3-Android.apk)** · **[Télécharger ErgoNote v1.3 pour Linux](https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.3-Linux-x86_64)** · **[Toutes les versions](https://github.com/Masterz42/ErgoNote/releases)**
 
 </div>
 

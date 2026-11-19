@@ -602,6 +602,7 @@
       </p>
       <div class="actions">
         <a class="btn btn-primary" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.3-Windows-x86_64.exe">Télécharger Windows (.exe)</a>
+        <a class="btn" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.3-Android.apk">Télécharger Android (.apk)</a>
         <a class="btn" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.3-Linux-x86_64">Télécharger Linux</a>
         <a class="btn" href="https://github.com/Masterz42/ErgoNote" target="_blank" rel="noopener">Page GitHub</a>
       </div>
@@ -777,9 +778,9 @@
           <a class="btn" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.3-Linux-x86_64">Télécharger Linux</a>
         </div>
         <div class="dl-card">
-          <strong>Tablette Android & iPad</strong>
-          <span>Code et versions sur GitHub</span>
-          <a class="btn" href="https://github.com/Masterz42/ErgoNote" target="_blank" rel="noopener">Ouvrir GitHub</a>
+          <strong>Android (Smartphone &amp; Tablette)</strong>
+          <span id="androidDownloads">Adaptation auto téléphone / tablette (.apk)</span>
+          <a class="btn btn-primary" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.3-Android.apk">Télécharger .apk</a>
         </div>
       </div>
     </section>
@@ -1164,17 +1165,19 @@
     fetch('https://api.github.com/repos/Masterz42/ErgoNote/releases')
       .then(r => r.ok ? r.json() : [])
       .then(releases => {
-        let total = 0, win = 0, lin = 0;
+        let total = 0, win = 0, lin = 0, apk = 0;
         for (const rel of releases) {
           for (const a of (rel.assets || [])) {
             total += a.download_count || 0;
             if (a.name.includes('Windows')) win += a.download_count || 0;
             if (a.name.includes('Linux')) lin += a.download_count || 0;
+            if (a.name.includes('Android')) apk += a.download_count || 0;
           }
         }
         document.getElementById('totalDownloadsBadge').textContent = `Téléchargements totaux : ${total}`;
         document.getElementById('winDownloads').textContent = `Exécutable .exe · ${win} téléchargement${win > 1 ? 's' : ''}`;
         document.getElementById('linuxDownloads').textContent = `Binaire natif · ${lin} téléchargement${lin > 1 ? 's' : ''}`;
+        document.getElementById('androidDownloads').textContent = `Fichier .apk · ${apk} téléchargement${apk > 1 ? 's' : ''}`;
       })
       .catch(() => {
         document.getElementById('totalDownloadsBadge').textContent = 'Disponible sur GitHub Releases';
