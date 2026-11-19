@@ -6,6 +6,7 @@
 *(Troubles du Neurodéveloppement : DYS, TDAH, troubles du graphisme et des apprentissages)*
 
 [![Version](https://img.shields.io/badge/Version-v1.3-2f5fb3?style=for-the-badge)](https://github.com/Masterz42/ErgoNote/releases/tag/v1.3.0)
+[![Téléchargements](https://img.shields.io/github/downloads/Masterz42/ErgoNote/total?style=for-the-badge&label=T%C3%A9l%C3%A9chargements&color=2f5fb3)](https://github.com/Masterz42/ErgoNote/releases)
 [![Public](https://img.shields.io/badge/Approche-Ergoth%C3%A9rapie%20scolaire-16a34a?style=for-the-badge)](#-adaptations-tnd-int%C3%A9gr%C3%A9es)
 [![Windows](https://img.shields.io/badge/Windows-64%20bits%20(.exe)-0078D6?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/Masterz42/ErgoNote/releases/latest)
 [![Linux](https://img.shields.io/badge/Linux-x86__64-FCC624?style=for-the-badge&logo=linux&logoColor=black)](https://github.com/Masterz42/ErgoNote/releases/latest)

@@ -900,17 +900,20 @@
       <div class="section-head">
         <h2>Télécharger ErgoNote v1.3</h2>
         <p>100 % autonome, sans compte en ligne : vos dossiers restent sur l'ordinateur de l'élève.</p>
+        <p style="margin-top:8px;"><span class="version-pill" id="totalDownloadsBadge">Téléchargements totaux : chargement…</span></p>
       </div>
       <div class="platform-grid">
         <div class="platform-card">
           <strong>Windows (64 bits)</strong>
           <span>PC portables d'élèves et collèges</span>
           <a class="btn btn-primary btn-sm-nav" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.3-Windows-x86_64.exe">Télécharger .exe</a>
+          <span id="winDownloads" style="font-size:0.78rem;"></span>
         </div>
         <div class="platform-card">
           <strong>Linux (x86_64)</strong>
           <span>Binaire natif rapide et léger</span>
           <a class="btn btn-secondary btn-sm-nav" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.3-Linux-x86_64">Télécharger Linux</a>
+          <span id="linuxDownloads" style="font-size:0.78rem;"></span>
         </div>
         <div class="platform-card">
           <strong>Tablette Android & iPad</strong>
@@ -1214,6 +1217,26 @@
     });
 
     renderSheet();
+
+    // Live GitHub Releases download counter
+    fetch('https://api.github.com/repos/Masterz42/ErgoNote/releases')
+      .then(r => r.ok ? r.json() : [])
+      .then(releases => {
+        let total = 0, win = 0, lin = 0;
+        for (const rel of releases) {
+          for (const a of (rel.assets || [])) {
+            total += a.download_count || 0;
+            if (a.name.includes('Windows')) win += a.download_count || 0;
+            if (a.name.includes('Linux')) lin += a.download_count || 0;
+          }
+        }
+        document.getElementById('totalDownloadsBadge').textContent = `Téléchargements totaux : ${total}`;
+        document.getElementById('winDownloads').textContent = `${win} téléchargement${win > 1 ? 's' : ''}`;
+        document.getElementById('linuxDownloads').textContent = `${lin} téléchargement${lin > 1 ? 's' : ''}`;
+      })
+      .catch(() => {
+        document.getElementById('totalDownloadsBadge').textContent = 'Disponible sur GitHub Releases';
+      });
   </script>
 </body>
 </html>
