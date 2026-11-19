@@ -1,0 +1,210 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 580" width="980" height="580" font-family="Segoe UI, Inter, Arial, sans-serif">
+  <defs>
+    <linearGradient id="headerGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#22498E"/>
+      <stop offset="100%" stop-color="#3566BA"/>
+    </linearGradient>
+    <filter id="shadow" x="-4%" y="-4%" width="108%" height="110%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#142342" flood-opacity="0.14"/>
+    </filter>
+    <pattern id="ruled" width="10" height="24" patternUnits="userSpaceOnUse">
+      <line x1="0" y1="23.5" x2="10" y2="23.5" stroke="#E4ECF7" stroke-width="1"/>
+    </pattern>
+  </defs>
+
+  <!-- Canvas background -->
+  <rect width="980" height="580" rx="18" fill="#EEF3FA"/>
+
+  <!-- App Window -->
+  <g filter="url(#shadow)">
+    <rect x="24" y="20" width="932" height="540" rx="12" fill="#F5F7FB" stroke="#C9D6EA" stroke-width="1.5"/>
+  </g>
+
+  <!-- Title Bar -->
+  <path d="M24 32 Q24 20 36 20 H944 Q956 20 956 32 V56 H24 Z" fill="url(#headerGrad)"/>
+  <circle cx="44" cy="38" r="8" fill="#FFFFFF" opacity="0.22"/>
+  <text x="44" y="42" text-anchor="middle" font-size="11" font-weight="800" fill="#FFFFFF">E</text>
+  <rect x="64" y="27" width="44" height="22" rx="5" fill="#FFFFFF" opacity="0.16"/>
+  <text x="86" y="42" text-anchor="middle" font-size="11" font-weight="600" fill="#FFFFFF">Annuler</text>
+  <rect x="114" y="27" width="46" height="22" rx="5" fill="#FFFFFF" opacity="0.16"/>
+  <text x="137" y="42" text-anchor="middle" font-size="11" font-weight="600" fill="#FFFFFF">Rétablir</text>
+
+  <text x="490" y="43" text-anchor="middle" font-size="13.5" font-weight="700" fill="#FFFFFF">ErgoNote — Les fractions simples</text>
+
+  <rect x="756" y="27" width="84" height="22" rx="11" fill="#FFFFFF" opacity="0.18"/>
+  <text x="798" y="42" text-anchor="middle" font-size="11" font-weight="600" fill="#FFFFFF">Sauvegarde</text>
+  <rect x="846" y="27" width="52" height="22" rx="5" fill="#FFFFFF" opacity="0.18"/>
+  <text x="872" y="42" text-anchor="middle" font-size="11" font-weight="600" fill="#FFFFFF">Thème</text>
+  <rect x="904" y="27" width="38" height="22" rx="5" fill="#FFFFFF" opacity="0.92"/>
+  <text x="923" y="42" text-anchor="middle" font-size="11" font-weight="800" fill="#22498E">v1.3</text>
+
+  <!-- Ribbon Tabs (3 clean tabs + Fichier) -->
+  <rect x="24" y="56" width="932" height="28" fill="#2B59A8"/>
+  <text x="58" y="74" text-anchor="middle" font-size="12.5" font-weight="600" fill="#DCE8FC">Fichier</text>
+  <path d="M96 84 V62 Q96 58 100 58 H168 Q172 58 172 62 V84 Z" fill="#F5F7FB"/>
+  <text x="134" y="75" text-anchor="middle" font-size="12.5" font-weight="800" fill="#22498E">Accueil</text>
+  <text x="208" y="74" text-anchor="middle" font-size="12.5" font-weight="600" fill="#DCE8FC">Dessin</text>
+  <text x="276" y="74" text-anchor="middle" font-size="12.5" font-weight="600" fill="#DCE8FC">Affichage</text>
+
+  <!-- Ribbon Content -->
+  <rect x="24" y="84" width="932" height="68" fill="#F5F7FB" stroke="#D5DFEE" stroke-width="1"/>
+  <!-- Group 1: Presse-papiers -->
+  <rect x="34" y="92" width="54" height="44" rx="7" fill="#FFFFFF" stroke="#D5DFEE"/>
+  <text x="61" y="114" text-anchor="middle" font-size="11" font-weight="700" fill="#2B59A8">Coller</text>
+  <text x="61" y="147" text-anchor="middle" font-size="9.5" fill="#64748B">Presse-papiers</text>
+  <line x1="98" y1="90" x2="98" y2="146" stroke="#D5DFEE"/>
+
+  <!-- Group 2: Texte -->
+  <rect x="108" y="92" width="112" height="22" rx="5" fill="#FFFFFF" stroke="#CFD9E8"/>
+  <text x="118" y="107" font-size="11" font-weight="600" fill="#1E293B">OpenDyslexic TND</text>
+  <rect x="224" y="92" width="32" height="22" rx="5" fill="#FFFFFF" stroke="#CFD9E8"/>
+  <text x="240" y="107" text-anchor="middle" font-size="11" font-weight="700" fill="#1E293B">16</text>
+  <rect x="260" y="92" width="24" height="22" rx="5" fill="#FFFFFF" stroke="#CFD9E8"/>
+  <text x="272" y="107" text-anchor="middle" font-size="11" font-weight="800" fill="#1E293B">G</text>
+  <rect x="288" y="92" width="24" height="22" rx="5" fill="#FFFFFF" stroke="#CFD9E8"/>
+  <text x="300" y="107" text-anchor="middle" font-size="11" font-style="italic" fill="#1E293B">I</text>
+  <rect x="316" y="92" width="24" height="22" rx="5" fill="#FFFFFF" stroke="#CFD9E8"/>
+  <text x="328" y="107" text-anchor="middle" font-size="11" font-weight="700" fill="#1E293B">x²</text>
+  <rect x="344" y="92" width="24" height="22" rx="5" fill="#FFFFFF" stroke="#CFD9E8"/>
+  <text x="356" y="107" text-anchor="middle" font-size="11" font-weight="700" fill="#1E293B">x₂</text>
+
+  <rect x="108" y="118" width="66" height="20" rx="5" fill="#FEF08A" stroke="#EAB308"/>
+  <text x="141" y="132" text-anchor="middle" font-size="10.5" font-weight="700" fill="#713F12">Surligneur</text>
+  <rect x="180" y="118" width="52" height="20" rx="5" fill="#FFFFFF" stroke="#CFD9E8"/>
+  <text x="206" y="132" text-anchor="middle" font-size="10.5" font-weight="600" fill="#1E293B">Puces</text>
+  <rect x="236" y="118" width="64" height="20" rx="5" fill="#FFFFFF" stroke="#CFD9E8"/>
+  <text x="268" y="132" text-anchor="middle" font-size="10.5" font-weight="600" fill="#1E293B">Retrait -/+</text>
+  <rect x="304" y="118" width="64" height="20" rx="5" fill="#E1ECFE" stroke="#2F5FB3" stroke-width="1.5"/>
+  <text x="336" y="132" text-anchor="middle" font-size="10.5" font-weight="800" fill="#22498E">Écrire</text>
+  <text x="238" y="147" text-anchor="middle" font-size="9.5" fill="#64748B">Texte</text>
+  <line x1="378" y1="90" x2="378" y2="146" stroke="#D5DFEE"/>
+
+  <!-- Group 3: Styles -->
+  <rect x="388" y="92" width="84" height="14" rx="3" fill="#E8EFFB" stroke="#2F5FB3"/>
+  <text x="394" y="102" font-size="9" font-weight="700" fill="#22498E">Grand Titre</text>
+  <rect x="388" y="108" width="84" height="14" rx="3" fill="#FFFFFF" stroke="#D5DFEE"/>
+  <text x="394" y="118" font-size="9" font-weight="600" fill="#16A34A">Sous-titre</text>
+  <rect x="388" y="124" width="84" height="14" rx="3" fill="#FFFFFF" stroke="#D5DFEE"/>
+  <text x="394" y="134" font-size="9" fill="#1E293B">Texte normal</text>
+  <text x="430" y="147" text-anchor="middle" font-size="9.5" fill="#64748B">Styles</text>
+  <line x1="482" y1="90" x2="482" y2="146" stroke="#D5DFEE"/>
+
+  <!-- Group 4: Insérer (fused) -->
+  <rect x="492" y="92" width="44" height="44" rx="7" fill="#FFFFFF" stroke="#D5DFEE"/>
+  <text x="514" y="117" text-anchor="middle" font-size="10.5" font-weight="700" fill="#16A34A">Photo</text>
+  <rect x="541" y="92" width="52" height="44" rx="7" fill="#FFFFFF" stroke="#D5DFEE"/>
+  <text x="567" y="117" text-anchor="middle" font-size="10.5" font-weight="700" fill="#2B59A8">Insérer ▾</text>
+  <rect x="598" y="92" width="54" height="44" rx="7" fill="#FFFFFF" stroke="#D5DFEE"/>
+  <text x="625" y="117" text-anchor="middle" font-size="10.5" font-weight="700" fill="#2B59A8">Tableau ▾</text>
+  <rect x="657" y="92" width="58" height="44" rx="7" fill="#FFFFFF" stroke="#D5DFEE"/>
+  <text x="686" y="113" text-anchor="middle" font-size="10" font-weight="700" fill="#2B59A8">+ Zone</text>
+  <text x="686" y="125" text-anchor="middle" font-size="10" font-weight="700" fill="#2B59A8">texte</text>
+  <rect x="720" y="92" width="42" height="44" rx="7" fill="#FFFFFF" stroke="#D5DFEE"/>
+  <text x="741" y="117" text-anchor="middle" font-size="10.5" font-weight="700" fill="#2B59A8">Plus ▾</text>
+  <text x="626" y="147" text-anchor="middle" font-size="9.5" fill="#64748B">Insérer</text>
+  <line x1="772" y1="90" x2="772" y2="146" stroke="#D5DFEE"/>
+
+  <!-- Group 5: Aide TND -->
+  <rect x="782" y="92" width="54" height="44" rx="7" fill="#E1ECFE" stroke="#2F5FB3" stroke-width="1.3"/>
+  <text x="809" y="112" text-anchor="middle" font-size="10" font-weight="700" fill="#22498E">Lire à</text>
+  <text x="809" y="124" text-anchor="middle" font-size="10" font-weight="700" fill="#22498E">voix haute</text>
+  <rect x="841" y="92" width="54" height="44" rx="7" fill="#E1ECFE" stroke="#2F5FB3" stroke-width="1.3"/>
+  <text x="868" y="112" text-anchor="middle" font-size="9.5" font-weight="700" fill="#22498E">Verrouiller</text>
+  <text x="868" y="124" text-anchor="middle" font-size="9.5" font-weight="700" fill="#22498E">PDF</text>
+  <rect x="900" y="92" width="48" height="44" rx="7" fill="#E1ECFE" stroke="#2F5FB3" stroke-width="1.3"/>
+  <text x="924" y="112" text-anchor="middle" font-size="9.5" font-weight="700" fill="#22498E">Règle</text>
+  <text x="924" y="124" text-anchor="middle" font-size="9.5" font-weight="700" fill="#22498E">lecture</text>
+  <text x="865" y="147" text-anchor="middle" font-size="9.5" fill="#64748B">Aide TND</text>
+
+  <!-- Section Tabs Bar (Subject tabs) -->
+  <rect x="24" y="152" width="932" height="32" fill="#2B59A8"/>
+  <path d="M36 184 V162 Q36 158 40 158 H118 Q122 158 122 162 V184 Z" fill="#FFFFFF"/>
+  <rect x="36" y="158" width="86" height="4" rx="2" fill="#2563EB"/>
+  <text x="79" y="175" text-anchor="middle" font-size="12" font-weight="800" fill="#1E293B">Français</text>
+
+  <rect x="128" y="158" width="114" height="26" rx="5" fill="#FFFFFF" opacity="0.22"/>
+  <rect x="128" y="158" width="114" height="4" rx="2" fill="#22C55E"/>
+  <text x="185" y="175" text-anchor="middle" font-size="12" font-weight="700" fill="#FFFFFF">Mathématiques</text>
+
+  <rect x="248" y="158" width="104" height="26" rx="5" fill="#FFFFFF" opacity="0.22"/>
+  <rect x="248" y="158" width="104" height="4" rx="2" fill="#F97316"/>
+  <text x="300" y="175" text-anchor="middle" font-size="12" font-weight="700" fill="#FFFFFF">Histoire-Géo</text>
+
+  <rect x="358" y="158" width="84" height="26" rx="5" fill="#FFFFFF" opacity="0.22"/>
+  <rect x="358" y="158" width="84" height="4" rx="2" fill="#A855F7"/>
+  <text x="400" y="175" text-anchor="middle" font-size="12" font-weight="700" fill="#FFFFFF">Sciences</text>
+
+  <rect x="448" y="158" width="80" height="26" rx="5" fill="#FFFFFF" opacity="0.22"/>
+  <rect x="448" y="158" width="80" height="4" rx="2" fill="#FACC15"/>
+  <text x="488" y="175" text-anchor="middle" font-size="12" font-weight="700" fill="#FFFFFF">Anglais</text>
+
+  <text x="546" y="175" text-anchor="middle" font-size="15" font-weight="800" fill="#FFFFFF">+</text>
+
+  <!-- Left Pages Sidebar + A4 Sheet Canvas -->
+  <rect x="24" y="184" width="180" height="346" fill="#FAFBFD" stroke="#D5DFEE"/>
+  <rect x="34" y="196" width="160" height="32" rx="7" fill="#E5EEFC" stroke="#BFD4FA"/>
+  <text x="44" y="216" font-size="12" font-weight="700" fill="#22498E">Cours du jour</text>
+  <text x="44" y="248" font-size="12" font-weight="600" fill="#475569">Exercices PDF</text>
+  <text x="44" y="276" font-size="12" font-weight="600" fill="#475569">Fiche mémo</text>
+
+  <!-- Canvas background -->
+  <rect x="204" y="184" width="752" height="346" fill="#EDF2F8"/>
+
+  <!-- Full A4 Sheet #1 -->
+  <rect x="244" y="196" width="672" height="292" rx="3" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.4"/>
+  <rect x="245" y="197" width="670" height="290" fill="url(#ruled)"/>
+
+  <!-- Page Title & Course Content -->
+  <text x="272" y="226" font-size="20" font-weight="800" fill="#0F172A">Les fractions simples</text>
+  <line x1="272" y1="234" x2="880" y2="234" stroke="#CBD5E1" stroke-width="1"/>
+
+  <text x="272" y="264" font-size="13.5" fill="#1E293B">Une</text>
+  <rect x="301" y="250" width="56" height="18" rx="3" fill="#FEF08A"/>
+  <text x="304" y="264" font-size="13.5" font-weight="700" fill="#1E293B">fraction</text>
+  <text x="362" y="264" font-size="13.5" fill="#1E293B">représente une part d'une unité découpée en parts égales.</text>
+
+  <!-- Visual Reading Ruler -->
+  <rect x="245" y="280" width="670" height="28" fill="#FACC15" opacity="0.22"/>
+  <line x1="245" y1="280" x2="915" y2="280" stroke="#2F5FB3" stroke-opacity="0.7" stroke-width="1.5"/>
+  <line x1="245" y1="308" x2="915" y2="308" stroke="#2F5FB3" stroke-opacity="0.7" stroke-width="1.5"/>
+  <text x="272" y="299" font-size="13.5" font-weight="700" fill="#1E293B">Règle de lecture : le dénominateur indique en combien de parts on partage.</text>
+
+  <!-- Locked PDF Exercise Preview inside A4 -->
+  <rect x="272" y="324" width="420" height="92" rx="8" fill="#F8FAFC" stroke="#94A3B8" stroke-dasharray="5 3"/>
+  <text x="288" y="346" font-size="12" font-weight="700" fill="#334155">Exercice PDF verrouillé en fond (écriture sans déplacement)</text>
+  <text x="288" y="370" font-size="12.5" fill="#1E293B">Tableau de conversion : 1 km = 1 000 m = 100 000 cm</text>
+  <path d="M 288 394 Q 320 382 355 395 T 430 392" stroke="#2563EB" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+
+  <!-- Bottom-right footer on Sheet 1 -->
+  <text x="902" y="480" text-anchor="end" font-size="10.5" font-weight="700" fill="#64748B">Feuille 1 / 2</text>
+
+  <!-- Page Break & Sheet #2 Top -->
+  <line x1="244" y1="504" x2="916" y2="504" stroke="#2F5FB3" stroke-width="2" stroke-opacity="0.6"/>
+  <rect x="530" y="493" width="100" height="22" rx="11" fill="#E6EEFC" stroke="#2F5FB3"/>
+  <text x="580" y="508" text-anchor="middle" font-size="11" font-weight="700" fill="#22498E">Feuille 2 / 2</text>
+  <rect x="244" y="504" width="672" height="26" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.4"/>
+
+  <!-- Floating TTS Play/Pause/Fin bar -->
+  <g filter="url(#shadow)">
+    <rect x="646" y="204" width="254" height="32" rx="9" fill="#FFFFFF" stroke="#2F5FB3" stroke-width="1.5"/>
+    <text x="660" y="224" font-size="11" font-weight="700" fill="#1E293B">Lecture</text>
+    <rect x="710" y="210" width="70" height="20" rx="5" fill="#E6EEFC"/>
+    <text x="745" y="224" text-anchor="middle" font-size="10.5" font-weight="700" fill="#22498E">Reprendre</text>
+    <rect x="786" y="210" width="52" height="20" rx="5" fill="#E6EEFC"/>
+    <text x="812" y="224" text-anchor="middle" font-size="10.5" font-weight="700" fill="#22498E">Pause</text>
+    <rect x="844" y="210" width="44" height="20" rx="5" fill="#FEE2E2"/>
+    <text x="866" y="224" text-anchor="middle" font-size="10.5" font-weight="700" fill="#B91C1C">Fin</text>
+  </g>
+
+  <!-- Status Bar (No CommonMark/HTML jargon!) -->
+  <path d="M24 530 H956 V548 Q956 560 944 560 H36 Q24 560 24 548 Z" fill="#F5F7FB" stroke="#D5DFEE"/>
+  <text x="42" y="549" font-size="11" font-weight="600" fill="#64748B">Enregistré</text>
+  <line x1="112" y1="536" x2="112" y2="554" stroke="#CBD5E1"/>
+  <rect x="124" y="535" width="22" height="20" rx="4" fill="#FFFFFF" stroke="#CBD5E1"/>
+  <text x="135" y="549" text-anchor="middle" font-size="11" font-weight="700" fill="#334155">&lt;</text>
+  <text x="190" y="549" text-anchor="middle" font-size="11" font-weight="800" fill="#0F172A">Feuille 1 / 2</text>
+  <rect x="234" y="535" width="22" height="20" rx="4" fill="#FFFFFF" stroke="#CBD5E1"/>
+  <text x="245" y="549" text-anchor="middle" font-size="11" font-weight="700" fill="#334155">&gt;</text>
+  <rect x="264" y="535" width="66" height="20" rx="4" fill="#E6EEFC" stroke="#93C5FD"/>
+  <text x="297" y="549" text-anchor="middle" font-size="11" font-weight="700" fill="#22498E">+ Feuille</text>
+</svg>

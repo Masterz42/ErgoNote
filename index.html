@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ErgoNote v1.3 — Cahier numérique scolaire adapté TND</title>
+  <style>
+    :root {
+      --bg: #f6f8fc;
+      --surface: #ffffff;
+      --surface-soft: #eef3fb;
+      --ink: #1b2436;
+      --muted: #5a667d;
+      --accent: #2f5fb3;
+      --accent-dark: #21478b;
+      --accent-soft: #e6eefc;
+      --border: #d8e1f0;
+      --shadow: 0 18px 50px rgba(24, 42, 82, 0.10);
+      --radius: 16px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.6;
+    }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav {
+      max-width: 1160px;
+      margin: 0 auto;
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 800;
+      font-size: 1.25rem;
+      color: var(--ink);
+    }
+    .brand-badge {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent), #4f83e3);
+      color: #fff;
+      display: grid;
+      place-items: center;
+      font-size: 1.15rem;
+      font-weight: 800;
+      box-shadow: 0 6px 16px rgba(47, 95, 179, 0.28);
+    }
+    .version-pill {
+      font-size: 0.78rem;
+      font-weight: 700;
+      background: var(--accent-soft);
+      color: var(--accent);
+      padding: 3px 9px;
+      border-radius: 999px;
+      border: 1px solid #c7d9fa;
+    }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 22px;
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+    .nav-links a { color: var(--muted); }
+    .nav-links a:hover { color: var(--accent); text-decoration: none; }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 18px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+    }
+    .btn:hover { transform: translateY(-1px); text-decoration: none; }
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+      box-shadow: 0 8px 20px rgba(47, 95, 179, 0.25);
+    }
+    .btn-primary:hover { background: var(--accent-dark); }
+    .btn-secondary {
+      background: var(--surface);
+      color: var(--ink);
+      border-color: var(--border);
+    }
+    .btn-secondary:hover { background: var(--surface-soft); }
+
+    .hero {
+      max-width: 1160px;
+      margin: 0 auto;
+      padding: 52px 24px 36px;
+      text-align: center;
+    }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--accent);
+      margin-bottom: 18px;
+    }
+    .hero h1 {
+      font-size: clamp(2.1rem, 4.5vw, 3.35rem);
+      line-height: 1.12;
+      font-weight: 850;
+      letter-spacing: -0.03em;
+      max-width: 850px;
+      margin: 0 auto 18px;
+    }
+    .hero h1 span { color: var(--accent); }
+    .hero p.lead {
+      font-size: 1.15rem;
+      color: var(--muted);
+      max-width: 720px;
+      margin: 0 auto 28px;
+    }
+    .hero-actions {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 40px;
+    }
+
+    .mockup-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      text-align: left;
+      max-width: 1020px;
+      margin: 0 auto;
+    }
+    .app-titlebar {
+      background: var(--accent);
+      color: #fff;
+      padding: 9px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.88rem;
+    }
+    .app-titlebar-left { display: flex; align-items: center; gap: 10px; font-weight: 700; }
+    .app-qat { display: flex; gap: 6px; opacity: 0.9; font-size: 0.8rem; }
+    .app-qat span { background: rgba(255,255,255,0.16); padding: 2px 7px; border-radius: 5px; }
+    .app-tabs {
+      background: var(--accent);
+      padding: 0 14px;
+      display: flex;
+      gap: 4px;
+    }
+    .app-tab {
+      color: rgba(255,255,255,0.88);
+      padding: 6px 14px;
+      font-size: 0.86rem;
+      font-weight: 600;
+      border-radius: 6px 6px 0 0;
+      cursor: pointer;
+      user-select: none;
+    }
+    .app-tab.active {
+      background: #f5f7fb;
+      color: var(--accent);
+    }
+    .app-ribbon {
+      background: #f5f7fb;
+      border-bottom: 1px solid var(--border);
+      padding: 10px 14px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      align-items: stretch;
+    }
+    .ribbon-group {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding-right: 14px;
+      border-right: 1px solid var(--border);
+    }
+    .ribbon-group:last-child { border-right: none; }
+    .ribbon-btns { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .r-btn {
+      background: #fff;
+      border: 1px solid #d7e0ee;
+      border-radius: 7px;
+      padding: 5px 9px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--ink);
+    }
+    .r-btn.on { background: #e3edff; border-color: var(--accent); color: var(--accent); }
+    .ribbon-label { font-size: 0.7rem; text-align: center; color: var(--muted); margin-top: 5px; }
+    .section-tabs-bar {
+      background: var(--accent);
+      padding: 6px 14px 0;
+      display: flex;
+      gap: 5px;
+      overflow-x: auto;
+    }
+    .sec-tab {
+      background: rgba(255,255,255,0.22);
+      color: #fff;
+      padding: 5px 14px;
+      border-radius: 7px 7px 0 0;
+      font-size: 0.82rem;
+      font-weight: 700;
+      border-top: 3px solid transparent;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+    .sec-tab.active { background: #ffffff; color: var(--ink); }
+    .app-workspace {
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      min-height: 360px;
+      background: #f0f3f9;
+    }
+    .app-pages-list {
+      background: #fafbfd;
+      border-right: 1px solid var(--border);
+      padding: 12px;
+      font-size: 0.84rem;
+    }
+    .page-item {
+      padding: 8px 10px;
+      border-radius: 8px;
+      margin-bottom: 4px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+    .page-item.active { background: var(--accent-soft); color: var(--accent); }
+    .sheet-stage { padding: 20px; display: flex; justify-content: center; position: relative; }
+    .a4-sheet {
+      width: 100%;
+      max-width: 650px;
+      background: #fff;
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+      padding: 24px 28px 36px;
+      position: relative;
+      background-image: repeating-linear-gradient(to bottom, transparent 0px, transparent 29px, #e5ecf6 30px);
+      box-shadow: 0 6px 22px rgba(15, 23, 42, 0.06);
+    }
+    .a4-sheet h3 { font-size: 1.25rem; color: var(--ink); margin-bottom: 12px; background: rgba(255,255,255,0.85); display: inline-block; padding-right: 8px; }
+    .a4-sheet p { font-size: 0.96rem; margin-bottom: 10px; }
+    .hl-yellow { background: #fef08a; padding: 1px 4px; border-radius: 3px; }
+    .reading-ruler {
+      margin: 12px -16px;
+      padding: 6px 16px;
+      background: rgba(250, 204, 21, 0.24);
+      border-top: 2px solid rgba(47, 95, 179, 0.65);
+      border-bottom: 2px solid rgba(47, 95, 179, 0.65);
+      font-weight: 600;
+    }
+    .tts-bar {
+      position: absolute;
+      right: 18px;
+      top: 14px;
+      background: #fff;
+      border: 1px solid var(--accent);
+      border-radius: 10px;
+      padding: 6px 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      box-shadow: 0 8px 20px rgba(47, 95, 179, 0.16);
+    }
+    .tts-chip { background: var(--accent-soft); color: var(--accent); padding: 2px 8px; border-radius: 6px; }
+    .sheet-footer { position: absolute; right: 14px; bottom: 8px; font-size: 0.72rem; color: var(--muted); font-weight: 600; }
+    .app-statusbar {
+      background: #f5f7fb;
+      border-top: 1px solid var(--border);
+      padding: 7px 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+    .sheet-nav { display: inline-flex; align-items: center; gap: 6px; color: var(--ink); font-weight: 700; }
+    .sheet-nav span.btn-sm { background: #fff; border: 1px solid var(--border); border-radius: 5px; padding: 1px 7px; font-weight: 700; }
+
+    section.block { max-width: 1160px; margin: 0 auto; padding: 54px 24px; }
+    .section-head { text-align: center; max-width: 720px; margin: 0 auto 36px; }
+    .section-head h2 { font-size: clamp(1.65rem, 3vw, 2.25rem); font-weight: 800; letter-spacing: -0.02em; margin-bottom: 10px; }
+    .section-head p { color: var(--muted); font-size: 1.03rem; }
+
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px;
+      box-shadow: 0 4px 16px rgba(15, 23, 42, 0.03);
+    }
+    .card-icon {
+      width: 42px; height: 42px; border-radius: 11px;
+      background: var(--accent-soft); color: var(--accent);
+      display: grid; place-items: center;
+      font-size: 1.25rem; font-weight: 800; margin-bottom: 14px;
+    }
+    .card h3 { font-size: 1.08rem; font-weight: 750; margin-bottom: 7px; }
+    .card p { font-size: 0.93rem; color: var(--muted); }
+
+    .palette-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .swatch { width: 24px; height: 24px; border-radius: 6px; border: 1px solid rgba(0,0,0,0.12); }
+
+    /* Timeline changelog */
+    .timeline { display: grid; gap: 16px; max-width: 880px; margin: 0 auto; }
+    .release-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 5px solid var(--accent);
+      border-radius: var(--radius);
+      padding: 20px 24px;
+    }
+    .release-card header-row, .release-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+      font-size: 1.15rem;
+      font-weight: 800;
+    }
+    .release-card ul { padding-left: 20px; color: var(--muted); font-size: 0.94rem; }
+    .release-card li { margin-bottom: 4px; }
+
+    .platform-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+    .platform-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      text-align: center;
+    }
+    .platform-card strong { display: block; font-size: 1.05rem; margin-bottom: 4px; }
+    .platform-card span { font-size: 0.88rem; color: var(--muted); }
+
+    footer {
+      max-width: 1160px;
+      margin: 0 auto;
+      padding: 28px 24px 48px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 780px) {
+      .nav-links { display: none; }
+      .app-workspace { grid-template-columns: 1fr; }
+      .app-pages-list { border-right: none; border-bottom: 1px solid var(--border); }
+      .tts-bar { position: static; margin-bottom: 12px; width: fit-content; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <nav class="nav">
+      <div class="brand">
+        <div class="brand-badge">E</div>
+        <span>ErgoNote</span>
+        <span class="version-pill">v1.3 · TND</span>
+      </div>
+      <div class="nav-links">
+        <a href="#ergonomie">Adaptations TND</a>
+        <a href="#historique">Historique</a>
+        <a href="#supports">Téléchargements</a>
+        <a href="https://github.com/Masterz42/ErgoNote" target="_blank" rel="noopener">GitHub</a>
+      </div>
+      <a class="btn btn-primary" href="https://github.com/Masterz42/ErgoNote/releases/latest" target="_blank" rel="noopener">Télécharger v1.3</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="eyebrow">Cahier numérique scolaire · Adapté TND (DYS, TDAH, troubles des apprentissages)</div>
+      <h1>Le classeur numérique pensé pour les <span>élèves à besoins particuliers</span></h1>
+      <p class="lead">
+        <strong>ErgoNote v1.3</strong> transforme la prise de notes en un cahier clair, structuré par onglets matières,
+        sur de vraies feuilles A4 paginées, sans menus compliqués ni jargon technique.
+      </p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.3-Windows-x86_64.exe">Télécharger Windows (.exe)</a>
+        <a class="btn btn-secondary" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.3-Linux-x86_64">Télécharger Linux</a>
+        <a class="btn btn-secondary" href="https://github.com/Masterz42/ErgoNote" target="_blank" rel="noopener">Page GitHub</a>
+      </div>
+
+      <div class="mockup-wrap" aria-label="Aperçu de l'interface ErgoNote v1.3">
+        <div class="app-titlebar">
+          <div class="app-titlebar-left"><span>ErgoNote v1.3 — Les fractions simples</span></div>
+          <div class="app-qat">
+            <span>Annuler</span>
+            <span>Rétablir</span>
+            <span>Sauvegarde</span>
+            <span>Thème</span>
+            <span>v1.3</span>
+          </div>
+        </div>
+        <div class="app-tabs">
+          <div class="app-tab">Fichier</div>
+          <div class="app-tab active" data-tab="accueil">Accueil</div>
+          <div class="app-tab" data-tab="dessin">Dessin</div>
+          <div class="app-tab" data-tab="affichage">Affichage</div>
+        </div>
+        <div class="app-ribbon" id="ribbon-accueil">
+          <div class="ribbon-group">
+            <div class="ribbon-btns">
+              <span class="r-btn">OpenDyslexic TND</span>
+              <span class="r-btn">16</span>
+              <span class="r-btn"><strong>G</strong></span>
+              <span class="r-btn">Surligneur</span>
+              <span class="r-btn on">Écrire</span>
+            </div>
+            <div class="ribbon-label">Texte</div>
+          </div>
+          <div class="ribbon-group">
+            <div class="ribbon-btns">
+              <span class="r-btn">Grand Titre</span>
+              <span class="r-btn">Sous-titre</span>
+              <span class="r-btn">Normal</span>
+            </div>
+            <div class="ribbon-label">Styles</div>
+          </div>
+          <div class="ribbon-group">
+            <div class="ribbon-btns">
+              <span class="r-btn">Photo</span>
+              <span class="r-btn">Insérer ▾</span>
+              <span class="r-btn">Tableau ▾</span>
+              <span class="r-btn">+ Zone de texte</span>
+              <span class="r-btn">Plus ▾</span>
+            </div>
+            <div class="ribbon-label">Insérer</div>
+          </div>
+          <div class="ribbon-group">
+            <div class="ribbon-btns">
+              <span class="r-btn on">Lire à voix haute</span>
+              <span class="r-btn on">Verrouiller PDF</span>
+              <span class="r-btn on">Règle de lecture</span>
+            </div>
+            <div class="ribbon-label">Aide TND</div>
+          </div>
+        </div>
+
+        <div class="section-tabs-bar">
+          <div class="sec-tab active" style="border-top-color:#2563eb;">Français</div>
+          <div class="sec-tab" style="border-top-color:#16a34a;">Mathématiques</div>
+          <div class="sec-tab" style="border-top-color:#ea580c;">Histoire-Géo</div>
+          <div class="sec-tab" style="border-top-color:#7c3aed;">Sciences</div>
+          <div class="sec-tab" style="border-top-color:#ca8a04;">Anglais</div>
+          <div class="sec-tab">+</div>
+        </div>
+
+        <div class="app-workspace">
+          <div class="app-pages-list">
+            <div class="page-item active">Cours du jour</div>
+            <div class="page-item">Exercices PDF</div>
+            <div class="page-item">Fiche mémo</div>
+          </div>
+          <div class="sheet-stage">
+            <div class="a4-sheet">
+              <div class="tts-bar">
+                <span>Lecture :</span>
+                <span class="tts-chip">Reprendre</span>
+                <span class="tts-chip">Pause</span>
+                <span class="tts-chip">Fin</span>
+              </div>
+              <h3>Les fractions simples</h3>
+              <p>Une <span class="hl-yellow">fraction</span> représente une ou plusieurs parts d'une unité partagée en parts égales.</p>
+              <div class="reading-ruler">
+                Règle de lecture : le numérateur (en haut) indique combien de parts on prend.
+              </div>
+              <p>L'écriture continue naturellement jusqu'en bas de la feuille A4, puis une 2ᵉ feuille s'ajoute automatiquement.</p>
+              <div class="sheet-footer">Feuille 1 / 2</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="app-statusbar">
+          <span>Enregistré</span>
+          <span class="sheet-nav">
+            <span class="btn-sm">&lt;</span>
+            <span>Feuille 1 / 2</span>
+            <span class="btn-sm">&gt;</span>
+            <span class="btn-sm">+ Feuille</span>
+          </span>
+        </div>
+      </div>
+    </section>
+
+    <section class="block" id="ergonomie">
+      <div class="section-head">
+        <h2>Des outils concrets pensés pour les troubles TND</h2>
+        <p>Chaque fonctionnalité répond à une difficulté observée au quotidien en séance d'ergothérapie ou en classe.</p>
+      </div>
+      <div class="grid">
+        <article class="card">
+          <div class="card-icon">1</div>
+          <h3>Onglets matières colorés</h3>
+          <p>Les matières (Français, Maths, Histoire-Géo, Sciences…) s'affichent en grands onglets colorés sous le ruban, comme un vrai classeur à intercalaires.</p>
+        </article>
+        <article class="card">
+          <div class="card-icon">2</div>
+          <h3>Feuilles A4 entières & pagination</h3>
+          <p>L'élève écrit sur toute la hauteur de la feuille A4 sans coupure au milieu. Une 2ᵉ feuille s'ajoute automatiquement dès que nécessaire avec compteur en bas.</p>
+        </article>
+        <article class="card">
+          <div class="card-icon">3</div>
+          <h3>Verrouillage PDF & exercices en fond</h3>
+          <p>Un clic sur <strong>Verrouiller PDF / Images</strong> fige la fiche d'exercice en arrière-plan pour écrire ou annoter au stylet par-dessus sans jamais la déplacer par erreur.</p>
+        </article>
+        <article class="card">
+          <div class="card-icon">4</div>
+          <h3>Lecture à voix haute + Play/Pause/Fin</h3>
+          <p>Synthèse vocale française naturelle avec barre de contrôle directe pour relire une consigne, vérifier son texte ou compenser la fatigue de lecture.</p>
+        </article>
+        <article class="card">
+          <div class="card-icon">5</div>
+          <h3>Règle de lecture visuelle</h3>
+          <p>Un guide-ligne coloré suit le curseur horizontalement pour éviter de sauter une ligne pendant la lecture ou la relecture.</p>
+        </article>
+        <article class="card">
+          <div class="card-icon">6</div>
+          <h3>Gabarits scolaires & palette 16 couleurs</h3>
+          <p>Tableaux de conversion (km → mm), numération (Mille / Unités / Décimales), proportionnalité, exposant <code>x²</code> / indice <code>x₂</code> et palette de 16 couleurs (dont vrai jaune vif).</p>
+          <div class="palette-row" aria-hidden="true">
+            <span class="swatch" style="background:#fde047;"></span>
+            <span class="swatch" style="background:#86efac;"></span>
+            <span class="swatch" style="background:#93c5fd;"></span>
+            <span class="swatch" style="background:#f9a8d4;"></span>
+            <span class="swatch" style="background:#fdba74;"></span>
+            <span class="swatch" style="background:#c4b5fd;"></span>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="block" id="historique">
+      <div class="section-head">
+        <h2>Historique des versions (depuis la v1.0)</h2>
+        <p>Évolution continue à partir des tests réels sur ordinateur et tablette.</p>
+      </div>
+      <div class="timeline">
+        <div class="release-card">
+          <div class="release-title"><span>v1.3</span><span class="version-pill">Actuelle</span></div>
+          <ul>
+            <li>Correction du blocage à mi-page : écriture libre jusqu'en bas de la feuille A4 entière.</li>
+            <li>Ajout automatique d'une 2ᵉ feuille dès dépassement + compteur <code>&lt; Feuille X / Y &gt;</code> et bouton <code>+ Feuille</code>.</li>
+            <li>Barre du bas épurée (retrait des mentions techniques <em>CommonMark + GFM / HTML</em>).</li>
+            <li>Nouvelle identité <strong>ErgoNote</strong> dans toute l'application.</li>
+          </ul>
+        </div>
+        <div class="release-card">
+          <div class="release-title"><span>v1.2</span></div>
+          <ul>
+            <li>Fusion des onglets <em>Accueil</em> et <em>Insérer</em> : ruban simplifié à 3 onglets sans doublons.</li>
+            <li>Onglet <em>Dessin</em> allégé (suppression de <em>Sélectionner</em> et <em>Lasso</em>) et <em>Capture d'écran</em> remplacé par <strong>Photo</strong>.</li>
+            <li>Barre flottante <strong>Lire / Pause / Fin</strong> dès l'activation de la lecture à voix haute.</li>
+            <li>Bouton direct <strong>Écrire</strong> sur tablette Android.</li>
+          </ul>
+        </div>
+        <div class="release-card">
+          <div class="release-title"><span>v1.1</span></div>
+          <ul>
+            <li>Passage à la nomenclature <strong>TND</strong> et ajout du verrouillage des PDF/images en fond.</li>
+            <li>Intégration native de la police <strong>OpenDyslexic TND</strong>, de la règle de lecture visuelle et de la synthèse vocale française.</li>
+            <li>Exposant <code>x²</code>, indice <code>x₂</code>, retrait <code>-/+</code> et gabarits de tableaux scolaires en 1 clic.</li>
+          </ul>
+        </div>
+        <div class="release-card">
+          <div class="release-title"><span>v1.0</span></div>
+          <ul>
+            <li>Barre d'onglets matières colorés sous le ruban, palette 16 couleurs (vrai jaune vif) et sauvegarde/restauration <code>.zip</code> locale.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="block" id="supports">
+      <div class="section-head">
+        <h2>Téléchargements & supports</h2>
+        <p>Même ergonomie sur ordinateur portable en classe, sur tablette tactile ou au cabinet.</p>
+      </div>
+      <div class="platform-grid">
+        <div class="platform-card">
+          <strong>Windows (64 bits)</strong>
+          <span><a href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.3-Windows-x86_64.exe">ErgoNote-v1.3-Windows-x86_64.exe</a></span>
+        </div>
+        <div class="platform-card">
+          <strong>Linux (64 bits)</strong>
+          <span><a href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.3-Linux-x86_64">ErgoNote-v1.3-Linux-x86_64</a></span>
+        </div>
+        <div class="platform-card">
+          <strong>Tablette Android</strong>
+          <span>APK autonome avec prise en charge stylet</span>
+        </div>
+        <div class="platform-card">
+          <strong>iPad / Navigateur</strong>
+          <span>Version WebAssembly accessible hors ligne</span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    ErgoNote v1.3 — Développé par <strong>ErgoLib</strong> · <a href="https://github.com/Masterz42/ErgoNote" target="_blank" rel="noopener">github.com/Masterz42/ErgoNote</a>
+  </footer>
+
+  <script>
+    const tabs = document.querySelectorAll('.app-tab[data-tab]');
+    const ribbon = document.getElementById('ribbon-accueil');
+    const ribbons = {
+      accueil: ribbon.innerHTML,
+      dessin: `
+        <div class="ribbon-group">
+          <div class="ribbon-btns">
+            <span class="r-btn">Annuler trait</span>
+            <span class="r-btn">Rétablir</span>
+          </div>
+          <div class="ribbon-label">Annuler</div>
+        </div>
+        <div class="ribbon-group">
+          <div class="ribbon-btns">
+            <span class="r-btn on">Saisir (Clavier)</span>
+          </div>
+          <div class="ribbon-label">Sélection</div>
+        </div>
+        <div class="ribbon-group">
+          <div class="ribbon-btns">
+            <span class="r-btn">Gomme</span>
+            <span class="r-btn on">Stylo bleu</span>
+            <span class="r-btn">Stylo rouge</span>
+            <span class="r-btn">Surligneur jaune</span>
+          </div>
+          <div class="ribbon-label">Outils de dessin</div>
+        </div>
+        <div class="ribbon-group">
+          <div class="ribbon-btns">
+            <span class="r-btn">Ligne</span>
+            <span class="r-btn">Rectangle</span>
+            <span class="r-btn">Cercle</span>
+          </div>
+          <div class="ribbon-label">Formes</div>
+        </div>
+      `,
+      affichage: `
+        <div class="ribbon-group">
+          <div class="ribbon-btns">
+            <span class="r-btn">Plein écran</span>
+            <span class="r-btn on">Onglets matières</span>
+          </div>
+          <div class="ribbon-label">Affichages</div>
+        </div>
+        <div class="ribbon-group">
+          <div class="ribbon-btns">
+            <span class="r-btn on">Traits de règle ▾</span>
+            <span class="r-btn">Couleur de page ▾</span>
+            <span class="r-btn">Format papier A4 ▾</span>
+          </div>
+          <div class="ribbon-label">Mise en page</div>
+        </div>
+        <div class="ribbon-group">
+          <div class="ribbon-btns">
+            <span class="r-btn">Zoom -</span>
+            <span class="r-btn">Zoom +</span>
+            <span class="r-btn">100 %</span>
+            <span class="r-btn">Largeur</span>
+          </div>
+          <div class="ribbon-label">Zoom</div>
+        </div>
+      `
+    };
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        tabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        ribbon.innerHTML = ribbons[tab.dataset.tab];
+      });
+    });
+
+    const secTabs = document.querySelectorAll('.sec-tab');
+    secTabs.forEach(s => {
+      if (s.textContent.trim() === '+') return;
+      s.addEventListener('click', () => {
+        secTabs.forEach(x => x.classList.remove('active'));
+        s.classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html>
