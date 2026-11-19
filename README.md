@@ -5,7 +5,7 @@
 ### Cahier numérique scolaire conçu pour les élèves présentant un TND
 *(Troubles du Neurodéveloppement : DYS, TDAH, troubles du graphisme et des apprentissages)*
 
-[![Version](https://img.shields.io/badge/Version-v1.4-2f5fb3?style=for-the-badge)](https://github.com/Masterz42/ErgoNote/releases/tag/v1.4.0)
+[![Version](https://img.shields.io/badge/Version-v1.5-2f5fb3?style=for-the-badge)](https://github.com/Masterz42/ErgoNote/releases/tag/v1.5.0)
 [![Téléchargements](https://img.shields.io/github/downloads/Masterz42/ErgoNote/total?style=for-the-badge&label=T%C3%A9l%C3%A9chargements&color=2f5fb3)](https://github.com/Masterz42/ErgoNote/releases)
 [![Public](https://img.shields.io/badge/Approche-Ergoth%C3%A9rapie%20scolaire-16a34a?style=for-the-badge)](#-adaptations-tnd-int%C3%A9gr%C3%A9es)
 [![Windows](https://img.shields.io/badge/Windows-64%20bits%20(.exe)-0078D6?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/Masterz42/ErgoNote/releases/latest)
@@ -15,12 +15,12 @@
 <br/>
 
 <a href="https://masterz42.github.io/ErgoNote/" title="Ouvrir la présentation interactive d'ErgoNote">
-  <img src="./ergonote-apercu.svg" alt="Aperçu de l'interface ErgoNote v1.4" width="920"/>
+  <img src="./ergonote-apercu.svg" alt="Aperçu de l'interface ErgoNote v1.5" width="920"/>
 </a>
 
 <br/><br/>
 
-**[Télécharger ErgoNote v1.4 pour Windows (.exe)](https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.4-Windows-x86_64.exe)** · **[Télécharger ErgoNote v1.4 pour Android (.apk)](https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.4-Android.apk)** · **[Télécharger ErgoNote v1.4 pour Linux](https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.4-Linux-x86_64)** · **[Toutes les versions](https://github.com/Masterz42/ErgoNote/releases)**
+**[Télécharger ErgoNote v1.5 pour Windows (.exe)](https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.5-Windows-x86_64.exe)** · **[Télécharger ErgoNote v1.5 pour Android (.apk)](https://github.com/Masterz42/ErgoNote/releases)** · **[Télécharger ErgoNote v1.5 pour Linux](https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.5-Linux-x86_64)** · **[Toutes les versions](https://github.com/Masterz42/ErgoNote/releases)**
 
 </div>
 
@@ -59,14 +59,21 @@ Les logiciels de prise de notes classiques sont souvent **surchargés d'icônes*
 
 | Plateforme | Usage |
 |---|---|
-| **Windows (`x86_64`)** | Exécutable autonome `ErgoNote-v1.4-Windows-x86_64.exe` pour PC portables scolaires |
-| **Linux (`x86_64`)** | Binaire natif `ErgoNote-v1.4-Linux-x86_64` |
-| **Android (Smartphone & Tablette)** | APK `ErgoNote-v1.4-Android.apk` : interface adaptative téléphone/tablette, boutons directs *Photo* et *Image*, saisie Gboard avec correcteur, stylet et touche *Écrire* |
+| **Windows (`x86_64`)** | Exécutable autonome `ErgoNote-v1.5-Windows-x86_64.exe` pour PC portables scolaires |
+| **Linux (`x86_64`)** | Binaire natif `ErgoNote-v1.5-Linux-x86_64` |
+| **Android (Smartphone & Tablette)** | APK `ErgoNote-v1.5-Android.apk` : interface adaptative téléphone/tablette, boutons directs *Photo* et *Image*, saisie Gboard avec correcteur, stylet et touche *Écrire* |
 | **iPad / Navigateur** | Version WebAssembly utilisable hors ligne |
 
 ---
 
 ## Historique des modifications (depuis la v1.0)
+
+### `v1.5` — Lisibilité, saisie et langue
+- **Thème sombre enfin lisible** : le titre de page et la ligne de date s'écrivent en noir sur la feuille blanche (contraste 1,44:1 corrigé) au lieu d'un gris très pâle.
+- **Entrée au milieu d'un mot gras** : le texte tapé ensuite reste en gras, au lieu de ressortir en maigre à côté du mot gras.
+- **Feuilles ajoutées conservées** : le bouton `+ Feuille` garde la feuille avec sa page, après un changement de page comme après un redémarrage.
+- **Date de page dans la langue de l'interface** : une page créée en français affiche `jeudi 19 novembre 2026, 17:30`, plus de date anglaise.
+- **Interface français / anglais uniquement** : le menu de langue ne propose plus que les deux langues maintenues ; accords et libellés corrigés (« Ajouter à l'intérieur de cette section », « couleur Bleu », « sous licence MIT », « Enregistré à 16:17 »).
 
 ### `v1.4` — Gras/Italique fiabilisé, touche Entrée corrigée & expérience mobile Android
 - **Mise en forme Gras / Italique et touche Entrée fiabilisées** : coupure propre des lignes sur Entrée sans étoiles résiduelles (`**`) ni blocage, placement sécurisé du curseur hors des balises de formatage et vraie police grasse intégrée (`LiberationSans-Bold`).
