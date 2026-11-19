@@ -13,7 +13,9 @@
 
 <br/>
 
-<img src="./ergonote-apercu.svg" alt="Aperçu de l'interface ErgoNote v1.3" width="920"/>
+<a href="https://masterz42.github.io/ErgoNote/" title="Ouvrir la présentation interactive d'ErgoNote">
+  <img src="./ergonote-apercu.svg" alt="Aperçu de l'interface ErgoNote v1.3" width="920"/>
+</a>
 
 <br/><br/>
 
