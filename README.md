@@ -5,7 +5,7 @@
 ### Cahier numérique scolaire conçu pour les élèves présentant un TND
 *(Troubles du Neurodéveloppement : DYS, TDAH, troubles du graphisme et des apprentissages)*
 
-[![Version](https://img.shields.io/badge/Version-v1.3-2f5fb3?style=for-the-badge)](https://github.com/Masterz42/ErgoNote/releases/tag/v1.3.0)
+[![Version](https://img.shields.io/badge/Version-v1.4-2f5fb3?style=for-the-badge)](https://github.com/Masterz42/ErgoNote/releases/tag/v1.4.0)
 [![Téléchargements](https://img.shields.io/github/downloads/Masterz42/ErgoNote/total?style=for-the-badge&label=T%C3%A9l%C3%A9chargements&color=2f5fb3)](https://github.com/Masterz42/ErgoNote/releases)
 [![Public](https://img.shields.io/badge/Approche-Ergoth%C3%A9rapie%20scolaire-16a34a?style=for-the-badge)](#-adaptations-tnd-int%C3%A9gr%C3%A9es)
 [![Windows](https://img.shields.io/badge/Windows-64%20bits%20(.exe)-0078D6?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/Masterz42/ErgoNote/releases/latest)
@@ -15,12 +15,12 @@
 <br/>
 
 <a href="https://masterz42.github.io/ErgoNote/" title="Ouvrir la présentation interactive d'ErgoNote">
-  <img src="./ergonote-apercu.svg" alt="Aperçu de l'interface ErgoNote v1.3" width="920"/>
+  <img src="./ergonote-apercu.svg" alt="Aperçu de l'interface ErgoNote v1.4" width="920"/>
 </a>
 
 <br/><br/>
 
-**[Télécharger ErgoNote v1.3 pour Windows (.exe)](https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.3-Windows-x86_64.exe)** · **[Télécharger ErgoNote v1.3 pour Android (.apk)](https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.3-Android.apk)** · **[Télécharger ErgoNote v1.3 pour Linux](https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.3-Linux-x86_64)** · **[Toutes les versions](https://github.com/Masterz42/ErgoNote/releases)**
+**[Télécharger ErgoNote v1.4 pour Windows (.exe)](https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.4-Windows-x86_64.exe)** · **[Télécharger ErgoNote v1.4 pour Android (.apk)](https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.4-Android.apk)** · **[Télécharger ErgoNote v1.4 pour Linux](https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.4-Linux-x86_64)** · **[Toutes les versions](https://github.com/Masterz42/ErgoNote/releases)**
 
 </div>
 
@@ -59,14 +59,22 @@ Les logiciels de prise de notes classiques sont souvent **surchargés d'icônes*
 
 | Plateforme | Usage |
 |---|---|
-| **Windows (`x86_64`)** | Exécutable autonome `ErgoNote-v1.3-Windows-x86_64.exe` pour PC portables scolaires |
-| **Linux (`x86_64`)** | Binaire natif `ErgoNote-v1.3-Linux-x86_64` |
-| **Tablette Android** | APK avec prise en charge stylet et touche directe *Écrire* |
+| **Windows (`x86_64`)** | Exécutable autonome `ErgoNote-v1.4-Windows-x86_64.exe` pour PC portables scolaires |
+| **Linux (`x86_64`)** | Binaire natif `ErgoNote-v1.4-Linux-x86_64` |
+| **Android (Smartphone & Tablette)** | APK `ErgoNote-v1.4-Android.apk` : interface adaptative téléphone/tablette, boutons directs *Photo* et *Image*, saisie Gboard avec correcteur, stylet et touche *Écrire* |
 | **iPad / Navigateur** | Version WebAssembly utilisable hors ligne |
 
 ---
 
 ## Historique des modifications (depuis la v1.0)
+
+### `v1.4` — Gras/Italique fiabilisé, touche Entrée corrigée & expérience mobile Android
+- **Mise en forme Gras / Italique et touche Entrée fiabilisées** : coupure propre des lignes sur Entrée sans étoiles résiduelles (`**`) ni blocage, placement sécurisé du curseur hors des balises de formatage et vraie police grasse intégrée (`LiberationSans-Bold`).
+- **Mode adaptatif Smartphone & Tablette Android** : ruban mobile compact sans défilement horizontal (sur 2 lignes si besoin) et accès complet aux options via le tiroir latéral.
+- **Saisie clavier Gboard & correcteur orthographique** : pont IME Android natif gérant la correction orthographique, le gras/italique en cours de frappe et le retour à la ligne sans artefacts.
+- **Boutons dédiés Photo & Image sur Android** : insertion directe depuis la galerie (*Image*) ou prise de photo du tableau / d'une fiche (*Photo*).
+- **Barre d'état mobile sans chevauchement** : compteur `< Feuille X / Y > + Feuille` ancré à droite et message d'enregistrement tronqué proprement à gauche.
+- **Stabilité Android renforcée** : démarrage, reprise après mise en arrière-plan et geste *Retour prédictif* fiabilisés.
 
 ### `v1.3` — Feuilles A4 entières, pagination & identité ErgoNote
 - **Correction du blocage en milieu de page** : suppression de la limite verticale qui coupait l'écriture à mi-feuille ; clic possible partout dans la feuille pour continuer à écrire.
