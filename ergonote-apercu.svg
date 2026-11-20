@@ -36,15 +36,14 @@
   <rect x="846" y="27" width="52" height="22" rx="5" fill="#FFFFFF" opacity="0.18"/>
   <text x="872" y="42" text-anchor="middle" font-size="11" font-weight="600" fill="#FFFFFF">Thème</text>
   <rect x="904" y="27" width="38" height="22" rx="5" fill="#FFFFFF" opacity="0.92"/>
-  <text x="923" y="42" text-anchor="middle" font-size="11" font-weight="800" fill="#22498E">v1.5</text>
+  <text x="923" y="42" text-anchor="middle" font-size="11" font-weight="800" fill="#22498E">v1.6</text>
 
-  <!-- Ribbon Tabs (3 clean tabs + Fichier) -->
+  <!-- Ribbon Tabs (2 clean tabs + Fichier) -->
   <rect x="24" y="56" width="932" height="28" fill="#2B59A8"/>
   <text x="58" y="74" text-anchor="middle" font-size="12.5" font-weight="600" fill="#DCE8FC">Fichier</text>
   <path d="M96 84 V62 Q96 58 100 58 H168 Q172 58 172 62 V84 Z" fill="#F5F7FB"/>
   <text x="134" y="75" text-anchor="middle" font-size="12.5" font-weight="800" fill="#22498E">Accueil</text>
   <text x="208" y="74" text-anchor="middle" font-size="12.5" font-weight="600" fill="#DCE8FC">Dessin</text>
-  <text x="276" y="74" text-anchor="middle" font-size="12.5" font-weight="600" fill="#DCE8FC">Affichage</text>
 
   <!-- Ribbon Content -->
   <rect x="24" y="84" width="932" height="68" fill="#F5F7FB" stroke="#D5DFEE" stroke-width="1"/>
@@ -207,4 +206,11 @@
   <text x="245" y="549" text-anchor="middle" font-size="11" font-weight="700" fill="#334155">&gt;</text>
   <rect x="264" y="535" width="66" height="20" rx="4" fill="#E6EEFC" stroke="#93C5FD"/>
   <text x="297" y="549" text-anchor="middle" font-size="11" font-weight="700" fill="#22498E">+ Feuille</text>
+  <rect x="772" y="535" width="22" height="20" rx="4" fill="#FFFFFF" stroke="#CBD5E1"/>
+  <text x="783" y="549" text-anchor="middle" font-size="12" font-weight="700" fill="#334155">−</text>
+  <line x1="802" y1="545" x2="872" y2="545" stroke="#94A3B8" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="837" cy="545" r="4.5" fill="#FFFFFF" stroke="#2F5FB3" stroke-width="1.8"/>
+  <rect x="880" y="535" width="22" height="20" rx="4" fill="#FFFFFF" stroke="#CBD5E1"/>
+  <text x="891" y="549" text-anchor="middle" font-size="12" font-weight="700" fill="#334155">+</text>
+  <text x="926" y="549" text-anchor="middle" font-size="11" font-weight="700" fill="#334155">100%</text>
 </svg>

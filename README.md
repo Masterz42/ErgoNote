@@ -5,22 +5,22 @@
 ### Cahier numérique scolaire conçu pour les élèves présentant un TND
 *(Troubles du Neurodéveloppement : DYS, TDAH, troubles du graphisme et des apprentissages)*
 
-[![Version](https://img.shields.io/badge/Version-v1.5-2f5fb3?style=for-the-badge)](https://github.com/Masterz42/ErgoNote/releases/tag/v1.5.0)
+[![Version](https://img.shields.io/badge/Version-v1.6-2f5fb3?style=for-the-badge)](https://github.com/Masterz42/ErgoNote/releases/tag/v1.6.0)
 [![Téléchargements](https://img.shields.io/github/downloads/Masterz42/ErgoNote/total?style=for-the-badge&label=T%C3%A9l%C3%A9chargements&color=2f5fb3)](https://github.com/Masterz42/ErgoNote/releases)
 [![Public](https://img.shields.io/badge/Approche-Ergoth%C3%A9rapie%20scolaire-16a34a?style=for-the-badge)](#-adaptations-tnd-int%C3%A9gr%C3%A9es)
 [![Windows](https://img.shields.io/badge/Windows-64%20bits%20(.exe)-0078D6?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/Masterz42/ErgoNote/releases/latest)
-[![Linux](https://img.shields.io/badge/Linux-x86__64-FCC624?style=for-the-badge&logo=linux&logoColor=black)](https://github.com/Masterz42/ErgoNote/releases/latest)
+[![Linux](https://img.shields.io/badge/Linux-x86__64%20(.deb%20%2F%20binaire)-FCC624?style=for-the-badge&logo=linux&logoColor=black)](https://github.com/Masterz42/ErgoNote/releases/latest)
 [![Android](https://img.shields.io/badge/Android-Smartphone%20&%20Tablette%20(.apk)-3DDC84?style=for-the-badge&logo=android&logoColor=white)](https://github.com/Masterz42/ErgoNote/releases/latest)
 
 <br/>
 
 <a href="https://masterz42.github.io/ErgoNote/" title="Ouvrir la présentation interactive d'ErgoNote">
-  <img src="./ergonote-apercu.svg" alt="Aperçu de l'interface ErgoNote v1.5" width="920"/>
+  <img src="./ergonote-apercu.svg" alt="Aperçu de l'interface ErgoNote v1.6" width="920"/>
 </a>
 
 <br/><br/>
 
-**[Télécharger ErgoNote v1.5 pour Windows (.exe)](https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.5-Windows-x86_64.exe)** · **[Télécharger ErgoNote v1.5 pour Android (.apk)](https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.5-Android.apk)** · **[Télécharger ErgoNote v1.5 pour Linux](https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.5-Linux-x86_64)** · **[Toutes les versions](https://github.com/Masterz42/ErgoNote/releases)**
+**[Télécharger ErgoNote v1.6 pour Windows (.exe)](https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.6-Windows-x86_64.exe)** · **[Télécharger ErgoNote v1.6 pour Android (.apk)](https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.6-Android.apk)** · **[Paquet Linux (.deb)](https://github.com/Masterz42/ErgoNote/releases/latest/download/ergonote_1.6.0_amd64.deb)** · **[Binaire Linux](https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.6-Linux-x86_64)** · **[Toutes les versions](https://github.com/Masterz42/ErgoNote/releases)**
 
 </div>
 
@@ -33,7 +33,7 @@ Les logiciels de prise de notes classiques sont souvent **surchargés d'icônes*
 **ErgoNote** a été pensé pour offrir en classe comme à la maison un **classeur numérique apaisé, prévisible et autonome** :
 
 - **Visuel immédiat** : onglets matières colorés en haut (comme de vrais intercalaires : *Français, Maths, Histoire-Géo…*).
-- **Ruban ultra-simplifié** : seulement **3 onglets** (`Accueil`, `Dessin`, `Affichage`), zéro doublon.
+- **Ruban ultra-simplifié** : seulement **2 onglets** (`Accueil`, `Dessin` — *Affichage* fusionné dans *Accueil*), zéro doublon, et barre de zoom en bas à droite façon Word.
 - **Vraies feuilles A4 entières** : plus de coupure en milieu de page — une 2ᵉ feuille apparaît automatiquement dès que le contenu dépasse, avec un compteur `< Feuille 1 / 2 >` en bas.
 - **100 % autonome & local** : aucun compte en ligne, sauvegarde complète en un clic (`.zip`), formats standards lisibles partout.
 
@@ -59,16 +59,29 @@ Les logiciels de prise de notes classiques sont souvent **surchargés d'icônes*
 
 | Plateforme | Usage |
 |---|---|
-| **Windows (`x86_64`)** | Exécutable autonome `ErgoNote-v1.5-Windows-x86_64.exe` pour PC portables scolaires |
-| **Linux (`x86_64`)** | Binaire natif `ErgoNote-v1.5-Linux-x86_64` |
-| **Android (Smartphone & Tablette)** | APK `ErgoNote-v1.5-Android.apk` : interface adaptative téléphone/tablette, boutons directs *Photo* et *Image*, saisie Gboard avec correcteur, stylet et touche *Écrire* |
+| **Windows (`x86_64`)** | Exécutable autonome `ErgoNote-v1.6-Windows-x86_64.exe` pour PC portables scolaires |
+| **Linux (`x86_64`)** | Paquet `ergonote_1.6.0_amd64.deb`, archive portable `.tar.gz` avec installateur sans root, et binaire natif `ErgoNote-v1.6-Linux-x86_64` |
+| **Android (Smartphone & Tablette)** | APK `ErgoNote-v1.6-Android.apk` : interface adaptative téléphone/tablette, boutons directs *Photo* et *Image*, saisie Gboard avec correcteur, stylet et touche *Écrire* |
 | **iPad / Navigateur** | Version WebAssembly utilisable hors ligne |
 
 ---
 
 ## Historique des modifications (depuis la v1.0)
 
-### `v1.5` — Lisibilité, saisie et langue
+### `v1.6` (20/11/2026) — Interface bleu clair, ruban compact & zoom façon Word
+- **Thème bleu clair** : surfaces et accent par défaut en bleu gris doux apaisé (les 14 thèmes restent disponibles).
+- **Onglets matières actifs par défaut** : l'application s'ouvre directement sur la barre horizontale des matières (*Français*, *Maths*, etc.) tout en conservant le réglage utilisateur.
+- **Ruban Accueil fusionné et compacté** :
+  - *Affichage* fusionné tout à droite d'*Accueil* dans *Mise en page* (*Plein écran*, *Onglets*, *Couleur de page*, *Format papier*), ne laissant que 2 onglets principaux (`Accueil`, `Dessin`).
+  - *Presse-papiers* compacté façon Word (`Coller` + `Couper` / `Copier` / `Format`).
+  - *Texte de base* compacté sur 3 lignes équilibrées avec **sélecteur de couleur de soulignage** (`S ▾` sur la palette complète de 16 couleurs + *Normal* + *Aucun*), remplaçant les 6 boutons séparés sans perte de confort.
+  - Nouvelles icônes couleur dédiées pour **Insérer**, **Zone de texte** et **Lire à voix haute**.
+- **Zoom déplacé en bas à droite façon Word** : barre d'état desktop avec *Largeur de la page*, `−`, curseur 50–250 % centré sur 100 %, `+` et réinitialisation 100 % en un clic.
+- **134 symboles en 5 catégories** : bouton direct *Symbole* et fenêtre catégorisée (*Mathématiques & sciences*, *Lettres grecques*, *Flèches*, *Français & ponctuation*, *Monnaies & repères*).
+- **Installation Linux simplifiée** : paquet `.deb` double-cliquable, archive portable `.tar.gz` avec installateur sans mot de passe (`install-mon-cartable.sh`) et détection automatique du carnet d'accueil.
+- **Android** : mise à jour directe possible par-dessus la `v1.5` (même clé de signature permanente) ; depuis la `v1.4` ou antérieure, désinstaller une fois au préalable.
+
+### `v1.5` (19/11/2026) — Lisibilité, saisie et langue
 - **Thème sombre enfin lisible** : le titre de page et la ligne de date s'écrivent en noir sur la feuille blanche (contraste 1,44:1 corrigé) au lieu d'un gris très pâle.
 - **Entrée au milieu d'un mot gras** : le texte tapé ensuite reste en gras, au lieu de ressortir en maigre à côté du mot gras.
 - **Feuilles ajoutées conservées** : le bouton `+ Feuille` garde la feuille avec sa page, après un changement de page comme après un redémarrage.
@@ -76,7 +89,7 @@ Les logiciels de prise de notes classiques sont souvent **surchargés d'icônes*
 - **Interface français / anglais uniquement** : le menu de langue ne propose plus que les deux langues maintenues ; accords et libellés corrigés (« Ajouter à l'intérieur de cette section », « couleur Bleu », « sous licence MIT », « Enregistré à 16:17 »).
 - **Android** : l'APK v1.5 est signé avec une clé de compilation ; sur un téléphone qui a déjà la v1.4, désinstaller une fois l'application avant d'installer la v1.5 (les classeurs sont conservés).
 
-### `v1.4` — Gras/Italique fiabilisé, touche Entrée corrigée & expérience mobile Android
+### `v1.4` (19/11/2026) — Gras/Italique fiabilisé, touche Entrée corrigée & expérience mobile Android
 - **Mise en forme Gras / Italique et touche Entrée fiabilisées** : coupure propre des lignes sur Entrée sans étoiles résiduelles (`**`) ni blocage, placement sécurisé du curseur hors des balises de formatage et vraie police grasse intégrée (`LiberationSans-Bold`).
 - **Mode adaptatif Smartphone & Tablette Android** : ruban mobile compact sans défilement horizontal (sur 2 lignes si besoin) et accès complet aux options via le tiroir latéral.
 - **Saisie clavier Gboard & correcteur orthographique** : pont IME Android natif gérant la correction orthographique, le gras/italique en cours de frappe et le retour à la ligne sans artefacts.
@@ -84,14 +97,14 @@ Les logiciels de prise de notes classiques sont souvent **surchargés d'icônes*
 - **Barre d'état mobile sans chevauchement** : compteur `< Feuille X / Y > + Feuille` ancré à droite et message d'enregistrement tronqué proprement à gauche.
 - **Stabilité Android renforcée** : démarrage, reprise après mise en arrière-plan et geste *Retour prédictif* fiabilisés.
 
-### `v1.3` — Feuilles A4 entières, pagination & identité ErgoNote
+### `v1.3` (19/11/2026) — Feuilles A4 entières, pagination & identité ErgoNote
 - **Correction du blocage en milieu de page** : suppression de la limite verticale qui coupait l'écriture à mi-feuille ; clic possible partout dans la feuille pour continuer à écrire.
 - **Vraies feuilles A4 entières + 2ᵉ feuille automatique** : ajout automatique de feuilles dès que le cours ou un PDF dépasse le bas de la page, avec séparateur visuel `Feuille 2 / 2`.
 - **Compteur et navigation en bas d'écran** : `< Feuille X / Y >` + bouton `+ Feuille`.
 - **Barre du bas épurée** : suppression des mentions techniques (`CommonMark + GFM`, `HTML`, chemin des fichiers) qui perturbaient les élèves.
 - **Nouvelle identité `ErgoNote`** : remplacement complet de l'ancien nom dans l'interface, la barre de titre et la fenêtre *À propos*.
 
-### `v1.2` — Ruban ultra-simplifié & ergonomie tactile
+### `v1.2` (19/11/2026) — Ruban ultra-simplifié & ergonomie tactile
 - **Fusion des onglets *Accueil* et *Insérer*** : le ruban passe de 4 onglets à **3 onglets** (`Accueil`, `Dessin`, `Affichage`).
 - **Suppression de tous les doublons** : retrait de *Stylet/Clavier*, *Fiche PDF*, *Photo tableau*, *Recentrer*, *Couleur feuille*, *Texte aéré TND*, *Fichier Impression / Pièce jointe*, et simplification de *Sélectionner / Lasso* dans *Dessin*.
 - **Onglet *Insérer* clarifié** : *Capture d'écran* remplacé par **Photo**, *Images* remplacé par un menu unifié **Insérer** (*Photo/Image*, *Document PDF*, *Autre fichier*) + menu **Plus** pour les éléments secondaires (*Date*, *Équation*, *Symbole*, *Modèles*).
@@ -99,7 +112,7 @@ Les logiciels de prise de notes classiques sont souvent **surchargés d'icônes*
 - **Barre flottante de lecture à voix haute** : boutons directs **Reprendre / Pause / Fin** dès le clic sur *Lire à voix haute*.
 - **Confort tablette Android** : conservation automatique du mode écriture au doigt et ajout du bouton direct **Écrire** dans *Accueil*.
 
-### `v1.1` — Pack complet d'adaptations TND
+### `v1.1` (18/11/2026) — Pack complet d'adaptations TND
 - **Terminologie TND** : mise à jour complète de la nomenclature (*Trouble du Neurodéveloppement*).
 - **Verrouillage PDF / Images en fond** : bouton dédié dans le ruban et au clic droit.
 - **Police OpenDyslexic TND** embarquée sur toutes les plateformes.
@@ -109,7 +122,7 @@ Les logiciels de prise de notes classiques sont souvent **surchargés d'icônes*
 - **Gabarits scolaires en 1 clic** : tableaux de conversion, numération et proportionnalité.
 - **Badge de version cliquable** en haut à droite ouvrant la liste des nouveautés.
 
-### `v1.0` — Socle classeur scolaire élève
+### `v1.0` (18/11/2026) — Socle classeur scolaire élève
 - **Onglets matières horizontaux colorés** façon classeur à intercalaires.
 - **Palette 16 couleurs** incluant un vrai jaune fluo scolaire.
 - **Sauvegarde et restauration complète en `.zip`** et support multiplateforme (Linux, Windows, Android, WebAssembly).

@@ -4,9 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#2f5fb3" />
-  <meta property="og:title" content="ErgoNote v1.5 — Cahier numérique adapté TND" />
-  <meta property="og:description" content="Classeur numérique scolaire structuré par matières sur ordinateur, tablette et smartphone Android : ruban simplifié en 3 onglets, feuilles A4 paginées, verrouillage PDF, règle de lecture et synthèse vocale." />
-  <title>ErgoNote v1.5 — Cahier numérique adapté TND</title>
+  <meta property="og:title" content="ErgoNote v1.6 — Cahier numérique adapté TND" />
+  <meta property="og:description" content="Classeur numérique scolaire structuré par matières sur ordinateur, tablette et smartphone Android : ruban simplifié en 2 onglets, feuilles A4 paginées, verrouillage PDF, règle de lecture et synthèse vocale." />
+  <title>ErgoNote v1.6 — Cahier numérique adapté TND</title>
   <style>
     :root {
       --bg: #f6f8fb;
@@ -581,7 +581,7 @@
       <div class="brand">
         <div class="brand-badge">E</div>
         <span>ErgoNote</span>
-        <span class="pill">v1.5</span>
+        <span class="pill">v1.6</span>
       </div>
       <div class="nav-links">
         <a href="#apercu">Aperçu</a>
@@ -601,15 +601,16 @@
         (DYS, TDAH, troubles du graphisme). Fonctionne hors ligne sur ordinateur, tablette et smartphone Android.
       </p>
       <div class="actions">
-        <a class="btn btn-primary" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.5-Windows-x86_64.exe">Télécharger Windows (.exe)</a>
-        <a class="btn" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.5-Android.apk">Télécharger Android (.apk)</a>
-        <a class="btn" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.5-Linux-x86_64">Télécharger Linux</a>
+        <a class="btn btn-primary" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.6-Windows-x86_64.exe">Télécharger Windows (.exe)</a>
+        <a class="btn" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.6-Android.apk">Télécharger Android (.apk)</a>
+        <a class="btn" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ergonote_1.6.0_amd64.deb">Paquet Linux (.deb)</a>
+        <a class="btn" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.6-Linux-x86_64">Binaire Linux</a>
         <a class="btn" href="https://github.com/Masterz42/ErgoNote" target="_blank" rel="noopener">Page GitHub</a>
       </div>
     </section>
 
     <section class="preview-section" id="apercu">
-      <p class="preview-note">Aperçu fidèle de l'interface (faites glisser le ruban sur mobile et cliquez sur les boutons <strong>Accueil / Dessin / Affichage</strong>, <strong>Lire à voix haute</strong>, <strong>Verrouiller PDF</strong>, <strong>Règle de lecture</strong>) :</p>
+      <p class="preview-note">Aperçu fidèle de l'interface (faites glisser le ruban sur mobile et cliquez sur <strong>Accueil / Dessin</strong>, <strong>Lire à voix haute</strong>, <strong>Verrouiller PDF</strong>, <strong>Règle de lecture</strong> et le <strong>zoom</strong> en bas à droite) :</p>
 
       <div class="app-frame">
         <!-- Title Bar -->
@@ -622,16 +623,15 @@
           <div class="app-title-right">
             <span class="qat-btn">Sauvegarde</span>
             <span class="qat-btn">Thème</span>
-            <span class="v-badge">v1.5</span>
+            <span class="v-badge">v1.6</span>
           </div>
         </div>
 
-        <!-- 3-Tab Ribbon Strip -->
+        <!-- 2-Tab Ribbon Strip -->
         <div class="ribbon-tabs">
           <div class="r-tab">Fichier</div>
           <div class="r-tab active" data-rtab="accueil">Accueil</div>
           <div class="r-tab" data-rtab="dessin">Dessin</div>
-          <div class="r-tab" data-rtab="affichage">Affichage</div>
         </div>
 
         <!-- Ribbon Groups -->
@@ -683,6 +683,12 @@
             <button class="btn-sheet" id="nextSheetBtn" type="button">&gt;</button>
             <button class="btn-sheet" id="addSheetBtn" type="button">+ Feuille</button>
           </div>
+          <div class="sheet-nav" style="margin-left:auto;">
+            <span class="r-small">Largeur</span>
+            <button class="btn-sheet" id="zoomOutBtn" type="button" title="Zoom arrière">−</button>
+            <span id="zoomPctLabel">100%</span>
+            <button class="btn-sheet" id="zoomInBtn" type="button" title="Zoom avant">+</button>
+          </div>
         </div>
       </div>
     </section>
@@ -691,12 +697,12 @@
       <h2 class="sec-title">Fonctionnalités principales</h2>
       <div class="list-grid">
         <div class="item">
-          <strong>Onglets matières colorés</strong>
-          <span>Affichage des matières en intercalaires horizontaux sous le ruban.</span>
+          <strong>Onglets matières colorés par défaut</strong>
+          <span>Affichage des matières en intercalaires horizontaux sous le ruban dès l'ouverture.</span>
         </div>
         <div class="item">
-          <strong>Ruban simplifié en 3 onglets</strong>
-          <span>Accueil, Dessin et Affichage, sans doublons ni mentions techniques en bas de page.</span>
+          <strong>Ruban simplifié en 2 onglets</strong>
+          <span>Accueil et Dessin, avec Mise en page intégrée à droite et zoom en bas à droite façon Word.</span>
         </div>
         <div class="item">
           <strong>Feuilles A4 entières & pagination</strong>
@@ -733,7 +739,18 @@
       <h2 class="sec-title">Historique des versions (depuis la v1.0)</h2>
       <div class="timeline">
         <details class="release" open>
-          <summary><span>v1.5 — Lisibilité, saisie &amp; langue</span><span class="pill">Actuelle</span></summary>
+          <summary><span>v1.6 (20/11/2026) — Interface bleu clair, ruban compact &amp; zoom façon Word</span><span class="pill">Actuelle</span></summary>
+          <ul>
+            <li><strong>Thème bleu clair</strong> apaisé et <strong>onglets matières actifs par défaut</strong> dès l'ouverture.</li>
+            <li><strong>Ruban Accueil en 2 onglets</strong> : <em>Affichage</em> fusionné à droite dans <em>Mise en page</em> (Plein écran, Onglets, Couleur de page, Format papier) et <em>Presse-papiers</em> compacté façon Word.</li>
+            <li><strong>Texte de base compacté &amp; soulignage couleur</strong> : un seul sélecteur <code>S ▾</code> (palette 16 couleurs + <em>Normal</em> + <em>Aucun</em>) remplace les 6 boutons séparés tout en conservant le confort de clic.</li>
+            <li><strong>Zoom en bas à droite façon Word</strong> : curseur 50–250 % centré sur 100 %, boutons <code>−</code> / <code>+</code>, pourcentage cliquable et bascule <em>Largeur de la page</em>.</li>
+            <li><strong>134 symboles en 5 catégories</strong> et nouvelles icônes couleur dédiées (<em>Insérer</em>, <em>Zone de texte</em>, <em>Lire à voix haute</em>).</li>
+            <li><strong>Installation Linux simplifiée</strong> : paquet <code>.deb</code>, archive portable <code>.tar.gz</code> avec installateur sans root et détection automatique du carnet d'accueil.</li>
+          </ul>
+        </details>
+        <details class="release">
+          <summary><span>v1.5 (19/11/2026) — Lisibilité, saisie &amp; langue</span><span class="pill">+</span></summary>
           <ul>
             <li>Thème sombre lisible : titre de page et ligne de date écrits en noir sur la feuille blanche (contraste 1,44:1 corrigé).</li>
             <li>Entrée au milieu d'un mot gras : le texte tapé ensuite reste en gras.</li>
@@ -744,7 +761,7 @@
           </ul>
         </details>
         <details class="release">
-          <summary><span>v1.4 — Gras/Italique fiabilisé, touche Entrée &amp; Android</span><span class="pill">+</span></summary>
+          <summary><span>v1.4 (19/11/2026) — Gras/Italique fiabilisé, touche Entrée &amp; Android</span><span class="pill">+</span></summary>
           <ul>
             <li>Mise en forme Gras / Italique et touche Entrée fiabilisées : coupure propre des lignes sans étoiles résiduelles (<code>**</code>) ni blocage, curseur protégé hors des marqueurs et vraie police grasse intégrée (<code>LiberationSans-Bold</code>).</li>
             <li>Mode adaptatif Smartphone &amp; Tablette Android : ruban compact sur 2 lignes sans défilement horizontal et tiroir latéral complet.</li>
@@ -754,7 +771,7 @@
           </ul>
         </details>
         <details class="release">
-          <summary><span>v1.3 — Feuilles A4 entières & ErgoNote</span><span class="pill">+</span></summary>
+          <summary><span>v1.3 (19/11/2026) — Feuilles A4 entières &amp; ErgoNote</span><span class="pill">+</span></summary>
           <ul>
             <li>Suppression du blocage d'écriture au milieu de la feuille.</li>
             <li>Ajout automatique d'une 2ᵉ feuille dès dépassement + compteur <code>&lt; Feuille X / Y &gt;</code> et bouton <code>+ Feuille</code>.</li>
@@ -763,7 +780,7 @@
           </ul>
         </details>
         <details class="release">
-          <summary><span>v1.2 — Ruban simplifié & barre vocale</span><span class="pill">+</span></summary>
+          <summary><span>v1.2 (19/11/2026) — Ruban simplifié &amp; barre vocale</span><span class="pill">+</span></summary>
           <ul>
             <li>Fusion d'<em>Accueil</em> et <em>Insérer</em> (3 onglets au lieu de 4) et suppression des doublons.</li>
             <li>Barre flottante Reprendre / Pause / Fin sur la lecture à voix haute.</li>
@@ -771,14 +788,14 @@
           </ul>
         </details>
         <details class="release">
-          <summary><span>v1.1 — Adaptations TND</span><span class="pill">+</span></summary>
+          <summary><span>v1.1 (18/11/2026) — Adaptations TND</span><span class="pill">+</span></summary>
           <ul>
             <li>Nomenclature TND, verrouillage PDF/images, règle de lecture, synthèse vocale française.</li>
             <li>Police OpenDyslexic TND intégrée, x² / x₂, retrait -/+ et tableaux scolaires en 1 clic.</li>
           </ul>
         </details>
         <details class="release">
-          <summary><span>v1.0 — Base classeur scolaire</span><span class="pill">+</span></summary>
+          <summary><span>v1.0 (18/11/2026) — Base classeur scolaire</span><span class="pill">+</span></summary>
           <ul>
             <li>Onglets matières colorés horizontaux, palette 16 couleurs et sauvegarde locale <code>.zip</code>.</li>
           </ul>
@@ -787,7 +804,7 @@
     </section>
 
     <section class="block" id="telechargement">
-      <h2 class="sec-title">Téléchargements (v1.5)</h2>
+      <h2 class="sec-title">Téléchargements (v1.6 — 20/11/2026)</h2>
       <p style="color:var(--muted); font-size:0.9rem; margin-bottom:12px;">
         <span class="pill" id="totalDownloadsBadge">Téléchargements totaux : chargement…</span>
       </p>
@@ -795,23 +812,24 @@
         <div class="dl-card">
           <strong>Windows (64 bits)</strong>
           <span id="winDownloads">Exécutable autonome .exe</span>
-          <a class="btn btn-primary" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.5-Windows-x86_64.exe">Télécharger .exe</a>
+          <a class="btn btn-primary" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.6-Windows-x86_64.exe">Télécharger .exe</a>
         </div>
         <div class="dl-card">
           <strong>Linux (x86_64)</strong>
-          <span id="linuxDownloads">Binaire natif</span>
-          <a class="btn" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.5-Linux-x86_64">Télécharger Linux</a>
+          <span id="linuxDownloads">Paquet .deb, archive portable &amp; binaire</span>
+          <a class="btn btn-primary" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ergonote_1.6.0_amd64.deb">Télécharger .deb</a>
+          <a class="btn" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.6-Linux-x86_64">Binaire seul</a>
         </div>
         <div class="dl-card">
           <strong>Android (Smartphone &amp; Tablette)</strong>
           <span id="androidDownloads">Adaptation auto téléphone / tablette (.apk)</span>
-          <a class="btn btn-primary" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.5-Android.apk">Télécharger .apk</a>
+          <a class="btn btn-primary" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.6-Android.apk">Télécharger .apk</a>
         </div>
       </div>
     </section>
 
     <footer>
-      <span>ErgoNote v1.5 — ErgoLib</span>
+      <span>ErgoNote v1.6 — 20/11/2026 — ErgoLib</span>
       <a href="https://github.com/Masterz42/ErgoNote" target="_blank" rel="noopener">github.com/Masterz42/ErgoNote</a>
     </footer>
   </main>
@@ -921,8 +939,9 @@
             <div class="r-controls">
               <button class="r-big" type="button"><span class="r-big-ico">📋</span>Coller</button>
               <div class="r-col">
-                <span class="r-small">Copier</span>
                 <span class="r-small">Couper</span>
+                <span class="r-small">Copier</span>
+                <span class="r-small">Format</span>
               </div>
             </div>
             <div class="r-group-label">Presse-papiers</div>
@@ -932,14 +951,18 @@
               <div class="r-row">
                 <button class="r-small ${dysSpaced ? 'on' : ''}" id="btnDysFont" type="button">${dysSpaced ? 'OpenDyslexic TND ✓' : 'OpenDyslexic TND'}</button>
                 <span class="r-small">16</span>
-                <span class="r-small"><strong>G</strong></span>
-                <span class="r-small"><em>I</em></span>
-                <span class="r-small"><u>S</u></span>
                 <span class="r-small">x²</span>
                 <span class="r-small">x₂</span>
               </div>
               <div class="r-row">
-                <span class="r-small" style="background:#fef08a;">Surligneur</span>
+                <span class="r-small"><strong>G</strong></span>
+                <span class="r-small"><em>I</em></span>
+                <span class="r-small"><u>S</u></span>
+                <span class="r-small">A</span>
+                <span class="r-small" style="background:#fef08a;">ab</span>
+                <span class="r-small" style="border-bottom:3px solid #dc2626;">S ▾</span>
+              </div>
+              <div class="r-row">
                 <span class="r-small">Puces</span>
                 <span class="r-small">Retrait -/+</span>
                 <button class="r-small on" type="button">Écrire</button>
@@ -958,10 +981,10 @@
           <div class="r-group">
             <div class="r-controls">
               <button class="r-big" type="button"><span class="r-big-ico">📷</span>Photo</button>
-              <button class="r-big" type="button"><span class="r-big-ico">+</span>Insérer ▾</button>
+              <button class="r-big" type="button"><span class="r-big-ico">📎</span>Insérer ▾</button>
               <button class="r-big" type="button"><span class="r-big-ico">▦</span>Tableau ▾</button>
               <button class="r-big" type="button"><span class="r-big-ico">T</span>Zone texte</button>
-              <button class="r-big" type="button"><span class="r-big-ico">⋯</span>Plus ▾</button>
+              <button class="r-big" type="button"><span class="r-big-ico">Ω</span>Symbole</button>
             </div>
             <div class="r-group-label">Insérer</div>
           </div>
@@ -972,6 +995,19 @@
               <button class="r-big ${rulerOn ? 'on' : ''}" id="btnRuler" type="button"><span class="r-big-ico">📏</span>Règle de<br>lecture</button>
             </div>
             <div class="r-group-label">Aide TND</div>
+          </div>
+          <div class="r-group">
+            <div class="r-controls">
+              <button class="r-big on" id="btnPaperRule" type="button"><span class="r-big-ico">≡</span>Lignes ▾</button>
+              <div class="r-col">
+                <span class="r-small">Couleur · Papier</span>
+                <div class="r-row">
+                  <span class="r-small">⛶ Plein écran</span>
+                  <span class="r-small on">🗂 Onglets</span>
+                </div>
+              </div>
+            </div>
+            <div class="r-group-label">Mise en page</div>
           </div>
         `;
         document.getElementById('btnDysFont').addEventListener('click', () => {
@@ -990,7 +1026,12 @@
           renderRibbon();
           renderSheet();
         });
-      } else if (currentTab === 'dessin') {
+        document.getElementById('btnPaperRule').addEventListener('click', () => {
+          paperMode = paperMode === 'ruled' ? 'grid' : paperMode === 'grid' ? 'blank' : 'ruled';
+          demoSheet.classList.toggle('grid-paper', paperMode === 'grid');
+          demoSheet.classList.toggle('blank-paper', paperMode === 'blank');
+        });
+      } else {
         ribbonBody.innerHTML = `
           <div class="r-group">
             <div class="r-controls">
@@ -1027,42 +1068,6 @@
           currentTab = 'accueil';
           document.querySelectorAll('.r-tab[data-rtab]').forEach(x => x.classList.toggle('active', x.dataset.rtab === 'accueil'));
           renderRibbon();
-        });
-      } else {
-        ribbonBody.innerHTML = `
-          <div class="r-group">
-            <div class="r-controls">
-              <button class="r-big" type="button"><span class="r-big-ico">⛶</span>Plein<br>écran</button>
-              <button class="r-big on" type="button"><span class="r-big-ico">🗂</span>Onglets<br>matières</button>
-            </div>
-            <div class="r-group-label">Affichages</div>
-          </div>
-          <div class="r-group">
-            <div class="r-controls">
-              <button class="r-big on" id="btnPaperRule" type="button"><span class="r-big-ico">≡</span>Traits de<br>règle ▾</button>
-              <div class="r-col">
-                <span class="r-small">Couleur de page</span>
-                <span class="r-small">Format papier A4</span>
-              </div>
-            </div>
-            <div class="r-group-label">Mise en page</div>
-          </div>
-          <div class="r-group">
-            <div class="r-controls">
-              <button class="r-big" type="button"><span class="r-big-ico">🔍-</span>Zoom -</button>
-              <button class="r-big" type="button"><span class="r-big-ico">🔍+</span>Zoom +</button>
-              <div class="r-col">
-                <span class="r-small">100%</span>
-                <span class="r-small">Largeur</span>
-              </div>
-            </div>
-            <div class="r-group-label">Zoom</div>
-          </div>
-        `;
-        document.getElementById('btnPaperRule').addEventListener('click', () => {
-          paperMode = paperMode === 'ruled' ? 'grid' : paperMode === 'grid' ? 'blank' : 'ruled';
-          demoSheet.classList.toggle('grid-paper', paperMode === 'grid');
-          demoSheet.classList.toggle('blank-paper', paperMode === 'blank');
         });
       }
     }
@@ -1187,6 +1192,17 @@
     renderRibbon();
     renderSheet();
 
+    let zoomPct = 100;
+    const zoomPctLabel = document.getElementById('zoomPctLabel');
+    document.getElementById('zoomOutBtn').addEventListener('click', () => {
+      zoomPct = Math.max(50, zoomPct - 10);
+      zoomPctLabel.textContent = `${zoomPct}%`;
+    });
+    document.getElementById('zoomInBtn').addEventListener('click', () => {
+      zoomPct = Math.min(250, zoomPct + 10);
+      zoomPctLabel.textContent = `${zoomPct}%`;
+    });
+
     fetch('https://api.github.com/repos/Masterz42/ErgoNote/releases')
       .then(r => r.ok ? r.json() : [])
       .then(releases => {
@@ -1195,7 +1211,7 @@
           for (const a of (rel.assets || [])) {
             total += a.download_count || 0;
             if (a.name.includes('Windows')) win += a.download_count || 0;
-            if (a.name.includes('Linux')) lin += a.download_count || 0;
+            if (a.name.includes('Linux') || a.name.endsWith('.deb')) lin += a.download_count || 0;
             if (a.name.includes('Android')) apk += a.download_count || 0;
           }
         }
