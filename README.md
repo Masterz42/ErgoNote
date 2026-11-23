@@ -7,7 +7,7 @@
 
 [![Version](https://img.shields.io/badge/Version-v1.7.1-2f5fb3?style=for-the-badge)](https://github.com/Masterz42/ErgoNote/releases/tag/v1.7.1)
 [![Téléchargements](https://img.shields.io/github/downloads/Masterz42/ErgoNote/total?style=for-the-badge&label=T%C3%A9l%C3%A9chargements&color=2f5fb3)](https://github.com/Masterz42/ErgoNote/releases)
-[![Offrir un café](https://img.shields.io/badge/Soutien-Offrir%20un%20caf%C3%A9%20%E2%98%95-b45309?style=for-the-badge&logo=ko-fi&logoColor=white)](https://ko-fi.com/berrodflorentin)
+[![Offrir un café](https://img.shields.io/badge/Soutien-Offrir%20un%20caf%C3%A9%20%E2%98%95-b45309?style=for-the-badge&logo=ko-fi&logoColor=white)](https://ko-fi.com/ergonote)
 [![Public](https://img.shields.io/badge/Approche-Ergoth%C3%A9rapie%20scolaire-16a34a?style=for-the-badge)](#-adaptations-tnd-int%C3%A9gr%C3%A9es)
 [![Windows](https://img.shields.io/badge/Windows-64%20bits%20(.exe)-0078D6?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/Masterz42/ErgoNote/releases/latest)
 [![Linux](https://img.shields.io/badge/Linux-x86__64%20(.deb%20%2F%20binaire)-FCC624?style=for-the-badge&logo=linux&logoColor=black)](https://github.com/Masterz42/ErgoNote/releases/latest)
@@ -21,7 +21,7 @@
 
 <br/><br/>
 
-**[Télécharger ErgoNote v1.7.1 pour Windows (.exe)](https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.7.1-Windows-x86_64.exe)** · **[Télécharger ErgoNote v1.7.1 pour Android (.apk)](https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.7.1-Android.apk)** · **[Paquet Linux (.deb)](https://github.com/Masterz42/ErgoNote/releases/latest/download/ergonote_1.7.1_amd64.deb)** · **[Binaire Linux](https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.7.1-Linux-x86_64)** · **[Toutes les versions](https://github.com/Masterz42/ErgoNote/releases)** · ☕ **[Offrir un café (Ko-fi)](https://ko-fi.com/berrodflorentin)**
+**[Télécharger ErgoNote v1.7.1 pour Windows (.exe)](https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.7.1-Windows-x86_64.exe)** · **[Télécharger ErgoNote v1.7.1 pour Android (.apk)](https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.7.1-Android.apk)** · **[Paquet Linux (.deb)](https://github.com/Masterz42/ErgoNote/releases/latest/download/ergonote_1.7.1_amd64.deb)** · **[Binaire Linux](https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.7.1-Linux-x86_64)** · **[Toutes les versions](https://github.com/Masterz42/ErgoNote/releases)** · ☕ **[Offrir un café (Ko-fi)](https://ko-fi.com/ergonote)**
 
 *100 % gratuit, libre et hors ligne (aucun abonnement, aucune publicité). Si ErgoNote aide un élève, un café offert aide directement à poursuivre le développement !*
 
@@ -91,7 +91,7 @@ ErgoNote conserve toujours les **3 versions précédentes** en téléchargement 
 - **Prédiction contextuelle 3 mots (5 langues)** : suggestions dès la 1re lettre ou pour le mot suivant, apprentissage du vocabulaire de la page ouverte, navigation clavier complète (4 flèches + écoute vocale + `Entrée`) et bouton **Prédiction de mots** pour couper l'aide pendant les dictées.
 - **Lecture à voix haute synchronisée directement sur la page** : surlignage mot à mot sans lire de balise Markdown/HTML et sélecteur de vitesse (`0,75×`, `1×`, `1,25×`).
 - **Dictée vocale multi-OS** (*Dicter (Voix)*), **export PDF direct**, **Tout sélectionner à 2 niveaux** (`Ctrl+A`), **pose d'opérations M/C/D/U**, mise en forme dans les tableaux et **effacement propre du gras** (plus d'astérisques `**` résiduels).
-- **Soutien créateur** : bouton discret **Offrir un café** (`ko-fi.com/berrodflorentin`).
+- **Soutien créateur** : bouton discret **Offrir un café** (`ko-fi.com/ergonote`).
 
 ### `v1.6` (20/11/2026) — Interface bleu clair, ruban compact & zoom façon Word
 - **Thème bleu clair** : surfaces et accent par défaut en bleu gris doux apaisé (les 14 thèmes restent disponibles).
