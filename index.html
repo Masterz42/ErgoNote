@@ -4,9 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#2f5fb3" />
-  <meta property="og:title" content="ErgoNote v1.6 — Cahier numérique adapté TND" />
-  <meta property="og:description" content="Classeur numérique scolaire structuré par matières sur ordinateur, tablette et smartphone Android : ruban simplifié en 2 onglets, feuilles A4 paginées, verrouillage PDF, règle de lecture et synthèse vocale." />
-  <title>ErgoNote v1.6 — Cahier numérique adapté TND</title>
+  <meta property="og:title" content="ErgoNote v1.7.1 — Cahier numérique adapté TND" />
+  <meta property="og:description" content="Classeur numérique scolaire structuré par matières sur ordinateur, tablette et smartphone Android : prédiction 3 mots, correcteur pédagogique, dictée vocale, lecture synchronisée sur la page, feuilles A4 paginées et verrouillage PDF." />
+  <title>ErgoNote v1.7.1 — Cahier numérique adapté TND</title>
   <style>
     :root {
       --bg: #f6f8fb;
@@ -15,6 +15,9 @@
       --muted: #5b677d;
       --accent: #2f5fb3;
       --accent-soft: #eaf0fb;
+      --warm: #b45309;
+      --warm-soft: #fef3c7;
+      --warm-border: #f59e0b;
       --border: #dce4f0;
       --radius: 12px;
     }
@@ -128,6 +131,12 @@
       color: #fff;
     }
     .btn-primary:hover { background: #244d96; }
+    .btn-coffee {
+      background: var(--warm-soft);
+      border-color: var(--warm-border);
+      color: var(--warm);
+    }
+    .btn-coffee:hover { background: #fde68a; }
 
     /* Real App Window Preview */
     .preview-section { margin-bottom: 36px; }
@@ -581,13 +590,15 @@
       <div class="brand">
         <div class="brand-badge">E</div>
         <span>ErgoNote</span>
-        <span class="pill">v1.6</span>
+        <span class="pill">v1.7.1</span>
       </div>
       <div class="nav-links">
         <a href="#apercu">Aperçu</a>
         <a href="#fonctionnalites">Fonctionnalités</a>
         <a href="#historique">Historique</a>
         <a href="#telechargement">Télécharger</a>
+        <a href="https://ko-fi.com/berrodflorentin" target="_blank" rel="noopener" style="color:#b45309; background:#fef3c7; border:1px solid #f59e0b; padding:3px 10px; border-radius:999px;">☕ Offrir un café</a>
+        <a href="soutenir.html">Soutenir</a>
         <a href="https://github.com/Masterz42/ErgoNote" target="_blank" rel="noopener">GitHub</a>
       </div>
     </nav>
@@ -598,13 +609,14 @@
       <h1>ErgoNote — Cahier numérique adapté TND</h1>
       <p>
         Classeur scolaire structuré par onglets matières, conçu pour les élèves présentant un Trouble du Neurodéveloppement
-        (DYS, TDAH, troubles du graphisme). Fonctionne hors ligne sur ordinateur, tablette et smartphone Android.
+        (DYS, TDAH, troubles du graphisme). Fonctionne hors ligne sur ordinateur, tablette et smartphone Android — 100 % gratuit et sans pub.
       </p>
       <div class="actions">
-        <a class="btn btn-primary" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.6-Windows-x86_64.exe">Télécharger Windows (.exe)</a>
-        <a class="btn" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.6-Android.apk">Télécharger Android (.apk)</a>
-        <a class="btn" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ergonote_1.6.0_amd64.deb">Paquet Linux (.deb)</a>
-        <a class="btn" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.6-Linux-x86_64">Binaire Linux</a>
+        <a class="btn btn-primary" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.7.1-Windows-x86_64.exe">Télécharger Windows (.exe)</a>
+        <a class="btn" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.7.1-Android.apk">Télécharger Android (.apk)</a>
+        <a class="btn" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ergonote_1.7.1_amd64.deb">Paquet Linux (.deb)</a>
+        <a class="btn" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.7.1-Linux-x86_64">Binaire Linux</a>
+        <a class="btn btn-coffee" href="https://ko-fi.com/berrodflorentin" target="_blank" rel="noopener">☕ Offrir un café</a>
         <a class="btn" href="https://github.com/Masterz42/ErgoNote" target="_blank" rel="noopener">Page GitHub</a>
       </div>
     </section>
@@ -623,7 +635,7 @@
           <div class="app-title-right">
             <span class="qat-btn">Sauvegarde</span>
             <span class="qat-btn">Thème</span>
-            <span class="v-badge">v1.6</span>
+            <span class="v-badge">v1.7.1</span>
           </div>
         </div>
 
@@ -701,36 +713,36 @@
           <span>Affichage des matières en intercalaires horizontaux sous le ruban dès l'ouverture.</span>
         </div>
         <div class="item">
-          <strong>Ruban simplifié en 2 onglets</strong>
-          <span>Accueil et Dessin, avec Mise en page intégrée à droite et zoom en bas à droite façon Word.</span>
+          <strong>Prédiction contextuelle 3 mots (5 langues)</strong>
+          <span>Suggestions dès la 1re lettre ou pour le mot suivant, écoute vocale au clavier et bouton pour couper en dictée.</span>
         </div>
         <div class="item">
-          <strong>Feuilles A4 entières & pagination</strong>
+          <strong>Correcteur pédagogique (Hunspell)</strong>
+          <span>Analyse fautes phonétiques, homophones (<code>a/à</code>, <code>et/est</code>, <code>ces/ses</code>, <code>dé/des</code>), accords et conjugaisons en expliquant pourquoi.</span>
+        </div>
+        <div class="item">
+          <strong>Lecture synchronisée &amp; Dictée vocale</strong>
+          <span>Surlignage mot à mot sur la page (3 vitesses, sans lire les balises) et dictée vocale multi-OS au microphone.</span>
+        </div>
+        <div class="item">
+          <strong>Feuilles A4 entières &amp; pagination</strong>
           <span>Écriture sur toute la hauteur de la feuille, ajout automatique de la feuille suivante avec compteur.</span>
         </div>
         <div class="item">
           <strong>Verrouillage PDF / Images</strong>
-          <span>Fige les fiches d'exercices en arrière-plan pour écrire ou annoter par-dessus.</span>
+          <span>Fige les fiches d'exercices en arrière-plan pour écrire ou annoter par-dessus sans les déplacer.</span>
         </div>
         <div class="item">
-          <strong>Lecture à voix haute</strong>
-          <span>Synthèse vocale française avec barre directe Reprendre / Pause / Fin.</span>
-        </div>
-        <div class="item">
-          <strong>Règle de lecture & police TND</strong>
+          <strong>Règle de lecture &amp; police TND</strong>
           <span>Guide-ligne horizontal suivant le pointeur et police OpenDyslexic TND intégrée.</span>
         </div>
         <div class="item">
-          <strong>Gabarits scolaires & palette 16 couleurs</strong>
-          <span>Tableaux de conversion (km → mm), numération, proportionnalité, x² / x₂ et vrai jaune vif.</span>
+          <strong>Gabarits scolaires &amp; opérations M/C/D/U</strong>
+          <span>Tableaux de conversion, numération, proportionnalité, pose d'opérations en colonnes, x² / x₂ et palette 16 couleurs.</span>
         </div>
         <div class="item">
-          <strong>Stockage local & sauvegarde .zip</strong>
-          <span>Aucun compte requis ; les dossiers restent sur l'appareil de l'élève.</span>
-        </div>
-        <div class="item">
-          <strong>Mode Android Smartphone &amp; Tablette</strong>
-          <span>Interface adaptative, ruban compact sans défilement, boutons Photo &amp; Image directs et saisie Gboard avec correcteur.</span>
+          <strong>Local, Export PDF &amp; sauvegarde .zip</strong>
+          <span>Aucun compte requis ; dossiers locaux, export PDF direct et mode adaptatif Android / Windows / Linux.</span>
         </div>
       </div>
     </section>
@@ -739,7 +751,16 @@
       <h2 class="sec-title">Historique des versions (depuis la v1.0)</h2>
       <div class="timeline">
         <details class="release" open>
-          <summary><span>v1.6 (20/11/2026) — Interface bleu clair, ruban compact &amp; zoom façon Word</span><span class="pill">Actuelle</span></summary>
+          <summary><span>v1.7.1 (23/11/2026) — Correcteur pédagogique Hunspell, Prédiction 3 mots &amp; Lecture synchronisée</span><span class="pill">Actuelle</span></summary>
+          <ul>
+            <li><strong>Correcteur orthographique &amp; pédagogique intelligent</strong> : intégration pure Rust de <code>spellbook</code> (règles <code>.aff</code>/<code>.dic</code> complètes sans faux positifs), analyse de phrase entière (phonétique DYS, homophones <code>est/et</code>, <code>dé/des</code>, <code>ces/ses</code>, majuscule après point, cédille <code>ç</code>, accents, accords) avec <strong>explication claire du « pourquoi »</strong>, aperçu corrigé en direct et LanguageTool optionnel au clic.</li>
+            <li><strong>Prédiction contextuelle 3 mots (5 langues)</strong> : suggestions dès la 1re lettre et mot suivant, apprentissage du vocabulaire de la page, navigation complète aux 4 flèches avec lecture vocale + <code>Entrée</code>, et bouton <em>Prédiction de mots</em> pour les dictées.</li>
+            <li><strong>Lecture à voix haute synchronisée directement sur la page</strong> : surlignage mot à mot sur la feuille (<code>0,75×</code> / <code>1×</code> / <code>1,25×</code>) sans jamais lire les balises Markdown/HTML.</li>
+            <li><strong>Dictée vocale multi-OS</strong>, <strong>export PDF direct</strong>, <strong>Tout sélectionner à 2 niveaux</strong>, gabarit <strong>pose d'opérations M/C/D/U</strong>, mise en forme dans les tableaux, effacement propre du gras sans <code>**</code> résiduels, et bouton <strong>Offrir un café</strong>.</li>
+          </ul>
+        </details>
+        <details class="release">
+          <summary><span>v1.6 (20/11/2026) — Interface bleu clair, ruban compact &amp; zoom façon Word</span><span class="pill">+</span></summary>
           <ul>
             <li><strong>Thème bleu clair</strong> apaisé et <strong>onglets matières actifs par défaut</strong> dès l'ouverture.</li>
             <li><strong>Ruban Accueil en 2 onglets</strong> : <em>Affichage</em> fusionné à droite dans <em>Mise en page</em> (Plein écran, Onglets, Couleur de page, Format papier) et <em>Presse-papiers</em> compacté façon Word.</li>
@@ -804,7 +825,7 @@
     </section>
 
     <section class="block" id="telechargement">
-      <h2 class="sec-title">Téléchargements (v1.6 — 20/11/2026)</h2>
+      <h2 class="sec-title">Téléchargements (v1.7.1 — 23/11/2026)</h2>
       <p style="color:var(--muted); font-size:0.9rem; margin-bottom:12px;">
         <span class="pill" id="totalDownloadsBadge">Téléchargements totaux : chargement…</span>
       </p>
@@ -812,25 +833,34 @@
         <div class="dl-card">
           <strong>Windows (64 bits)</strong>
           <span id="winDownloads">Exécutable autonome .exe</span>
-          <a class="btn btn-primary" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.6-Windows-x86_64.exe">Télécharger .exe</a>
+          <a class="btn btn-primary" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.7.1-Windows-x86_64.exe">Télécharger .exe</a>
         </div>
         <div class="dl-card">
           <strong>Linux (x86_64)</strong>
           <span id="linuxDownloads">Paquet .deb, archive portable &amp; binaire</span>
-          <a class="btn btn-primary" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ergonote_1.6.0_amd64.deb">Télécharger .deb</a>
-          <a class="btn" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.6-Linux-x86_64">Binaire seul</a>
+          <a class="btn btn-primary" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ergonote_1.7.1_amd64.deb">Télécharger .deb</a>
+          <a class="btn" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.7.1-Linux-x86_64">Binaire seul</a>
         </div>
         <div class="dl-card">
           <strong>Android (Smartphone &amp; Tablette)</strong>
           <span id="androidDownloads">Adaptation auto téléphone / tablette (.apk)</span>
-          <a class="btn btn-primary" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.6-Android.apk">Télécharger .apk</a>
+          <a class="btn btn-primary" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.7.1-Android.apk">Télécharger .apk</a>
+        </div>
+        <div class="dl-card" style="border-color:#f59e0b; background:linear-gradient(180deg, #fffdf5 0%, #fffbeb 100%);">
+          <strong style="color:#92400e;">Soutenir ErgoNote (100 % gratuit)</strong>
+          <span>Aucun compte ni pub. Si ErgoNote aide un élève, un petit café aide au développement :</span>
+          <a class="btn btn-coffee" href="https://ko-fi.com/berrodflorentin" target="_blank" rel="noopener">☕ Offrir un café (Ko-fi)</a>
+          <a class="btn" href="soutenir.html">Pourquoi soutenir ?</a>
         </div>
       </div>
     </section>
 
     <footer>
-      <span>ErgoNote v1.6 — 20/11/2026 — ErgoLib</span>
-      <a href="https://github.com/Masterz42/ErgoNote" target="_blank" rel="noopener">github.com/Masterz42/ErgoNote</a>
+      <span>ErgoNote v1.7.1 — 23/11/2026 — ErgoLib</span>
+      <div style="display:flex; gap:14px; flex-wrap:wrap;">
+        <a href="soutenir.html" style="color:#b45309; font-weight:600;">☕ Offrir un café</a>
+        <a href="https://github.com/Masterz42/ErgoNote" target="_blank" rel="noopener">github.com/Masterz42/ErgoNote</a>
+      </div>
     </footer>
   </main>
 

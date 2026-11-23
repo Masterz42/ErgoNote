@@ -35,8 +35,8 @@
   <text x="798" y="42" text-anchor="middle" font-size="11" font-weight="600" fill="#FFFFFF">Sauvegarde</text>
   <rect x="846" y="27" width="52" height="22" rx="5" fill="#FFFFFF" opacity="0.18"/>
   <text x="872" y="42" text-anchor="middle" font-size="11" font-weight="600" fill="#FFFFFF">Thème</text>
-  <rect x="904" y="27" width="38" height="22" rx="5" fill="#FFFFFF" opacity="0.92"/>
-  <text x="923" y="42" text-anchor="middle" font-size="11" font-weight="800" fill="#22498E">v1.6</text>
+  <rect x="900" y="27" width="44" height="22" rx="5" fill="#FFFFFF" opacity="0.92"/>
+  <text x="922" y="42" text-anchor="middle" font-size="11" font-weight="800" fill="#22498E">v1.7.1</text>
 
   <!-- Ribbon Tabs (2 clean tabs + Fichier) -->
   <rect x="24" y="56" width="932" height="28" fill="#2B59A8"/>
