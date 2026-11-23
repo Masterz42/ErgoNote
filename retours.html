@@ -297,7 +297,7 @@
 
           <div class="field">
             <label for="versionInput">Version d'ErgoNote</label>
-            <input type="text" id="versionInput" name="version" value="v1.7.1" maxlength="40" placeholder="ex. v1.7.1" />
+            <input type="text" id="versionInput" name="version" value="v1.7.2" maxlength="40" placeholder="ex. v1.7.2" />
           </div>
         </div>
 
@@ -401,7 +401,7 @@
           return;
         }
 
-        const version = versionInput.value.trim() || 'v1.7.1';
+        const version = versionInput.value.trim() || 'v1.7.2';
         const subject = `[ErgoNote ${version} · ${osSelect.value}] ${typeSelect.value}`;
         subjectInput.value = subject;
 

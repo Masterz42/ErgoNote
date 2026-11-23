@@ -4,9 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#2f5fb3" />
-  <meta property="og:title" content="ErgoNote v1.7.1 — Cahier numérique adapté TND" />
-  <meta property="og:description" content="Classeur numérique scolaire structuré par matières sur ordinateur, tablette et smartphone Android : prédiction 3 mots, correcteur pédagogique, dictée vocale, lecture synchronisée sur la page, feuilles A4 paginées et verrouillage PDF." />
-  <title>ErgoNote v1.7.1 — Cahier numérique adapté TND</title>
+  <meta property="og:title" content="ErgoNote v1.7.2 — Cahier numérique adapté TND" />
+  <meta property="og:description" content="Classeur numérique scolaire structuré par matières sur ordinateur, tablette et smartphone Android : prédiction 3 mots, correcteur pédagogique, dictée vocale, lecture synchronisée sur la page, feuilles A4 paginées et notifications de mise à jour." />
+  <title>ErgoNote v1.7.2 — Cahier numérique adapté TND</title>
   <style>
     :root {
       --bg: #f6f8fb;
@@ -752,7 +752,7 @@
       <div class="brand">
         <div class="brand-badge">E</div>
         <span>ErgoNote</span>
-        <span class="pill">v1.7.1</span>
+        <span class="pill">v1.7.2</span>
       </div>
       <div class="nav-links">
         <a href="#apercu">Aperçu</a>
@@ -775,10 +775,10 @@
         (DYS, TDAH, troubles du graphisme). Fonctionne hors ligne sur ordinateur, tablette et smartphone Android — 100 % gratuit et sans pub.
       </p>
       <div class="actions">
-        <a class="btn btn-primary" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.7.1-Windows-x86_64.exe">Télécharger Windows (.exe)</a>
-        <a class="btn" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.7.1-Android.apk">Télécharger Android (.apk)</a>
-        <a class="btn" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ergonote_1.7.1_amd64.deb">Paquet Linux (.deb)</a>
-        <a class="btn" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.7.1-Linux-x86_64">Binaire Linux</a>
+        <a class="btn btn-primary" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.7.2-Windows-x86_64.exe">Télécharger Windows (.exe)</a>
+        <a class="btn" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.7.2-Android.apk">Télécharger Android (.apk)</a>
+        <a class="btn" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ergonote_1.7.2_amd64.deb">Paquet Linux (.deb)</a>
+        <a class="btn" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.7.2-Linux-x86_64">Binaire Linux</a>
         <a class="btn btn-coffee" href="https://ko-fi.com/ergonote" target="_blank" rel="noopener">☕ Offrir un café</a>
         <a class="btn" href="https://github.com/Masterz42/ErgoNote" target="_blank" rel="noopener">Page GitHub</a>
       </div>
@@ -798,7 +798,7 @@
           <div class="app-title-right">
             <span class="qat-btn">Sauvegarde</span>
             <span class="qat-btn">Thème</span>
-            <span class="v-badge">v1.7.1</span>
+            <span class="v-badge">v1.7.2</span>
           </div>
         </div>
 
@@ -914,7 +914,16 @@
       <h2 class="sec-title">Historique des versions (depuis la v1.0)</h2>
       <div class="timeline">
         <details class="release" open>
-          <summary><span>v1.7.1 (23/11/2026) — Correcteur pédagogique Hunspell, Prédiction 3 mots &amp; Lecture synchronisée</span><span class="pill">Actuelle</span></summary>
+          <summary><span>v1.7.2 (23/11/2026) — Notification douce de mise à jour &amp; signalement de bug sans compte</span><span class="pill">Actuelle</span></summary>
+          <ul>
+            <li><strong>Notification automatique non destructive des mises à jour</strong> (Windows, Linux &amp; Android) : vérifie discrètement au démarrage si une version plus récente existe et affiche un bandeau <strong>Télécharger / Notes / Plus tard</strong> sans jamais rien écraser ni toucher aux classeurs (bouton actif aussi dans <em>Fichier &gt; À propos</em>).</li>
+            <li><strong>Bouton « Signaler un bug » dans ErgoNote &amp; formulaire sans compte</strong> : placé en haut à droite à côté d'<em>Offrir un café</em>, ouvre <a href="retours.html">le formulaire web</a> avec la version et l'appareil déjà pré-remplis (e-mail facultatif).</li>
+            <li><strong>Ouverture directe des liens externes sur Android</strong> (<em>Offrir un café</em>, <em>Signaler un bug</em>, <em>Télécharger la mise à jour</em>) et conservation des <strong>3 versions précédentes</strong> en téléchargement direct.</li>
+            <li><strong>Correctifs</strong> : lien Ko-fi unifié (<code>ko-fi.com/ergonote</code>) et restauration de la sélection globale / copier-couper (<code>Ctrl+A</code>).</li>
+          </ul>
+        </details>
+        <details class="release">
+          <summary><span>v1.7.1 (23/11/2026) — Correcteur pédagogique Hunspell, Prédiction 3 mots &amp; Lecture synchronisée</span><span class="pill">+</span></summary>
           <ul>
             <li><strong>Correcteur orthographique &amp; pédagogique intelligent</strong> : intégration pure Rust de <code>spellbook</code> (règles <code>.aff</code>/<code>.dic</code> complètes sans faux positifs), analyse de phrase entière (phonétique DYS, homophones <code>est/et</code>, <code>dé/des</code>, <code>ces/ses</code>, majuscule après point, cédille <code>ç</code>, accents, accords) avec <strong>explication claire du « pourquoi »</strong>, aperçu corrigé en direct et LanguageTool optionnel au clic.</li>
             <li><strong>Prédiction contextuelle 3 mots (5 langues)</strong> : suggestions dès la 1re lettre et mot suivant, apprentissage du vocabulaire de la page, navigation complète aux 4 flèches avec lecture vocale + <code>Entrée</code>, et bouton <em>Prédiction de mots</em> pour les dictées.</li>
@@ -988,7 +997,7 @@
     </section>
 
     <section class="block" id="telechargement">
-      <h2 class="sec-title">Téléchargements (v1.7.1 — 23/11/2026)</h2>
+      <h2 class="sec-title">Téléchargements (v1.7.2 — 23/11/2026)</h2>
       <p style="color:var(--muted); font-size:0.9rem; margin-bottom:12px;">
         <span class="pill" id="totalDownloadsBadge">Téléchargements totaux : chargement…</span>
       </p>
@@ -996,18 +1005,18 @@
         <div class="dl-card">
           <strong>Windows (64 bits)</strong>
           <span id="winDownloads">Exécutable autonome .exe</span>
-          <a class="btn btn-primary" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.7.1-Windows-x86_64.exe">Télécharger .exe</a>
+          <a class="btn btn-primary" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.7.2-Windows-x86_64.exe">Télécharger .exe</a>
         </div>
         <div class="dl-card">
           <strong>Linux (x86_64)</strong>
           <span id="linuxDownloads">Paquet .deb, archive portable &amp; binaire</span>
-          <a class="btn btn-primary" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ergonote_1.7.1_amd64.deb">Télécharger .deb</a>
-          <a class="btn" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.7.1-Linux-x86_64">Binaire seul</a>
+          <a class="btn btn-primary" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ergonote_1.7.2_amd64.deb">Télécharger .deb</a>
+          <a class="btn" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.7.2-Linux-x86_64">Binaire seul</a>
         </div>
         <div class="dl-card">
           <strong>Android (Smartphone &amp; Tablette)</strong>
           <span id="androidDownloads">Adaptation auto téléphone / tablette (.apk)</span>
-          <a class="btn btn-primary" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.7.1-Android.apk">Télécharger .apk</a>
+          <a class="btn btn-primary" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.7.2-Android.apk">Télécharger .apk</a>
         </div>
         <div class="dl-card" style="border-color:#f59e0b; background:linear-gradient(180deg, #fffdf5 0%, #fffbeb 100%);">
           <strong style="color:#92400e;">Soutenir ErgoNote (100 % gratuit)</strong>
@@ -1020,12 +1029,26 @@
       <details class="prev-box" open>
         <summary>
           <span>Versions précédentes (3 dernières toujours conservées)</span>
-          <span class="pill">v1.6 · v1.5 · v1.4</span>
+          <span class="pill">v1.7.1 · v1.6 · v1.5</span>
         </summary>
         <p class="prev-note">
           Les 3 versions précédentes restent toujours accessibles en téléchargement direct pour conserver vos habitudes ou revenir à une version antérieure (vos classeurs locaux restent compatibles).
         </p>
         <div class="prev-list">
+          <div class="prev-row">
+            <div class="prev-meta">
+              <strong>v1.7.1 (23/11/2026)</strong>
+              <span>Correcteur pédagogique Hunspell, Prédiction 3 mots, Lecture synchronisée &amp; bouton Bug</span>
+            </div>
+            <div class="prev-links">
+              <a class="btn-sm" href="https://github.com/Masterz42/ErgoNote/releases/download/v1.7.1/ErgoNote-v1.7.1-Windows-x86_64.exe">Windows .exe</a>
+              <a class="btn-sm" href="https://github.com/Masterz42/ErgoNote/releases/download/v1.7.1/ergonote_1.7.1_amd64.deb">Linux .deb</a>
+              <a class="btn-sm" href="https://github.com/Masterz42/ErgoNote/releases/download/v1.7.1/ErgoNote-v1.7.1-Linux-x86_64.tar.gz">Linux .tar.gz</a>
+              <a class="btn-sm" href="https://github.com/Masterz42/ErgoNote/releases/download/v1.7.1/ErgoNote-v1.7.1-Linux-x86_64">Binaire Linux</a>
+              <a class="btn-sm" href="https://github.com/Masterz42/ErgoNote/releases/download/v1.7.1/ErgoNote-v1.7.1-Android.apk">Android .apk</a>
+              <a class="btn-sm" href="https://github.com/Masterz42/ErgoNote/releases/tag/v1.7.1" target="_blank" rel="noopener">Notes</a>
+            </div>
+          </div>
           <div class="prev-row">
             <div class="prev-meta">
               <strong>v1.6 (20/11/2026)</strong>
@@ -1050,18 +1073,6 @@
               <a class="btn-sm" href="https://github.com/Masterz42/ErgoNote/releases/download/v1.5.0/ErgoNote-v1.5-Linux-x86_64">Binaire Linux</a>
               <a class="btn-sm" href="https://github.com/Masterz42/ErgoNote/releases/download/v1.5.0/ErgoNote-v1.5-Android.apk">Android .apk</a>
               <a class="btn-sm" href="https://github.com/Masterz42/ErgoNote/releases/tag/v1.5.0" target="_blank" rel="noopener">Notes</a>
-            </div>
-          </div>
-          <div class="prev-row">
-            <div class="prev-meta">
-              <strong>v1.4 (19/11/2026)</strong>
-              <span>Gras/Italique fiabilisé, Gboard IME &amp; boutons Photo/Image</span>
-            </div>
-            <div class="prev-links">
-              <a class="btn-sm" href="https://github.com/Masterz42/ErgoNote/releases/download/v1.4.0/ErgoNote-v1.4-Windows-x86_64.exe">Windows .exe</a>
-              <a class="btn-sm" href="https://github.com/Masterz42/ErgoNote/releases/download/v1.4.0/ErgoNote-v1.4-Linux-x86_64">Binaire Linux</a>
-              <a class="btn-sm" href="https://github.com/Masterz42/ErgoNote/releases/download/v1.4.0/ErgoNote-v1.4-Android.apk">Android .apk</a>
-              <a class="btn-sm" href="https://github.com/Masterz42/ErgoNote/releases/tag/v1.4.0" target="_blank" rel="noopener">Notes</a>
             </div>
           </div>
         </div>
@@ -1108,7 +1119,7 @@
             </div>
             <div class="field">
               <label for="homeFbVer">Version</label>
-              <input type="text" id="homeFbVer" name="version" value="v1.7.1" maxlength="40" />
+              <input type="text" id="homeFbVer" name="version" value="v1.7.2" maxlength="40" />
             </div>
           </div>
 
@@ -1132,7 +1143,7 @@
     </section>
 
     <footer>
-      <span>ErgoNote v1.7.1 — 23/11/2026 — ErgoLib</span>
+      <span>ErgoNote v1.7.2 — 23/11/2026 — ErgoLib</span>
       <div style="display:flex; gap:14px; flex-wrap:wrap;">
         <a href="retours.html" style="font-weight:600;">Signaler un bug</a>
         <a href="soutenir.html" style="color:#b45309; font-weight:600;">☕ Offrir un café</a>
@@ -1564,7 +1575,7 @@
           msgInput.focus();
           return;
         }
-        const version = verInput.value.trim() || 'v1.7.1';
+        const version = verInput.value.trim() || 'v1.7.2';
         const subject = `[ErgoNote ${version} · ${osSelect.value}] ${typeSelect.value}`;
         subjectInput.value = subject;
         const payload = {
