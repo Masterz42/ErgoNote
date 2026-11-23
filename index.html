@@ -629,6 +629,94 @@
       color: var(--muted);
     }
 
+    .feedback-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+    }
+    .feedback-lead {
+      color: var(--muted);
+      font-size: 0.92rem;
+      margin-bottom: 14px;
+    }
+    .feedback-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      margin-bottom: 10px;
+    }
+    .feedback-grid .field { margin-bottom: 0; }
+    .field label {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--ink);
+    }
+    .field input,
+    .field select,
+    .field textarea {
+      width: 100%;
+      padding: 9px 11px;
+      border-radius: 8px;
+      border: 1px solid #c8d4e6;
+      background: #fbfcff;
+      color: var(--ink);
+      font: inherit;
+      font-size: 0.9rem;
+    }
+    .field textarea {
+      min-height: 110px;
+      resize: vertical;
+    }
+    .field input:focus,
+    .field select:focus,
+    .field textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(47, 95, 179, 0.14);
+    }
+    .hp-field {
+      position: absolute;
+      left: -9999px;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+    }
+    .feedback-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      margin-top: 4px;
+    }
+    .feedback-status {
+      display: none;
+      margin-top: 12px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      font-weight: 600;
+    }
+    .feedback-status.ok {
+      display: block;
+      background: #ecfdf5;
+      border: 1px solid #86efac;
+      color: #166534;
+    }
+    .feedback-status.err {
+      display: block;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #991b1b;
+    }
+
     footer {
       border-top: 1px solid var(--border);
       padding-top: 20px;
@@ -651,8 +739,9 @@
         overflow-x: auto;
       }
       .page-row { margin-bottom: 0; white-space: nowrap; }
-      .actions .btn, .dl-card .btn { width: 100%; }
+      .actions .btn, .dl-card .btn, .feedback-actions .btn { width: 100%; }
       .prev-row { flex-direction: column; align-items: flex-start; }
+      .feedback-grid { grid-template-columns: 1fr; }
       .app-title-right .qat-btn { display: none; }
     }
   </style>
@@ -670,6 +759,7 @@
         <a href="#fonctionnalites">Fonctionnalités</a>
         <a href="#historique">Historique</a>
         <a href="#telechargement">Télécharger</a>
+        <a href="#retours">Signaler un bug</a>
         <a href="https://ko-fi.com/ergonote" target="_blank" rel="noopener" style="color:#b45309; background:#fef3c7; border:1px solid #f59e0b; padding:3px 10px; border-radius:999px;">☕ Offrir un café</a>
         <a href="soutenir.html">Soutenir</a>
         <a href="https://github.com/Masterz42/ErgoNote" target="_blank" rel="noopener">GitHub</a>
@@ -981,9 +1071,70 @@
       </details>
     </section>
 
+    <section class="block" id="retours">
+      <h2 class="sec-title">Signaler un bug ou donner un avis</h2>
+      <div class="feedback-card">
+        <p class="feedback-lead">
+          Un blocage pendant un cours, un affichage bizarre ou une idée pour aider les élèves ? Écrivez-nous ici <strong>sans créer de compte</strong> (l'adresse e-mail reste facultative).
+        </p>
+        <form id="homeFeedbackForm" action="https://api.web3forms.com/submit" method="POST">
+          <input type="hidden" name="access_key" value="8b36990a-360c-4cd2-8091-8291b9486213" />
+          <input type="hidden" name="from_name" value="ErgoNote — Retours utilisateurs" />
+          <input type="hidden" name="subject" id="homeFeedbackSubject" value="[ErgoNote] Nouveau retour utilisateur" />
+          <div class="hp-field" aria-hidden="true">
+            <label for="homeBotcheck">Ne pas cocher</label>
+            <input type="checkbox" id="homeBotcheck" name="botcheck" tabindex="-1" autocomplete="off" />
+          </div>
+
+          <div class="feedback-grid">
+            <div class="field">
+              <label for="homeFbType">Type</label>
+              <select id="homeFbType" name="type">
+                <option value="Bug">Signaler un bug</option>
+                <option value="Amélioration">Idée d'amélioration</option>
+                <option value="Question">Question / Aide</option>
+                <option value="Témoignage">Témoignage / Avis</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="homeFbOs">Appareil</label>
+              <select id="homeFbOs" name="appareil">
+                <option value="Windows">Windows</option>
+                <option value="Android">Android</option>
+                <option value="Linux">Linux</option>
+                <option value="macOS">macOS</option>
+                <option value="Web / Autre">Navigateur / Autre</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="homeFbVer">Version</label>
+              <input type="text" id="homeFbVer" name="version" value="v1.7.1" maxlength="40" />
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="homeFbMsg">Votre message</label>
+            <textarea id="homeFbMsg" name="message" required placeholder="Décrivez ce qui s'est passé ou ce que vous aimeriez voir dans ErgoNote…"></textarea>
+          </div>
+
+          <div class="field">
+            <label for="homeFbEmail">Votre e-mail (facultatif — seulement si vous souhaitez une réponse)</label>
+            <input type="email" id="homeFbEmail" name="email" placeholder="Laissez vide pour rester anonyme" />
+          </div>
+
+          <div class="feedback-actions">
+            <button class="btn btn-primary" id="homeFbSubmit" type="submit">Envoyer le message</button>
+            <a class="btn" href="retours.html">Ouvrir le formulaire pleine page</a>
+          </div>
+          <div id="homeFbStatus" class="feedback-status" role="status" aria-live="polite"></div>
+        </form>
+      </div>
+    </section>
+
     <footer>
       <span>ErgoNote v1.7.1 — 23/11/2026 — ErgoLib</span>
       <div style="display:flex; gap:14px; flex-wrap:wrap;">
+        <a href="retours.html" style="font-weight:600;">Signaler un bug</a>
         <a href="soutenir.html" style="color:#b45309; font-weight:600;">☕ Offrir un café</a>
         <a href="https://github.com/Masterz42/ErgoNote" target="_blank" rel="noopener">github.com/Masterz42/ErgoNote</a>
       </div>
@@ -1379,6 +1530,85 @@
       .catch(() => {
         document.getElementById('totalDownloadsBadge').textContent = 'Disponible sur GitHub Releases';
       });
+
+    (function () {
+      const form = document.getElementById('homeFeedbackForm');
+      if (!form) return;
+      const typeSelect = document.getElementById('homeFbType');
+      const osSelect = document.getElementById('homeFbOs');
+      const verInput = document.getElementById('homeFbVer');
+      const msgInput = document.getElementById('homeFbMsg');
+      const emailInput = document.getElementById('homeFbEmail');
+      const botcheck = document.getElementById('homeBotcheck');
+      const subjectInput = document.getElementById('homeFeedbackSubject');
+      const submitBtn = document.getElementById('homeFbSubmit');
+      const statusBox = document.getElementById('homeFbStatus');
+
+      const ua = (navigator.userAgent || '').toLowerCase();
+      if (ua.includes('android')) osSelect.value = 'Android';
+      else if (ua.includes('win')) osSelect.value = 'Windows';
+      else if (ua.includes('mac')) osSelect.value = 'macOS';
+      else if (ua.includes('linux')) osSelect.value = 'Linux';
+
+      function showHomeStatus(ok, text) {
+        statusBox.className = 'feedback-status ' + (ok ? 'ok' : 'err');
+        statusBox.textContent = text;
+      }
+
+      form.addEventListener('submit', async function (ev) {
+        ev.preventDefault();
+        if (botcheck.checked) return;
+        const msg = msgInput.value.trim();
+        if (!msg) {
+          showHomeStatus(false, 'Merci de décrire brièvement votre message avant d’envoyer.');
+          msgInput.focus();
+          return;
+        }
+        const version = verInput.value.trim() || 'v1.7.1';
+        const subject = `[ErgoNote ${version} · ${osSelect.value}] ${typeSelect.value}`;
+        subjectInput.value = subject;
+        const payload = {
+          access_key: '8b36990a-360c-4cd2-8091-8291b9486213',
+          from_name: 'ErgoNote — Retours utilisateurs',
+          subject: subject,
+          type: typeSelect.value,
+          appareil: osSelect.value,
+          version: version,
+          message: msg
+        };
+        const email = emailInput.value.trim();
+        if (email) {
+          payload.email = email;
+          payload.replyto = email;
+        }
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Envoi en cours…';
+        statusBox.className = 'feedback-status';
+        try {
+          const resp = await fetch('https://api.web3forms.com/submit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          const data = await resp.json();
+          if (resp.ok && data.success) {
+            showHomeStatus(
+              true,
+              'Merci ! Votre message a bien été envoyé à ErgoNote.' +
+                (email ? ' Une réponse pourra vous être envoyée à l’adresse indiquée.' : '')
+            );
+            msgInput.value = '';
+          } else {
+            showHomeStatus(false, 'Envoi impossible pour le moment. Réessayez ou ouvrez le formulaire pleine page.');
+          }
+        } catch (_e) {
+          showHomeStatus(false, 'Connexion impossible pour le moment. Vérifiez votre accès internet puis réessayez.');
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Envoyer le message';
+        }
+      });
+    })();
   </script>
 </body>
 </html>

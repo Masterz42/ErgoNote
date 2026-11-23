@@ -21,7 +21,7 @@
 
 <br/><br/>
 
-**[Télécharger ErgoNote v1.7.1 pour Windows (.exe)](https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.7.1-Windows-x86_64.exe)** · **[Télécharger ErgoNote v1.7.1 pour Android (.apk)](https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.7.1-Android.apk)** · **[Paquet Linux (.deb)](https://github.com/Masterz42/ErgoNote/releases/latest/download/ergonote_1.7.1_amd64.deb)** · **[Binaire Linux](https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.7.1-Linux-x86_64)** · **[Toutes les versions](https://github.com/Masterz42/ErgoNote/releases)** · ☕ **[Offrir un café (Ko-fi)](https://ko-fi.com/ergonote)**
+**[Télécharger ErgoNote v1.7.1 pour Windows (.exe)](https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.7.1-Windows-x86_64.exe)** · **[Télécharger ErgoNote v1.7.1 pour Android (.apk)](https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.7.1-Android.apk)** · **[Paquet Linux (.deb)](https://github.com/Masterz42/ErgoNote/releases/latest/download/ergonote_1.7.1_amd64.deb)** · **[Binaire Linux](https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.7.1-Linux-x86_64)** · **[Toutes les versions](https://github.com/Masterz42/ErgoNote/releases)** · **[Signaler un bug / Donner un avis](https://masterz42.github.io/ErgoNote/retours.html)** · ☕ **[Offrir un café (Ko-fi)](https://ko-fi.com/ergonote)**
 
 *100 % gratuit, libre et hors ligne (aucun abonnement, aucune publicité). Si ErgoNote aide un élève, un café offert aide directement à poursuivre le développement !*
 
@@ -155,5 +155,7 @@ ErgoNote conserve toujours les **3 versions précédentes** en téléchargement 
 ---
 
 <div align="center">
-<sub>Développé avec soin par <strong>ErgoLib</strong> pour l'accompagnement des élèves TND.</sub>
+  Un souci, une suggestion ? <a href="https://masterz42.github.io/ErgoNote/retours.html"><strong>Signaler un bug / Donner un avis (sans compte)</strong></a> · <a href="https://ko-fi.com/ergonote"><strong>☕ Offrir un café</strong></a>
+  <br/>
+  <sub>Développé avec soin par <strong>ErgoLib</strong> pour l'accompagnement des élèves TND.</sub>
 </div>
