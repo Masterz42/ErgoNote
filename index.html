@@ -557,6 +557,78 @@
     .dl-card strong { font-size: 1rem; }
     .dl-card span { font-size: 0.86rem; color: var(--muted); }
 
+    .prev-box {
+      margin-top: 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+    }
+    .prev-box summary {
+      cursor: pointer;
+      font-weight: 750;
+      font-size: 0.96rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      list-style: none;
+    }
+    .prev-box summary::-webkit-details-marker { display: none; }
+    .prev-list {
+      margin-top: 12px;
+      display: grid;
+      gap: 10px;
+    }
+    .prev-row {
+      border: 1px solid var(--border);
+      background: #f9fbff;
+      border-radius: 9px;
+      padding: 10px 12px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .prev-meta strong {
+      display: block;
+      font-size: 0.92rem;
+    }
+    .prev-meta span {
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+    .prev-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .btn-sm {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 5px 10px;
+      border-radius: 7px;
+      font-weight: 650;
+      font-size: 0.8rem;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--ink);
+      text-decoration: none;
+    }
+    .btn-sm:hover {
+      background: var(--accent-soft);
+      border-color: #c9d9f6;
+      color: var(--accent);
+      text-decoration: none;
+    }
+    .prev-note {
+      margin-top: 10px;
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+
     footer {
       border-top: 1px solid var(--border);
       padding-top: 20px;
@@ -580,6 +652,7 @@
       }
       .page-row { margin-bottom: 0; white-space: nowrap; }
       .actions .btn, .dl-card .btn { width: 100%; }
+      .prev-row { flex-direction: column; align-items: flex-start; }
       .app-title-right .qat-btn { display: none; }
     }
   </style>
@@ -853,6 +926,59 @@
           <a class="btn" href="soutenir.html">Pourquoi soutenir ?</a>
         </div>
       </div>
+
+      <details class="prev-box" open>
+        <summary>
+          <span>Versions précédentes (3 dernières toujours conservées)</span>
+          <span class="pill">v1.6 · v1.5 · v1.4</span>
+        </summary>
+        <p class="prev-note">
+          Les 3 versions précédentes restent toujours accessibles en téléchargement direct pour conserver vos habitudes ou revenir à une version antérieure (vos classeurs locaux restent compatibles).
+        </p>
+        <div class="prev-list">
+          <div class="prev-row">
+            <div class="prev-meta">
+              <strong>v1.6 (20/11/2026)</strong>
+              <span>Thème bleu clair, ruban compacté &amp; zoom en bas à droite</span>
+            </div>
+            <div class="prev-links">
+              <a class="btn-sm" href="https://github.com/Masterz42/ErgoNote/releases/download/v1.6.0/ErgoNote-v1.6-Windows-x86_64.exe">Windows .exe</a>
+              <a class="btn-sm" href="https://github.com/Masterz42/ErgoNote/releases/download/v1.6.0/ergonote_1.6.0_amd64.deb">Linux .deb</a>
+              <a class="btn-sm" href="https://github.com/Masterz42/ErgoNote/releases/download/v1.6.0/ErgoNote-v1.6-Linux-x86_64.tar.gz">Linux .tar.gz</a>
+              <a class="btn-sm" href="https://github.com/Masterz42/ErgoNote/releases/download/v1.6.0/ErgoNote-v1.6-Linux-x86_64">Binaire Linux</a>
+              <a class="btn-sm" href="https://github.com/Masterz42/ErgoNote/releases/download/v1.6.0/ErgoNote-v1.6-Android.apk">Android .apk</a>
+              <a class="btn-sm" href="https://github.com/Masterz42/ErgoNote/releases/tag/v1.6.0" target="_blank" rel="noopener">Notes</a>
+            </div>
+          </div>
+          <div class="prev-row">
+            <div class="prev-meta">
+              <strong>v1.5 (19/11/2026)</strong>
+              <span>Lisibilité sombre, Entrée dans un mot gras &amp; feuilles conservées</span>
+            </div>
+            <div class="prev-links">
+              <a class="btn-sm" href="https://github.com/Masterz42/ErgoNote/releases/download/v1.5.0/ErgoNote-v1.5-Windows-x86_64.exe">Windows .exe</a>
+              <a class="btn-sm" href="https://github.com/Masterz42/ErgoNote/releases/download/v1.5.0/ErgoNote-v1.5-Linux-x86_64">Binaire Linux</a>
+              <a class="btn-sm" href="https://github.com/Masterz42/ErgoNote/releases/download/v1.5.0/ErgoNote-v1.5-Android.apk">Android .apk</a>
+              <a class="btn-sm" href="https://github.com/Masterz42/ErgoNote/releases/tag/v1.5.0" target="_blank" rel="noopener">Notes</a>
+            </div>
+          </div>
+          <div class="prev-row">
+            <div class="prev-meta">
+              <strong>v1.4 (19/11/2026)</strong>
+              <span>Gras/Italique fiabilisé, Gboard IME &amp; boutons Photo/Image</span>
+            </div>
+            <div class="prev-links">
+              <a class="btn-sm" href="https://github.com/Masterz42/ErgoNote/releases/download/v1.4.0/ErgoNote-v1.4-Windows-x86_64.exe">Windows .exe</a>
+              <a class="btn-sm" href="https://github.com/Masterz42/ErgoNote/releases/download/v1.4.0/ErgoNote-v1.4-Linux-x86_64">Binaire Linux</a>
+              <a class="btn-sm" href="https://github.com/Masterz42/ErgoNote/releases/download/v1.4.0/ErgoNote-v1.4-Android.apk">Android .apk</a>
+              <a class="btn-sm" href="https://github.com/Masterz42/ErgoNote/releases/tag/v1.4.0" target="_blank" rel="noopener">Notes</a>
+            </div>
+          </div>
+        </div>
+        <p class="prev-note">
+          Android : pour revenir vers une version plus ancienne qu'une version déjà installée, exportez d'abord vos classeurs en <code>.zip</code> puis désinstallez la version récente. <a href="https://github.com/Masterz42/ErgoNote/releases" target="_blank" rel="noopener">Voir toutes les versions sur GitHub</a>.
+        </p>
+      </details>
     </section>
 
     <footer>

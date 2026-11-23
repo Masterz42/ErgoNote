@@ -70,6 +70,20 @@ Les logiciels de prise de notes classiques sont souvent **surchargés d'icônes*
 
 ---
 
+## Versions précédentes (3 dernières toujours conservées)
+
+ErgoNote conserve toujours les **3 versions précédentes** en téléchargement direct en plus de la version actuelle (`v1.7.1`), pour permettre de rester sur une version connue ou de revenir en arrière à tout moment (vos classeurs locaux restent compatibles) :
+
+| Version | Date | Windows (`x86_64`) | Linux (`x86_64`) | Android (`.apk`) | Page |
+|---|---|---|---|---|---|
+| **`v1.6.0`** | 20/11/2026 | [Windows .exe](https://github.com/Masterz42/ErgoNote/releases/download/v1.6.0/ErgoNote-v1.6-Windows-x86_64.exe) | [.deb](https://github.com/Masterz42/ErgoNote/releases/download/v1.6.0/ergonote_1.6.0_amd64.deb) · [.tar.gz](https://github.com/Masterz42/ErgoNote/releases/download/v1.6.0/ErgoNote-v1.6-Linux-x86_64.tar.gz) · [binaire](https://github.com/Masterz42/ErgoNote/releases/download/v1.6.0/ErgoNote-v1.6-Linux-x86_64) | [Android .apk](https://github.com/Masterz42/ErgoNote/releases/download/v1.6.0/ErgoNote-v1.6-Android.apk) | [v1.6.0](https://github.com/Masterz42/ErgoNote/releases/tag/v1.6.0) |
+| **`v1.5.0`** | 19/11/2026 | [Windows .exe](https://github.com/Masterz42/ErgoNote/releases/download/v1.5.0/ErgoNote-v1.5-Windows-x86_64.exe) | [binaire](https://github.com/Masterz42/ErgoNote/releases/download/v1.5.0/ErgoNote-v1.5-Linux-x86_64) | [Android .apk](https://github.com/Masterz42/ErgoNote/releases/download/v1.5.0/ErgoNote-v1.5-Android.apk) | [v1.5.0](https://github.com/Masterz42/ErgoNote/releases/tag/v1.5.0) |
+| **`v1.4.0`** | 19/11/2026 | [Windows .exe](https://github.com/Masterz42/ErgoNote/releases/download/v1.4.0/ErgoNote-v1.4-Windows-x86_64.exe) | [binaire](https://github.com/Masterz42/ErgoNote/releases/download/v1.4.0/ErgoNote-v1.4-Linux-x86_64) | [Android .apk](https://github.com/Masterz42/ErgoNote/releases/download/v1.4.0/ErgoNote-v1.4-Android.apk) | [v1.4.0](https://github.com/Masterz42/ErgoNote/releases/tag/v1.4.0) |
+
+> **Astuce Android (retour à une ancienne version)** : pour installer une version plus ancienne qu'une version déjà installée, exportez d'abord vos classeurs en `.zip` puis désinstallez la version récente (obligatoire également pour passer de `v1.5+` vers `v1.4`). Toutes les archives restent accessibles sur la [page des versions](https://github.com/Masterz42/ErgoNote/releases).
+
+---
+
 ## Historique des modifications (depuis la v1.0)
 
 ### `v1.7.1` (23/11/2026) — Correcteur pédagogique Hunspell, Prédiction 3 mots, Lecture synchronisée & Dictée vocale
