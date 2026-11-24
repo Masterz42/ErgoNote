@@ -1,0 +1,17 @@
+#!/bin/sh
+# Full validation must run before invoking `git push`, while no SSH transport is open:
+#   cargo xtask pre-push
+# This hook is deliberately fast. It fetches origin/main and verifies the recorded gate result
+# still matches the pushed commit and a clean worktree.
+set -e
+
+# Git sends the list of refs being pushed on stdin. Drain it before starting child processes.
+cat > /dev/null
+exec < /dev/null
+
+echo "pre-push (quality level L2): checking full-gate validation and origin/main freshness"
+if ! cargo xtask check-push-validation; then
+    echo
+    echo "pre-push: run 'cargo xtask pre-push' before pushing. The full gate runs without an open SSH session."
+    exit 1
+fi

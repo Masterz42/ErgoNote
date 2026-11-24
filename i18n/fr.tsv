@@ -1,0 +1,1180 @@
+@plural	Move "{title}" and everything inside it ({n} item) to this notebook's recycle bin?|Move "{title}" and everything inside it ({n} items) to this notebook's recycle bin?	Déplacer « {title} » et tout son contenu ({n} élément) vers la corbeille de ce carnet ?|Déplacer « {title} » et tout son contenu ({n} éléments) vers la corbeille de ce carnet ?
+@plural	{n} item|{n} items	{n} élément|{n} éléments
+@plural	{n} notebook opened|{n} notebooks opened	{n} bloc-notes ouvert|{n} blocs-notes ouverts
+@plural	{n} notebook|{n} notebooks	{n} bloc-notes|{n} blocs-notes
+@plural	{n} stroke|{n} strokes	{n} trait|{n} traits
+@id	language.name	Français
+@id	product.about	NoteCraft est un projet entièrement écrit en Rust et développé au grand jour à partir de code écrit de manière indépendante et de documentation publique. Son objectif est d’associer l’organisation familière de OneNote à des fichiers locaux et portables que vous pouvez consulter, sauvegarder et synchroniser avec les services et outils de votre choix.
+@id	product.long_description	NoteCraft est une réimplémentation indépendante et open source de l’expérience des carnets OneNote, réalisée selon une méthode de développement en salle blanche. Les carnets, sections, pages, images et pièces jointes sont conservés sous forme de dossiers et de fichiers ordinaires sur votre appareil. Vous choisissez comment les synchroniser et les sauvegarder avec les outils auxquels vous faites déjà confiance, sans serveur ni compte NoteCraft.
+@id	product.short_description	NoteCraft est une réimplémentation indépendante et open source de l’expérience des carnets OneNote, réalisée selon une méthode de développement en salle blanche et fondée sur des fichiers locaux. Gardez vos notes sur votre appareil, puis synchronisez-les ou sauvegardez-les avec les outils de votre choix.
+@id	product.tagline	Une recréation indépendante de OneNote : des fichiers locaux et la synchronisation de votre choix.
+@id	ui.a_bullet_list	Une liste à puces
+@id	ui.a_column_left_of_the_caret_s	Une colonne à gauche du curseur
+@id	ui.a_column_right_of_the_caret_s	Une colonne à droite du curseur
+@id	ui.a_copy_goes_into_this_page_s_folder_so_the_notebook_5f331e4138	Une copie est placée dans le dossier de cette page, ce qui permet au carnet de la transporter partout.
+@id	ui.a_direction_goes_on_a_paragraph_of_text	Une direction s'applique à un paragraphe de texte
+@id	ui.a_file_copied_in_or_linked_where_it_is	Un fichier : copié ou lié à son emplacement actuel
+@id	ui.a_link	Un lien
+@id	ui.a_link_to_a_page_or_an_address	Un lien vers une page ou une adresse
+@id	ui.a_link_to_paste_into_another_page	Un lien à coller dans une autre page
+@id	ui.a_mermaid_diagram_kept_as_its_source	Un diagramme Mermaid, conservé sous forme de code source
+@id	ui.a_new_notebook_is_a_folder_in_folder_with_one_sectio_7208ff46e4	Un nouveau bloc-notes est un dossier dans {folder}, contenant une section et une page.
+@id	ui.a_new_page_in_this_section	Nouvelle page dans cette section
+@id	ui.a_new_spreadsheet_beside_the_page_opened_in_gridcraft	Une nouvelle feuille de calcul à côté de la page, ouverte dans GridCraft
+@id	ui.a_numbered_list	Une liste numérotée
+@id	ui.a_page_here	Une page ici
+@id	ui.a_row_above_the_caret_s	Une ligne au-dessus du curseur
+@id	ui.a_row_below_the_caret_s	Une ligne en dessous du curseur
+@id	ui.a_table_keeps_its_heading_row_and_at_least_one_column	Un tableau conserve sa ligne d'en-tête et au moins une colonne
+@id	ui.a_table_pick_its_size	Un tableau : choisissez ses dimensions
+@id	ui.a_tag_goes_on_a_line_of_text	Un tag s'applique à une ligne de texte
+@id	ui.a_to_do_box_on_this_line_ctrl_1	Une case à cocher sur cette ligne (Ctrl+1)
+@id	ui.a_tour_of_notecraft_shown_on_its_own_pages_it_is_add_96221451f0	Une visite guidée de NoteCraft, présentée sur ses propres pages. Elle est ajoutée au premier démarrage si le dossier des blocs-notes est vide. Cette action l’ajoute de nouveau ou l’ouvre si elle s’y trouve encore.
+@id	ui.about_notecraft	À propos de Mon Cartable — Édition TND (NoteCraft)
+@id	ui.accent_accent	Accentuation : {accent}
+@id	ui.accept	Accepter
+@id	ui.add	Ajouter
+@id	ui.add_a_blank_paragraph_at_the_caret	Ajouter un paragraphe vide au niveau du curseur
+@id	ui.add_a_page_here	Ajouter une page ici
+@id	ui.add_a_sub_page	Ajouter une sous-page
+@id	ui.add_another_tool	Ajouter un autre {tool}
+@id	ui.add_file	Ajouter un fichier
+@id	ui.add_file_to_this_page	Ajouter un fichier à cette page
+@id	ui.add_inside_this_kind	Ajouter à l'intérieur de ce {kind}
+@id	ui.add_inside_this_page	Ajouter à l'intérieur de cette page
+@id	ui.add_inside_this_section	Ajouter à l'intérieur de cette section
+@id	ui.add_name	Ajouter {name}
+@id	ui.add_name_left_more	Ajouter {name} ({left} en plus)
+@id	ui.add_page	Ajouter une page
+@id	ui.add_the_welcome_notebook	Ajouter le carnet d'accueil
+@id	ui.add_tool	Ajouter {tool}
+@id	ui.added_a_link_to_name_at_the_end_of_the_page	Lien vers {name} ajouté à la fin de la page
+@id	ui.added_a_tool	{tool} ajouté
+@id	ui.address	Adresse
+@id	ui.alignment	Alignement
+@id	ui.alignment_and_direction	Alignement et direction
+@id	ui.alignment_and_which_way_this_paragraph_reads	Alignement et sens de lecture du paragraphe
+@id	ui.all_of_them_live_in_folder	Ils se trouvent tous dans {folder}
+@id	ui.always_on_top	Toujours au premier plan
+@id	ui.an_equation_written_in_tex_pick_one_to_start_from	Une équation écrite en TeX : choisissez-en une pour commencer
+@id	ui.app_preferences_reset_restart_notecraft_to_apply_every_default	Préférences de l'application réinitialisées. Redémarrez NoteCraft pour appliquer toutes les valeurs par défaut.
+@id	ui.appearance	Apparence
+@id	ui.append_link	Ajouter un lien
+@id	ui.application_preferences	Préférences de l’application
+@id	ui.arrow	Flèche
+@id	ui.attach_the_file	Joindre le fichier
+@id	ui.attachment_icon_missing	Icône de pièce jointe manquante
+@id	ui.attachment_not_linked	Pièce jointe non liée
+@id	ui.attachment_recovery	Récupération des pièces jointes
+@id	ui.authors	Auteurs
+@id	ui.auto	Auto
+@id	ui.automatic_system_language	Automatique (langue du système)
+@id	ui.back	Retour
+@id	ui.back_to_the_notebook	Retour au bloc-notes
+@id	ui.back_to_the_page_before_alt_left	Page précédente (Alt+Gauche)
+@id	ui.backup_recovery	Sauvegarde / Récupération
+@id	ui.basic_text	Texte de base
+@id	ui.colour_amber	Ambre
+@id	ui.colour_blue	Bleu
+@id	ui.colour_coral	Corail
+@id	ui.colour_cyan	Cyan
+@id	ui.colour_gray	Gris
+@id	ui.colour_green	Vert
+@id	ui.colour_lavender	Lavande
+@id	ui.colour_lime	Vert citron
+@id	ui.colour_magenta	Magenta
+@id	ui.colour_navy	Bleu marine
+@id	ui.colour_orange	Orange
+@id	ui.colour_pink	Rose
+@id	ui.colour_purple	Violet
+@id	ui.colour_red	Rouge
+@id	ui.colour_teal	Sarcelle
+@id	ui.colour_yellow	Jaune
+@id	ui.font_size	Taille de police
+@id	ui.saving	Enregistrement...
+@id	ui.select_text_before_changing_font_size	Sélectionnez du texte avant de modifier sa taille.
+@id	ui.black	noir
+@id	ui.blue	bleu
+@id	ui.blue_2	Bleu
+@id	ui.bold	Gras
+@id	ui.bold_ctrl_b	Gras (Ctrl+B)
+@id	ui.both_as_the_page_s_own_stamp_is_written	Les deux, car le cachet propre à la page est écrit
+@id	ui.browse_for_a_notebook	Rechercher un bloc-notes…
+@id	ui.browse_notebooks_in_folder_or_choose_another_folder	Parcourez les blocs-notes dans {folder} ou choisissez un autre dossier.
+@id	ui.brush_pen	Feutre pinceau
+@id	ui.built_with	Réalisé avec
+@id	ui.bullets	Puces
+@id	ui.cancel	Annuler
+@id	ui.cancel_import	Annuler l'importation
+@id	ui.cannot_open_gridcraft_error	Impossible d'ouvrir GridCraft : {error}
+@id	ui.cannot_open_the_table_in_gridcraft_error	Impossible d'ouvrir le tableau dans GridCraft : {error}
+@id	ui.cannot_save_the_pasted_picture_error	Impossible de sauvegarder l'image collée : {error}
+@id	ui.cannot_write_name_error	Impossible d'écrire {name} : {error}
+@id	ui.cannot_write_the_drawing_error	Impossible d'écrire le dessin : {error}
+@id	ui.cannot_write_the_picture_error	Impossible d'écrire l'image : {error}
+@id	ui.cannot_write_this_page_s_ink	Impossible d'écrire l'encre de cette page
+@id	ui.choose_a_custom_ink_colour	Choisir une couleur d?encre personnalis?e
+@id	ui.choose_a_file_to_attach	Choisir un fichier à joindre
+@id	ui.choose_a_file_to_import	Choisir un fichier à importer
+@id	ui.choose_a_local_collection_level_logging_is_off_by_de_5dfbe386e0	Choisir un niveau de collecte local. La journalisation est désactivée par défaut dans les versions de release.
+@id	ui.choose_a_notebook_a_folder_of_notebooks_or_an_empty_9de57f8f1f	Choisissez un carnet, un dossier contenant des carnets ou un dossier vide pour créer un nouveau carnet
+@id	ui.choose_a_onenote_notebook_folder	Choisissez le dossier d'un carnet OneNote
+@id	ui.choose_a_pdf_or_office_document_to_print_out	Choisissez un document PDF ou Office à imprimer
+@id	ui.choose_a_picture	Choisir une image
+@id	ui.choose_a_section_to_see_its_pages	Choisissez une section pour afficher ses pages.
+@id	ui.choose_a_symbol_to_insert_at_the_caret	Choisissez un symbole à insérer au niveau du curseur
+@id	ui.choose_how_to_insert_a_picture	Choisissez comment insérer une image
+@id	ui.choose_what_notecraft_records_locally_nothing_is_upl_fc372d68e8	Choisissez ce que NoteCraft enregistre localement. Aucune donnée n’est envoyée automatiquement.
+@id	ui.chosen_for_this_page	choisi pour cette page
+@id	ui.circle	Cercle
+@id	ui.clear_all_local_telemetry_sessions_and_exported_tele_e4f5e2340d	Effacer toutes les sessions de télémétrie locale et les fichiers ZIP de télémétrie exportés ?
+@id	ui.clear_formatting	Effacer la mise en forme
+@id	ui.clear_formatting_2	Effacer la mise en forme
+@id	ui.clear_telemetry	Effacer les données de télémétrie
+@id	ui.click_a_stroke_to_pick_it_up_then_move_stretch_or_delete_it	Cliquez sur un trait pour le sélectionner, puis déplacez-le, redimensionnez-le ou supprimez-le
+@id	ui.click_in_a_table_first	Cliquez d'abord dans un tableau
+@id	ui.click_in_the_page_first	Cliquez d'abord dans la page
+@id	ui.click_in_the_page_first_then_use_the_ribbon	Cliquez d'abord dans la page, puis utilisez le ruban
+@id	ui.click_in_the_table_first	Cliquez d'abord dans le tableau
+@id	ui.clipboard	Presse-papiers
+@id	ui.close	Fermer
+@id	ui.close_notebook	Fermer le bloc-notes
+@id	ui.close_search	Fermer la recherche
+@id	ui.close_the_find_bar_escape	Fermer la barre de recherche (Échap)
+@id	ui.close_the_source_pane	Fermer le panneau source
+@id	ui.cloud_import_is_not_implemented_yet	L’importation depuis le cloud n’est pas encore disponible.
+@id	ui.code_2	Code
+@id	ui.code_in_one_line	Code, sur une seule ligne
+@id	ui.collapse	Réduire
+@id	ui.collapse_all	Réduire tout
+@id	ui.collapse_subpages	Réduire les sous-pages
+@id	ui.college	Collège
+@id	ui.college_ruled	Ligne de collège
+@id	ui.colour	Couleur
+@id	ui.colour_hex	{colour} {hex}
+@id	ui.colour_removed	Couleur supprimée
+@id	ui.colour_set_to_colour	Couleur définie sur {colour}
+@id	ui.colours	Couleurs
+@id	ui.columns_x_rows_table	Tableau {columns} x {rows}
+@id	ui.commonmark_gfm	CommonMark + GFM
+@id	ui.contact	Contact
+@id	ui.convert	Convertir
+@id	ui.convert_to_gridcraft_2	Convertir en GridCraft\n
+@id	ui.convert_to_gridcraft_gridcraft_is_not_installed	Conversion vers GridCraft : GridCraft n'est pas installé
+@id	ui.copied	Copié
+@id	ui.copies_the_file_and_inserts_one_picture_for_each_printed_page	Copie le fichier et insère une image pour chaque page imprimée.
+@id	ui.copy	Copier
+@id	ui.copy_full_path	Copier le chemin complet
+@id	ui.copy_link_to_page	Copier le lien vers la page
+@id	ui.copy_the_selection	Copier la sélection
+@id	ui.could_not_attach_name_before_rendering_its_pages	Impossible de joindre {name} avant la génération des pages
+@id	ui.could_not_attach_name_to_this_page	Impossible de joindre {name} à cette page.
+@id	ui.could_not_complete_the_action_error	Impossible de terminer l'action : {error}
+@id	ui.could_not_import_the_notebook_error	Impossible d'importer le carnet : {error}
+@id	ui.could_not_open_the_containing_folder_error	Impossible d'ouvrir le dossier contenant : {error}
+@id	ui.could_not_open_the_file_error	Impossible d'ouvrir le fichier : {error}
+@id	ui.could_not_repair_the_icon_for_name_error	Impossible de réparer l'icône pour {name} : {error}
+@id	ui.could_not_reset_app_preferences_error	Impossible de réinitialiser les préférences de l'application : {error}
+@id	ui.could_not_restore_the_link_for_name_error	Impossible de restaurer le lien pour {name} : {error}
+@id	ui.could_not_save_the_interface_language_error	Impossible d’enregistrer la langue de l’interface : {error}
+@id	ui.could_not_save_the_interface_size_error	Impossible d’enregistrer la taille de l’interface : {error}
+@id	ui.could_not_store_printout_page_page_error	Impossible de stocker la page d'impression {page} : {error}
+@id	ui.count_deleted	{count} · {deleted}
+@id	ui.count_items_colour_colour	{count} éléments, couleur {colour}
+@id	ui.create	Créer
+@id	ui.created	Créé
+@id	ui.critical	Critique
+@id	ui.ctrl_v_pastes_into_the_page	Ctrl+V colle dans la page
+@id	ui.ctrl_y_puts_it_back	Ctrl+Y rétablit l'action annulée
+@id	ui.ctrl_z_takes_back_the_last_change	Ctrl+Z annule la dernière modification
+@id	ui.current_session_id	Session actuelle : {id}
+@id	ui.custom	personnalisé
+@id	ui.customize_quick_access_toolbar	Personnaliser la barre d'accès rapide
+@id	ui.customize_tags	Personnaliser les tags...
+@id	ui.cut	Couper
+@id	ui.cut_2	couper
+@id	ui.cut_the_selection	Couper la sélection
+@id	ui.dark	Sombre
+@id	ui.data	Donn?es
+@id	ui.date	Date
+@id	ui.date_time_2	Date &\nHeure
+@id	ui.debug	Débogage
+@id	ui.decrease_indentation	Diminuer le retrait
+@id	ui.decrease_indentation_shift_tab	Diminuer le retrait (Maj+Tab)
+@id	ui.default	Par défaut
+@id	ui.default_format	Format par défaut
+@id	ui.default_format_for_pages_below	Format par défaut pour les pages ci-dessous
+@id	ui.definition	Définition
+@id	ui.delete	Supprimer
+@id	ui.delete_assets_name_from_this_page_s_folder	Supprimer « assets/{name} » du dossier de cette page ?
+@id	ui.delete_columns_2	Supprimer\nColonnes
+@id	ui.delete_ellipsis	Supprimer...
+@id	ui.delete_file	Supprimer le fichier
+@id	ui.delete_notebook	Supprimer le bloc-notes
+@id	ui.delete_notebook_2	Supprimer le bloc-notes...
+@id	ui.delete_notebook_title_and_everything_inside_it	Supprimer définitivement le carnet « {title} » et tout ce qu'il contient ?
+@id	ui.delete_permanently	Supprimer définitivement
+@id	ui.delete_rows_2	Supprimer\nLignes
+@id	ui.delete_tool	Supprimer l?outil
+@id	ui.delete_tool_2	Supprimer {tool}
+@id	ui.deleted_notebook	Carnet supprimé
+@id	ui.deleted_notebook_path	Carnet {path} supprimé
+@id	ui.deny	Refuser
+@id	ui.diagram	Diagramme
+@id	ui.diamond	Losange
+@id	ui.direction_from_the_words	Sens automatique selon les mots
+@id	ui.discovering_sections	Recherche des sections…
+@id	ui.do_not_warn_about_similar_attachment_issues_again_this_session	Ne plus avertir des problèmes similaires de pièces jointes pendant cette session
+@id	ui.do_not_warn_about_similar_missing_icons_again_this_session	Ne plus avertir des icônes manquantes similaires pendant cette session
+@id	ui.do_not_warn_again_for_this_file_type_this_session	Ne plus avertir pour ce type de fichier pendant cette session
+@id	ui.dock_to_desktop	Ancrer au bureau
+@id	ui.document_renderer_coming_soon	Moteur de rendu de documents bientôt disponible
+@id	ui.don_t_show_this_again_in_this_session	Ne plus afficher ceci dans cette session
+@id	ui.don_t_show_this_ever	Ne plus jamais afficher ceci
+@id	ui.draw	Dessin
+@id	ui.draw_a_loop_round_ink_to_pick_it_up	Dessinez une boucle autour de l'encre pour la sélectionner
+@id	ui.draw_here_2	Dessinez\nici
+@id	ui.drawing	Dessin en cours...
+@id	ui.drawing_saved_count_strokes	Dessin enregistré, {count} traits
+@id	ui.drawing_tools	Outils de dessin
+@id	ui.drop_a_file_onto_the_page_to_add_it	Déposez un fichier sur la page pour l’ajouter
+@id	ui.edit	Modifier
+@id	ui.editing	Modification en cours
+@id	ui.egui_and_eframe	egui et eframe
+@id	ui.ellipse	Ellipse
+@id	ui.email	E-mail
+@id	ui.english	Anglais
+@id	ui.equation	Équation
+@id	ui.equation_name	Équation : {name}
+@id	ui.eraser	Gomme
+@id	ui.error	erreur
+@id	ui.every_fifth_line_is_slightly_stronger_for_easier_counting	Toutes les cinq lignes sont légèrement plus épaisses pour faciliter le comptage.
+@id	ui.every_line_of_this_page_decides_for_itself	Chaque ligne de cette page décide par elle-même
+@id	ui.every_paragraph_decides_for_itself	Chaque paragraphe décide par lui-même
+@id	ui.expand	D?velopper
+@id	ui.expand_all	Tout déplier
+@id	ui.expand_subpages	Développer les sous-pages
+@id	ui.export_creates_a_user_selected_zip_then_removes_the_66f2bf3400	L’export crée un fichier ZIP à l’emplacement choisi, puis supprime le dossier de session exporté.
+@id	ui.export_current_session_zip	Exporter la session actuelle en ZIP
+@id	ui.export_telemetry_zip	Exporter le ZIP de télémétrie
+@id	ui.eyedropper	Pipette
+@id	ui.eyedropper_not_built	La pipette n?est pas encore disponible
+@id	ui.file	Fichier
+@id	ui.file_attachment_2	Fichier\nPièce jointe
+@id	ui.file_options	Options du fichier
+@id	ui.file_printout_2	Fichier\nImpression
+@id	ui.files	Fichiers
+@id	ui.files_in_this_page	FICHIERS DANS CETTE PAGE
+@id	ui.find	Rechercher des étiquettes
+@id	ui.find_in_this_file	Rechercher dans ce fichier
+@id	ui.find_tags	Rechercher les indicateurs
+@id	ui.find_tags_3	Rechercher\nÉtiquettes
+@id	ui.fit_the_page_to_the_available_width	Ajuster la page à la largeur disponible
+@id	ui.folder_folder	Dossier : {folder}
+@id	ui.follow_the_system_light_or_dark_setting	Suivre le paramètre clair ou sombre du système
+@id	ui.format	Format
+@id	ui.format_background_2	Format\nArrière-plan
+@id	ui.format_for_this_page	Format pour cette page
+@id	ui.format_painter	Reproduire la mise en forme
+@id	ui.forward	Suivant
+@id	ui.forward_to_the_page_after_alt_right	Page suivante (Alt+Droite)
+@id	ui.fountain_pen	Stylo-plume
+@id	ui.from_camera	Depuis la caméra
+@id	ui.from_online	En ligne
+@id	ui.full_page	Page entière
+@id	ui.full_page_view_2	Vue\nPage entière
+@id	ui.full_path_copied	Chemin complet copié
+@id	ui.give_the_page_the_whole_window	Occuper toute la fenêtre avec la page
+@id	ui.gray	Gris
+@id	ui.green	Vert
+@id	ui.green_2	vert
+@id	ui.grey	gris
+@id	ui.gridcraft_is_not_installed	GridCraft n'est pas installé
+@id	ui.help	Aide
+@id	ui.hide	Masquer
+@id	ui.hide_everything_but_the_page	Masquer tout sauf la page
+@id	ui.hide_page_title	Masquer le titre de la page
+@id	ui.hide_the_page_source	Masquer la source de la page
+@id	ui.hide_the_page_title	Masquer le titre de la page
+@id	ui.highlight	Surlignage
+@id	ui.highlighter	Surligneur
+@id	ui.history	Historique
+@id	ui.home	Accueil
+@id	ui.html_3	HTML
+@id	ui.html_4	html
+@id	ui.idea_3	Idée
+@id	ui.images	Images
+@id	ui.immersive_reader	Lecteur immersif
+@id	ui.import_file	Importer un fichier
+@id	ui.import_from_the_cloud	Importer depuis le cloud
+@id	ui.import_notebook_folder	Importer un dossier de bloc-notes
+@id	ui.important	Important
+@id	ui.importing	Importation en cours…
+@id	ui.importing_onenote	Importation OneNote
+@id	ui.increase_indentation	Augmenter le retrait
+@id	ui.increase_indentation_tab	Augmenter le retrait (Tab)
+@id	ui.index_of_total_sections	{index} sur {total} sections
+@id	ui.info	info
+@id	ui.inherit_notebook_section_or_global_setting	Hériter (carnet, section ou paramètre global)
+@id	ui.input_mode	Mode de saisie
+@id	ui.insert	Insertion
+@id	ui.insert_a_common_symbol	Insérer un symbole courant
+@id	ui.insert_column_left_2	Insérer une colonne\nÀ gauche
+@id	ui.insert_column_right_2	Insérer une colonne\nÀ droite
+@id	ui.insert_printout	Insérer une impression
+@id	ui.insert_row_above_2	Insérer une ligne\nAu-dessus
+@id	ui.insert_row_below_2	Insérer une ligne\nEn dessous
+@id	ui.insert_space_2	Insérer\nEspace
+@id	ui.insert_symbol	Insérer un symbole
+@id	ui.insert_table_not_built	Insérer un tableau... (non implémenté)
+@id	ui.insert_the_picture	Insérer l'image
+@id	ui.insert_the_recording	Insérer l'enregistrement
+@id	ui.insert_the_video	Insérer la vidéo
+@id	ui.inserted_name_and_count_printout_pages	Pages d'impression {name} et {count} insérées
+@id	ui.interface_language	Langue de l’interface
+@id	ui.interface_language_language	Langue de l’interface : {language}
+@id	ui.interface_size	Taille de l’interface
+@id	ui.interface_size_hint	Agrandit ou réduit le ruban, les menus et la page sur cet écran.
+@id	ui.interface_size_percent	{percent} %
+@id	ui.issues_the_roadmap_and_the_documentation_are_all_the_2beb6e100f	Les tickets, la feuille de route et la documentation s’y trouvent. NoteCraft ne communique de lui-même ni avec ce dépôt ni avec aucun autre service.
+@id	ui.it_is_listed_so_the_page_s_folder_is_not_a_secret	Il est répertorié afin que le dossier de la page ne soit pas un secret.
+@id	ui.italic	Italique
+@id	ui.italic_ctrl_i	Italique (Ctrl+I)
+@id	ui.json	JSON
+@id	ui.justification_goes_on_a_paragraph_of_text	La justification s'applique à un paragraphe de texte
+@id	ui.keep_this_window_above_the_others	Garder cette fenêtre au-dessus des autres
+@id	ui.kept_the_original_drawing_file_path	Le fichier de dessin de cette page contenait des traits que NoteCraft ne peut pas modifier. Le fichier d’origine est conservé sous {path}.
+@id	ui.label	label
+@id	ui.label_not_built	{label} (non implémenté)
+@id	ui.label_not_built_yet	{label} : pas encore implémenté
+@id	ui.label_nothing_to_action	{label} : rien à {action}
+@id	ui.language_click_to_change_it	{language}. Cliquez pour changer.
+@id	ui.large	Grand
+@id	ui.large_squares	Grands carrés
+@id	ui.laser_pointer	Pointeur laser
+@id	ui.lasso_select	Lasso\nSélection
+@id	ui.layout	Disposition
+@id	ui.leave_it	Laisser tel quel
+@id	ui.left_to_right	De gauche à droite
+@id	ui.level	Niveau :
+@id	ui.licence	Licence
+@id	ui.light	Clair
+@id	ui.light_or_dark_and_the_accent_colour	Clair ou sombre, et la couleur d'accentuation
+@id	ui.line	Ligne
+@id	ui.lines_or_squares_behind_the_page_as_on_paper	Lignes ou carrés derrière la page, comme sur du papier
+@id	ui.link	Lien
+@id	ui.link_to_the_file_where_it_is	Lien vers le fichier où il se trouve
+@id	ui.link_to_title_copied	Lien vers « {title} » copié
+@id	ui.linked_name_where_it_is_the_file_was_not_copied	Lien{name}vers l'emplacement d'origine ; le fichier n'a pas été copié
+@id	ui.links	Liens
+@id	ui.live_captions	Sous-titres en direct
+@id	ui.local_collection_level	Niveau de collection local
+@id	ui.local_diagnostics	Diagnostics locaux
+@id	ui.local_diagnostics_and_usage	Diagnostic et utilisation locaux
+@id	ui.logging_folder_folder	Dossier des journaux : {folder}
+@id	ui.logs_and_telemetry_stay_on_this_device_notecraft_doe_87b8387dee	Les journaux et données de télémétrie restent sur cet appareil. NoteCraft ne les envoie pas automatiquement.
+@id	ui.magenta	Magenta
+@id	ui.make_subpage	Créer une sous-page
+@id	ui.make_the_page_larger	Agrandir la page
+@id	ui.make_the_page_smaller	Réduire la page
+@id	ui.many_thanks_to_its_authors_and_contributors	— avec tous nos remerciements à ses auteurs et contributeurs.
+@id	ui.markdown	Markdown
+@id	ui.match_case	Respecter la casse
+@id	ui.math	Maths
+@id	ui.maximize	Maximiser
+@id	ui.md_2	md
+@id	ui.media	M?dias
+@id	ui.medium	Moyen
+@id	ui.medium_squares	Carrés moyens
+@id	ui.meeting_details	Détails de réunion
+@id	ui.meeting_details_3	Détails\nRéunion
+@id	ui.meetings	R?unions
+@id	ui.merge	Fusionner
+@id	ui.mermaid	Mermaid
+@id	ui.mint	menthe
+@id	ui.mit_license	MIT
+@id	ui.mit_or_apache_2_0_at_your_option_the_koala_artwork_i_2ad8f523c0	ErgoNote est un logiciel gratuit (freeware). Tous droits réservés © ErgoNote. L’utilisation et la redistribution du fichier d’installation d’origine sont librement autorisées pour un usage personnel, familial, scolaire, associatif ou dans le cadre d’un suivi de soin (ergothérapie, orthophonie, etc.). Toute vente, location, intégration dans un produit ou service commercial, modification ou décompilation est strictement interdite sans l’autorisation écrite préalable de l’auteur.
+@id	ui.mode	Mode
+@id	ui.modify_tool	Modifier l'outil
+@id	ui.more	Plus...
+@id	ui.more_2	Plus?
+@id	ui.more_colours	Plus de couleurs
+@id	ui.more_styles	Plus de styles
+@id	ui.more_tags	Plus d’étiquettes
+@id	ui.move_down	Déplacer vers le bas
+@id	ui.move_left	Déplacer à gauche
+@id	ui.move_right	Déplacer à droite
+@id	ui.move_title_and_everything_inside_it_n_item_to_this_n_20c3146ea1	Déplacer « {title} » et tout ce qu'il contient ({n} élément) dans la corbeille de ce carnet ?|Déplacer « {title} » et tout ce qu'il contient ({n} éléments) dans la corbeille de ce carnet ?
+@id	ui.move_to_recycle_bin	Mettre à la corbeille
+@id	ui.move_up	Déplacer vers le haut
+@id	ui.moved_moved_strokes_from_this_page_s_old_drawing_ont_11ecd930d5	Traits {moved} déplacés de l'ancien dessin de cette page vers la page elle-même
+@id	ui.moved_moved_strokes_onto_the_page_left_old_drawing_f_89f765dcef	Traits {moved} déplacés vers la page ; les anciens fichiers de dessin {left} n'ont pas pu être supprimés
+@id	ui.moved_to_the_notebook_recycle_bin	Déplacé vers la corbeille du carnet
+@id	ui.n_item_n_items	{n} élément|{n} éléments
+@id	ui.n_notebook_n_notebooks	{n} carnet|{n} carnets
+@id	ui.n_notebook_opened_n_notebooks_opened	{n} carnet ouvert|{n} carnets ouverts
+@id	ui.n_stroke_n_strokes	{n} trait|{n} traits
+@id	ui.name_2	Nom
+@id	ui.name_is_not_built_yet_see_the_roadmap_for_what_is_coming	{name} n'est pas encore implémenté. Consultez la feuille de route pour les prochaines fonctionnalités.
+@id	ui.name_is_now_a_file_in_this_page_s_folder	{name} est maintenant un fichier dans le dossier de cette page
+@id	ui.name_is_open_in_gridcraft	{name} est ouvert dans GridCraft
+@id	ui.name_not_used_by_the_page	{name} : non utilisé par la page
+@id	ui.narrow	Étroit
+@id	ui.narrow_ruled	Lignes étroites
+@id	ui.new_gridcraft_spreadsheet	Nouveau tableur GridCraft
+@id	ui.new_gridcraft_spreadsheet_not_installed	Nouveau tableau GridCraft (non installé)
+@id	ui.new_notebook	Nouveau carnet
+@id	ui.new_notebook_2	Nouveau carnet...
+@id	ui.new_page	Nouvelle page
+@id	ui.new_page_2	Nouvelle page...
+@id	ui.new_page_cmd_n	Nouvelle page (Cmd+N)
+@id	ui.new_page_ctrl_n	Nouvelle page (Ctrl+N)
+@id	ui.new_pages	Nouvelles pages :
+@id	ui.new_pages_use_format_unless_the_notebook_or_section_2678c9f7e6	Les nouvelles pages utilisent {format} sauf indication contraire du carnet ou de la section
+@id	ui.new_quick_note	Nouvelle note rapide
+@id	ui.new_window	Nouvelle fen?tre
+@id	ui.next	Suivant
+@id	ui.next_match_enter_f3	Correspondance suivante (Entrée, F3)
+@id	ui.no	non
+@id	ui.no_colour	Aucune couleur
+@id	ui.no_generated_preview_icon_is_available	Aucune icône d'aperçu généré n'est disponible.
+@id	ui.no_lines_behind_the_page	Aucune ligne derrière la page
+@id	ui.no_name_beside_this_page_hand_the_table_over_first	Pas de {name} à côté de cette page : transférez d'abord le tableau
+@id	ui.no_notebooks_yet_use_new_notebook	Aucun carnet pour le moment. Utilisez « Nouveau carnet ».
+@id	ui.no_pages_in_this_section_yet	Aucune page dans cette section pour le moment.
+@id	ui.no_pages_match	Aucune page ne correspond.
+@id	ui.no_saved_versions_yet_notecraft_keeps_a_copy_when_th_aa2e25acad	Aucune version enregistrée pour le moment. NoteCraft conserve une copie lorsque la page change.
+@id	ui.none	Aucun
+@id	ui.normal_view	Vue\nNormale
+@id	ui.not_built	Non disponible
+@id	ui.not_built_2	non disponible
+@id	ui.not_built_yet	Pas encore disponible
+@id	ui.not_drawn_why	Non dessiné : {why}
+@id	ui.not_used_by_the_page	non utilisé par la page
+@id	ui.note_taking_and_organization_in_pure_rust_your_notes_49e8095e25	Version modifiée et adaptée pour les enfants avec TND (Troubles du Neurodéveloppement : dyslexie, dyspraxie, dysorthographie, dyscalculie, TDAH). Vos cours restent 100 % en local sous forme de simples dossiers et fichiers.
+@id	ui.notebook	Bloc-notes
+@id	ui.notebook_closed_its_files_are_still_on_disk	Carnet fermé ; ses fichiers sont toujours sur le disque
+@id	ui.notebook_created	Cahier créé
+@id	ui.notebook_information	Informations sur le bloc-notes
+@id	ui.notebook_recycle_bin_2	Corbeille du cahier
+@id	ui.notebook_recycle_bin_3	\n Corbeille des cahiers
+@id	ui.notebooks_2	BLOCS-NOTES
+@id	ui.notebooks_and_pages_in_their_own_columns	Cahiers et pages dans leurs propres colonnes
+@id	ui.notebooks_and_sections_in_one_column_pages_in_the_next	Cahiers et sections dans une colonne, pages dans la suivante
+@id	ui.notebooks_folder_folder	Dossier du cahier : {folder}
+@id	ui.notebooks_items_folder	{notebooks} · {items} | {folder}
+@id	ui.notebooks_you_open_will_appear_here	Les blocs-notes que vous ouvrez apparaîtront ici.
+@id	ui.notecraft	NoteCraft
+@id	ui.notecraft_found_an_attachment_that_is_not_referenced_8c0eb51257	NoteCraft a trouvé une pièce jointe non référencée par cette page :
+@id	ui.notecraft_found_an_attachment_without_its_generated_icon_name	NoteCraft a trouvé une pièce jointe sans son icône générée :
+@id	ui.notecraft_ruled	Règlement de NoteCraft
+@id	ui.notecraft_squares	Carrés NoteCraft
+@id	ui.notes_as_plain_folders_open_a_page_or_create_a_notebook_to_start	Notes sous forme de dossiers simples. Ouvrez une page ou créez un cahier pour commencer.
+@id	ui.nothing_at_path_the_link_points_to_a_page_or_file_th_18d71ccd21	Rien à {path} : le lien pointe vers une page ou un fichier inexistant
+@id	ui.nothing_here_can_show_this_kind_of_file	Aucun élément ici ne peut afficher ce type de fichier.
+@id	ui.nothing_is_copied_the_link_breaks_if_the_file_moves	Rien n'est copié. Le lien devient invalide si le fichier est déplacé.
+@id	ui.nothing_to_redo	Rien à rétablir
+@id	ui.nothing_to_undo	Rien à annuler
+@id	ui.numbering	Numérotation
+@id	ui.off	Désactivé
+@id	ui.off_2	désactivé
+@id	ui.office_document	Document de bureau
+@id	ui.office_text_inspection	Inspection du texte de bureau
+@id	ui.officeimo	OfficeIMO
+@id	ui.officeimo_import_worker_stopped_unexpectedly	Le travailleur d'import OfficeIMO s'est arrêté de manière inattendue
+@id	ui.ok	OK
+@id	ui.one_tree_of_notebooks	Un seul arbre de cahiers
+@id	ui.onedrive_and_sharepoint_not_built_point_notecraft_at_584930dc1b	OneDrive et SharePoint ne sont pas encore pris en charge. Indiquez à NoteCraft un dossier déjà surveillé par votre outil de synchronisation : le résultat est le même.
+@id	ui.onenote_import	Importation depuis OneNote
+@id	ui.online_notebooks_onedrive_sharepoint_are_not_built_a_860f0281c0	Les blocs-notes en ligne (OneDrive, SharePoint) ne sont pas encore pris en charge. Un bloc-notes placé dans un dossier surveillé par votre outil de synchronisation sera synchronisé par celui-ci.
+@id	ui.only_a_list_item_can_be_indented	Seul un élément de liste peut être indenté
+@id	ui.only_open_it_if_you_trust_the_file_and_the_person_who_created_it	Ouvrez-le uniquement si vous faites confiance au fichier et à son créateur.
+@id	ui.open	Ouvrir
+@id	ui.open_a_folder	Ouvrir un dossier...
+@id	ui.open_a_notebook	Ouvrir un bloc-notes
+@id	ui.open_a_page_first	Ouvrez d'abord une page
+@id	ui.open_a_page_first_then_drop_files_onto_it	Ouvrez d'abord une page, puis déposez les fichiers dessus.
+@id	ui.open_attachment	Ouvrir la pièce jointe
+@id	ui.open_every_level	Ouvrir tous les niveaux
+@id	ui.open_folder	Ouvrir le dossier
+@id	ui.open_in_folder	Ouvrir dans le dossier
+@id	ui.open_name	Ouvrir {name}
+@id	ui.open_telemetry_folder	Ouvrir le dossier de télémétrie
+@id	ui.open_the_artcraft_discord	Ouvrir le Discord ArtCraft
+@id	ui.open_this_notebook	Ouvrir ce bloc-notes
+@id	ui.open_using_shell	Ouvrir dans le terminal
+@id	ui.open_with_associated_app	Ouvrir avec l'application associée
+@id	ui.opened	Page ouverte
+@id	ui.opened_path	{path} ouvert
+@id	ui.opened_path_it_has_no_pages_yet	{path} ouvert ; il ne contient aucune page pour le moment
+@id	ui.opened_the_containing_folder	Dossier parent ouvert
+@id	ui.opened_url_in_the_browser	{url} ouvert dans le navigateur
+@id	ui.opened_using_the_associated_application	Ouvert avec l'application associée
+@id	ui.opening_path	Ouverture de {path}
+@id	ui.options	Options
+@id	ui.orange	Orange
+@id	ui.page	Page
+@id	ui.page_colour	Couleur de la page
+@id	ui.page_direction_from_the_words	Sens d’écriture de la page
+@id	ui.page_format	Format de la page
+@id	ui.page_left_to_right	Page de gauche à droite
+@id	ui.page_right_to_left	Page de droite à gauche
+@id	ui.page_setup	Mise en page
+@id	ui.page_source	Source de la page
+@id	ui.page_versions_2	Versions de la page
+@id	ui.page_versions_4	\n VersionsPage
+@id	ui.page_width	Largeur de la page
+@id	ui.pages	Pages
+@id	ui.paper_behind_the_page	Arrière-plan {paper} de la page
+@id	ui.paper_size	Taille du papier
+@id	ui.para	Paragraphe
+@id	ui.paragraph_direction_from_the_words	Direction du paragraphe déterminée par le texte
+@id	ui.paragraph_left_to_right	Paragraphe de gauche à droite
+@id	ui.paragraph_right_to_left	Paragraphe de droite à gauche
+@id	ui.paragraph_selected	Paragraphe sélectionné
+@id	ui.paste	Coller
+@id	ui.pasted	Collé
+@id	ui.pasted_a_picture_width_by_height	Image collée, {width} par {height}
+@id	ui.pasted_formatted_content	Contenu formaté collé
+@id	ui.path_opened_as_an_empty_notebook	{path} ouvert comme un carnet vide
+@id	ui.pdf_and_office_documents	Documents PDF et Office
+@id	ui.pdf_document	Document PDF
+@id	ui.pdf_text_inspection	Inspection du texte PDF
+@id	ui.pen	Stylo
+@id	ui.pencil	Crayon à papier
+@id	ui.permanently_delete	Supprimer définitivement ?
+@id	ui.permanently_delete_title_and_everything_inside_it	Supprimer définitivement « {title} » et tout son contenu ?
+@id	ui.permanently_deleted	Définitivement supprimé
+@id	ui.phone_number	Numéro de téléphone
+@id	ui.pick_a_pdf_or_office_document_and_insert_its_pages_as_pictures	Sélectionnez un document PDF ou Office pour insérer ses pages en tant qu'images
+@id	ui.pick_the_caret_s_column	Choisir la colonne du curseur
+@id	ui.pick_the_caret_s_row	Choisir la ligne du curseur
+@id	ui.pick_the_whole_table	Sélectionner tout le tableau
+@id	ui.picture_from_a_file	Image depuis un fichier
+@id	ui.pictures	Images
+@id	ui.plain	Simple
+@id	ui.plain_text	Texte brut
+@id	ui.powered_by	Propulsé par
+@id	ui.pressure_sensitivity_now_of_100	Sensibilité à la pression {now} de 100
+@id	ui.pressure_sensitivity_unavailable	Sensibilité à la pression non disponible
+@id	ui.previous	Précédent
+@id	ui.previous_match_shift_enter	Correspondance précédente (Shift+Entrée)
+@id	ui.printout_is_available_for_pdf_and_office_documents	L'impression est disponible pour les documents PDF et Office.
+@id	ui.privacy_is_our_top_priority_all_logs_and_telemetry_s_d87cae4eac	La confidentialité est notre priorité absolue. Tous les journaux et données de télémétrie restent sur cet appareil. NoteCraft ne les envoie jamais automatiquement.
+@id	ui.privacy_is_our_top_priority_logs_and_telemetry_stay_17a34813d0	La protection de votre vie privée est notre priorité. Les journaux et données de télémétrie restent sur cet appareil. NoteCraft ne nous les envoie pas.
+@id	ui.promote_subpage	Promouvoir la sous-page
+@id	ui.purple	Violet
+@id	ui.put_a_sheet_to_draw_on_into_the_page	Ajouter une feuille à dessiner dans la page
+@id	ui.put_another_tool_on_the_rack	Placer un autre outil sur le support
+@id	ui.put_the_pointer_back_to_the_words_and_the_caret	Remettre le pointeur sur le texte et le curseur clignotant
+@id	ui.put_what_the_spreadsheet_holds_back_into_this_table	Restaurer les données du tableau dans cette table
+@id	ui.question	Question
+@id	ui.quote_2	Citation
+@id	ui.quote_this_paragraph	Citer ce paragraphe
+@id	ui.read_back_from_it_2	Lire \n depuis celui-ci
+@id	ui.read_back_rows_rows_and_columns_columns	Lire {rows} lignes et {columns} colonnes
+@id	ui.read_only	lecture seule
+@id	ui.read_only_text_extraction_full_document_rendering_is_coming_soon	Extraction de texte en lecture seule. Le rendu complet du document arrive bientôt.
+@id	ui.ready_2	Prêt
+@id	ui.recently_opened	Récemment ouverts
+@id	ui.recording	Enregistrement
+@id	ui.rectangle	Rectangle
+@id	ui.red	rouge
+@id	ui.red_2	Rouge
+@id	ui.redo	Rétablir
+@id	ui.redo_ctrl_y	Rétablir (Ctrl+Y)
+@id	ui.remember_for_later	À retenir pour plus tard
+@id	ui.remove_from_list	Retirer de la liste
+@id	ui.remove_this_tool_from_the_rack	Retirer cet outil de la barre
+@id	ui.removed_notebook_from_the_known_notebooks_list	Carnet supprimé de la liste des carnets connus
+@id	ui.rename	Renommer
+@id	ui.rename_ellipsis	Renommer...
+@id	ui.renamed	Renommé
+@id	ui.rendered_svg_preview	Aperçu SVG rendu
+@id	ui.repair_icon	Réparer l'icône
+@id	ui.repaired_the_attachment_icon_for_name	Icône de pièce jointe réparée pour {name}
+@id	ui.replay	Relecture
+@id	ui.reset_app_preferences	Réinitialiser les préférences de l'application
+@id	ui.reset_app_preferences_2	Réinitialiser les préférences…
+@id	ui.reset_notecraft_s_saved_preferences_to_their_built_in_defaults	Réinitialiser les préférences enregistrées de NoteCraft par défaut ?
+@id	ui.reset_preferences	Réinitialiser les préférences
+@id	ui.reset_themes_layout_ribbon_choices_and_other_saved_n_61cc3d1cfb	Rétablir les thèmes, la disposition, les choix du ruban et les autres préférences enregistrées de NoteCraft à leurs valeurs par défaut.
+@id	ui.restore	Restaurer
+@id	ui.restore_pages_sections_and_groups_removed_from_this_notebook	Restaurer les pages, sections et groupes supprimés de ce carnet
+@id	ui.restored_the_saved_page_version	Version enregistrée de la page restaurée
+@id	ui.restored_to_the_original_location	Rétabli à l'emplacement d'origine
+@id	ui.right_to_left	De droite à gauche
+@id	ui.rounded	Arrondi
+@id	ui.rub_out_whatever_the_pointer_passes_over	Effacer tout ce que le pointeur survole
+@id	ui.rule_line_colour_not_built	Couleur des lignes de règle (non intégré)
+@id	ui.ruled	Ligné
+@id	ui.save_picture_2	Enregistrer \n en image
+@id	ui.saved	Enregistré
+@id	ui.saved_copies_of_this_page	Copies enregistrées de cette page
+@id	ui.saved_the_drawing_as_a_picture_path	Dessin enregistré en tant qu'image : {path}
+@id	ui.saved_time	Enregistré à {time}
+@id	ui.search	Rechercher
+@id	ui.search_all_pages	Rechercher dans toutes les pages
+@id	ui.section	Section
+@id	ui.section_group	Groupe de sections
+@id	ui.see_and_restore_saved_copies_of_this_page	Voir et restaurer les copies enregistrées de cette page
+@id	ui.select	Sélectionner
+@id	ui.select_columns_2	Sélectionner les colonnes \n
+@id	ui.select_rows_2	Sélectionner les lignes \n
+@id	ui.select_some_words_first	Sélectionnez d'abord certains mots
+@id	ui.select_table_2	Sélectionner le tableau \n
+@id	ui.selected_text_next_typing	Texte sélectionné / prochaine saisie
+@id	ui.selection	Sélection
+@id	ui.send_page	Envoyer la page
+@id	ui.send_page_3	Envoyer la page \n
+@id	ui.separate_pages	Pages séparées
+@id	ui.session_id_id	Identifiant de session : {id}
+@id	ui.set_the_direction_of_selected_text_or_the_text_typed_next	Définir la direction du texte sélectionné ou du texte tapé ensuite
+@id	ui.shape	forme
+@id	ui.shape_drag_on_the_page_to_draw_one	{shape} : faites glisser sur la page pour en dessiner un
+@id	ui.shapes	Formes
+@id	ui.show	Afficher
+@id	ui.show_notebooks_folder	Afficher le dossier des blocs-notes
+@id	ui.show_or_hide_the_notebooks_column	Afficher ou masquer la colonne des carnets
+@id	ui.show_the_code	Afficher le code
+@id	ui.show_the_notebooks_again	Réafficher les carnets
+@id	ui.show_the_notebooks_folder	Afficher le dossier des carnets
+@id	ui.show_the_page_at_100	Afficher la page à 100 %
+@id	ui.show_the_page_source	Afficher le code source de la page
+@id	ui.show_the_strokes	Afficher les traits
+@id	ui.size_kb	{size} Ko
+@id	ui.size_pt	{size} pt
+@id	ui.small	Petit
+@id	ui.small_squares	Petits carrés
+@id	ui.somewhere_else	Ailleurs
+@id	ui.source	Source
+@id	ui.split	Deux colonnes
+@id	ui.spreadsheet	Tableur
+@id	ui.square	Carré
+@id	ui.squares	Carrés
+@id	ui.standard	Standard
+@id	ui.standard_ruled	Lignes standard
+@id	ui.star	Étoile
+@id	ui.starting_officeimo	Démarrage d'OfficeIMO…
+@id	ui.stencils	Pochoirs
+@id	ui.strike_through	Barrer
+@id	ui.strikethrough	Barré
+@id	ui.styles	Styles
+@id	ui.styles_2	styles
+@id	ui.svg_source	Source SVG
+@id	ui.symbol	Symbole
+@id	ui.symbols	Symboles
+@id	ui.table_3	Tableau
+@id	ui.tables	Tableaux
+@id	ui.tabs_layout	Disposition avec onglets
+@id	ui.tag_tag	balise {tag}
+@id	ui.tags	Étiquettes
+@id	ui.take_the_caret_s_column_out	Supprimer la colonne du curseur
+@id	ui.take_the_caret_s_row_out	Supprimer la ligne du curseur
+@id	ui.take_the_last_stroke_back	Annuler le dernier trait
+@id	ui.take_the_marks_off	Retirer la mise en forme
+@id	ui.teal_2	Turquoise
+@id	ui.text	Texte
+@id	ui.text_122	█
+@id	ui.text_74	{} {}
+@id	ui.text_inspection_is_shown_below	L'inspection du texte est affichée ci-dessous.
+@id	ui.text_run_direction	Direction du texte sélectionné
+@id	ui.thank_you_for_trying_notecraft	Merci d'avoir essayé NoteCraft !
+@id	ui.that_file_has_nothing_in_it_to_put_back	Ce fichier est vide et ne peut être restauré
+@id	ui.that_file_is_not_in_this_page_s_folder	Ce fichier ne se trouve pas dans le dossier de cette page
+@id	ui.that_is_not_something_a_page_can_hold	Ceci n'est pas un élément qu'une page peut contenir
+@id	ui.that_link_points_outside_the_notebooks_folder_so_it_3a37bd9b91	Ce lien pointe en dehors du dossier des carnets, il n'a donc pas été suivi
+@id	ui.that_page_is_not_in_a_notebook_that_is_open	Cette page ne fait pas partie d'un carnet ouvert
+@id	ui.the_attachment_returned_an_invalid_page_link	La pièce jointe a renvoyé un lien de page invalide
+@id	ui.the_built_in_default	la valeur par défaut
+@id	ui.the_code	Le code
+@id	ui.the_diagnostics_folder_could_not_be_created_error	Le dossier de diagnostic n'a pas pu être créé : {error}
+@id	ui.the_file_could_not_be_opened_error	Impossible d'ouvrir le fichier : {error}
+@id	ui.the_file_is_gone	Le fichier a disparu
+@id	ui.the_file_is_removed_from_disk_undo_does_not_bring_a_file_back	Le fichier a été supprimé du disque. L'annulation ne restaure pas un fichier.
+@id	ui.the_file_is_safe_notecraft_can_append_a_link_to_it_a_c31b3d9716	Le fichier est en sécurité. NoteCraft peut ajouter un lien vers celui-ci à la fin de la page.
+@id	ui.the_file_was_not_attached_the_attach_command_returne_beaffe0fd0	Le fichier n'a pas été joint : la commande de jointure a renvoyé un résultat inattendu.
+@id	ui.the_folder_could_not_be_opened_error	Impossible d'ouvrir le dossier : {error}
+@id	ui.the_format_is_set_when_the_page_is_created	Le format est défini lors de la création de la page
+@id	ui.the_global_setting	le réglage général
+@id	ui.the_last_tool_stays_on_the_rack	Le dernier outil reste sur le porte-outils
+@id	ui.the_notebook_could_not_be_deleted_error	Le carnet n'a pas pu être supprimé : {error}
+@id	ui.the_notebook_or_section_setting	le réglage du bloc-notes ou de la section
+@id	ui.the_original_file_is_still_safe_notecraft_can_regene_f10ded524a	Le fichier d'origine est toujours en sécurité. NoteCraft peut régénérer l'icône à côté.
+@id	ui.the_page_beside_the_notebooks	La page à côté des carnets
+@id	ui.the_page_is_colour	La page est {colour}
+@id	ui.the_page_is_the_theme_s_own_colour	La page est de la couleur propre du thème
+@id	ui.the_page_source_beside_the_page	La source de la page, à côté de la page
+@id	ui.the_paper_and_colour_apply_to_this_page_only	Le papier et la couleur s'appliquent uniquement à cette page.
+@id	ui.the_theme_could_not_be_saved_error	Le thème n'a pas pu être enregistré : {error}
+@id	ui.the_time_now	L'heure actuelle
+@id	ui.the_welcome_notebook	Le bloc-notes de bienvenue
+@id	ui.the_whole_page_reads_left_to_right	La page entière se lit de gauche à droite
+@id	ui.the_whole_page_reads_right_to_left_arabic_hebrew	La page entière se lit de droite à gauche (arabe, hébreu)
+@id	ui.the_window_drawn_on_the_gpu_the_icons_are_drawn_in_c_27f197a70f	La fenêtre est dessinée par le GPU. Les icônes sont dessinées par le code. Le logo est la seule image.
+@id	ui.theme	Thème
+@id	ui.theme_theme	Thème {theme}
+@id	ui.theme_theme_2	Thème : {theme}
+@id	ui.theme_theme_click_to_change_it	Thème {theme}. Cliquez pour le modifier.
+@id	ui.there_are_no_notebooks_yet_new_starts_one	Il n’y a pas encore de bloc-notes. « Nouveau » permet d’en créer un.
+@id	ui.there_is_no_drawing_on_this_page	Il n'y a aucun dessin sur cette page
+@id	ui.there_is_no_earlier_page	Il n'y a pas de page précédente
+@id	ui.there_is_no_later_page	Il n'y a pas de page suivante
+@id	ui.there_is_no_room_on_the_rack_for_another_tool	Il n'y a plus de place sur le rack pour un autre outil
+@id	ui.there_is_no_stroke_to_take_back	Aucun trait à annuler
+@id	ui.there_is_nothing_on_the_clipboard_to_paste	Rien à coller depuis le presse-papiers
+@id	ui.thickness	Épaisseur
+@id	ui.this_cannot_be_undone	Cette action est irréversible.
+@id	ui.this_could_not_be_moved_to_the_recycle_bin_nothing_was_deleted	Impossible de déplacer cet élément vers la corbeille. Rien n'a été supprimé.
+@id	ui.this_does_not_delete_notebooks_or_pages_it_cannot_be_undone	Cette action ne supprime ni les blocs-notes ni les pages. Elle est irréversible.
+@id	ui.this_file_will_be_opened_by_its_associated_application	Ce fichier sera ouvert par son application associée.
+@id	ui.this_notebook_s_recycle_bin_is_empty	La corbeille de ce carnet est vide.
+@id	ui.this_page	Cette page
+@id	ui.this_page_holds_markup_notecraft_does_not_edit_yet_s_bc3b3b6a92	Cette page contient des balises que NoteCraft ne modifie pas encore ; elle est donc affichée telle quelle.
+@id	ui.this_page_reads_left_to_right	Cette page se lit de gauche à droite
+@id	ui.this_page_reads_right_to_left	Cette page se lit de droite à gauche
+@id	ui.this_paragraph_decides_from_its_own_first_letter	Ce paragraphe décide selon sa première lettre
+@id	ui.this_paragraph_fills_the_column	Ce paragraphe remplit la colonne
+@id	ui.this_paragraph_fills_the_column_stretched_hard	Ce paragraphe remplit la colonne, étiré au maximum
+@id	ui.this_paragraph_fills_the_column_stretched_lightly	Ce paragraphe remplit la colonne, légèrement étiré
+@id	ui.this_paragraph_is_ragged_again	Ce paragraphe est à nouveau irrégulier
+@id	ui.this_paragraph_reads_left_to_right	Ce paragraphe se lit de gauche à droite
+@id	ui.this_paragraph_reads_right_to_left	Ce paragraphe se lit de droite à gauche
+@id	ui.this_paragraph_reads_right_to_left_arabic_hebrew	Ce paragraphe se lit de droite à gauche (arabe, hébreu)
+@id	ui.this_paragraph_reads_whichever_way_its_words_do	Ce paragraphe se lit dans le sens de ses mots
+@id	ui.this_picture_cannot_be_shown_here	Cette image ne peut pas être affichée ici.
+@id	ui.this_removes_the_notebook_folder_from_disk_and_cannot_be_undone	Cette action supprime le dossier du carnet du disque et ne peut pas être annulée.
+@id	ui.this_run_reads_left_to_right_a_mixed_line_is_still_d_af62d34d2f	Cette séquence se lit de gauche à droite. Une ligne mixte est toujours dessinée dans un seul ordre ; voir la feuille de route
+@id	ui.this_run_reads_right_to_left_a_mixed_line_is_still_d_d2a74de074	Cette séquence se lit de droite à gauche. Une ligne mixte est toujours dessinée dans un seul ordre ; voir la feuille de route
+@id	ui.this_svg_cannot_be_rendered_here	Ce SVG ne peut pas être rendu ici.
+@id	ui.this_window_behaves_like_the_others	Cette fenêtre se comporte comme les autres
+@id	ui.this_window_stays_on_top	Cette fenêtre reste au premier plan
+@id	ui.time	Heure
+@id	ui.time_stamp	Horodatage
+@id	ui.title_2	Titre
+@id	ui.title_saved	Titre enregistré
+@id	ui.title_the_folder_name_does_not_change	Titre (le nom du dossier ne change pas)
+@id	ui.to_do_2	Étiquette « À faire »
+@id	ui.to_do_tag_2	À faire\nTag
+@id	ui.today_s_date	Date du jour
+@id	ui.toml	TOML
+@id	ui.took_it_off_the_rack	Retiré de l'étagère
+@id	ui.took_the_last_stroke_back_count_left	Dernier trait annulé ; {count} restant
+@id	ui.tool_colour	{tool} {colour}
+@id	ui.tools	Outils
+@id	ui.top	Épingler
+@id	ui.triangle	Triangle
+@id	ui.type	Type
+@id	ui.under_the	sous licence
+@id	ui.undo	Annuler
+@id	ui.undo_ctrl_z	Annuler (Ctrl+Z)
+@id	ui.undo_stroke	Annuler\ntrait
+@id	ui.unread	Non lus
+@id	ui.updated_the_welcome_notebook	Carnet de bienvenue mis à jour
+@id	ui.use_notecraft_s_own_title_bar	Utiliser la barre de titre de NoteCraft
+@id	ui.use_the_system_title_bar	Utiliser la barre de titre du système
+@id	ui.version_version_alpha	Version {version} (alpha)
+@id	ui.very_large	Très grand
+@id	ui.very_large_squares	Carrés très grands
+@id	ui.view	Affichage
+@id	ui.views	Affichage
+@id	ui.warn	avertissement
+@id	ui.web_site_to_visit	Site web à consulter
+@id	ui.welcome_to_notecraft	Bienvenue dans NoteCraft
+@id	ui.what_should_happen_to_this_file	Que faire de ce fichier ?
+@id	ui.what_to_add	Élément à ajouter
+@id	ui.wide	Large
+@id	ui.wide_ruled	Lignes larges
+@id	ui.window	Fen?tre
+@id	ui.write_anywhere_on_the_page	Écrivez n'importe où sur la page
+@id	ui.write_the_drawing_again_with_no_pen_readings_in_it_f_09e93dbd9f	Réécrivez le dessin sans aucune lecture de stylo, pour l'envoyer
+@id	ui.write_the_table_out_and_open_it_in_gridcraft	Écrivez le tableau et ouvrez-le dans GridCraft
+@id	ui.xml_2	XML
+@id	ui.yaml	YAML
+@id	ui.yellow	Jaune
+@id	ui.yellow_2	jaune
+@id	ui.you_can_continue_working_while_the_import_runs	Vous pouvez continuer à travailler pendant l'importation.
+@id	ui.you_can_restore_it_from_history	Vous pouvez le restaurer depuis l'Historique.
+@id	ui.zoom	Zoom
+@id	ui.zoom_in	Zoom avant
+@id	ui.zoom_out	Zoom arrière
+@id	ui.zoom_to_100	Zoom à 100 %
+@id	ui.welcome_format_title	Choisissez un format de page
+@id	ui.welcome_format_body	NoteCraft enregistre chaque page en HTML (recommandé) ou en Markdown CommonMark + GFM. Les nouvelles pages utilisent le format choisi ici. Vous pourrez le modifier plus tard.
+@id	ui.welcome_format_next	Suivant
+@id	ui.welcome_notebook_prompt_format	Format : {format}.
+@id	ui.welcome_notebook_prompt_title	Ajouter le carnet de bienvenue ?
+@id	ui.welcome_notebook_prompt_body	Ajoutez le carnet de bienvenue de cette version à vos carnets. S'il existe déjà, il sera supprimé et remplacé par la nouvelle copie.
+@id	ui.welcome_notebook_replace_warning	Les modifications apportées au carnet de bienvenue existant seront perdues. Les autres carnets ne changeront pas.
+@id	ui.welcome_notebook_add_yes	Oui, l'ajouter
+@id	ui.welcome_notebook_add_no	Non, pas maintenant
+@id	ui.welcome_notebook_action_failed	Impossible de mettre à jour le carnet de bienvenue : {error}
+@id	ui.welcome_wizard_back	Retour
+@id	ui.welcome_wizard_finish	Terminer
+@id	ui.welcome_wizard_done_title	Merci
+@id	ui.welcome_wizard_done_body	NoteCraft est prêt à l'emploi. Vos choix sont enregistrés. Cette configuration ne réapparaîtra qu'après une réinitialisation des préférences.
+@id	ui.student_tools	École & Tableau
+@id	ui.student_pdf_label	Fiche\nPDF
+@id	ui.student_pdf_tip	Importer une fiche d'exercice PDF ou Word pour écrire dessus ou à côté
+@id	ui.student_board_label	Photo\ntableau
+@id	ui.student_board_tip	Prendre ou insérer une photo du tableau et placer automatiquement une zone de texte à côté
+@id	ui.student_draw_toggle	Stylet /\nClavier
+@id	ui.student_draw_tip	Basculer en 1 clic entre l'écriture au clavier et le stylet / surligneur
+@id	ui.student_dys_group	Repères & TND
+@id	ui.student_recenter_label	Recentrer\nla feuille
+@id	ui.student_recenter_tip	Rassembler les cadres éparpillés et recentrer la feuille (anti-perte)
+@id	ui.student_lines_label	Lignes /\nCarreaux
+@id	ui.student_lines_tip	Alterner entre lignes de cahier, petits carreaux et page blanche
+@id	ui.student_dys_label	Confort\nTND
+@id	ui.student_dys_tip	Activer/désactiver la feuille A4, le fond crème anti-fatigue, les lignes bleues et la grille magnétique
+@id	ui.a_new_section_in_the_chosen_notebook	Une nouvelle section dans le bloc-notes choisi
+@id	ui.android_no_file_picker	Android ne peut pas encore afficher ce sélecteur de fichiers. Les blocs-notes sont dans Android/data/com.alientechsoftware.notecraft/files/NoteCraft.
+@id	ui.the_line_changed_put_the_link_in_again	La ligne a changé ; veuillez réinsérer le lien
+@id	ui.select_words_in_one_line_for_a_link	Sélectionnez des mots sur une seule ligne pour créer un lien
+@id	ui.that_address_cannot_be_used_for_a_link	Cette adresse ne peut pas être utilisée pour un lien
+@id	ui.remove_link	Supprimer le lien
+@id	ui.text_to_display	Texte à afficher
+@id	ui.font_size_box	Taille de police
+@id	ui.font_family	Police
+@id	ui.font_family_box	Nom de la police
+@id	ui.pick_date	Choisir une date
+@id	ui.pick_time	Choisir une heure
+@id	ui.am	AM
+@id	ui.pm	PM
+@id	ui.pick_date_and_time	Choisir la date et l'heure
+@id	ui.today	Aujourd'hui
+@id	ui.month_1	Janvier
+@id	ui.month_2	Février
+@id	ui.month_3	Mars
+@id	ui.month_4	Avril
+@id	ui.month_5	Mai
+@id	ui.month_6	Juin
+@id	ui.month_7	Juillet
+@id	ui.month_8	Août
+@id	ui.month_9	Septembre
+@id	ui.month_10	Octobre
+@id	ui.month_11	Novembre
+@id	ui.month_12	Décembre
+@id	ui.weekday_short_0	Di
+@id	ui.weekday_short_1	Lu
+@id	ui.weekday_short_2	Ma
+@id	ui.weekday_short_3	Me
+@id	ui.weekday_short_4	Je
+@id	ui.weekday_short_5	Ve
+@id	ui.weekday_short_6	Sa
+@id	ui.loading_fonts	Chargement des polices...
+@id	ui.mixed	Mixte
+@id	ui.font_catalog_unavailable	Les polices installées n'ont pas pu être listées sur cet appareil.
+@id	ui.underline	Souligner (Ctrl+U)
+@id	ui.subscript	Indice
+@id	ui.superscript	Exposant
+@id	ui.inline_mark_whole_line	Sélectionnez du texte ou placez le curseur dans une ligne de texte pour appliquer ce style.
+@id	ui.fonts_unavailable	Ces polices n'ont pas pu être chargées ; des polices de remplacement sont affichées : {fonts}
+@id	ui.cannot_read_the_picture_error	Impossible de lire l'image : {error}
+@id	ui.collapse_the_ribbon_ctrl_f1	Réduire le ruban (Ctrl+F1)
+@id	ui.click_in_the_words_whose_formatting_to_copy	Cliquez dans les mots dont vous voulez copier la mise en forme
+@id	ui.pick_the_words_to_give_that_formatting	Sélectionnez les mots auxquels appliquer cette mise en forme
+@id	ui.format_painter_keeps_painting_until_escape	Reproduire la mise en forme reste actif jusqu'à Échap
+@id	ui.format_painter_put_down	Outil Reproduire la mise en forme désactivé
+@id	ui.format_painter_tip	Copie la mise en forme du curseur vers les prochains mots sélectionnés. Double-cliquez pour garder actif jusqu'à Échap.
+@id	ui.snap_boxes_to_the_page_s_grid_hold_alt_to_place_one_freely	Aligner les cadres sur la grille lors du déplacement ou du redimensionnement. Maintenez Alt pour placer librement.
+@id	ui.snap_to_grid	Aligner sur la grille
+@id	ui.sort_ascending_2	Trier\nA → Z
+@id	ui.sort_descending_2	Trier\nZ → A
+@id	ui.sort_the_rows_by_the_caret_s_column_a_to_z	Trier les lignes selon la colonne du curseur, de A à Z et de 1 à 9. L'en-tête reste en haut.
+@id	ui.sort_the_rows_by_the_caret_s_column_z_to_a	Trier les lignes selon la colonne du curseur, de Z à A et de 9 à 1. L'en-tête reste en haut.
+@id	ui.the_rows_are_already_in_that_order	Les lignes sont déjà dans cet ordre
+@id	ui.new_section_button	+ Nouvelle section
+@id	ui.it_is_in_place_now	Déplacé dans {place}
+@id	ui.move_or_copy_title_to	Déplacer ou copier « {title} » vers :
+@id	ui.moved	Déplacé
+@id	ui.move	Déplacer
+@id	ui.move_or_copy	Déplacer ou copier
+@id	ui.move_or_copy_ellipsis	Déplacer ou copier...
+@id	ui.save_picture_as	Enregistrer l'image sous...
+@id	ui.saved_picture_as_path	Image enregistrée sous : {path}
+@id	ui.show_the_ribbon_ctrl_f1	Afficher le ruban (Ctrl+F1)
+@id	ui.this_is_the_first_page	C'est la première page
+@id	ui.this_is_the_last_page	C'est la dernière page
+@id	ui.kept_in_this_tab	Conservé dans cet onglet
+@id	ui.session_only_storage_notice	Notes de session uniquement : les modifications disparaissent si vous rechargez ou fermez cet onglet.
+@id	ui.session_storage_guard_failed	Impossible d'activer l'avertissement de fermeture d'onglet. Copiez vos notes avant de quitter.
+@id	ui.table_align_left	Aligner\nà gauche
+@id	ui.table_align_left_tip	Aligner le texte à gauche de la cellule
+@id	ui.table_align_center	Centrer
+@id	ui.table_align_center_tip	Centrer le texte au milieu de la cellule
+@id	ui.table_align_right	Aligner\nà droite
+@id	ui.table_align_right_tip	Aligner le texte à droite de la cellule
+@id	ui.table_shading	Trame\nde fond
+@id	ui.table_shading_tip	Couleur de fond des cellules sélectionnées
+@id	ui.list_the_tagged_notes_and_go_to_them	Afficher la liste des notes avec indicateurs et y accéder
+@id	ui.tags_summary	Résumé des indicateurs
+@id	ui.close_the_tags_summary	Fermer le résumé des indicateurs
+@id	ui.tags_look_in	Rechercher dans
+@id	ui.tags_scope_this_page	Cette page
+@id	ui.tags_scope_this_section	Cette section
+@id	ui.tags_scope_this_notebook	Ce bloc-notes
+@id	ui.tags_scope_all_notebooks	Tous les blocs-notes
+@id	ui.tags_only_unchecked_to_do_items	Uniquement les tâches non cochées
+@id	ui.refresh	Actualiser
+@id	ui.look_again_for_tagged_notes	Relancer la recherche des notes marquées
+@id	ui.no_tagged_notes_here	Aucune note marquée ici.
+@id	ui.tags_empty_line	(ligne vide)
+@id	ui.scroll_the_page_sideways	Faire défiler la page horizontalement
+@id	ui.collect_all	Rassembler\ntout
+@id	ui.collect_all_tip	Rassembler les cadres de texte et les dessins éparpillés sur la feuille
+@id	ui.page_templates	Modèles\nde page
+@id	ui.page_templates_tip	Créer une page à partir d'un modèle ou enregistrer cette page comme modèle
+@id	ui.page_templates_title	Modèles de page
+@id	ui.close_the_page_templates	Fermer les modèles de page
+@id	ui.page_templates_hint	Cliquez sur un modèle pour ajouter une page à cette section.
+@id	ui.add_a_page_from_this_template	Ajouter une page à cette section à partir de ce modèle
+@id	ui.no_saved_templates	Aucun modèle enregistré pour le moment.
+@id	ui.save_current_page_as_a_template	Enregistrer la page actuelle comme modèle :
+@id	ui.template_name	Nom du modèle
+@id	ui.save_as_template	Enregistrer comme modèle
+@id	ui.page_from_template	Nouvelle page issue du modèle {name}
+@id	ui.saved_as_template	Page enregistrée comme modèle {name}
+@id	ui.open_a_section_first_for_a_template	Ouvrez d'abord une section : la nouvelle page y sera ajoutée
+@id	ui.template_category_academic	Scolaire & Cours
+@id	ui.template_category_blank	Page vierge
+@id	ui.template_category_business	Travail & Projets
+@id	ui.template_category_planners	Organiseurs
+@id	ui.template_category_mine	Mes modèles
+@id	ui.template_lecture_notes	Prise de notes de cours
+@id	ui.template_study_guide	Fiche de révision
+@id	ui.template_college_ruled	Cahier ligné
+@id	ui.template_grid	Cahier quadrillé
+@id	ui.template_meeting_notes	Notes de réunion
+@id	ui.template_project_overview	Suivi de projet
+@id	ui.template_to_do_list	Liste de tâches
+@id	ui.template_weekly_planner	Semainier
+@id	ui.insert_space_tip	Glissez vers le bas pour ajouter de l'espace, ou vers le haut pour en réduire
+@id	ui.insert_space_how	Glissez vers le bas où vous voulez plus d'espace, ou vers le haut pour en enlever. Échap désactive l'outil.
+@id	ui.pen_keys_typing	Saisie clavier (Alt+0)
+@id	ui.pen_keys_picked	Stylo {number} (Alt+{number})
+@id	ui.spreadsheet_gridcraft_is_not_installed	Feuille de calcul : GridCraft n'est pas installé
+@id	ui.redo_stroke	Rétablir\nle tracé
+@id	ui.put_back_the_stroke_undo_stroke_took_back	Rétablir le dernier tracé annulé
+@id	ui.version_and_updates	Version et mises à jour
+@id	ui.you_are_running_version	Vous utilisez ErgoNote {version}.
+@id	ui.check_for_updates	Vérifier les mises à jour
+@id	ui.check_for_updates_hint	Vérifie sur GitHub si une version plus récente d'ErgoNote est disponible et ouvre le téléchargement adapté sans jamais écraser vos classeurs.
+@id	ui.open_the_releases_page	Ouvrir la page des versions
+@id	ui.update_checking	Recherche d'une nouvelle version…
+@id	ui.update_up_to_date	ErgoNote est à jour. La dernière version publiée est {version}.
+@id	ui.update_downloading_of	Téléchargement d'ErgoNote {version} : {done} sur {total} Mo…
+@id	ui.update_downloading	Téléchargement d'ErgoNote {version} : {done} Mo…
+@id	ui.update_verifying	Vérification de l'intégrité d'ErgoNote {version}…
+@id	ui.update_restarting	ErgoNote {version} est prêt. L'application va redémarrer pour appliquer la mise à jour.
+@id	ui.update_handed	ErgoNote {version} a été téléchargé et ouvert dans l'installateur système.
+@id	ui.update_manual	Une nouvelle version d'ErgoNote ({version}) est disponible sur la page des téléchargements.
+@id	ui.update_manual_this_build	Vous pouvez télécharger la nouvelle version directement depuis la page des téléchargements.
+@id	ui.update_failed	Vérification impossible pour le moment : {reason}
+@id	ui.panning_hand_2	Main de\ndéplacement
+@id	ui.drag_to_move_around_the_page	Faire glisser pour se déplacer sur la feuille
+@id	ui.insert_table	Insérer un tableau
+@id	ui.insert_table_2	Insérer un tableau…
+@id	ui.number_of_columns	Nombre de colonnes
+@id	ui.number_of_rows	Nombre de lignes
+@id	ui.table_size_limits	Colonnes : 1 à {columns}. Lignes : 1 à {rows}.
+@id	ui.delete_table_2	Supprimer\nle tableau
+@id	ui.take_the_whole_table_out	Supprimer le tableau entier
+@id	ui.put_the_caret_in_a_table_first	Placez d'abord le curseur dans un tableau
+@id	ui.deleted_the_table	Tableau supprimé
+@id	ui.align_left_ctrl_l	Aligner à gauche (Ctrl+L)
+@id	ui.center	Centrer
+@id	ui.align_right_ctrl_r	Aligner à droite (Ctrl+R)
+@id	ui.alignment_goes_on_a_paragraph_or_a_heading	L'alignement s'applique à un paragraphe ou à un titre
+@id	ui.the_paragraph_follows_its_words_again	Le paragraphe suit à nouveau le sens de ses mots
+@id	ui.aligned_left	Aligné à gauche
+@id	ui.centred	Centré
+@id	ui.aligned_right	Aligné à droite
+@id	ui.point_at_the_page_without_drawing_on_it	Pointer sur la feuille sans dessiner dessus
+@id	ui.laser_pointer_put_down	Pointeur laser désactivé
+@id	ui.rule_line_colour	Couleur des lignes
+@id	ui.automatic_rule_lines	Lignes automatiques
+@id	ui.the_lines_are_colour	Les lignes de la page sont en {colour}
+@id	ui.the_lines_are_the_theme_s_own_colour	Les lignes de la page utilisent la couleur du thème
+@id	ui.colour_lines	Lignes {colour}
+@id	ui.rotate_right_90	Pivoter à droite de 90°
+@id	ui.rotate_left_90	Pivoter à gauche de 90°
+@id	ui.flip_horizontal	Retourner horizontalement
+@id	ui.flip_vertical	Retourner verticalement
+@id	ui.this_picture_cannot_be_turned_here	Cette image ne peut pas être pivotée ou retournée
+@id	ui.rotated_the_picture	Image pivotée
+@id	ui.flipped_the_picture	Image retournée
+@id	ui.rotated_the_picture_ink_on_the_page_stays_where_it_is	Image pivotée. Les tracés sur la page restent à leur place
+@id	ui.flipped_the_picture_ink_on_the_page_stays_where_it_is	Image retournée. Les tracés sur la page restent à leur place
+@id	ui.save_a_copy	Enregistrer une copie
+@id	ui.open_a_page_first_save_a_copy_copies_it_its_section_or_its_notebook	Ouvrez d'abord une page : Enregistrer une copie duplique la page, sa section ou son bloc-notes.
+@id	ui.what_to_copy	Que souhaitez-vous copier ?
+@id	ui.this_section	Cette section
+@id	ui.scope_title	{scope} : {title}
+@id	ui.copy_into_this_folder	Copier dans ce dossier
+@id	ui.folder	Dossier
+@id	ui.choose	Choisir…
+@id	ui.the_copy_is_a_folder_of_its_own_with_the_files_and_ink_but_not_the_saved_versions_the_original_stays_open	La copie est un dossier indépendant contenant les pages, images et dessins. L'original reste ouvert et inchangé.
+@id	ui.saved_a_copy_in_path	Copie enregistrée dans {path}
+@id	ui.could_not_save_the_copy_why	Impossible d'enregistrer la copie : {why}
+@id	ui.choose_the_folder_for_the_copy	Choisir le dossier de destination pour la copie
+@id	ui.this_notebook	Ce bloc-notes
+@id	ui.save_the_copy	Enregistrer la copie
+@id	ui.next_unread_2	Non lu\nsuivant
+@id	ui.go_to_the_next_page_changed_since_you_last_read_it	Aller à la prochaine page modifiée depuis votre dernière lecture
+@id	ui.mark_as_read_2	Marquer\ncomme lu
+@id	ui.mark_as_unread_2	Marquer\nnon lu
+@id	ui.mark_this_page_as_read	Marquer cette page comme lue
+@id	ui.mark_this_page_as_unread_to_come_back_to_it	Marquer cette page comme non lue pour y revenir plus tard
+@id	ui.there_are_no_unread_pages	Il n'y a aucune page non lue.
+@id	ui.marked_as_read	Marqué comme lu
+@id	ui.marked_as_unread	Marqué comme non lu
+@id	ui.title_unread	{title}, non lu
+@id	ui.recent_edits_2	Modifs\nrécentes
+@id	ui.see_the_pages_changed_lately	Voir les pages modifiées récemment
+@id	ui.recent_edits	Modifications récentes
+@id	ui.all_open_notebooks	Tous les blocs-notes ouverts
+@id	ui.filter_by_title_section_or_notebook	Filtrer par titre, section ou bloc-notes
+@id	ui.no_pages_were_changed_in_this_time	Aucune page n'a été modifiée durant cette période.
+@id	ui.this_page_keeps_no_time_of_its_own_this_is_when_its_file_was_last_changed	Date de dernière modification du fichier de la page.
+@id	ui.last_7_days	7 derniers jours
+@id	ui.last_30_days	30 derniers jours
+@id	ui.all_time	Toute la période
+@id	ui.untitled_page	Page sans titre
+@id	ui.place_separator	›
+@id	ui.filter	Filtrer
+@id	ui.version_saved_when	Version enregistrée le {when}
+@id	ui.an_older_version_read_only_the_page_is_not_changed_unless_you_restore_it	Ancienne version en lecture seule. La page actuelle n'est modifiée que si vous la restaurez.
+@id	ui.this_version	Cette version
+@id	ui.compare_with_the_page	Comparer avec la page actuelle
+@id	ui.this_version_has_the_same_words_as_the_page	Cette version contient le même texte que la page actuelle.
+@id	ui.lines_marked_are_only_in_this_version_lines_marked_are_only_in_the_page	Les lignes marquées − sont uniquement dans cette ancienne version ; celles marquées + sont dans la page actuelle.
+@id	ui.restore_this_version	Restaurer cette version
+@id	ui.back_to_the_list	Retour à la liste
+@id	ui.preview	Aperçu
+@id	ui.cannot_open_that_version_error	Impossible d'ouvrir cette version : {error}
+@id	ui.the_sheet_this_page_is_written_for_its_size_turn_and_margins	Le format de feuille de cette page : dimensions, orientation et marges
+@id	ui.size	Format de papier
+@id	ui.auto_the_page_grows_with_what_is_on_it	Automatique (la page grandit avec son contenu)
+@id	ui.custom_size	Dimensions personnalisées
+@id	ui.auto_pages_have_no_edges_choose_a_size_to_see_the_sheet	Une page en mode Automatique n'a pas de bordures. Choisissez A4 pour voir les limites de la feuille.
+@id	ui.width_mm	Largeur (mm)
+@id	ui.height_mm	Hauteur (mm)
+@id	ui.orientation	Orientation
+@id	ui.portrait	Portrait
+@id	ui.landscape	Paysage
+@id	ui.margins_mm	Marges (mm)
+@id	ui.top_margin_mm	Haut
+@id	ui.bottom_margin_mm	Bas
+@id	ui.left_margin_mm	Gauche
+@id	ui.right_margin_mm	Droite
+@id	ui.restore_default_margins	Rétablir les marges par défaut
+@id	ui.the_page_is_written_on_size_turn	Format de la page : {size}, {turn}
+@id	ui.the_page_is_auto_it_grows_with_what_is_on_it	La page est en mode Automatique : elle s'agrandit selon son contenu
+@id	ui.paper_letter	Lettre US
+@id	ui.paper_legal	Légal US
+@id	ui.paper_tabloid	Tabloïd
+@id	ui.paper_executive	Exécutif
+@id	ui.index_card_3_x_5_in	Fiche bristol (3 x 5 po)
+@id	ui.index_card_4_x_6_in	Fiche bristol (4 x 6 po)
+@id	ui.index_card_5_x_8_in	Fiche bristol (5 x 8 po)
+@id	ui.customize_tags_title	Personnaliser les indicateurs
+@id	ui.make_your_own_tags_with_a_name_symbol_and_colour	Créez vos propres indicateurs avec un nom, un symbole et une couleur
+@id	ui.custom_tags_none_yet	Vous n'avez pas encore créé d'indicateur personnalisé.
+@id	ui.custom_tags_explained	Vos indicateurs sont conservés dans vos préférences et fonctionnent dans tous vos classeurs.
+@id	ui.tag_name	Nom de l'indicateur
+@id	ui.tag_symbol_for_name	Symbole pour {name}
+@id	ui.tag_colour_for_name	Couleur pour {name}
+@id	ui.move_name_up	Monter {name}
+@id	ui.move_name_down	Descendre {name}
+@id	ui.remove_name	Supprimer {name}
+@id	ui.new_tag_name	Nom du nouvel indicateur
+@id	ui.add_tag	Ajouter l'indicateur
+@id	ui.tag_name_added	Indicateur {name} ajouté
+@id	ui.tag_name_removed	Indicateur {name} supprimé ; le texte des lignes est conservé
+@id	ui.the_word_written_in_the_page	Le mot-clé inscrit dans la page
+@id	ui.could_not_save_your_tags_error	Impossible d'enregistrer vos indicateurs : {error}
+@id	ui.take_a_colour_from_ink_on_the_page	Prélever une couleur sur un tracé de la page (pipette)
+@id	ui.no_ink_here	Aucun tracé ici
+@id	ui.the_pen_takes_colour	Le stylo prend la couleur {colour}
+@id	ui.eyedropper_put_down_the_pen_is_as_it_was	Pipette désactivée ; le stylo garde sa couleur
+@id	ui.show_more_of_the_ribbon_to_the_left	Faire défiler le ruban vers la gauche
+@id	ui.show_more_of_the_ribbon_to_the_right	Faire défiler le ruban vers la droite
+@id	ui.paragraph_spacing_options	Espacement des paragraphes…
+@id	ui.paragraph_spacing	Espacement des paragraphes
+@id	ui.space_before_points	Espace avant (points)
+@id	ui.space_after_points	Espace après (points)
+@id	ui.least_line_height_points	Hauteur de ligne minimale (points)
+@id	ui.spacing_mixed	Mixte
+@id	ui.spacing_reset	Réinitialiser
+@id	ui.spacing_limits	Chaque valeur est un nombre entier de 0 à {max} points. Laissez vide pour conserver la valeur actuelle.
+@id	ui.spacing_goes_on_text	L'espacement s'applique à un paragraphe, un titre, une liste ou une citation
+@id	ui.paragraph_spacing_set	Espacement des paragraphes appliqué
+@id	ui.qat_show_above	Afficher au-dessus du ruban
+@id	ui.qat_show_below	Afficher sous le ruban
+@id	ui.qat_show	Afficher la barre d'accès rapide
+@id	ui.qat_hide	Masquer la barre d'accès rapide
+@id	ui.justify_low	Justifier (normal)
+@id	ui.justify_medium	Justifier (moyen)
+@id	ui.justify_high	Justifier (large)
+@id	ui.student_textbox_label	Zone de\ntexte
+@id	ui.student_textbox_tip	Insérer une nouvelle zone de texte déplaçable (cliquez ici puis cliquez où vous voulez sur la feuille, ou recliquez pour l'ajouter directement)
+@id	ui.student_textbox_prompt	Cliquez n'importe où sur la feuille pour poser la nouvelle zone de texte (ou recliquez sur Zone de texte)
+@id	ui.student_textbox_placed	Nouvelle zone de texte insérée — tapez votre texte ou glissez sa barre supérieure pour la déplacer
+@id	ui.student_underline_color_tip	Souligner en {colour}
+@id	ui.student_autosave_minute	Sauvegarde automatique effectuée (toutes les minutes)
+@id	ui.student_question_tag	Question
+@id	ui.student_important_tag	Important
+@id	ui.student_important_tip	Marquer cette ligne avec une étoile (Important à retenir)
+@id	ui.student_question_tip	Marquer cette ligne avec un point d'interrogation (Question à poser)
+@id	ui.student_sheet_group	Ma Feuille
+@id	ui.student_bg_label	Couleur\nde feuille
+@id	ui.student_bg_tip	Changer la couleur du papier (Blanc, Crème anti-fatigue, Bleu doux, Vert doux) avec bordures A4
+@id	ui.student_clip_label	Capture\nd'écran
+@id	ui.student_clip_tip	Capturer une zone de l'écran (schéma, exercice) pour l'insérer dans la page
+@id	ui.student_shape_color	Couleur du tracé / forme
+@id	ui.backstage_info	Informations
+@id	ui.backstage_new	Nouveau
+@id	ui.backstage_print	Imprimer
+@id	ui.backstage_share	Partager
+@id	ui.backstage_export	Exporter
+@id	ui.backstage_account	Mon profil
+@id	ui.backstage_about	À propos
+@id	ui.paper_custom	Personnalisé
+@id	ui.telemetry_none	Aucun
+@id	ui.telemetry_usage	Utilisation
+@id	ui.telemetry_warning	Avertissements
+@id	ui.telemetry_error	Erreurs
+@id	ui.print_heading	Imprimer la page
+@id	ui.print_desc	Générez une version A4 prête à imprimer de la page ouverte (avec vos zones de texte, images, fiches PDF et vos tracés/formes en couleur).
+@id	ui.print_preview_btn	Aperçu et Imprimer (PDF)
+@id	ui.print_direct_btn	Envoyer directement à l'imprimante
+@id	ui.print_browser_btn	Ouvrir la version imprimable dans le navigateur
+@id	ui.share_heading	Partager le cours ou l'exercice
+@id	ui.share_desc	Partagez facilement le travail de l'élève sur Pronote / ÉcoleDirecte / ENT, par e-mail ou sur clé USB (sans compte Microsoft requis).
+@id	ui.share_pdf_btn	Préparer le PDF pour Pronote / ENT / E-mail
+@id	ui.share_email_btn	Envoyer la page par e-mail
+@id	ui.share_copy_text_btn	Copier tout le texte de la page
+@id	ui.export_heading	Exporter la page ou le classeur
+@id	ui.export_page_section	Exporter la page ouverte
+@id	ui.export_pdf_btn	Exporter la page en PDF (.pdf)
+@id	ui.export_doc_btn	Exporter pour Word / LibreOffice (.odt)
+@id	ui.export_html_btn	Exporter en page Web autonome (.html)
+@id	ui.export_notebook_section	Exporter tout le classeur
+@id	ui.export_zip_btn	Exporter le classeur complet en archive (.zip)
+@id	ui.import_zip_btn	Importer une archive (.zip)
+@id	ui.account_heading	Profil de l'élève & Espace local
+@id	ui.account_desc	Cette application fonctionne 100 % en local pour que l'élève ne soit jamais bloqué par un mot de passe oublié ou une coupure Internet.
+@id	ui.account_mode_label	Mode de fonctionnement : 100 % Local & Autonome (aucun compte Microsoft requis)
+@id	ui.account_autosave_label	Sauvegarde automatique : Active (en continu + sauvegarde de sécurité toutes les minutes)
+@id	ui.account_student_name	Prénom et Nom de l'élève :
+@id	ui.account_student_class	Classe / Établissement :
+@id	ui.account_save_profile	Enregistrer le profil
+@id	ui.coral	Corail
+@id	ui.amber	Ambre
+@id	ui.lime	Vert citron
+@id	ui.cyan	Cyan
+@id	ui.navy	Bleu marine
+@id	ui.lavender	Lavande
+@id	ui.pink	Rose
+

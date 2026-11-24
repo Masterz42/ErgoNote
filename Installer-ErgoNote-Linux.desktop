@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Installer ErgoNote (Linux)
+Comment=Installe ErgoNote pour cet utilisateur et ajoute un raccourci au Bureau
+Exec=bash -c 'p="$1"; p="${p#file://}"; d="$(dirname "$p")"; exec bash "$d/packaging/linux/install-mon-cartable.sh" --lancer' bash "%k"
+Icon=system-software-install
+Terminal=true
+StartupNotify=false
+Categories=System;Utility;

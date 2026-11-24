@@ -1,0 +1,58 @@
+*~
+/target
+/target-*/
+**/target/
+/dist
+/.claude/
+.DS_Store
+.env
+__pycache__/
+*.py[cod]
+out/
+/out/
+/my-notebooks/
+# Also ignore notebook folders under a Windows extended-path prefix passed through WSL.
+*my-notebooks/
+/my-notes/
+
+# Stray directories created from malformed Windows path strings during local
+# development. Keep the exact names out of Git until their source is fixed.
+/Zdevp-NoteCraftwork/
+/Cdevp-NoteCraft.reposo-NoteCraft_2my-notebooks/
+
+# Pictures a failing visual test writes next to the one it compared.
+/crates/*/tests/**/*.diff.png
+/crates/*/tests/**/*.new.png
+
+# Development: local settings, logs, and telemetry data
+/local/
+
+# Working notes of the private repository: they do not belong in the open one.
+JOURNAL.md
+MEMORY.md
+/.agents/
+/plan/
+
+# Personal notebooks, private conversations, backups and release artifacts:
+# never publish these to the public repository.
+/mes-classeurs/
+/conversations-antigravity/
+/sauvegardes/
+/web-dist/
+/ErgoNote-v*
+*.apk
+# The working handoff (personal paths, device serials) stays local.
+/HANDOFF.md
+/HANDOFF-archive-*.md
+
+
+# OfficeIMO bridge build output and temporary upstream source inspection.
+/tools/officeimo/OfficeIMO.NoteCraft.Bridge/bin/
+/tools/officeimo/OfficeIMO.NoteCraft.Bridge/obj/
+/.work-officeimo-*/
+
+# website/demo is the compiled WASM build of notecraft-web. It is built fresh
+# by the deploy workflow (.github/workflows/deploy-website.yml), never
+# committed — a local copy here is for manual inspection only.
+/website/demo/
+.netlify/

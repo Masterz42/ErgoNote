@@ -1,0 +1,13 @@
+{"width": 390, "height": 844, "scale": 3.0, "theme": "light-default", "simple_mobile": true}
+{"method": "engine.execute", "params": {"command": "node.color", "params": {"path": "my-notebook", "color": "blue"}}}
+{"method": "engine.execute", "params": {"command": "node.color", "params": {"path": "my-notebook/work", "color": "orange"}}}
+{"method": "engine.execute", "params": {"command": "node.color", "params": {"path": "my-notebook/ideas", "color": "teal"}}}
+{"method": "ui.expandAll"}
+{"wait": 700}
+{"shot": "docs/images/phone-simple.png"}
+{"method": "ui.open", "params": {"path": "my-notebook/ideas/format-ideas"}}
+{"wait": 900}
+{"shot": "docs/images/phone-page-simple.png"}
+{"method": "ui.theme", "params": {"mode": "dark", "accent": "default"}}
+{"wait": 500}
+{"shot": "docs/images/phone-page-simple-dark.png"}

@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#2f5fb3" />
+  <title>Retours &amp; Signalement de bug — ErgoNote</title>
+  <style>
+    :root {
+      --bg: #f6f8fb;
+      --surface: #ffffff;
+      --ink: #1a2333;
+      --muted: #5b677d;
+      --accent: #2f5fb3;
+      --accent-soft: #eaf0fb;
+      --ok-bg: #ecfdf5;
+      --ok-border: #86efac;
+      --ok-ink: #166534;
+      --err-bg: #fef2f2;
+      --err-border: #fecaca;
+      --err-ink: #991b1b;
+      --border: #dce4f0;
+      --radius: 14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.6;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      font-size: 1.1rem;
+      color: var(--ink);
+    }
+    .brand-badge {
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      background: var(--accent);
+      color: #fff;
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+    }
+    .nav-links {
+      display: flex;
+      gap: 14px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      flex-wrap: wrap;
+    }
+    main {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 28px 16px 56px;
+    }
+    .hero {
+      background: linear-gradient(135deg, #ffffff 0%, #f1f6ff 100%);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+    .badge {
+      display: inline-block;
+      background: var(--accent-soft);
+      color: var(--accent);
+      border: 1px solid #c9d9f6;
+      border-radius: 999px;
+      padding: 3px 12px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+    h1 {
+      font-size: clamp(1.45rem, 4vw, 2rem);
+      line-height: 1.25;
+      margin-bottom: 8px;
+    }
+    .lead {
+      color: var(--muted);
+      font-size: 0.98rem;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: 0 8px 24px rgba(26, 35, 51, 0.04);
+    }
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+    .form-grid .field {
+      margin-bottom: 0;
+    }
+    label {
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: var(--ink);
+    }
+    .hint {
+      font-size: 0.82rem;
+      color: var(--muted);
+      font-weight: 400;
+    }
+    input[type="text"],
+    input[type="email"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 9px;
+      border: 1px solid #c8d4e6;
+      background: #fbfcff;
+      color: var(--ink);
+      font: inherit;
+      font-size: 0.94rem;
+    }
+    input:focus,
+    select:focus,
+    textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      background: #ffffff;
+      box-shadow: 0 0 0 3px rgba(47, 95, 179, 0.14);
+    }
+    textarea {
+      min-height: 150px;
+      resize: vertical;
+    }
+    .hp-field {
+      position: absolute;
+      left: -9999px;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+    }
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px;
+      margin-top: 6px;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 11px 18px;
+      border-radius: 9px;
+      font-weight: 700;
+      font-size: 0.94rem;
+      border: 1px solid var(--accent);
+      background: var(--accent);
+      color: #ffffff;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .btn:hover { background: #244d96; }
+    .btn:disabled { opacity: 0.65; cursor: wait; }
+    .btn-ghost {
+      background: var(--surface);
+      border-color: var(--border);
+      color: var(--ink);
+    }
+    .btn-ghost:hover { background: #f0f4fa; text-decoration: none; }
+    .status {
+      display: none;
+      margin-top: 16px;
+      padding: 12px 14px;
+      border-radius: 10px;
+      font-size: 0.92rem;
+      font-weight: 600;
+    }
+    .status.ok {
+      display: block;
+      background: var(--ok-bg);
+      border: 1px solid var(--ok-border);
+      color: var(--ok-ink);
+    }
+    .status.err {
+      display: block;
+      background: var(--err-bg);
+      border: 1px solid var(--err-border);
+      color: var(--err-ink);
+    }
+    .tips {
+      margin-top: 18px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      font-size: 0.89rem;
+      color: var(--muted);
+    }
+    .tips strong { color: var(--ink); }
+    footer {
+      margin-top: 28px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+    @media (max-width: 700px) {
+      .form-grid { grid-template-columns: 1fr; }
+      .actions .btn { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <nav class="nav">
+      <div class="brand">
+        <div class="brand-badge">E</div>
+        <span>ErgoNote</span>
+      </div>
+      <div class="nav-links">
+        <a href="index.html">Accueil</a>
+        <a href="index.html#telechargement">Téléchargements</a>
+        <a href="soutenir.html">Soutenir</a>
+        <a href="https://github.com/Masterz42/ErgoNote" target="_blank" rel="noopener">GitHub</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <span class="badge">Sans création de compte · 100 % anonyme possible</span>
+      <h1>Signaler un bug ou proposer une amélioration</h1>
+      <p class="lead">
+        Quelque chose gêne un élève, ne s'affiche pas correctement ou vous avez une idée pour améliorer ErgoNote ?
+        Envoyez un message directement ici sans compte GitHub. L'adresse e-mail reste facultative.
+      </p>
+    </section>
+
+    <section class="card">
+      <form id="feedbackForm" action="https://api.web3forms.com/submit" method="POST">
+        <input type="hidden" name="access_key" value="8b36990a-360c-4cd2-8091-8291b9486213" />
+        <input type="hidden" name="from_name" value="ErgoNote — Retours utilisateurs" />
+        <input type="hidden" name="subject" id="subjectInput" value="[ErgoNote] Nouveau retour utilisateur" />
+        <div class="hp-field" aria-hidden="true">
+          <label for="botcheck">Ne pas cocher</label>
+          <input type="checkbox" id="botcheck" name="botcheck" tabindex="-1" autocomplete="off" />
+        </div>
+
+        <div class="form-grid">
+          <div class="field">
+            <label for="typeSelect">Type de retour</label>
+            <select id="typeSelect" name="type">
+              <option value="Bug">Signaler un bug</option>
+              <option value="Amélioration">Idée d'amélioration</option>
+              <option value="Question">Question / Aide</option>
+              <option value="Témoignage">Témoignage / Avis</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="osSelect">Appareil utilisé</label>
+            <select id="osSelect" name="appareil">
+              <option value="Windows">Windows</option>
+              <option value="Android">Android (Smartphone / Tablette)</option>
+              <option value="Linux">Linux</option>
+              <option value="macOS">macOS</option>
+              <option value="Web / Autre">Navigateur / Autre</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="versionInput">Version d'ErgoNote</label>
+            <input type="text" id="versionInput" name="version" value="v1.7.2" maxlength="40" placeholder="ex. v1.7.2" />
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="messageInput">
+            Décrivez le problème ou votre idée <span class="hint">(étape par étape si possible)</span>
+          </label>
+          <textarea
+            id="messageInput"
+            name="message"
+            required
+            placeholder="Exemple : Sur Android, quand j'appuie sur … il se passe … / Ce qui aiderait l'élève serait …"
+          ></textarea>
+        </div>
+
+        <div class="field">
+          <label for="emailInput">
+            Votre adresse e-mail <span class="hint">(facultatif — uniquement si vous souhaitez une réponse)</span>
+          </label>
+          <input
+            type="email"
+            id="emailInput"
+            name="email"
+            placeholder="Laissez vide pour envoyer de façon anonyme"
+          />
+        </div>
+
+        <div class="actions">
+          <button class="btn" id="submitBtn" type="submit">Envoyer le retour</button>
+          <a class="btn btn-ghost" href="index.html">Retour à l'accueil</a>
+        </div>
+
+        <div id="feedbackStatus" class="status" role="status" aria-live="polite"></div>
+      </form>
+    </section>
+
+    <section class="tips">
+      <strong>Besoin de continuer à travailler tout de suite ?</strong>
+      Si une mise à jour vous gêne pendant un cours, les <strong>3 versions précédentes</strong> restent toujours disponibles dans la section
+      <a href="index.html#telechargement">Téléchargements</a> (vos classeurs locaux restent compatibles).
+      Vous pouvez aussi ouvrir un ticket public sur
+      <a href="https://github.com/Masterz42/ErgoNote/issues" target="_blank" rel="noopener">GitHub Issues</a> si vous avez déjà un compte GitHub.
+    </section>
+
+    <footer>
+      ErgoNote — Projet libre sans publicité · <a href="https://ko-fi.com/ergonote" target="_blank" rel="noopener">☕ Offrir un café</a>
+    </footer>
+  </main>
+
+  <script>
+    (function () {
+      const form = document.getElementById('feedbackForm');
+      const typeSelect = document.getElementById('typeSelect');
+      const osSelect = document.getElementById('osSelect');
+      const versionInput = document.getElementById('versionInput');
+      const messageInput = document.getElementById('messageInput');
+      const emailInput = document.getElementById('emailInput');
+      const botcheck = document.getElementById('botcheck');
+      const subjectInput = document.getElementById('subjectInput');
+      const submitBtn = document.getElementById('submitBtn');
+      const statusBox = document.getElementById('feedbackStatus');
+
+      const params = new URLSearchParams(window.location.search);
+      const qType = (params.get('type') || '').toLowerCase();
+      if (qType === 'bug') typeSelect.value = 'Bug';
+      else if (qType === 'idea' || qType === 'amelioration') typeSelect.value = 'Amélioration';
+      else if (qType === 'question') typeSelect.value = 'Question';
+
+      const qVer = (params.get('v') || '').trim();
+      if (qVer) {
+        versionInput.value = qVer.startsWith('v') ? qVer : `v${qVer}`;
+      }
+
+      const qOs = (params.get('os') || '').toLowerCase();
+      if (qOs.includes('win')) osSelect.value = 'Windows';
+      else if (qOs.includes('android')) osSelect.value = 'Android';
+      else if (qOs.includes('linux')) osSelect.value = 'Linux';
+      else if (qOs.includes('mac')) osSelect.value = 'macOS';
+      else if (qOs.includes('web')) osSelect.value = 'Web / Autre';
+      else {
+        const ua = navigator.userAgent.toLowerCase();
+        if (ua.includes('android')) osSelect.value = 'Android';
+        else if (ua.includes('win')) osSelect.value = 'Windows';
+        else if (ua.includes('mac')) osSelect.value = 'macOS';
+        else if (ua.includes('linux')) osSelect.value = 'Linux';
+      }
+
+      function showStatus(ok, html) {
+        statusBox.className = 'status ' + (ok ? 'ok' : 'err');
+        statusBox.innerHTML = html;
+      }
+
+      form.addEventListener('submit', async function (ev) {
+        ev.preventDefault();
+        if (botcheck.checked) return;
+
+        const msg = messageInput.value.trim();
+        if (!msg) {
+          showStatus(false, 'Merci de décrire brièvement le problème ou votre idée avant d’envoyer.');
+          messageInput.focus();
+          return;
+        }
+
+        const version = versionInput.value.trim() || 'v1.7.2';
+        const subject = `[ErgoNote ${version} · ${osSelect.value}] ${typeSelect.value}`;
+        subjectInput.value = subject;
+
+        const payload = {
+          access_key: '8b36990a-360c-4cd2-8091-8291b9486213',
+          from_name: 'ErgoNote — Retours utilisateurs',
+          subject: subject,
+          type: typeSelect.value,
+          appareil: osSelect.value,
+          version: version,
+          message: msg
+        };
+
+        const email = emailInput.value.trim();
+        if (email) {
+          payload.email = email;
+          payload.replyto = email;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Envoi en cours…';
+        statusBox.className = 'status';
+
+        try {
+          const resp = await fetch('https://api.web3forms.com/submit', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            },
+            body: JSON.stringify(payload)
+          });
+          const data = await resp.json();
+          if (resp.ok && data.success) {
+            showStatus(
+              true,
+              'Merci ! Votre retour a bien été transmis à ErgoNote.' +
+                (email ? ' Une réponse pourra vous être envoyée à l’adresse indiquée.' : '')
+            );
+            messageInput.value = '';
+          } else {
+            showStatus(
+              false,
+              'L’envoi a rencontré un souci technique. Vous pouvez réessayer ou ouvrir un ticket sur GitHub Issues.'
+            );
+          }
+        } catch (_e) {
+          showStatus(
+            false,
+            'Connexion impossible pour le moment. Vérifiez votre accès internet puis réessayez.'
+          );
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Envoyer le retour';
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

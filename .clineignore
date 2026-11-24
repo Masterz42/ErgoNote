@@ -1,0 +1,25 @@
+# Cline ignore list: keep the assistant on source, design and tests.
+# These paths are generated, installed, disposable or third-party; they are not the source of truth.
+.git/
+target/
+dist/
+web-dist/
+sauvegardes/
+local/
+mes-classeurs/
+conversations-antigravity/
+.netlify/
+vendor/
+node_modules/
+ErgoNote-v*
+*.apk
+*.exe
+*.dll
+*.so
+*.dylib
+*.bin
+*.log
+*.zip
+*.tar.gz
+*.deb
+.env

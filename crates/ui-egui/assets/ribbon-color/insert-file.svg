@@ -1,0 +1,24 @@
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M2.5 6.25C2.5 5.00736 3.50736 4 4.75 4H8.85C9.48 4 10.08 4.26 10.5 4.72L11.7 6H18.25C19.4926 6 20.5 7.00736 20.5 8.25V16.75C20.5 17.9926 19.4926 19 18.25 19H4.75C3.50736 19 2.5 17.9926 2.5 16.75V6.25Z" fill="url(#if_back)"/>
+<rect x="5" y="7" width="13" height="6.5" rx="1.2" fill="#FFFFFF"/>
+<rect x="6.8" y="8.6" width="6.5" height="1.1" rx="0.55" fill="#93C5FD"/>
+<path d="M2.5 10.25C2.5 9.2835 3.2835 8.5 4.25 8.5H8.55L10.2 10H18.75C19.7165 10 20.5 10.7835 20.5 11.75V16.75C20.5 17.9926 19.4926 19 18.25 19H4.75C3.50736 19 2.5 17.9926 2.5 16.75V10.25Z" fill="url(#if_front)"/>
+<circle cx="17.5" cy="17.5" r="5.3" fill="#FFFFFF"/>
+<circle cx="17.5" cy="17.5" r="4.5" fill="url(#if_plus)"/>
+<rect x="16.7" y="14.7" width="1.6" height="5.6" rx="0.8" fill="#FFFFFF"/>
+<rect x="14.7" y="16.7" width="5.6" height="1.6" rx="0.8" fill="#FFFFFF"/>
+<defs>
+<linearGradient id="if_back" x1="3" y1="4" x2="19" y2="18" gradientUnits="userSpaceOnUse">
+<stop stop-color="#F59E0B"/>
+<stop offset="1" stop-color="#D97706"/>
+</linearGradient>
+<linearGradient id="if_front" x1="4" y1="9" x2="19" y2="19" gradientUnits="userSpaceOnUse">
+<stop stop-color="#FDE047"/>
+<stop offset="1" stop-color="#F59E0B"/>
+</linearGradient>
+<linearGradient id="if_plus" x1="13" y1="13" x2="22" y2="22" gradientUnits="userSpaceOnUse">
+<stop stop-color="#34D399"/>
+<stop offset="1" stop-color="#059669"/>
+</linearGradient>
+</defs>
+</svg>
