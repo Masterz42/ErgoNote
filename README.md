@@ -5,7 +5,7 @@
 ### Cahier numérique scolaire conçu pour les élèves présentant un TND
 *(Troubles du Neurodéveloppement : DYS, TDAH, troubles du graphisme et des apprentissages)*
 
-[![Version](https://img.shields.io/badge/Version-v1.7.2-2f5fb3?style=for-the-badge)](https://github.com/Masterz42/ErgoNote/releases/tag/v1.7.2)
+[![Version](https://img.shields.io/badge/Version-v2026.11.24-2f5fb3?style=for-the-badge)](https://github.com/Masterz42/ErgoNote/releases/tag/v2026.11.24)
 [![Téléchargements](https://img.shields.io/github/downloads/Masterz42/ErgoNote/total?style=for-the-badge&label=T%C3%A9l%C3%A9chargements&color=2f5fb3)](https://github.com/Masterz42/ErgoNote/releases)
 [![Offrir un café](https://img.shields.io/badge/Soutien-Offrir%20un%20caf%C3%A9%20%E2%98%95-b45309?style=for-the-badge&logo=ko-fi&logoColor=white)](https://ko-fi.com/ergonote)
 [![Public](https://img.shields.io/badge/Approche-Ergoth%C3%A9rapie%20scolaire-16a34a?style=for-the-badge)](#-adaptations-tnd-int%C3%A9gr%C3%A9es)
@@ -16,12 +16,17 @@
 <br/>
 
 <a href="https://masterz42.github.io/ErgoNote/" title="Ouvrir la présentation interactive d'ErgoNote">
-  <img src="./ergonote-apercu.svg" alt="Aperçu de l'interface ErgoNote v1.7.2" width="920"/>
+  <img src="./ergonote-apercu.svg" alt="Aperçu de l'interface ErgoNote v2026.11.24" width="920"/>
 </a>
+
+<p align="center">
+  <img src="./images/phone-page-simple.png" alt="Version simplifiée sur smartphone" width="300"/>
+  <img src="./images/phone-page-simple-dark.png" alt="Thème sombre sur smartphone" width="300"/>
+</p>
 
 <br/><br/>
 
-**[Télécharger ErgoNote v1.7.2 pour Windows (.exe)](https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.7.2-Windows-x86_64.exe)** · **[Télécharger ErgoNote v1.7.2 pour Android (.apk)](https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.7.2-Android.apk)** · **[Paquet Linux (.deb)](https://github.com/Masterz42/ErgoNote/releases/latest/download/ergonote_1.7.2_amd64.deb)** · **[Binaire Linux](https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.7.2-Linux-x86_64)** · **[Toutes les versions](https://github.com/Masterz42/ErgoNote/releases)** · **[Signaler un bug / Donner un avis](https://masterz42.github.io/ErgoNote/retours.html)** · ☕ **[Offrir un café (Ko-fi)](https://ko-fi.com/ergonote)**
+**[Télécharger ErgoNote v2026.11.24 pour Windows (.exe)](https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v2026.11.24-Windows-x86_64.exe)** · **[Télécharger ErgoNote v2026.11.24 pour Android (.apk)](https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v2026.11.24-Android.apk)** · **[Paquet Linux (.deb)](https://github.com/Masterz42/ErgoNote/releases/latest/download/ergonote_2026.11.24_amd64.deb)** · **[Binaire Linux](https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v2026.11.24-Linux-x86_64)** · **[Toutes les versions](https://github.com/Masterz42/ErgoNote/releases)** · **[Signaler un bug / Donner un avis](https://masterz42.github.io/ErgoNote/retours.html)** · ☕ **[Offrir un café (Ko-fi)](https://ko-fi.com/ergonote)**
 
 *100 % gratuit, libre et hors ligne (aucun abonnement, aucune publicité). Si ErgoNote aide un élève, un café offert aide directement à poursuivre le développement !*
 
@@ -46,6 +51,7 @@ Les logiciels de prise de notes classiques sont souvent **surchargés d'icônes*
 
 | Outil | Bénéfice concret pour l'élève |
 |---|---|
+| **`v1.7.2`** | 23/11/2026 | [Windows .exe](https://github.com/Masterz42/ErgoNote/releases/download/v1.7.2/ErgoNote-v1.7.2-Windows-x86_64.exe) | [.deb](https://github.com/Masterz42/ErgoNote/releases/download/v1.7.2/ergonote_1.7.2_amd64.deb) · [.tar.gz](https://github.com/Masterz42/ErgoNote/releases/download/v1.7.2/ErgoNote-v1.7.2-Linux-x86_64.tar.gz) · [binaire](https://github.com/Masterz42/ErgoNote/releases/download/v1.7.2/ErgoNote-v1.7.2-Linux-x86_64) | [Android .apk](https://github.com/Masterz42/ErgoNote/releases/download/v1.7.2/ErgoNote-v1.7.2-Android.apk) | [v1.7.2](https://github.com/Masterz42/ErgoNote/releases/tag/v1.7.2) |
 | **Onglets matières colorés** | Repérage visuel immédiat des matières sous le ruban, sans se perdre dans une arborescence complexe. |
 | **Prédiction contextuelle (3 mots, 5 langues)** | Propose jusqu'à 3 mots probables dès la 1re lettre ou après espace/apostrophe (écoute vocale + flèches + *Entrée*, bouton pour désactiver en dictée). |
 | **Correcteur pédagogique « Corriger orthographe »** | Repère les fautes, homophones (`a/à`, `et/est`, `son/sont`, `ce/se`, `ou/où`, `ces/ses`), `-er/-é`, accords et conjugaisons avec une **explication claire** de chaque erreur (moteur Hunspell `spellbook` hors-ligne + LanguageTool optionnel au clic). |
@@ -63,28 +69,34 @@ Les logiciels de prise de notes classiques sont souvent **surchargés d'icônes*
 
 | Plateforme | Usage |
 |---|---|
-| **Windows (`x86_64`)** | Exécutable autonome `ErgoNote-v1.7.2-Windows-x86_64.exe` pour PC portables scolaires |
-| **Linux (`x86_64`)** | Paquet `ergonote_1.7.2_amd64.deb`, archive portable `.tar.gz` avec installateur sans root, et binaire natif `ErgoNote-v1.7.2-Linux-x86_64` |
-| **Android (Smartphone & Tablette)** | APK `ErgoNote-v1.7.2-Android.apk` : interface adaptative téléphone/tablette, boutons directs *Photo* et *Image*, saisie Gboard avec correcteur, stylet, notifications de mise à jour et touche *Écrire* (mise à jour directe depuis v1.5 / v1.6 / v1.7.1) |
+| **Windows (`x86_64`)** | Exécutable autonome `ErgoNote-v2026.11.24-Windows-x86_64.exe` pour PC portables scolaires |
+| **Linux (`x86_64`)** | Paquet `ergonote_2026.11.24_amd64.deb`, archive portable `.tar.gz` avec installateur sans root, et binaire natif `ErgoNote-v2026.11.24-Linux-x86_64` |
+| **Android (Smartphone & Tablette)** | APK `ErgoNote-v2026.11.24-Android.apk` : interface adaptative téléphone/tablette, boutons directs *Photo* et *Image*, saisie Gboard avec correcteur, stylet, notifications de mise à jour et touche *Écrire* (mise à jour directe depuis v1.5 / v1.6 / v1.7.1) |
 | **iPad / Navigateur** | Version WebAssembly utilisable hors ligne |
 
 ---
 
 ## Versions précédentes (3 dernières toujours conservées)
 
-ErgoNote conserve toujours les **3 versions précédentes** en téléchargement direct en plus de la version actuelle (`v1.7.2`), pour permettre de rester sur une version connue ou de revenir en arrière à tout moment (vos classeurs locaux restent compatibles) :
+ErgoNote conserve toujours les **3 versions précédentes** en téléchargement direct en plus de la version actuelle (`v2026.11.24`), pour permettre de rester sur une version connue ou de revenir en arrière à tout moment (vos classeurs locaux restent compatibles) :
 
 | Version | Date | Windows (`x86_64`) | Linux (`x86_64`) | Android (`.apk`) | Page |
 |---|---|---|---|---|---|
 | **`v1.7.1`** | 23/11/2026 | [Windows .exe](https://github.com/Masterz42/ErgoNote/releases/download/v1.7.1/ErgoNote-v1.7.1-Windows-x86_64.exe) | [.deb](https://github.com/Masterz42/ErgoNote/releases/download/v1.7.1/ergonote_1.7.1_amd64.deb) · [.tar.gz](https://github.com/Masterz42/ErgoNote/releases/download/v1.7.1/ErgoNote-v1.7.1-Linux-x86_64.tar.gz) · [binaire](https://github.com/Masterz42/ErgoNote/releases/download/v1.7.1/ErgoNote-v1.7.1-Linux-x86_64) | [Android .apk](https://github.com/Masterz42/ErgoNote/releases/download/v1.7.1/ErgoNote-v1.7.1-Android.apk) | [v1.7.1](https://github.com/Masterz42/ErgoNote/releases/tag/v1.7.1) |
 | **`v1.6.0`** | 20/11/2026 | [Windows .exe](https://github.com/Masterz42/ErgoNote/releases/download/v1.6.0/ErgoNote-v1.6-Windows-x86_64.exe) | [.deb](https://github.com/Masterz42/ErgoNote/releases/download/v1.6.0/ergonote_1.6.0_amd64.deb) · [.tar.gz](https://github.com/Masterz42/ErgoNote/releases/download/v1.6.0/ErgoNote-v1.6-Linux-x86_64.tar.gz) · [binaire](https://github.com/Masterz42/ErgoNote/releases/download/v1.6.0/ErgoNote-v1.6-Linux-x86_64) | [Android .apk](https://github.com/Masterz42/ErgoNote/releases/download/v1.6.0/ErgoNote-v1.6-Android.apk) | [v1.6.0](https://github.com/Masterz42/ErgoNote/releases/tag/v1.6.0) |
-| **`v1.5.0`** | 19/11/2026 | [Windows .exe](https://github.com/Masterz42/ErgoNote/releases/download/v1.5.0/ErgoNote-v1.5-Windows-x86_64.exe) | [binaire](https://github.com/Masterz42/ErgoNote/releases/download/v1.5.0/ErgoNote-v1.5-Linux-x86_64) | [Android .apk](https://github.com/Masterz42/ErgoNote/releases/download/v1.5.0/ErgoNote-v1.5-Android.apk) | [v1.5.0](https://github.com/Masterz42/ErgoNote/releases/tag/v1.5.0) |
 
 > **Astuce Android (retour à une ancienne version)** : pour installer une version plus ancienne qu'une version déjà installée, exportez d'abord vos classeurs en `.zip` puis désinstallez la version récente (obligatoire également pour passer de `v1.5+` vers `v1.4`). Toutes les archives restent accessibles sur la [page des versions](https://github.com/Masterz42/ErgoNote/releases).
 
 ---
 
 ## Historique des modifications (depuis la v1.0)
+
+### `v2026.11.24` (24/11/2026) — Nomenclature par date, recherche latérale, thème sombre & barre smartphone
+- **Nomenclature par date** `AAAA.MM.JJ` : version `2026.11.24`, code Android `2026011024`, toujours strictement croissante pour Windows, Linux et les mises à jour.
+- **Recherche latérale style Word** : `Ctrl+F` / `Ctrl+E`, cartes de pages avec extrait surligné, fermeture par Échap, retour Android ou clic extérieur, ouverture du premier résultat avec Entrée.
+- **Thème sombre complet** : la page suit le thème (papier sombre, écriture claire), le mode clair reste inchangé.
+- **Barre smartphone revue** : B, I, U, surligneur et Aa, disquette de sauvegarde en haut, « + Nouvelle section » en pastille et fenêtre de sauvegarde adaptée à l'écran.
+- Bouton source discret dans la page et retrait de la fonctionnalité GIF expérimentale.
 
 ### `v1.7.2` (23/11/2026) — Notification douce de mise à jour & signalement de bug sans compte
 - **Notification automatique non destructive des mises à jour** (Windows, Linux & Android) : vérification discrète au démarrage si une version plus récente existe, affichage d'un bandeau **`Télécharger / Notes / Plus tard`** et d'un bouton actif *Vérifier les mises à jour* dans *Fichier > À propos* / *Options*. Le clic ouvre le fichier adapté (`.exe`, `.deb`, `.tar.gz`, `.apk`) dans votre navigateur sans jamais rien écraser ni perturber vos classeurs.

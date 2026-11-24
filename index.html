@@ -4,9 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#2f5fb3" />
-  <meta property="og:title" content="ErgoNote v1.7.2 — Cahier numérique adapté TND" />
+  <meta property="og:title" content="ErgoNote v2026.11.24 — Cahier numérique adapté TND" />
   <meta property="og:description" content="Classeur numérique scolaire structuré par matières sur ordinateur, tablette et smartphone Android : prédiction 3 mots, correcteur pédagogique, dictée vocale, lecture synchronisée sur la page, feuilles A4 paginées et notifications de mise à jour." />
-  <title>ErgoNote v1.7.2 — Cahier numérique adapté TND</title>
+  <title>ErgoNote v2026.11.24 — Cahier numérique adapté TND</title>
   <style>
     :root {
       --bg: #f6f8fb;
@@ -144,6 +144,20 @@
       font-size: 0.82rem;
       color: var(--muted);
       margin-bottom: 8px;
+    }
+
+    /* Real screenshots: the complete PC window and the simplified phone */
+    .shots { display: grid; gap: 16px; margin: 0 0 18px; }
+    .shots figure { margin: 0; background: #fff; border: 1px solid #c8d5e6; border-radius: 14px; overflow: hidden; box-shadow: 0 8px 24px rgba(20, 36, 66, 0.08); }
+    .shots img { display: block; width: 100%; height: auto; }
+    .shots figcaption { padding: 10px 14px; font-size: 0.88rem; font-weight: 700; color: #22498e; background: #f7faff; }
+    .shots-hero { grid-template-columns: 1fr; }
+    .shots-phones { grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: start; }
+    .shots-phones figure { display: flex; flex-direction: column; align-items: center; }
+    .shots-phones img { width: auto; max-width: 100%; height: 520px; object-fit: cover; object-position: top; }
+    @media (max-width: 760px) {
+      .shots-phones { grid-template-columns: 1fr; }
+      .shots-phones img { height: auto; }
     }
 
     .app-frame {
@@ -752,7 +766,7 @@
       <div class="brand">
         <div class="brand-badge">E</div>
         <span>ErgoNote</span>
-        <span class="pill">v1.7.2</span>
+        <span class="pill">v2026.11.24</span>
       </div>
       <div class="nav-links">
         <a href="#apercu">Aperçu</a>
@@ -775,16 +789,36 @@
         (DYS, TDAH, troubles du graphisme). Fonctionne hors ligne sur ordinateur, tablette et smartphone Android — 100 % gratuit et sans pub.
       </p>
       <div class="actions">
-        <a class="btn btn-primary" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.7.2-Windows-x86_64.exe">Télécharger Windows (.exe)</a>
-        <a class="btn" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.7.2-Android.apk">Télécharger Android (.apk)</a>
-        <a class="btn" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ergonote_1.7.2_amd64.deb">Paquet Linux (.deb)</a>
-        <a class="btn" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.7.2-Linux-x86_64">Binaire Linux</a>
+        <a class="btn btn-primary" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v2026.11.24-Windows-x86_64.exe">Télécharger Windows (.exe)</a>
+        <a class="btn" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v2026.11.24-Android.apk">Télécharger Android (.apk)</a>
+        <a class="btn" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ergonote_2026.11.24_amd64.deb">Paquet Linux (.deb)</a>
+        <a class="btn" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v2026.11.24-Linux-x86_64">Binaire Linux</a>
         <a class="btn btn-coffee" href="https://ko-fi.com/ergonote" target="_blank" rel="noopener">☕ Offrir un café</a>
         <a class="btn" href="https://github.com/Masterz42/ErgoNote" target="_blank" rel="noopener">Page GitHub</a>
       </div>
     </section>
 
     <section class="preview-section" id="apercu">
+      <div class="shots shots-hero">
+        <figure>
+          <img src="images/hero.png" alt="Version complète d'ErgoNote sur ordinateur : ruban Accueil, arborescence des classeurs, page Format ideas avec liste, tableau et équation.">
+          <figcaption>Version complète sur ordinateur</figcaption>
+        </figure>
+      </div>
+      <div class="shots shots-phones">
+        <figure>
+          <img src="images/phone-simple.png" alt="Version simplifiée sur smartphone : grands boutons de classeurs et disquette de sauvegarde en haut.">
+          <figcaption>Accueil simplifié</figcaption>
+        </figure>
+        <figure>
+          <img src="images/phone-page-simple.png" alt="Page sur smartphone : barre B, I, U, surligneur et Aa, texte lisible, disquette en haut.">
+          <figcaption>Page et mise en forme</figcaption>
+        </figure>
+        <figure>
+          <img src="images/phone-page-simple-dark.png" alt="La même page sur smartphone en thème sombre : papier sombre et écriture claire.">
+          <figcaption>Thème sombre</figcaption>
+        </figure>
+      </div>
       <p class="preview-note">Aperçu fidèle de l'interface (faites glisser le ruban sur mobile et cliquez sur <strong>Accueil / Dessin</strong>, <strong>Lire à voix haute</strong>, <strong>Verrouiller PDF</strong>, <strong>Règle de lecture</strong> et le <strong>zoom</strong> en bas à droite) :</p>
 
       <div class="app-frame">
@@ -798,7 +832,7 @@
           <div class="app-title-right">
             <span class="qat-btn">Sauvegarde</span>
             <span class="qat-btn">Thème</span>
-            <span class="v-badge">v1.7.2</span>
+            <span class="v-badge">v2026.11.24</span>
           </div>
         </div>
 
@@ -914,7 +948,17 @@
       <h2 class="sec-title">Historique des versions (depuis la v1.0)</h2>
       <div class="timeline">
         <details class="release" open>
-          <summary><span>v1.7.2 (23/11/2026) — Notification douce de mise à jour &amp; signalement de bug sans compte</span><span class="pill">Actuelle</span></summary>
+          <summary><span>v2026.11.24 (24/11/2026) — Nomenclature par date, recherche latérale, thème sombre &amp; barre smartphone</span><span class="pill">Actuelle</span></summary>
+          <ul>
+            <li><strong>Nomenclature par date</strong> <code>AAAA.MM.JJ</code> : version <code>2026.11.24</code>, code Android <code>2026011024</code>, toujours strictement croissante pour Windows, Linux et les mises à jour.</li>
+            <li><strong>Recherche latérale style Word</strong> : <code>Ctrl+F</code> / <code>Ctrl+E</code>, cartes de pages avec extrait surligné, fermeture par Échap, retour Android ou clic extérieur, ouverture du premier résultat avec Entrée.</li>
+            <li><strong>Thème sombre complet</strong> : la page suit le thème (papier sombre, écriture claire), le mode clair reste inchangé.</li>
+            <li><strong>Barre smartphone revue</strong> : B, I, U, surligneur et Aa à la place des lettres, <strong>disquette de sauvegarde en haut</strong>, « + Nouvelle section » en pastille et fenêtre de sauvegarde adaptée à l'écran.</li>
+            <li><strong>Sources et correctifs</strong> : bouton source discret dans la page, retrait de la fonctionnalité GIF expérimentale, handoff allégé avec archive séparée.</li>
+          </ul>
+        </details>
+        <details class="release">
+          <summary><span>v1.7.2 (23/11/2026) — Notification douce de mise à jour &amp; signalement de bug sans compte</span><span class="pill">+</span></summary>
           <ul>
             <li><strong>Notification automatique non destructive des mises à jour</strong> (Windows, Linux &amp; Android) : vérifie discrètement au démarrage si une version plus récente existe et affiche un bandeau <strong>Télécharger / Notes / Plus tard</strong> sans jamais rien écraser ni toucher aux classeurs (bouton actif aussi dans <em>Fichier &gt; À propos</em>).</li>
             <li><strong>Bouton « Signaler un bug » dans ErgoNote &amp; formulaire sans compte</strong> : placé en haut à droite à côté d'<em>Offrir un café</em>, ouvre <a href="retours.html">le formulaire web</a> avec la version et l'appareil déjà pré-remplis (e-mail facultatif).</li>
@@ -997,7 +1041,7 @@
     </section>
 
     <section class="block" id="telechargement">
-      <h2 class="sec-title">Téléchargements (v1.7.2 — 23/11/2026)</h2>
+      <h2 class="sec-title">Téléchargements (v2026.11.24 — 24/11/2026)</h2>
       <p style="color:var(--muted); font-size:0.9rem; margin-bottom:12px;">
         <span class="pill" id="totalDownloadsBadge">Téléchargements totaux : chargement…</span>
       </p>
@@ -1005,18 +1049,18 @@
         <div class="dl-card">
           <strong>Windows (64 bits)</strong>
           <span id="winDownloads">Exécutable autonome .exe</span>
-          <a class="btn btn-primary" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.7.2-Windows-x86_64.exe">Télécharger .exe</a>
+          <a class="btn btn-primary" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v2026.11.24-Windows-x86_64.exe">Télécharger .exe</a>
         </div>
         <div class="dl-card">
           <strong>Linux (x86_64)</strong>
           <span id="linuxDownloads">Paquet .deb, archive portable &amp; binaire</span>
-          <a class="btn btn-primary" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ergonote_1.7.2_amd64.deb">Télécharger .deb</a>
-          <a class="btn" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.7.2-Linux-x86_64">Binaire seul</a>
+          <a class="btn btn-primary" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ergonote_2026.11.24_amd64.deb">Télécharger .deb</a>
+          <a class="btn" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v2026.11.24-Linux-x86_64">Binaire seul</a>
         </div>
         <div class="dl-card">
           <strong>Android (Smartphone &amp; Tablette)</strong>
           <span id="androidDownloads">Adaptation auto téléphone / tablette (.apk)</span>
-          <a class="btn btn-primary" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v1.7.2-Android.apk">Télécharger .apk</a>
+          <a class="btn btn-primary" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v2026.11.24-Android.apk">Télécharger .apk</a>
         </div>
         <div class="dl-card" style="border-color:#f59e0b; background:linear-gradient(180deg, #fffdf5 0%, #fffbeb 100%);">
           <strong style="color:#92400e;">Soutenir ErgoNote (100 % gratuit)</strong>
@@ -1029,12 +1073,26 @@
       <details class="prev-box" open>
         <summary>
           <span>Versions précédentes (3 dernières toujours conservées)</span>
-          <span class="pill">v1.7.1 · v1.6 · v1.5</span>
+          <span class="pill">v1.7.2 · v1.7.1 · v1.6</span>
         </summary>
         <p class="prev-note">
           Les 3 versions précédentes restent toujours accessibles en téléchargement direct pour conserver vos habitudes ou revenir à une version antérieure (vos classeurs locaux restent compatibles).
         </p>
         <div class="prev-list">
+          <div class="prev-row">
+            <div class="prev-meta">
+              <strong>v1.7.2 (23/11/2026)</strong>
+              <span>Mise à jour douce, signalement de bug sans compte &amp; lien Ko-fi</span>
+            </div>
+            <div class="prev-links">
+              <a class="btn-sm" href="https://github.com/Masterz42/ErgoNote/releases/download/v1.7.2/ErgoNote-v1.7.2-Windows-x86_64.exe">Windows .exe</a>
+              <a class="btn-sm" href="https://github.com/Masterz42/ErgoNote/releases/download/v1.7.2/ergonote_1.7.2_amd64.deb">Linux .deb</a>
+              <a class="btn-sm" href="https://github.com/Masterz42/ErgoNote/releases/download/v1.7.2/ErgoNote-v1.7.2-Linux-x86_64.tar.gz">Linux .tar.gz</a>
+              <a class="btn-sm" href="https://github.com/Masterz42/ErgoNote/releases/download/v1.7.2/ErgoNote-v1.7.2-Linux-x86_64">Binaire Linux</a>
+              <a class="btn-sm" href="https://github.com/Masterz42/ErgoNote/releases/download/v1.7.2/ErgoNote-v1.7.2-Android.apk">Android .apk</a>
+              <a class="btn-sm" href="https://github.com/Masterz42/ErgoNote/releases/tag/v1.7.2" target="_blank" rel="noopener">Notes</a>
+            </div>
+          </div>
           <div class="prev-row">
             <div class="prev-meta">
               <strong>v1.7.1 (23/11/2026)</strong>
@@ -1061,18 +1119,6 @@
               <a class="btn-sm" href="https://github.com/Masterz42/ErgoNote/releases/download/v1.6.0/ErgoNote-v1.6-Linux-x86_64">Binaire Linux</a>
               <a class="btn-sm" href="https://github.com/Masterz42/ErgoNote/releases/download/v1.6.0/ErgoNote-v1.6-Android.apk">Android .apk</a>
               <a class="btn-sm" href="https://github.com/Masterz42/ErgoNote/releases/tag/v1.6.0" target="_blank" rel="noopener">Notes</a>
-            </div>
-          </div>
-          <div class="prev-row">
-            <div class="prev-meta">
-              <strong>v1.5 (19/11/2026)</strong>
-              <span>Lisibilité sombre, Entrée dans un mot gras &amp; feuilles conservées</span>
-            </div>
-            <div class="prev-links">
-              <a class="btn-sm" href="https://github.com/Masterz42/ErgoNote/releases/download/v1.5.0/ErgoNote-v1.5-Windows-x86_64.exe">Windows .exe</a>
-              <a class="btn-sm" href="https://github.com/Masterz42/ErgoNote/releases/download/v1.5.0/ErgoNote-v1.5-Linux-x86_64">Binaire Linux</a>
-              <a class="btn-sm" href="https://github.com/Masterz42/ErgoNote/releases/download/v1.5.0/ErgoNote-v1.5-Android.apk">Android .apk</a>
-              <a class="btn-sm" href="https://github.com/Masterz42/ErgoNote/releases/tag/v1.5.0" target="_blank" rel="noopener">Notes</a>
             </div>
           </div>
         </div>
@@ -1119,7 +1165,7 @@
             </div>
             <div class="field">
               <label for="homeFbVer">Version</label>
-              <input type="text" id="homeFbVer" name="version" value="v1.7.2" maxlength="40" />
+              <input type="text" id="homeFbVer" name="version" value="v2026.11.24" maxlength="40" />
             </div>
           </div>
 
@@ -1143,7 +1189,7 @@
     </section>
 
     <footer>
-      <span>ErgoNote v1.7.2 — 23/11/2026 — ErgoLib</span>
+      <span>ErgoNote v2026.11.24 — 24/11/2026 — ErgoLib</span>
       <div style="display:flex; gap:14px; flex-wrap:wrap;">
         <a href="retours.html" style="font-weight:600;">Signaler un bug</a>
         <a href="soutenir.html" style="color:#b45309; font-weight:600;">☕ Offrir un café</a>
@@ -1575,7 +1621,7 @@
           msgInput.focus();
           return;
         }
-        const version = verInput.value.trim() || 'v1.7.2';
+        const version = verInput.value.trim() || 'v2026.11.24';
         const subject = `[ErgoNote ${version} · ${osSelect.value}] ${typeSelect.value}`;
         subjectInput.value = subject;
         const payload = {
