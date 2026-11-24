@@ -54,6 +54,8 @@
       font-weight: 800;
       font-size: 1.1rem;
       color: var(--ink);
+      flex-shrink: 0;
+      white-space: nowrap;
     }
     .brand-badge {
       width: 30px;
@@ -78,12 +80,32 @@
     .nav-links {
       display: flex;
       align-items: center;
-      gap: 16px;
-      font-size: 0.9rem;
+      gap: 14px;
+      font-size: 0.88rem;
       font-weight: 600;
+      flex-wrap: nowrap;
     }
-    .nav-links a { color: var(--muted); }
+    .nav-links a { color: var(--muted); white-space: nowrap; }
     .nav-links a:hover { color: var(--accent); text-decoration: none; }
+    .nav-links a.nav-coffee {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 999px;
+      background: var(--warm-soft);
+      border: 1px solid var(--warm-border);
+      color: var(--warm);
+      font-size: 1rem;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+    .nav-links a.nav-coffee:hover {
+      background: #fde68a;
+      color: var(--warm);
+      text-decoration: none;
+    }
 
     main {
       max-width: 1020px;
@@ -742,8 +764,10 @@
       gap: 10px;
     }
 
-    @media (max-width: 700px) {
+    @media (max-width: 820px) {
       .nav-links { display: none; }
+    }
+    @media (max-width: 700px) {
       .workspace { grid-template-columns: 1fr; }
       .pages-sidebar {
         border-right: none;
@@ -774,7 +798,7 @@
         <a href="#historique">Historique</a>
         <a href="#telechargement">Télécharger</a>
         <a href="#retours">Signaler un bug</a>
-        <a href="https://ko-fi.com/ergonote" target="_blank" rel="noopener" style="color:#b45309; background:#fef3c7; border:1px solid #f59e0b; padding:3px 10px; border-radius:999px;">☕ Offrir un café</a>
+        <a class="nav-coffee" href="https://ko-fi.com/ergonote" target="_blank" rel="noopener" title="Offrir un café (Ko-fi)" aria-label="Offrir un café">☕</a>
         <a href="soutenir.html">Soutenir</a>
         <a href="https://github.com/Masterz42/ErgoNote" target="_blank" rel="noopener">GitHub</a>
       </div>
@@ -801,104 +825,23 @@
     <section class="preview-section" id="apercu">
       <div class="shots shots-hero">
         <figure>
-          <img src="images/hero.png" alt="Version complète d'ErgoNote sur ordinateur : ruban Accueil, arborescence des classeurs, page Format ideas avec liste, tableau et équation.">
-          <figcaption>Version complète sur ordinateur</figcaption>
+          <img src="images/hero.png" alt="Version complète d'ErgoNote sur ordinateur : barre en haut, ruban Accueil avec aide TND, onglets matières colorés (Français, Mathématiques, Histoire-Géo, Sciences, Anglais) et fiche de cours sur les homophones grammaticaux.">
+          <figcaption>Version complète sur ordinateur (cahier scolaire par matières)</figcaption>
         </figure>
       </div>
       <div class="shots shots-phones">
         <figure>
-          <img src="images/phone-simple.png" alt="Version simplifiée sur smartphone : grands boutons de classeurs et disquette de sauvegarde en haut.">
-          <figcaption>Accueil simplifié</figcaption>
+          <img src="images/phone-simple.png" alt="Version simplifiée sur smartphone : grandes tuiles colorées par matière (Français, Mathématiques, Histoire-Géo, Sciences, Anglais) et disquette de sauvegarde en haut.">
+          <figcaption>Accueil simplifié par matières</figcaption>
         </figure>
         <figure>
-          <img src="images/phone-page-simple.png" alt="Page sur smartphone : barre B, I, U, surligneur et Aa, texte lisible, disquette en haut.">
-          <figcaption>Page et mise en forme</figcaption>
+          <img src="images/phone-page-simple.png" alt="Page sur smartphone en mode simplifié : barre Gras, Italique, Souligné, Surligneur, Aa, fiche de cours en français lisible, disquette en haut.">
+          <figcaption>Fiche de cours sur smartphone</figcaption>
         </figure>
         <figure>
-          <img src="images/phone-page-simple-dark.png" alt="La même page sur smartphone en thème sombre : papier sombre et écriture claire.">
+          <img src="images/phone-page-simple-dark.png" alt="La même fiche de cours sur smartphone en thème sombre : fond sombre et écriture claire très lisible.">
           <figcaption>Thème sombre</figcaption>
         </figure>
-      </div>
-      <p class="preview-note">Aperçu fidèle de l'interface (faites glisser le ruban sur mobile et cliquez sur <strong>Accueil / Dessin</strong>, <strong>Lire à voix haute</strong>, <strong>Verrouiller PDF</strong>, <strong>Règle de lecture</strong> et le <strong>zoom</strong> en bas à droite) :</p>
-
-      <div class="app-frame">
-        <!-- Title Bar -->
-        <div class="app-titlebar">
-          <div class="app-title-left">
-            <span class="qat-btn">Annuler</span>
-            <span class="qat-btn">Rétablir</span>
-          </div>
-          <div class="app-title-center" id="titleText">ErgoNote — Les homophones grammaticaux</div>
-          <div class="app-title-right">
-            <span class="qat-btn">Sauvegarde</span>
-            <span class="qat-btn">Thème</span>
-            <span class="v-badge">v2026.11.24</span>
-          </div>
-        </div>
-
-        <!-- 2-Tab Ribbon Strip -->
-        <div class="ribbon-tabs">
-          <div class="r-tab">Fichier</div>
-          <div class="r-tab active" data-rtab="accueil">Accueil</div>
-          <div class="r-tab" data-rtab="dessin">Dessin</div>
-        </div>
-
-        <!-- Ribbon Groups -->
-        <div class="ribbon-body" id="ribbonBody"></div>
-
-        <!-- Colored Subject Tabs -->
-        <div class="subject-tabs">
-          <div class="sec-tab active" data-subj="fr" style="border-top-color:#2563eb;">Français</div>
-          <div class="sec-tab" data-subj="maths" style="border-top-color:#16a34a;">Mathématiques</div>
-          <div class="sec-tab" data-subj="hist" style="border-top-color:#ea580c;">Histoire-Géo</div>
-          <div class="sec-tab" data-subj="sci" style="border-top-color:#7c3aed;">Sciences</div>
-        </div>
-
-        <!-- Workspace -->
-        <div class="workspace">
-          <div class="pages-sidebar">
-            <div class="page-row active">Cours du jour</div>
-            <div class="page-row">Exercices PDF</div>
-            <div class="page-row">Fiche mémo</div>
-          </div>
-
-          <div class="sheet-area">
-            <div class="tts-bar" id="ttsFloating">
-              <span id="ttsStatus">Lecture en cours…</span>
-              <button class="tts-btn" id="ttsPauseBtn" type="button">Pause</button>
-              <button class="tts-btn stop" id="ttsStopBtn" type="button">Fin</button>
-            </div>
-
-            <div class="a4-sheet" id="demoSheet">
-              <h3 id="sheetHeading">Les homophones grammaticaux</h3>
-              <div class="sheet-line ruled-active" data-line="0">1. <span class="hl-yellow">a</span> (verbe avoir) / <strong>à</strong> (préposition).</div>
-              <div class="sheet-line" data-line="1">2. Touchez une ligne pour y placer la règle de lecture.</div>
-              <div class="pdf-box locked" id="pdfDemoBox">
-                <strong id="pdfDemoTag">Document PDF verrouillé en fond</strong>
-                <div id="pdfDemoContent">Exercice : « Il ___ pris son stylo ___ bille. »</div>
-              </div>
-              <div class="sheet-corner" id="sheetCorner">Feuille 1 / 2</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Status Bar -->
-        <div class="app-status">
-          <span>Enregistré</span>
-          <span>|</span>
-          <div class="sheet-nav">
-            <button class="btn-sheet" id="prevSheetBtn" type="button">&lt;</button>
-            <span id="sheetCounterLabel">Feuille 1 / 2</span>
-            <button class="btn-sheet" id="nextSheetBtn" type="button">&gt;</button>
-            <button class="btn-sheet" id="addSheetBtn" type="button">+ Feuille</button>
-          </div>
-          <div class="sheet-nav" style="margin-left:auto;">
-            <span class="r-small">Largeur</span>
-            <button class="btn-sheet" id="zoomOutBtn" type="button" title="Zoom arrière">−</button>
-            <span id="zoomPctLabel">100%</span>
-            <button class="btn-sheet" id="zoomInBtn" type="button" title="Zoom avant">+</button>
-          </div>
-        </div>
       </div>
     </section>
 
@@ -1199,374 +1142,6 @@
   </main>
 
   <script>
-    const subjects = {
-      fr: {
-        title: "Les homophones grammaticaux",
-        sheets: [
-          {
-            lines: [
-              '1. <span class="hl-yellow">a</span> (verbe avoir) / <strong>à</strong> (préposition).',
-              '2. Touchez une ligne pour y placer la règle de lecture.'
-            ],
-            boxTitle: 'Document PDF verrouillé en fond',
-            boxBody: 'Exercice : « Il ___ pris son stylo ___ bille. »'
-          },
-          {
-            lines: [
-              '3. Feuille 2 ajoutée automatiquement dès que le texte dépasse la 1re feuille A4.',
-              '4. <span class="hl-yellow">et</span> (et puis) / <strong>est</strong> (verbe être).'
-            ],
-            boxTitle: 'Feuille 2 / 2',
-            boxBody: 'Navigation en bas par &lt; Feuille 1 / 2 &gt;.'
-          }
-        ]
-      },
-      maths: {
-        title: "Fractions & Conversions",
-        sheets: [
-          {
-            lines: [
-              '1. Une <span class="hl-yellow">fraction</span> représente une part d\'une unité.',
-              '2. Tableau de conversion généré en 1 clic :'
-            ],
-            boxTitle: 'Tableau de conversion (km → mm)',
-            boxBody: '<table class="conv-table"><tr><th>km</th><th>hm</th><th>dam</th><th>m</th><th>dm</th><th>cm</th><th>mm</th></tr><tr><td>1</td><td>0</td><td>0</td><td>0</td><td></td><td></td><td></td></tr></table>'
-          },
-          {
-            lines: ['3. Feuille 2 : Exercices de proportionnalité et exposants x² / x₂.'],
-            boxTitle: 'Feuille 2 / 2',
-            boxBody: 'Toujours accessible dans Accueil → Tableau.'
-          }
-        ]
-      },
-      hist: {
-        title: "Les grandes découvertes",
-        sheets: [
-          {
-            lines: [
-              '1. Repères chronologiques et cartes insérées depuis une photo ou un PDF.',
-              '2. Surlignage en <span class="hl-yellow">jaune vif</span> des dates clés.'
-            ],
-            boxTitle: 'Carte / Document PDF verrouillé',
-            boxBody: 'Annotation directe sans déplacer le document.'
-          },
-          {
-            lines: ['3. Feuille 2 : Synthèse relue à voix haute.'],
-            boxTitle: 'Feuille 2 / 2',
-            boxBody: 'Boutons Lecture / Pause / Fin.'
-          }
-        ]
-      },
-      sci: {
-        title: "Les états de l'eau (H₂O)",
-        sheets: [
-          {
-            lines: [
-              '1. Indice direct : <strong>H₂O</strong> et puissance <strong>10²</strong> en 1 clic.',
-              '2. Photo du schéma pris au tableau ajoutée dans le cahier.'
-            ],
-            boxTitle: 'Schéma verrouillé en fond',
-            boxBody: 'Annotation au clavier ou au stylet.'
-          },
-          {
-            lines: ['3. Feuille 2 : Compte-rendu d\'expérience.'],
-            boxTitle: 'Feuille 2 / 2',
-            boxBody: 'Sauvegarde locale en .zip.'
-          }
-        ]
-      }
-    };
-
-    let currentTab = 'accueil';
-    let currentSubj = 'fr';
-    let currentSheet = 0;
-    let ruledLine = 0;
-    let rulerOn = true;
-    let pdfLocked = true;
-    let dysSpaced = false;
-    let paperMode = 'ruled'; // ruled | grid | blank
-    let extraSheets = 0;
-
-    const ribbonBody = document.getElementById('ribbonBody');
-    const demoSheet = document.getElementById('demoSheet');
-    const titleText = document.getElementById('titleText');
-    const sheetHeading = document.getElementById('sheetHeading');
-    const sheetCounterLabel = document.getElementById('sheetCounterLabel');
-    const sheetCorner = document.getElementById('sheetCorner');
-    const prevSheetBtn = document.getElementById('prevSheetBtn');
-    const nextSheetBtn = document.getElementById('nextSheetBtn');
-
-    function renderRibbon() {
-      if (currentTab === 'accueil') {
-        ribbonBody.innerHTML = `
-          <div class="r-group">
-            <div class="r-controls">
-              <button class="r-big" type="button"><span class="r-big-ico">📋</span>Coller</button>
-              <div class="r-col">
-                <span class="r-small">Couper</span>
-                <span class="r-small">Copier</span>
-                <span class="r-small">Format</span>
-              </div>
-            </div>
-            <div class="r-group-label">Presse-papiers</div>
-          </div>
-          <div class="r-group">
-            <div class="r-col">
-              <div class="r-row">
-                <button class="r-small ${dysSpaced ? 'on' : ''}" id="btnDysFont" type="button">${dysSpaced ? 'OpenDyslexic TND ✓' : 'OpenDyslexic TND'}</button>
-                <span class="r-small">16</span>
-                <span class="r-small">x²</span>
-                <span class="r-small">x₂</span>
-              </div>
-              <div class="r-row">
-                <span class="r-small"><strong>G</strong></span>
-                <span class="r-small"><em>I</em></span>
-                <span class="r-small"><u>S</u></span>
-                <span class="r-small">A</span>
-                <span class="r-small" style="background:#fef08a;">ab</span>
-                <span class="r-small" style="border-bottom:3px solid #dc2626;">S ▾</span>
-              </div>
-              <div class="r-row">
-                <span class="r-small">Puces</span>
-                <span class="r-small">Retrait -/+</span>
-                <button class="r-small on" type="button">Écrire</button>
-              </div>
-            </div>
-            <div class="r-group-label">Texte de base</div>
-          </div>
-          <div class="r-group">
-            <div class="r-col">
-              <div class="r-style-card" style="color:#2f5fb3;">Grand Titre</div>
-              <div class="r-style-card" style="border-left-color:#16a34a; color:#16a34a;">Sous-titre</div>
-              <div class="r-style-card" style="border-left-color:#64748b;">Texte normal</div>
-            </div>
-            <div class="r-group-label">Styles</div>
-          </div>
-          <div class="r-group">
-            <div class="r-controls">
-              <button class="r-big" type="button"><span class="r-big-ico">📷</span>Photo</button>
-              <button class="r-big" type="button"><span class="r-big-ico">📎</span>Insérer ▾</button>
-              <button class="r-big" type="button"><span class="r-big-ico">▦</span>Tableau ▾</button>
-              <button class="r-big" type="button"><span class="r-big-ico">T</span>Zone texte</button>
-              <button class="r-big" type="button"><span class="r-big-ico">Ω</span>Symbole</button>
-            </div>
-            <div class="r-group-label">Insérer</div>
-          </div>
-          <div class="r-group">
-            <div class="r-controls">
-              <button class="r-big ${ttsFloating.classList.contains('visible') ? 'on' : ''}" id="btnReadAloud" type="button"><span class="r-big-ico">🔊</span>Lire à<br>voix haute</button>
-              <button class="r-big ${pdfLocked ? 'on' : ''}" id="btnLockPdf" type="button"><span class="r-big-ico">🔒</span>Verrouiller<br>PDF</button>
-              <button class="r-big ${rulerOn ? 'on' : ''}" id="btnRuler" type="button"><span class="r-big-ico">📏</span>Règle de<br>lecture</button>
-            </div>
-            <div class="r-group-label">Aide TND</div>
-          </div>
-          <div class="r-group">
-            <div class="r-controls">
-              <button class="r-big on" id="btnPaperRule" type="button"><span class="r-big-ico">≡</span>Lignes ▾</button>
-              <div class="r-col">
-                <span class="r-small">Couleur · Papier</span>
-                <div class="r-row">
-                  <span class="r-small">⛶ Plein écran</span>
-                  <span class="r-small on">🗂 Onglets</span>
-                </div>
-              </div>
-            </div>
-            <div class="r-group-label">Mise en page</div>
-          </div>
-        `;
-        document.getElementById('btnDysFont').addEventListener('click', () => {
-          dysSpaced = !dysSpaced;
-          demoSheet.classList.toggle('dys-spaced', dysSpaced);
-          renderRibbon();
-        });
-        document.getElementById('btnReadAloud').addEventListener('click', toggleTts);
-        document.getElementById('btnLockPdf').addEventListener('click', () => {
-          pdfLocked = !pdfLocked;
-          renderRibbon();
-          renderSheet();
-        });
-        document.getElementById('btnRuler').addEventListener('click', () => {
-          rulerOn = !rulerOn;
-          renderRibbon();
-          renderSheet();
-        });
-        document.getElementById('btnPaperRule').addEventListener('click', () => {
-          paperMode = paperMode === 'ruled' ? 'grid' : paperMode === 'grid' ? 'blank' : 'ruled';
-          demoSheet.classList.toggle('grid-paper', paperMode === 'grid');
-          demoSheet.classList.toggle('blank-paper', paperMode === 'blank');
-        });
-      } else {
-        ribbonBody.innerHTML = `
-          <div class="r-group">
-            <div class="r-controls">
-              <button class="r-big" type="button"><span class="r-big-ico">↩</span>Annuler<br>trait</button>
-              <button class="r-big" type="button"><span class="r-big-ico">↪</span>Rétablir</button>
-            </div>
-            <div class="r-group-label">Annuler</div>
-          </div>
-          <div class="r-group">
-            <div class="r-controls">
-              <button class="r-big on" id="btnTypeMode" type="button"><span class="r-big-ico">⌨</span>Saisir</button>
-            </div>
-            <div class="r-group-label">Sélection</div>
-          </div>
-          <div class="r-group">
-            <div class="r-controls">
-              <button class="r-big" type="button"><span class="r-big-ico">🩹</span>Gomme</button>
-              <button class="r-big on" type="button"><span class="r-big-ico" style="color:#2563eb;">✒</span>Stylo bleu</button>
-              <button class="r-big" type="button"><span class="r-big-ico" style="color:#dc2626;">✒</span>Stylo rouge</button>
-              <button class="r-big" type="button"><span class="r-big-ico" style="background:#fef08a;padding:0 4px;border-radius:3px;">🖍</span>Surligneur</button>
-            </div>
-            <div class="r-group-label">Outils de dessin</div>
-          </div>
-          <div class="r-group">
-            <div class="r-controls">
-              <button class="r-big" type="button"><span class="r-big-ico">╱</span>Ligne</button>
-              <button class="r-big" type="button"><span class="r-big-ico">▭</span>Rectangle</button>
-              <button class="r-big" type="button"><span class="r-big-ico">○</span>Cercle</button>
-            </div>
-            <div class="r-group-label">Formes</div>
-          </div>
-        `;
-        document.getElementById('btnTypeMode').addEventListener('click', () => {
-          currentTab = 'accueil';
-          document.querySelectorAll('.r-tab[data-rtab]').forEach(x => x.classList.toggle('active', x.dataset.rtab === 'accueil'));
-          renderRibbon();
-        });
-      }
-    }
-
-    function renderSheet() {
-      const s = subjects[currentSubj];
-      const total = s.sheets.length + extraSheets;
-      const sh = s.sheets[Math.min(currentSheet, s.sheets.length - 1)];
-      titleText.textContent = `ErgoNote — ${s.title}`;
-      sheetHeading.textContent = s.title;
-
-      demoSheet.querySelectorAll('.sheet-line').forEach(el => el.remove());
-      const boxEl = document.getElementById('pdfDemoBox');
-      if (currentSheet >= s.sheets.length) {
-        const div = document.createElement('div');
-        div.className = 'sheet-line' + (rulerOn ? ' ruled-active' : '');
-        div.textContent = 'Nouvelle feuille vierge prête pour écrire ou coller une fiche.';
-        demoSheet.insertBefore(div, boxEl);
-      } else {
-        sh.lines.forEach((html, idx) => {
-          const div = document.createElement('div');
-          div.className = 'sheet-line' + (rulerOn && idx === ruledLine ? ' ruled-active' : '');
-          div.innerHTML = html;
-          div.addEventListener('click', () => {
-            ruledLine = idx;
-            if (!rulerOn) {
-              rulerOn = true;
-              renderRibbon();
-            }
-            renderSheet();
-          });
-          demoSheet.insertBefore(div, boxEl);
-        });
-      }
-
-      boxEl.classList.toggle('locked', pdfLocked);
-      document.getElementById('pdfDemoTag').textContent = pdfLocked
-        ? sh.boxTitle
-        : `${sh.boxTitle} (déverrouillé)`;
-      document.getElementById('pdfDemoContent').innerHTML = sh.boxBody;
-
-      const label = `Feuille ${currentSheet + 1} / ${total}`;
-      sheetCounterLabel.textContent = label;
-      sheetCorner.textContent = label;
-      prevSheetBtn.disabled = currentSheet === 0;
-      nextSheetBtn.disabled = currentSheet >= total - 1;
-    }
-
-    document.querySelectorAll('.r-tab[data-rtab]').forEach(t => {
-      t.addEventListener('click', () => {
-        document.querySelectorAll('.r-tab').forEach(x => x.classList.remove('active'));
-        t.classList.add('active');
-        currentTab = t.dataset.rtab;
-        renderRibbon();
-      });
-    });
-
-    document.querySelectorAll('.sec-tab[data-subj]').forEach(tab => {
-      tab.addEventListener('click', () => {
-        document.querySelectorAll('.sec-tab').forEach(x => x.classList.remove('active'));
-        tab.classList.add('active');
-        currentSubj = tab.dataset.subj;
-        currentSheet = 0;
-        extraSheets = 0;
-        ruledLine = 0;
-        renderSheet();
-      });
-    });
-
-    prevSheetBtn.addEventListener('click', () => {
-      if (currentSheet > 0) { currentSheet--; ruledLine = 0; renderSheet(); }
-    });
-    nextSheetBtn.addEventListener('click', () => {
-      const total = subjects[currentSubj].sheets.length + extraSheets;
-      if (currentSheet < total - 1) { currentSheet++; ruledLine = 0; renderSheet(); }
-    });
-    document.getElementById('addSheetBtn').addEventListener('click', () => {
-      extraSheets++;
-      currentSheet = subjects[currentSubj].sheets.length + extraSheets - 1;
-      renderSheet();
-    });
-
-    const ttsFloating = document.getElementById('ttsFloating');
-    const ttsStatus = document.getElementById('ttsStatus');
-    const ttsPauseBtn = document.getElementById('ttsPauseBtn');
-    let paused = false;
-
-    function stopTts() {
-      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
-      ttsFloating.classList.remove('visible');
-      paused = false;
-      ttsPauseBtn.textContent = 'Pause';
-      renderRibbon();
-    }
-
-    function toggleTts() {
-      if (ttsFloating.classList.contains('visible')) { stopTts(); return; }
-      const text = Array.from(demoSheet.querySelectorAll('.sheet-line')).map(n => n.textContent).join(' ');
-      ttsFloating.classList.add('visible');
-      ttsStatus.textContent = 'Lecture en cours…';
-      renderRibbon();
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-        const utt = new SpeechSynthesisUtterance(text);
-        utt.lang = 'fr-FR';
-        utt.onend = () => stopTts();
-        window.speechSynthesis.speak(utt);
-      }
-    }
-
-    ttsPauseBtn.addEventListener('click', () => {
-      paused = !paused;
-      if ('speechSynthesis' in window) {
-        if (paused) window.speechSynthesis.pause();
-        else window.speechSynthesis.resume();
-      }
-      ttsPauseBtn.textContent = paused ? 'Reprendre' : 'Pause';
-      ttsStatus.textContent = paused ? 'En pause' : 'Lecture en cours…';
-    });
-    document.getElementById('ttsStopBtn').addEventListener('click', stopTts);
-
-    renderRibbon();
-    renderSheet();
-
-    let zoomPct = 100;
-    const zoomPctLabel = document.getElementById('zoomPctLabel');
-    document.getElementById('zoomOutBtn').addEventListener('click', () => {
-      zoomPct = Math.max(50, zoomPct - 10);
-      zoomPctLabel.textContent = `${zoomPct}%`;
-    });
-    document.getElementById('zoomInBtn').addEventListener('click', () => {
-      zoomPct = Math.min(250, zoomPct + 10);
-      zoomPctLabel.textContent = `${zoomPct}%`;
-    });
-
     fetch('https://api.github.com/repos/Masterz42/ErgoNote/releases')
       .then(r => r.ok ? r.json() : [])
       .then(releases => {
