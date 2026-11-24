@@ -86,17 +86,20 @@ data.
 
 | File | What |
 |---|---|
-| `docs/images/hero.png` | The window as the README opens: tree, ribbon and a page |
-| `docs/images/diagrams.png` | A page with a pie chart and a bar and line chart drawn from their Mermaid source | Rendered by `cargo xtask screenshots` from the real window (`scripts/readme-screens.jsonl`) on 2026-10-20 | NoteCraft's own work |
-| `docs/images/page-source.png` | The page source view: the files of one page on the left, the page file with its head and body on the right | Rendered by `cargo xtask screenshots` from the real window (`scripts/readme-screens.jsonl`) on 2026-10-19 | NoteCraft's own work |
-| `docs/images/ribbon-home.png` | The Home tab of the ribbon |
-| `docs/images/ribbon-insert.png` | The Insert tab of the ribbon |
-| `docs/images/tags.png` | A page with to-do boxes and tags |
-| `docs/images/file-screen.png` | The File screen with the notebook covers |
-| `docs/images/html-page.png` | An HTML page with the preview |
-| `docs/images/equations.png` | Inline and display equations |
-| `docs/images/dark-green.png` | The dark green theme |
-| `docs/images/theme-switcher.png` | The theme menu open |
+| `docs/images/hero.png` | The window as the README opens: tree, ribbon and a page | Rendered by `cargo xtask screenshots` from the real window (`scripts/readme-screens.jsonl`) on 2026-11-24 | NoteCraft's own work |
+| `docs/images/diagrams.png` | A page with a pie chart and a bar and line chart drawn from their Mermaid source | Rendered by `cargo xtask screenshots` from the real window (`scripts/readme-screens.jsonl`) on 2026-11-24 | NoteCraft's own work |
+| `docs/images/page-source.png` | The page source view: the files of one page on the left, the page file with its head and body on the right | Rendered by `cargo xtask screenshots` from the real window (`scripts/readme-screens.jsonl`) on 2026-11-24 | NoteCraft's own work |
+| `docs/images/ribbon-home.png` | The Home tab of the ribbon | Rendered by `cargo xtask screenshots` from the real window (`scripts/readme-screens.jsonl`) on 2026-11-24 | NoteCraft's own work |
+| `docs/images/ribbon-draw.png` | The Draw tab of the ribbon | Rendered by `cargo xtask screenshots` from the real window (`scripts/readme-screens.jsonl`) on 2026-11-24 | NoteCraft's own work |
+| `docs/images/tags.png` | A page with to-do boxes and tags | Rendered by `cargo xtask screenshots` from the real window (`scripts/readme-screens.jsonl`) on 2026-11-24 | NoteCraft's own work |
+| `docs/images/file-screen.png` | The File screen with the notebook covers | Rendered by `cargo xtask screenshots` from the real window (`scripts/readme-screens.jsonl`) on 2026-11-24 | NoteCraft's own work |
+| `docs/images/html-page.png` | An HTML page with the preview | Rendered by `cargo xtask screenshots` from the real window (`scripts/readme-screens.jsonl`) on 2026-11-24 | NoteCraft's own work |
+| `docs/images/equations.png` | Inline and display equations | Rendered by `cargo xtask screenshots` from the real window (`scripts/readme-screens.jsonl`) on 2026-11-24 | NoteCraft's own work |
+| `docs/images/dark-green.png` | The dark green theme | Rendered by `cargo xtask screenshots` from the real window (`scripts/readme-screens.jsonl`) on 2026-11-24 | NoteCraft's own work |
+| `docs/images/theme-switcher.png` | The theme menu open | Rendered by `cargo xtask screenshots` from the real window (`scripts/readme-screens.jsonl`) on 2026-11-24 | NoteCraft's own work |
+| `docs/images/phone-simple.png` | The simplified phone layout: notebooks as large tiles and the top bar | Rendered by `ui_shot` from the real window (`scripts/phone-screens.jsonl`) on 2026-11-24 | NoteCraft's own work |
+| `docs/images/phone-page-simple.png` | The simplified phone page with its formatting bar and save floppy | Rendered by `ui_shot` from the real window (`scripts/phone-screens.jsonl`) on 2026-11-24 | NoteCraft's own work |
+| `docs/images/phone-page-simple-dark.png` | The same phone page in the dark theme: dark sheet, light writing | Rendered by `ui_shot` from the real window (`scripts/phone-screens.jsonl`) on 2026-11-24 | NoteCraft's own work |
 
 ## PDF printout rendering
 
