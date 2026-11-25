@@ -4,9 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#2f5fb3" />
-  <meta property="og:title" content="ErgoNote v2026.11.24 — Cahier numérique adapté TND" />
-  <meta property="og:description" content="Classeur numérique scolaire structuré par matières sur ordinateur, tablette et smartphone Android : prédiction 3 mots, correcteur pédagogique, dictée vocale, lecture synchronisée sur la page, feuilles A4 paginées et notifications de mise à jour." />
-  <title>ErgoNote v2026.11.24 — Cahier numérique adapté TND</title>
+  <meta property="og:title" content="ErgoNote v2026.11.25 — Cahier numérique adapté TND" />
+  <meta property="og:description" content="Classeur numérique scolaire structuré par matières sur ordinateur, tablette et smartphone Android : onglet Image & OCR PDF intelligent, tableau ergonomique, prédiction 3 mots, correcteur pédagogique, dictée vocale, lecture synchronisée sur la page, feuilles A4 paginées." />
+  <title>ErgoNote v2026.11.25 — Cahier numérique adapté TND</title>
   <style>
     :root {
       --bg: #f6f8fb;
@@ -790,7 +790,7 @@
       <div class="brand">
         <div class="brand-badge">E</div>
         <span>ErgoNote</span>
-        <span class="pill">v2026.11.24</span>
+        <span class="pill">v2026.11.25</span>
       </div>
       <div class="nav-links">
         <a href="#apercu">Aperçu</a>
@@ -813,10 +813,10 @@
         (DYS, TDAH, troubles du graphisme). Fonctionne hors ligne sur ordinateur, tablette et smartphone Android — 100 % gratuit et sans pub.
       </p>
       <div class="actions">
-        <a class="btn btn-primary" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v2026.11.24-Windows-x86_64.exe">Télécharger Windows (.exe)</a>
-        <a class="btn" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v2026.11.24-Android.apk">Télécharger Android (.apk)</a>
-        <a class="btn" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ergonote_2026.11.24_amd64.deb">Paquet Linux (.deb)</a>
-        <a class="btn" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v2026.11.24-Linux-x86_64">Binaire Linux</a>
+        <a class="btn btn-primary" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v2026.11.25-Windows-x86_64.exe">Télécharger Windows (.exe)</a>
+        <a class="btn" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v2026.11.25-Android.apk">Télécharger Android (.apk)</a>
+        <a class="btn" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ergonote_2026.11.25_amd64.deb">Paquet Linux (.deb)</a>
+        <a class="btn" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v2026.11.25-Linux-x86_64">Binaire Linux</a>
         <a class="btn btn-coffee" href="https://ko-fi.com/ergonote" target="_blank" rel="noopener">☕ Offrir un café</a>
         <a class="btn" href="https://github.com/Masterz42/ErgoNote" target="_blank" rel="noopener">Page GitHub</a>
       </div>
@@ -891,7 +891,16 @@
       <h2 class="sec-title">Historique des versions (depuis la v1.0)</h2>
       <div class="timeline">
         <details class="release" open>
-          <summary><span>v2026.11.24 (24/11/2026) — Nomenclature par date, recherche latérale, thème sombre &amp; barre smartphone</span><span class="pill">Actuelle</span></summary>
+          <summary><span>v2026.11.25 (25/11/2026) — Onglet Image &amp; OCR PDF intelligent, Tableau aligné &amp; APK Lenovo</span><span class="pill">Actuelle</span></summary>
+          <ul>
+            <li><strong>Onglet contextuel Image</strong> : rognage interactif, préréglages <strong>Scan N&amp;B</strong> et <strong>Contraste</strong>, rotations/retournements et verrouillage des images (retiré d'<em>Aide TND</em>).</li>
+            <li><strong>Extraction PDF &amp; OCR français structurée</strong> : extraction PDF native 100 % accents (Poppler) et intégration de <strong>PaddleOCR (<code>oar-ocr</code>)</strong> pour les scans/photos, avec deux modes : <strong>« Recréer la page modifiable »</strong> (titres H1/H2, puces à 2 niveaux, amorces en gras) et <strong>« Copie fidèle sur fond nettoyé »</strong>.</li>
+            <li><strong>Ruban Tableau compact &amp; suppression directe</strong> : 3 groupes alignés, sélecteur <em>Couleur</em> à pastilles, suppression via bouton rouge <code>×</code> ou clic droit avec confirmation, et largeurs adaptées à la feuille.</li>
+            <li><strong>Correctifs &amp; tablettes Lenovo</strong> : clic à droite hors de la feuille inoffensif, retrait du nom PDF au-dessus des images importées, effacement de la dernière lettre corrigé, <code>Ctrl+Z</code> complet après OCR/PDF, et <strong>APK signé <code>v1+v2+v3</code> compatible tablettes Lenovo</strong>.</li>
+          </ul>
+        </details>
+        <details class="release">
+          <summary><span>v2026.11.24 (24/11/2026) — Nomenclature par date, recherche latérale, thème sombre &amp; barre smartphone</span><span class="pill">+</span></summary>
           <ul>
             <li><strong>Nomenclature par date</strong> <code>AAAA.MM.JJ</code> : version <code>2026.11.24</code>, code Android <code>2026011024</code>, toujours strictement croissante pour Windows, Linux et les mises à jour.</li>
             <li><strong>Recherche latérale style Word</strong> : <code>Ctrl+F</code> / <code>Ctrl+E</code>, cartes de pages avec extrait surligné, fermeture par Échap, retour Android ou clic extérieur, ouverture du premier résultat avec Entrée.</li>
@@ -984,7 +993,7 @@
     </section>
 
     <section class="block" id="telechargement">
-      <h2 class="sec-title">Téléchargements (v2026.11.24 — 24/11/2026)</h2>
+      <h2 class="sec-title">Téléchargements (v2026.11.25 — 25/11/2026)</h2>
       <p style="color:var(--muted); font-size:0.9rem; margin-bottom:12px;">
         <span class="pill" id="totalDownloadsBadge">Téléchargements totaux : chargement…</span>
       </p>
@@ -992,18 +1001,20 @@
         <div class="dl-card">
           <strong>Windows (64 bits)</strong>
           <span id="winDownloads">Exécutable autonome .exe</span>
-          <a class="btn btn-primary" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v2026.11.24-Windows-x86_64.exe">Télécharger .exe</a>
+          <a class="btn btn-primary" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v2026.11.25-Windows-x86_64.exe">Télécharger .exe</a>
         </div>
         <div class="dl-card">
           <strong>Linux (x86_64)</strong>
           <span id="linuxDownloads">Paquet .deb, archive portable &amp; binaire</span>
-          <a class="btn btn-primary" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ergonote_2026.11.24_amd64.deb">Télécharger .deb</a>
-          <a class="btn" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v2026.11.24-Linux-x86_64">Binaire seul</a>
+          <a class="btn btn-primary" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ergonote_2026.11.25_amd64.deb">Télécharger .deb</a>
+          <a class="btn" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v2026.11.25-Linux-x86_64.tar.gz">Archive .tar.gz</a>
+          <a class="btn" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v2026.11.25-Linux-x86_64">Binaire seul</a>
         </div>
         <div class="dl-card">
-          <strong>Android (Smartphone &amp; Tablette)</strong>
-          <span id="androidDownloads">Adaptation auto téléphone / tablette (.apk)</span>
-          <a class="btn btn-primary" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v2026.11.24-Android.apk">Télécharger .apk</a>
+          <strong>Android (Smartphone &amp; Tablette Lenovo)</strong>
+          <span id="androidDownloads">APK signé v1+v2+v3 (téléphone &amp; tablette)</span>
+          <a class="btn btn-primary" href="https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v2026.11.25-Android.apk">Télécharger .apk</a>
+          <span style="font-size:0.78rem; color:var(--muted);">Tablette Lenovo : autoriser « Sources inconnues » ; si Play Protect bloque, toucher <strong>Plus de détails → Installer quand même</strong>.</span>
         </div>
         <div class="dl-card" style="border-color:#f59e0b; background:linear-gradient(180deg, #fffdf5 0%, #fffbeb 100%);">
           <strong style="color:#92400e;">Soutenir ErgoNote (100 % gratuit)</strong>
@@ -1016,12 +1027,26 @@
       <details class="prev-box" open>
         <summary>
           <span>Versions précédentes (3 dernières toujours conservées)</span>
-          <span class="pill">v1.7.2 · v1.7.1 · v1.6</span>
+          <span class="pill">v2026.11.24 · v1.7.2 · v1.7.1</span>
         </summary>
         <p class="prev-note">
           Les 3 versions précédentes restent toujours accessibles en téléchargement direct pour conserver vos habitudes ou revenir à une version antérieure (vos classeurs locaux restent compatibles).
         </p>
         <div class="prev-list">
+          <div class="prev-row">
+            <div class="prev-meta">
+              <strong>v2026.11.24 (24/11/2026)</strong>
+              <span>Recherche latérale style Word, thème sombre sur feuille &amp; barre smartphone</span>
+            </div>
+            <div class="prev-links">
+              <a class="btn-sm" href="https://github.com/Masterz42/ErgoNote/releases/download/v2026.11.24/ErgoNote-v2026.11.24-Windows-x86_64.exe">Windows .exe</a>
+              <a class="btn-sm" href="https://github.com/Masterz42/ErgoNote/releases/download/v2026.11.24/ergonote_2026.11.24_amd64.deb">Linux .deb</a>
+              <a class="btn-sm" href="https://github.com/Masterz42/ErgoNote/releases/download/v2026.11.24/ErgoNote-v2026.11.24-Linux-x86_64.tar.gz">Linux .tar.gz</a>
+              <a class="btn-sm" href="https://github.com/Masterz42/ErgoNote/releases/download/v2026.11.24/ErgoNote-v2026.11.24-Linux-x86_64">Binaire Linux</a>
+              <a class="btn-sm" href="https://github.com/Masterz42/ErgoNote/releases/download/v2026.11.24/ErgoNote-v2026.11.24-Android.apk">Android .apk</a>
+              <a class="btn-sm" href="https://github.com/Masterz42/ErgoNote/releases/tag/v2026.11.24" target="_blank" rel="noopener">Notes</a>
+            </div>
+          </div>
           <div class="prev-row">
             <div class="prev-meta">
               <strong>v1.7.2 (23/11/2026)</strong>
@@ -1048,20 +1073,6 @@
               <a class="btn-sm" href="https://github.com/Masterz42/ErgoNote/releases/download/v1.7.1/ErgoNote-v1.7.1-Linux-x86_64">Binaire Linux</a>
               <a class="btn-sm" href="https://github.com/Masterz42/ErgoNote/releases/download/v1.7.1/ErgoNote-v1.7.1-Android.apk">Android .apk</a>
               <a class="btn-sm" href="https://github.com/Masterz42/ErgoNote/releases/tag/v1.7.1" target="_blank" rel="noopener">Notes</a>
-            </div>
-          </div>
-          <div class="prev-row">
-            <div class="prev-meta">
-              <strong>v1.6 (20/11/2026)</strong>
-              <span>Thème bleu clair, ruban compacté &amp; zoom en bas à droite</span>
-            </div>
-            <div class="prev-links">
-              <a class="btn-sm" href="https://github.com/Masterz42/ErgoNote/releases/download/v1.6.0/ErgoNote-v1.6-Windows-x86_64.exe">Windows .exe</a>
-              <a class="btn-sm" href="https://github.com/Masterz42/ErgoNote/releases/download/v1.6.0/ergonote_1.6.0_amd64.deb">Linux .deb</a>
-              <a class="btn-sm" href="https://github.com/Masterz42/ErgoNote/releases/download/v1.6.0/ErgoNote-v1.6-Linux-x86_64.tar.gz">Linux .tar.gz</a>
-              <a class="btn-sm" href="https://github.com/Masterz42/ErgoNote/releases/download/v1.6.0/ErgoNote-v1.6-Linux-x86_64">Binaire Linux</a>
-              <a class="btn-sm" href="https://github.com/Masterz42/ErgoNote/releases/download/v1.6.0/ErgoNote-v1.6-Android.apk">Android .apk</a>
-              <a class="btn-sm" href="https://github.com/Masterz42/ErgoNote/releases/tag/v1.6.0" target="_blank" rel="noopener">Notes</a>
             </div>
           </div>
         </div>
@@ -1108,7 +1119,7 @@
             </div>
             <div class="field">
               <label for="homeFbVer">Version</label>
-              <input type="text" id="homeFbVer" name="version" value="v2026.11.24" maxlength="40" />
+              <input type="text" id="homeFbVer" name="version" value="v2026.11.25" maxlength="40" />
             </div>
           </div>
 
@@ -1132,7 +1143,7 @@
     </section>
 
     <footer>
-      <span>ErgoNote v2026.11.24 — 24/11/2026 — ErgoLib</span>
+      <span>ErgoNote v2026.11.25 — 25/11/2026 — ErgoLib</span>
       <div style="display:flex; gap:14px; flex-wrap:wrap;">
         <a href="retours.html" style="font-weight:600;">Signaler un bug</a>
         <a href="soutenir.html" style="color:#b45309; font-weight:600;">☕ Offrir un café</a>
@@ -1196,7 +1207,7 @@
           msgInput.focus();
           return;
         }
-        const version = verInput.value.trim() || 'v2026.11.24';
+        const version = verInput.value.trim() || 'v2026.11.25';
         const subject = `[ErgoNote ${version} · ${osSelect.value}] ${typeSelect.value}`;
         subjectInput.value = subject;
         const payload = {
