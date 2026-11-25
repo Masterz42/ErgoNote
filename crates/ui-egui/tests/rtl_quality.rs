@@ -1,4 +1,4 @@
-//! What writing Arabic in NoteCraft actually does, measured.
+//! What writing Arabic in ErgoNote actually does, measured.
 //!
 //! The owner's bar is that the caret and the right-to-left experience are the best of any
 //! note taking application (`work/rtl-and-caret-bar.md` in the planning repo). A claim
@@ -17,7 +17,7 @@
 //! sorting names by Arabic collation rather than by code point.
 
 use egui_kittest::Harness;
-use notecraft_ui_egui::{bidi, fonts, theme::Theme};
+use ergonote_ui_egui::{bidi, fonts, theme::Theme};
 
 /// One sentence of plain Arabic: "what you can do here".
 const LINE: &str = "ما الذي يمكنك فعله هنا";
@@ -131,7 +131,7 @@ fn a_triple_click_does_not_take_the_line_yet() {
 /// glyph is drawn. The page `النص (مثال` was rendered, then the same with a closing
 /// bracket, and the two pictures differ in exactly one 9 by 28 patch: the bracket. In the
 /// first, the glyph drawn is `)`, to the right of `مثال` and left of `النص`, which is
-/// where and how it belongs. egui mirrors it; nothing in NoteCraft has to.
+/// where and how it belongs. egui mirrors it; nothing in ErgoNote has to.
 ///
 /// What is asserted here is the part a test can hold: the characters reach egui as they
 /// were typed, so the mirroring is egui's and would be lost if a run were ever handed over
@@ -153,14 +153,14 @@ fn a_bracket_in_a_right_to_left_line_reaches_egui_as_it_was_typed() {
 /// way, by pulling the words apart, which is what leaves the rivers of white down a
 /// justified Arabic page.
 ///
-/// Measured: **it works**, in the face the page is drawn with. `notecraft_text::kashida`
+/// Measured: **it works**, in the face the page is drawn with. `ergonote_text::kashida`
 /// picks the joins to stretch and egui shapes the tatweels into the words, so the line
 /// reaches the column within one tatweel of the target with every space exactly as wide as
-/// it was. Set `NOTECRAFT_UI_VISUAL_DIR` to look at it.
+/// it was. Set `ERGONOTE_UI_VISUAL_DIR` to look at it.
 ///
 /// Wired into the window on 2026-10-19: the Home tab's alignment menu has a Justify
 /// entry, the page records which paragraphs are justified on a line in its head
-/// (`notecraft_model::justify`), and the painter stretches them. This test is the engine
+/// (`ergonote_model::justify`), and the painter stretches them. This test is the engine
 /// on one line; the next one is the paragraph as the page draws it.
 #[test]
 fn a_line_is_justified_by_stretching_the_letters_not_the_spaces() {
@@ -191,7 +191,7 @@ fn a_line_is_justified_by_stretching_the_letters_not_the_spaces() {
         // The strongest of Word's three: this test is about whether kashida can fill a
         // line at all, and Low and Medium are deliberate ceilings that may leave one
         // short. Which setting leaves what is measured in the test below.
-        let out = notecraft_text::kashida::justify(SENTENCE, COLUMN, notecraft_model::justify::Strength::High, &mut width);
+        let out = ergonote_text::kashida::justify(SENTENCE, COLUMN, ergonote_model::justify::Strength::High, &mut width);
         let step = width("ـ");
         (natural, width(&out), step, out)
     });
@@ -200,10 +200,10 @@ fn a_line_is_justified_by_stretching_the_letters_not_the_spaces() {
     assert!(filled <= COLUMN, "it does not run past the column: {filled}");
     assert!(COLUMN - filled <= step + 0.5, "and it gets there: {natural} to {filled} of {COLUMN}, one step is {step}");
     // Only tatweels were added: every word, and every space between them, is untouched.
-    let stripped: String = out.chars().filter(|c| *c != notecraft_text::kashida::TATWEEL).collect();
+    let stripped: String = out.chars().filter(|c| *c != ergonote_text::kashida::TATWEEL).collect();
     assert_eq!(stripped, SENTENCE);
     assert_eq!(out.matches(' ').count(), SENTENCE.matches(' ').count(), "no space was widened or added");
-    assert!(out.contains(notecraft_text::kashida::TATWEEL), "something was stretched");
+    assert!(out.contains(ergonote_text::kashida::TATWEEL), "something was stretched");
     picture(SENTENCE, &out, COLUMN);
 }
 
@@ -213,7 +213,7 @@ fn a_line_is_justified_by_stretching_the_letters_not_the_spaces() {
 /// Measured: **it works**. `bidi::stretched` is what the painter calls for a paragraph the
 /// page has marked justified. It walks the paragraph's lines, stretches each but the last,
 /// and leaves the words alone: what comes back is the same sentences with tatweels in the
-/// joins. Set `NOTECRAFT_UI_VISUAL_DIR` to look at it.
+/// joins. Set `ERGONOTE_UI_VISUAL_DIR` to look at it.
 ///
 /// The last line is the part worth saying out loud. A justified paragraph whose closing
 /// half-sentence is pulled out to the margin is the mark of a bad typesetter, and every
@@ -228,7 +228,7 @@ fn a_whole_paragraph_is_justified_except_its_last_line() {
     let t = Theme::DEFAULT.tokens();
     let (lines, stretched, tatweels) = in_frame(|ui| {
         let pieces = bidi::plain(PARAGRAPH, SIZE, &t);
-        let (out, moved) = bidi::stretched(ui, PARAGRAPH, &pieces, SIZE, COLUMN, notecraft_model::justify::Strength::High);
+        let (out, moved) = bidi::stretched(ui, PARAGRAPH, &pieces, SIZE, COLUMN, ergonote_model::justify::Strength::High);
         // Every line as it is drawn: its left edge and its right edge in the column.
         let (drawn, _) = bidi::runs(ui, &out, &moved, SIZE, COLUMN, None);
         let mut rows: Vec<(f32, f32, f32)> = Vec::new();
@@ -243,7 +243,7 @@ fn a_whole_paragraph_is_justified_except_its_last_line() {
             }
         }
         rows.sort_by(|a, b| a.0.total_cmp(&b.0));
-        let count = out.chars().filter(|c| *c == notecraft_text::kashida::TATWEEL).count();
+        let count = out.chars().filter(|c| *c == ergonote_text::kashida::TATWEEL).count();
         (rows, out, count)
     });
 
@@ -262,7 +262,7 @@ fn a_whole_paragraph_is_justified_except_its_last_line() {
 
     // Nothing but tatweels was added, and no space was widened or taken away.
     assert!(tatweels > 0, "something was stretched");
-    let stripped: String = stretched.chars().filter(|c| *c != notecraft_text::kashida::TATWEEL).collect();
+    let stripped: String = stretched.chars().filter(|c| *c != ergonote_text::kashida::TATWEEL).collect();
     assert_eq!(stripped, PARAGRAPH, "the words are the writer's own");
     assert_eq!(stretched.matches(' ').count(), PARAGRAPH.matches(' ').count(), "no space was widened or added");
     paragraph_picture(PARAGRAPH, &stretched, COLUMN, SIZE);
@@ -270,10 +270,10 @@ fn a_whole_paragraph_is_justified_except_its_last_line() {
 
 /// Draws the ragged paragraph above the justified one.
 fn paragraph_picture(plain: &str, justified: &str, column: f32, size: f32) {
-    let Some(dir) = std::env::var_os("NOTECRAFT_UI_VISUAL_DIR") else { return };
+    let Some(dir) = std::env::var_os("ERGONOTE_UI_VISUAL_DIR") else { return };
     let dir = std::path::PathBuf::from(dir);
     let _ = std::fs::create_dir_all(&dir);
-    let t = Theme { mode: notecraft_ui_egui::theme::Mode::Light, accent: notecraft_ui_egui::theme::Accent::Default }.tokens();
+    let t = Theme { mode: ergonote_ui_egui::theme::Mode::Light, accent: ergonote_ui_egui::theme::Accent::Default }.tokens();
     let (plain, justified) = (plain.to_string(), justified.to_string());
     let mut h = Harness::builder().with_size(egui::vec2(column + 48.0, 320.0)).with_pixels_per_point(2.0).wgpu().build_ui(move |ui| {
         fonts::install_once(ui.ctx());
@@ -300,12 +300,12 @@ fn paragraph_picture(plain: &str, justified: &str, column: f32, size: f32) {
 }
 
 /// Draws the ragged line above the justified one, so the difference can be looked at
-/// rather than argued about. Only when `NOTECRAFT_UI_VISUAL_DIR` says where to put it.
+/// rather than argued about. Only when `ERGONOTE_UI_VISUAL_DIR` says where to put it.
 fn picture(plain: &str, justified: &str, column: f32) {
-    let Some(dir) = std::env::var_os("NOTECRAFT_UI_VISUAL_DIR") else { return };
+    let Some(dir) = std::env::var_os("ERGONOTE_UI_VISUAL_DIR") else { return };
     let dir = std::path::PathBuf::from(dir);
     let _ = std::fs::create_dir_all(&dir);
-    let t = Theme { mode: notecraft_ui_egui::theme::Mode::Light, accent: notecraft_ui_egui::theme::Accent::Default }.tokens();
+    let t = Theme { mode: ergonote_ui_egui::theme::Mode::Light, accent: ergonote_ui_egui::theme::Accent::Default }.tokens();
     let (plain, justified) = (plain.to_string(), justified.to_string());
     let mut h = Harness::builder().with_size(egui::vec2(column + 40.0, 150.0)).with_pixels_per_point(2.0).wgpu().build_ui(move |ui| {
         fonts::install_once(ui.ctx());
@@ -415,20 +415,20 @@ fn the_words_of_an_arabic_name_are_drawn_in_reading_order_in_the_window() {
 ///
 /// What it does now is what `dir` on a containing element does in a browser, and what a
 /// section direction does in Word: the paragraph's own mark wins, then the page, then the
-/// paragraph's first strong letter. `notecraft_model::direction_in` is the rule, and this
+/// paragraph's first strong letter. `ergonote_model::direction_in` is the rule, and this
 /// test drives the page painter itself rather than the rule, so the wiring is measured too.
 #[test]
 fn a_page_set_right_to_left_lays_out_english_that_way() {
     const ENGLISH: &str = "Notes outlive the program.";
     let t = Theme::DEFAULT.tokens();
     // The left edge of the words as they are drawn, and whether the page painter drew them.
-    let edge_of = |page: Option<notecraft_model::Dir>| -> f32 {
+    let edge_of = |page: Option<ergonote_model::Dir>| -> f32 {
         let h = harness();
-        let blocks = notecraft_ui_egui::preview::blocks_for(notecraft_model::PageFormat::Cmgfm, ENGLISH);
+        let blocks = ergonote_ui_egui::preview::blocks_for(ergonote_model::PageFormat::Cmgfm, ENGLISH);
         let mut frame = h.ctx.run_ui(egui::RawInput::default(), |ui| {
             fonts::install_once(ui.ctx());
             ui.set_width(560.0);
-            notecraft_ui_egui::preview::show(ui, &blocks, std::path::Path::new("."), &t, page, &Default::default());
+            ergonote_ui_egui::preview::show(ui, &blocks, std::path::Path::new("."), &t, page, &Default::default());
         });
         let left = frame
             .shapes
@@ -443,8 +443,8 @@ fn a_page_set_right_to_left_lays_out_english_that_way() {
     };
 
     let loose = edge_of(None);
-    let right_to_left = edge_of(Some(notecraft_model::Dir::Rtl));
-    let left_to_right = edge_of(Some(notecraft_model::Dir::Ltr));
+    let right_to_left = edge_of(Some(ergonote_model::Dir::Rtl));
+    let left_to_right = edge_of(Some(ergonote_model::Dir::Ltr));
     assert!(loose.is_finite() && right_to_left.is_finite(), "the words were drawn both ways: {loose} and {right_to_left}");
     // A page that says nothing leaves English where English goes, and so does a page set
     // the same way. A page set the other way moves the line across to the far edge.
@@ -452,21 +452,21 @@ fn a_page_set_right_to_left_lays_out_english_that_way() {
     assert!(right_to_left > loose + 100.0, "the page carries the paragraph to the right edge: {loose} then {right_to_left}");
 
     // And the rule underneath, in the three cases that matter.
-    use notecraft_model::{Dir, direction_in, text::set_direction};
+    use ergonote_model::{Dir, direction_in, text::set_direction};
     assert_eq!(direction_in(ENGLISH, Some(Dir::Rtl)), Dir::Rtl, "the page decides for a paragraph with no mark");
     assert_eq!(direction_in(&set_direction(ENGLISH, Some(Dir::Ltr)), Some(Dir::Rtl)), Dir::Ltr, "the paragraph's own mark wins");
     assert_eq!(direction_in(ENGLISH, None), Dir::Ltr, "and a page that says nothing leaves it to the words");
 }
 
 /// 1.8 of the bar again, at Word's three strengths. Justify Low, Justify Medium and
-/// Justify High decide how many kashidas a line may take, and NoteCraft has all three under
+/// Justify High decide how many kashidas a line may take, and ErgoNote has all three under
 /// those names (`docs/rtl-in-word-and-onenote.md`).
 ///
 /// Measured: **the bar**, drawn through the page painter. Each strength is a ceiling rather
 /// than a target, so a line the weakest setting can already fill looks the same at all
 /// three; the three part company on a hungry line, which is what this paragraph of long
 /// words in a narrow column gives. At every strength only tatweels are added, no space is
-/// touched and the last line is left where it fell. Set `NOTECRAFT_UI_VISUAL_DIR` to see
+/// touched and the last line is left where it fell. Set `ERGONOTE_UI_VISUAL_DIR` to see
 /// them side by side.
 #[test]
 fn the_three_justify_strengths_differ_on_the_page() {
@@ -476,7 +476,7 @@ fn the_three_justify_strengths_differ_on_the_page() {
     // weaker settings cannot close the gap. A paragraph of short words fills easily and
     // then all three settings draw the same line, which is the point of a ceiling.
     const PARAGRAPH: &str = "الاستخدام المعلومات البرمجيات الملاحظات التطبيقات المستندات الاحتياطي الصفحات المرفقات الاستعراض";
-    use notecraft_model::justify::Strength;
+    use ergonote_model::justify::Strength;
     let t = Theme::DEFAULT.tokens();
 
     let stretched_at = |strength: Strength| -> String {
@@ -486,7 +486,7 @@ fn the_three_justify_strengths_differ_on_the_page() {
         })
     };
     let counts: Vec<usize> =
-        Strength::ALL.iter().map(|s| stretched_at(*s).chars().filter(|c| *c == notecraft_text::kashida::TATWEEL).count()).collect();
+        Strength::ALL.iter().map(|s| stretched_at(*s).chars().filter(|c| *c == ergonote_text::kashida::TATWEEL).count()).collect();
     let (low, medium, high) = (counts[0], counts[1], counts[2]);
     assert!(low > 0, "even the weakest setting stretches the lines: {counts:?}");
     assert!(low < medium && medium < high, "the three are three: {counts:?}");
@@ -494,7 +494,7 @@ fn the_three_justify_strengths_differ_on_the_page() {
     for strength in Strength::ALL {
         let out = stretched_at(strength);
         // Only tatweels were added, and no space was widened or taken away.
-        let stripped: String = out.chars().filter(|c| *c != notecraft_text::kashida::TATWEEL).collect();
+        let stripped: String = out.chars().filter(|c| *c != ergonote_text::kashida::TATWEEL).collect();
         assert_eq!(stripped, PARAGRAPH, "{strength:?} added nothing but tatweels");
         assert_eq!(out.matches(' ').count(), PARAGRAPH.matches(' ').count(), "{strength:?} widened no space");
 
@@ -526,7 +526,7 @@ fn the_three_justify_strengths_differ_on_the_page() {
 }
 
 /// Each drawn line of `text` in a column: its top, its left edge and its right edge.
-fn drawn_lines(text: &str, size: f32, column: f32, t: &notecraft_ui_egui::theme::Tokens) -> Vec<(f32, f32, f32)> {
+fn drawn_lines(text: &str, size: f32, column: f32, t: &ergonote_ui_egui::theme::Tokens) -> Vec<(f32, f32, f32)> {
     in_frame(|ui| {
         let pieces = bidi::plain(text, size, t);
         let (drawn, _) = bidi::runs(ui, text, &pieces, size, column, None);
@@ -548,10 +548,10 @@ fn drawn_lines(text: &str, size: f32, column: f32, t: &notecraft_ui_egui::theme:
 
 /// The ragged paragraph and then the three strengths, one under another.
 fn strengths_picture(plain: &str, stretched: &[String; 3], column: f32, size: f32) {
-    let Some(dir) = std::env::var_os("NOTECRAFT_UI_VISUAL_DIR") else { return };
+    let Some(dir) = std::env::var_os("ERGONOTE_UI_VISUAL_DIR") else { return };
     let dir = std::path::PathBuf::from(dir);
     let _ = std::fs::create_dir_all(&dir);
-    let t = Theme { mode: notecraft_ui_egui::theme::Mode::Light, accent: notecraft_ui_egui::theme::Accent::Default }.tokens();
+    let t = Theme { mode: ergonote_ui_egui::theme::Mode::Light, accent: ergonote_ui_egui::theme::Accent::Default }.tokens();
     let labels = ["ragged", "low", "medium", "high"];
     let all: Vec<String> = std::iter::once(plain.to_string()).chain(stretched.iter().cloned()).collect();
     let mut h = Harness::builder().with_size(egui::vec2(column + 90.0, 560.0)).with_pixels_per_point(2.0).wgpu().build_ui(move |ui| {
@@ -685,13 +685,13 @@ fn a_line_that_starts_in_latin_reads_the_way_the_page_does() {
     const TODO: &str = "TODO: راجع هذه الصفحة";
     let t = Theme::DEFAULT.tokens();
     // Where `TODO:` and the first Arabic word are drawn, by the page painter.
-    let places = |page: Option<notecraft_model::Dir>| -> (f32, f32) {
+    let places = |page: Option<ergonote_model::Dir>| -> (f32, f32) {
         let h = harness();
-        let blocks = notecraft_ui_egui::preview::blocks_for(notecraft_model::PageFormat::Cmgfm, TODO);
+        let blocks = ergonote_ui_egui::preview::blocks_for(ergonote_model::PageFormat::Cmgfm, TODO);
         let mut frame = h.ctx.run_ui(egui::RawInput::default(), |ui| {
             fonts::install_once(ui.ctx());
             ui.set_width(560.0);
-            notecraft_ui_egui::preview::show(ui, &blocks, std::path::Path::new("."), &t, page, &Default::default());
+            ergonote_ui_egui::preview::show(ui, &blocks, std::path::Path::new("."), &t, page, &Default::default());
         });
         let at = |word: &str| {
             frame
@@ -711,7 +711,7 @@ fn a_line_that_starts_in_latin_reads_the_way_the_page_does() {
         out
     };
 
-    let (latin, arabic) = places(Some(notecraft_model::Dir::Rtl));
+    let (latin, arabic) = places(Some(ergonote_model::Dir::Rtl));
     assert!(latin.is_finite() && arabic.is_finite(), "both words were drawn: {latin} and {arabic}");
     assert!(latin > arabic, "on a right-to-left page the line starts at the right, with TODO there: {latin} and {arabic}");
     // A page that says nothing leaves the line to its first letter, which is Latin.
@@ -720,7 +720,7 @@ fn a_line_that_starts_in_latin_reads_the_way_the_page_does() {
 
     // A click and the caret go through the same layout as the drawing, or a click on
     // `TODO:` would land in the Arabic beside it.
-    let rtl = Some(notecraft_model::Dir::Rtl);
+    let rtl = Some(ergonote_model::Dir::Rtl);
     let near_right = bidi::hit(TODO, egui::vec2(395.0, 8.0), 16.0, 400.0, rtl);
     assert!(near_right <= "TODO:".len(), "a click at the right edge lands in TODO: (byte {near_right})");
     let near_left = bidi::hit(TODO, egui::vec2(5.0, 8.0), 16.0, 400.0, rtl);

@@ -1,5 +1,5 @@
 #![deny(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::unimplemented, clippy::todo, clippy::unreachable)]
-//! NoteCraft's text layer: a spike, not a finished crate.
+//! ErgoNote's text layer: a spike, not a finished crate.
 //!
 //! **Why it exists.** egui lays a line out and places a caret in it, and for Latin that is
 //! fine. For Arabic it is not: `crates/ui-egui/tests/arabic_layout.rs` measures what goes
@@ -9,7 +9,7 @@
 //!
 //! **What this is.** [parley] does both properly: it shapes with HarfRust, runs the Unicode
 //! bidirectional algorithm, breaks lines, and answers where a click landed in *characters*.
-//! This crate wraps the part NoteCraft needs and keeps egui out, so the UI can paint it and
+//! This crate wraps the part ErgoNote needs and keeps egui out, so the UI can paint it and
 //! the model can be tested without a window. The sibling PhotoCraft uses parley the same way.
 //!
 //! **What it does not do yet.** Painting. parley hands back glyph ids and positions; egui
@@ -24,7 +24,7 @@ use parley::style::{FontFamily, FontFamilyName};
 use parley::{Alignment, AlignmentOptions, FontContext, Layout, LayoutContext, StyleProperty};
 use std::sync::Arc;
 
-/// The faces NoteCraft bundles, each under the SIL Open Font License 1.1 (texts in
+/// The faces ErgoNote bundles, each under the SIL Open Font License 1.1 (texts in
 /// `assets/fonts/OFL-*.txt`, provenance in `ATTRIBUTION.md`). They live here, in the lowest
 /// crate that needs them, so the window and the text layer share one copy of the bytes.
 pub mod fonts {
@@ -136,9 +136,9 @@ impl Text {
         let mut layout: Layout<Brush> = builder.build(text);
         layout.break_all_lines(width);
         // Which edge the lines hang from. parley's `Start` follows the base direction it
-        // infers; NoteCraft decides that itself (the mark at the start of the line, else
+        // infers; ErgoNote decides that itself (the mark at the start of the line, else
         // its first strong letter), so the geometry here and the drawing agree.
-        let align = if notecraft_model::direction(text).is_rtl() { Alignment::Right } else { Alignment::Left };
+        let align = if ergonote_model::direction(text).is_rtl() { Alignment::Right } else { Alignment::Left };
         layout.align(align, AlignmentOptions::default());
         layout
     }

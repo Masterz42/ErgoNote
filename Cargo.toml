@@ -1,7 +1,7 @@
 [workspace]
 resolver = "3"
 members = ["crates/*", "apps/*", "android", "xtask", "docs/demo/scripts"]
-default-members = ["crates/*", "apps/notecraft", "apps/notecraft-cli", "apps/notecraft-setup", "xtask"]
+default-members = ["crates/*", "apps/ergonote", "apps/ergonote-cli", "apps/ergonote-setup", "xtask"]
 
 [workspace.package]
 version = "2026.11.25"
@@ -12,18 +12,18 @@ repository = "https://github.com/Masterz42/ErgoNote"
 publish = false
 
 [workspace.dependencies]
-notecraft-model = { path = "crates/model" }
-notecraft-math = { path = "crates/math" }
-notecraft-diagram = { path = "crates/diagram" }
-notecraft-ink = { path = "crates/ink" }
-notecraft-formats = { path = "crates/formats" }
-notecraft-text = { path = "crates/text" }
-notecraft-onenote = { path = "crates/onenote" }
-notecraft-import = { path = "crates/import" }
-notecraft-store = { path = "crates/store" }
-notecraft-engine = { path = "crates/engine" }
-notecraft-mcp = { path = "crates/mcp" }
-notecraft-ui-egui = { path = "crates/ui-egui" }
+ergonote-model = { path = "crates/model" }
+ergonote-math = { path = "crates/math" }
+ergonote-diagram = { path = "crates/diagram" }
+ergonote-ink = { path = "crates/ink" }
+ergonote-formats = { path = "crates/formats" }
+ergonote-text = { path = "crates/text" }
+ergonote-onenote = { path = "crates/onenote" }
+ergonote-import = { path = "crates/import" }
+ergonote-store = { path = "crates/store" }
+ergonote-engine = { path = "crates/engine" }
+ergonote-mcp = { path = "crates/mcp" }
+ergonote-ui-egui = { path = "crates/ui-egui" }
 craft-i18n = { git = "https://github.com/storytold/craft-libs", rev = "92d392cff132eaf53e13afff77f38b5c11b73aa0" }
 
 # Versions match the sibling Craft apps (storytold/wordcraft).
@@ -49,14 +49,14 @@ rfd = { version = "0.15", default-features = false, features = ["xdg-portal", "t
 # The system clipboard: HTML plus its plain-text alternative, pictures and files. Keep
 # Wayland data-control enabled so rich clipboard writes reach native Wayland applications.
 arboard = { version = "3.7", default-features = false, features = ["image-data", "wayland-data-control"] }
-# The log facade. The app routes it into its log file (apps/notecraft/src/applog.rs).
+# The log facade. The app routes it into its log file (apps/ergonote/src/applog.rs).
 log = "0.4"
 image = { version = "0.25", default-features = false, features = ["png", "jpeg", "gif", "webp"] }
 # OneNote packages (.onepkg) are Windows cabinet files, usually LZX compressed (issue #17).
 # Pure Rust, reading only; only crates/import names it.
 cab = "0.6"
 # JPEG XL pictures (issue #29): a pure Rust decoder. It plugs into `image` through image's decoding
-# hooks, so egui_extras' loader draws a .jxl like any other picture. Decoding only; NoteCraft never
+# hooks, so egui_extras' loader draws a .jxl like any other picture. Decoding only; ErgoNote never
 # writes JPEG XL.
 jxl-oxide = { version = "0.12", default-features = false, features = ["image"] }
 ocrs = { version = "0.14", default-features = false, features = ["rten"] }
@@ -66,14 +66,14 @@ ort = { version = "=2.0.0-rc.15", default-features = false, features = ["downloa
 hayro = { version = "=0.5.0", default-features = false, features = ["embed-fonts"] }
 # A drop-in SystemTime/Instant: std's own panics with "time not implemented on this
 # platform" on wasm32-unknown-unknown, which has no clock. This is std's types everywhere
-# else and Date.now() there, with no wasm-bindgen glue needed in notecraft-model itself.
+# else and Date.now() there, with no wasm-bindgen glue needed in ergonote-model itself.
 web-time = "1.1"
 # The user's UTC offset, read once when the desktop app starts, so timestamps are shown on
 # the user's clock. Already in the tree through zip; only the app names it.
 time = { version = "0.3", default-features = false, features = ["std", "local-offset"] }
 
 # Mermaid 0.3.1 uses std::time::Instant in its layout metrics on the ordinary render path.
-# Those metrics are discarded by NoteCraft, but Instant::now() panics on wasm32-unknown-unknown.
+# Those metrics are discarded by ErgoNote, but Instant::now() panics on wasm32-unknown-unknown.
 # Keep the upstream crate local until its WASM-safe timer fix is released.
 [patch.crates-io]
 mermaid-rs-renderer = { path = "vendor/mermaid-rs-renderer" }

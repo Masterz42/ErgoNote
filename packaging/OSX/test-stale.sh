@@ -11,19 +11,19 @@ case "$ARCH" in
   *) echo "test-stale.sh expects aarch64 or x86_64" >&2; exit 2 ;;
 esac
 SOURCE="$SOURCE_ROOT/$TARGET/release"
-for file in notecraft notecraft-cli .notecraft-osx-provenance; do
+for file in ergonote ergonote-cli .ergonote-osx-provenance; do
   [[ -f "$SOURCE/$file" ]] || { echo "run package.sh for $ARCH before test-stale.sh: missing $SOURCE/$file" >&2; exit 1; }
 done
 
-WORK="$(mktemp -d "${TMPDIR:-/tmp}/notecraft-stale.XXXXXX")"
+WORK="$(mktemp -d "${TMPDIR:-/tmp}/ergonote-stale.XXXXXX")"
 trap 'rm -rf -- "$WORK"' EXIT
 trap 'exit 129' HUP
 trap 'exit 130' INT
 trap 'exit 143' TERM
 DEST="$WORK/target/$TARGET/release"
 mkdir -p "$DEST"
-cp "$SOURCE/notecraft" "$SOURCE/notecraft-cli" "$SOURCE/.notecraft-osx-provenance" "$DEST/"
-RECORD="$DEST/.notecraft-osx-provenance"
+cp "$SOURCE/ergonote" "$SOURCE/ergonote-cli" "$SOURCE/.ergonote-osx-provenance" "$DEST/"
+RECORD="$DEST/.ergonote-osx-provenance"
 
 expect_rejection() {
   if CARGO_TARGET_DIR="$WORK/target" DIST="$WORK/dist" "$ROOT/packaging/OSX/package.sh" --arch "$ARCH" --no-build > "$WORK/output" 2>&1; then
@@ -37,13 +37,13 @@ expect_rejection() {
   fi
 }
 
-{ printf '0.0.0-stale\n'; tail -n +2 "$SOURCE/.notecraft-osx-provenance"; } > "$RECORD"
+{ printf '0.0.0-stale\n'; tail -n +2 "$SOURCE/.ergonote-osx-provenance"; } > "$RECORD"
 expect_rejection
-cp "$SOURCE/.notecraft-osx-provenance" "$RECORD"
-printf 'changed' >> "$DEST/notecraft"
+cp "$SOURCE/.ergonote-osx-provenance" "$RECORD"
+printf 'changed' >> "$DEST/ergonote"
 expect_rejection
-cp "$SOURCE/.notecraft-osx-provenance" "$RECORD"
-cp "$SOURCE/notecraft" "$DEST/notecraft"
-printf 'changed' >> "$DEST/notecraft-cli"
+cp "$SOURCE/.ergonote-osx-provenance" "$RECORD"
+cp "$SOURCE/ergonote" "$DEST/ergonote"
+printf 'changed' >> "$DEST/ergonote-cli"
 expect_rejection
 echo "stale version and changed binary rejected for $ARCH"

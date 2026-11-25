@@ -18,7 +18,7 @@
 use crate::{Dab, Drawing, MAX_STROKES, Rgb, Stroke, Tool, shape};
 
 /// Our namespace for the readings kept beside the drawn outline.
-pub const NS: &str = "https://notecraft.org/ns/ink";
+pub const NS: &str = "https://ergonote.org/ns/ink";
 
 /// How much of a file this will read, in bytes. A drawing is small; anything approaching
 /// this is a mistake or an attack, and is refused before it is parsed.

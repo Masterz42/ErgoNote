@@ -166,11 +166,11 @@ pub fn set_html(html: &str, text: &str) -> Result<(), String> {
 
 /// The rich HTML flavor for a copied page link.
 pub fn html_link(title: &str, uri: &str) -> String {
-    format!("<p><a href=\"{}\">{}</a></p>", notecraft_formats::html::escape(uri), notecraft_formats::html::escape(title))
+    format!("<p><a href=\"{}\">{}</a></p>", ergonote_formats::html::escape(uri), ergonote_formats::html::escape(title))
 }
 
 // X11 and Wayland applications serve clipboard data on request. Keep the writer alive
-// while NoteCraft runs so the copied HTML and its fallback remain available to other apps.
+// while ErgoNote runs so the copied HTML and its fallback remain available to other apps.
 thread_local! {
     static WRITER: std::cell::RefCell<Option<arboard::Clipboard>> = const { std::cell::RefCell::new(None) };
 }
@@ -222,7 +222,7 @@ fn with_reader<T>(read: impl FnOnce(&mut arboard::Clipboard) -> Option<T>) -> Op
 /// enough: a person cannot paste twice in the same second by hand, and `attach_bytes`
 /// makes the name unique anyway if they manage it.
 pub fn picture_name() -> String {
-    let now = notecraft_model::time::iso_now();
+    let now = ergonote_model::time::iso_now();
     let stamp: String = now.chars().filter(char::is_ascii_alphanumeric).collect();
     format!("pasted-{stamp}.png")
 }
@@ -257,6 +257,6 @@ mod tests {
 
     #[test]
     fn a_copied_page_link_has_an_html_anchor() {
-        assert_eq!(html_link("A <page>", "notecraft:/book/page?a&b"), "<p><a href=\"notecraft:/book/page?a&amp;b\">A &lt;page&gt;</a></p>");
+        assert_eq!(html_link("A <page>", "ergonote:/book/page?a&b"), "<p><a href=\"ergonote:/book/page?a&amp;b\">A &lt;page&gt;</a></p>");
     }
 }

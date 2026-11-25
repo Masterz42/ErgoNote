@@ -4,7 +4,7 @@
 //! way, so the shapes live here rather than in either of them.
 
 use crate::commands::{Output, Params, registry};
-use notecraft_store::tree::display_path;
+use ergonote_store::tree::display_path;
 use serde_json::{Value, json};
 
 /// Every command: `id`, `label`, `params`, `changesTree`.

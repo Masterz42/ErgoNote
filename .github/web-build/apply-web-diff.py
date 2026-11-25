@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Applies .github/web-build/web.diff's new files to a NoteCraft checkout.
+"""Applies .github/web-build/web.diff's new files to a ErgoNote checkout.
 
 Does NOT use `git apply`: web.diff's per-file @@ hunk headers are wrong for two of its six files
 (playground.rs's header claims 277 lines, really 280; playground_clipboard.rs claims 129, really 206 -

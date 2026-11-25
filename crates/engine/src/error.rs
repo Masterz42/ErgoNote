@@ -1,4 +1,4 @@
-use notecraft_store::StoreError;
+use ergonote_store::StoreError;
 use std::fmt;
 
 #[derive(Debug)]
@@ -31,8 +31,8 @@ impl From<StoreError> for EngineError {
     }
 }
 
-impl From<notecraft_model::FormatError> for EngineError {
-    fn from(e: notecraft_model::FormatError) -> Self {
+impl From<ergonote_model::FormatError> for EngineError {
+    fn from(e: ergonote_model::FormatError) -> Self {
         EngineError::BadParam(e.to_string())
     }
 }

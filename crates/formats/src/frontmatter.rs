@@ -28,7 +28,7 @@ pub fn split_front(text: &str) -> (String, String) {
 /// The value of `key:` in a front matter block, with surrounding quotes removed.
 pub fn value(front: &str, key: &str) -> Option<String> {
     let prefix = format!("{key}:");
-    front.lines().find_map(|l| l.strip_prefix(&prefix).map(|v| notecraft_model::kv::unquote(v.trim())))
+    front.lines().find_map(|l| l.strip_prefix(&prefix).map(|v| ergonote_model::kv::unquote(v.trim())))
 }
 
 /// Front matter with `key: value` set: the line is replaced if it is there, added just
@@ -37,7 +37,7 @@ pub fn value(front: &str, key: &str) -> Option<String> {
 pub fn set_value(front: &str, key: &str, value: &str) -> String {
     let prefix = format!("{key}:");
     if front.lines().any(|l| l.starts_with(&prefix)) {
-        return notecraft_model::kv::replace_line(front, &prefix, &format!("{key}: {value}"));
+        return ergonote_model::kv::replace_line(front, &prefix, &format!("{key}: {value}"));
     }
     let mut out = String::with_capacity(front.len() + key.len() + value.len() + 4);
     let mut added = false;

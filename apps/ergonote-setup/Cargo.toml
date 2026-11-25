@@ -1,0 +1,22 @@
+[package]
+name = "ergonote-setup"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+description = "ErgoNote installation setup helper"
+
+[[bin]]
+name = "ergonote-setup"
+path = "src/main.rs"
+
+[dependencies]
+ergonote-store = { workspace = true }
+
+# Only the setup program's own message boxes use it; the library half is shared with Android.
+[target.'cfg(not(target_os = "android"))'.dependencies]
+rfd = { workspace = true }
+
+[lints]
+workspace = true

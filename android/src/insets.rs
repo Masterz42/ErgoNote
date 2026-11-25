@@ -1,6 +1,6 @@
 //! Where the system bars are, as egui's safe area.
 //!
-//! NativeActivity hands NoteCraft the whole window's surface, the strips behind the status bar
+//! NativeActivity hands ErgoNote the whole window's surface, the strips behind the status bar
 //! and the navigation bar included, so without this the title band and the ribbon tabs sit
 //! under the clock and the status bar sits under Back and Home. Android reports the part of
 //! the window that the bars leave free as the content rectangle (`AndroidApp::content_rect`);

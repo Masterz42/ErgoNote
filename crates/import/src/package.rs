@@ -93,7 +93,7 @@ pub struct Scratch {
 impl Scratch {
     pub fn new() -> Result<Scratch, String> {
         let stamp = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_nanos()).unwrap_or_default();
-        let path = std::env::temp_dir().join(format!("notecraft-onepkg-{}-{stamp}", std::process::id()));
+        let path = std::env::temp_dir().join(format!("ergonote-onepkg-{}-{stamp}", std::process::id()));
         fs::create_dir_all(&path).map_err(|e| format!("cannot make a folder to unpack into: {e}"))?;
         Ok(Scratch { path })
     }
@@ -109,7 +109,7 @@ impl Drop for Scratch {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use notecraft_store::testing::TempDir;
+    use ergonote_store::testing::TempDir;
 
     const FIXTURES: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/tests/fixtures/3p/officeimo");
 

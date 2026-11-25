@@ -1,4 +1,4 @@
-//! Draws a formula from `notecraft-math` with egui.
+//! Draws a formula from `ergonote-math` with egui.
 //!
 //! The maths crate lays a formula out as plain shapes: glyphs of the KaTeX faces, runs of
 //! text in the window's own font, lines, rectangles and paths. This module paints them. The
@@ -11,7 +11,7 @@ use std::sync::Arc;
 
 use egui::text::{LayoutJob, TextFormat};
 use egui::{Color32, FontFamily, FontId, Galley, Mesh, Painter, Pos2, Response, Sense, Stroke, Ui, vec2};
-use notecraft_math::{Cmd, Metrics, Shape, Typeset, typeset};
+use ergonote_math::{Cmd, Metrics, Shape, Typeset, typeset};
 
 struct EguiMetrics<'a> {
     painter: &'a Painter,
@@ -33,7 +33,7 @@ type Cache = HashMap<Key, Arc<Typeset>>;
 /// Lays out `tex` at `size` points with the UI's fonts, as a display equation or in a line of text.
 pub fn measure(ui: &Ui, tex: &str, size: f32, display: bool) -> Arc<Typeset> {
     let key: Key = (tex.to_owned(), size.to_bits(), display);
-    let id = egui::Id::new("notecraft-math-cache");
+    let id = egui::Id::new("ergonote-math-cache");
     if let Some(hit) = ui.ctx().data_mut(|d| d.get_temp_mut_or_default::<Cache>(id).get(&key).cloned()) {
         return hit;
     }
@@ -280,7 +280,7 @@ mod tests {
             r"\alpha \beta \Gamma \hbar \nabla \partial \infty \forall \exists \leq \neq \approx \mapsto",
         ] {
             let t = frame(&ctx, tex, true);
-            assert_eq!(t.engine, notecraft_math::Engine::Ratex, "{tex}");
+            assert_eq!(t.engine, ergonote_math::Engine::Ratex, "{tex}");
             for s in &t.shapes {
                 if let Shape::Glyph { face, .. } = s {
                     faces.insert(face.clone());
@@ -299,7 +299,7 @@ mod tests {
         let ctx = context(true);
         for (name, tex) in crate::ribbon::EQUATIONS {
             let t = frame(&ctx, tex, false);
-            assert_eq!(t.engine, notecraft_math::Engine::Ratex, "{name}: {tex}");
+            assert_eq!(t.engine, ergonote_math::Engine::Ratex, "{name}: {tex}");
             assert!(t.width > 0.0 && t.height() > 0.0, "{name} has no size");
             assert!(!t.shapes.iter().any(|s| matches!(s, Shape::Text { text, .. } if text.contains('\\'))), "{name} left raw TeX in the picture");
         }

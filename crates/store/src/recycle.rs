@@ -3,7 +3,7 @@
 use crate::error::{Result, StoreError};
 use crate::tree;
 use crate::vfs as fs;
-use notecraft_model::{NodeKind, id::new_id, kv, time::iso_now};
+use ergonote_model::{NodeKind, id::new_id, kv, time::iso_now};
 use std::path::{Component, Path, PathBuf};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -19,11 +19,11 @@ fn canonical(path: &Path) -> Result<PathBuf> {
 }
 
 fn bin(notebook: &Path) -> PathBuf {
-    notebook.join(".notecraft").join("recycle-bin")
+    notebook.join(".ergonote").join("recycle-bin")
 }
 
 fn checked_bin(notebook: &Path, create: bool) -> Result<PathBuf> {
-    let meta = notebook.join(".notecraft");
+    let meta = notebook.join(".ergonote");
     if create && !meta.exists() {
         fs::create_dir(&meta).map_err(|e| StoreError::io("create", &meta, e))?;
     }
@@ -60,7 +60,7 @@ pub fn delete(notebook: &Path, path: &Path) -> Result<usize> {
     if path == notebook || !path.starts_with(&notebook) {
         return Err(StoreError::invalid("only a page, section or group inside this notebook can be recycled"));
     }
-    let node = tree::load_tree(&path).ok_or_else(|| StoreError::invalid(format!("{} is not a NoteCraft node", path.display())))?;
+    let node = tree::load_tree(&path).ok_or_else(|| StoreError::invalid(format!("{} is not a ErgoNote node", path.display())))?;
     let count = node.count();
     let id = new_id();
     let bin = checked_bin(&notebook, true)?;

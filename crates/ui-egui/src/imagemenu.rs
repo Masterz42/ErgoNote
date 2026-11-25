@@ -26,7 +26,7 @@ pub fn validate_and_read_image(page_dir: &Path, src: &str) -> Result<(PathBuf, S
         return Err(std::io::Error::new(std::io::ErrorKind::InvalidInput, "invalid path"));
     }
     let source_path = page_dir.join("assets").join(rel);
-    let bytes = notecraft_store::vfs::read(&source_path)?;
+    let bytes = ergonote_store::vfs::read(&source_path)?;
     let default_name = Path::new(rel).file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_else(|| "picture.png".to_owned());
     Ok((source_path, default_name, bytes))
 }
@@ -63,7 +63,7 @@ pub fn show(ui: &mut Ui, body: egui::Rect, acts: &mut Vec<Act>, t: &Tokens) {
             egui::Frame::popup(ui.style()).inner_margin(egui::Margin::same(4)).show(ui, |ui| {
                 ui.set_width(floating::MENU_W);
                 ui.spacing_mut().item_spacing = egui::vec2(0.0, 0.0);
-                let locked = ui.data(|d| d.get_temp::<bool>(egui::Id::new("notecraft-lock-images")).unwrap_or(false));
+                let locked = ui.data(|d| d.get_temp::<bool>(egui::Id::new("ergonote-lock-images")).unwrap_or(false));
                 let lock_label = if locked { "Déverrouiller les PDF / images" } else { "Verrouiller les PDF / images en fond" };
                 if floating::menu_row(ui, Some(Glyph::Icon(Icon::Page)), lock_label, t).clicked() {
                     acts.push(Act::ToggleLockImages);
@@ -104,7 +104,7 @@ mod tests {
 
     #[test]
     fn test_validate_and_read_image_success() {
-        let t = notecraft_store::testing::TempDir::new("imgmenu-valid");
+        let t = ergonote_store::testing::TempDir::new("imgmenu-valid");
         let page_dir = t.path();
         let assets_dir = page_dir.join("assets");
         fs::create_dir_all(&assets_dir).expect("create assets dir");
@@ -121,7 +121,7 @@ mod tests {
 
     #[test]
     fn test_validate_and_read_image_rejects_unsafe_paths() {
-        let t = notecraft_store::testing::TempDir::new("imgmenu-unsafe");
+        let t = ergonote_store::testing::TempDir::new("imgmenu-unsafe");
         let page_dir = t.path();
 
         assert!(validate_and_read_image(page_dir, "assets/../outside.png").is_err());
@@ -133,7 +133,7 @@ mod tests {
 
     #[test]
     fn test_validate_and_read_image_missing_file_fails() {
-        let t = notecraft_store::testing::TempDir::new("imgmenu-missing");
+        let t = ergonote_store::testing::TempDir::new("imgmenu-missing");
         let page_dir = t.path();
         let res = validate_and_read_image(page_dir, "assets/missing.png");
         assert!(res.is_err());

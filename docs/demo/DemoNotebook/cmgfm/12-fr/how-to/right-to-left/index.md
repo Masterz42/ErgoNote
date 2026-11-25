@@ -7,7 +7,7 @@ updated: 2026-10-18T00:00:00Z
 tags: []
 ---
 
-L'arabe, l'hébreu, le persan et l'ourdou se lisent depuis la droite. NoteCraft les dessine
+L'arabe, l'hébreu, le persan et l'ourdou se lisent depuis la droite. ErgoNote les dessine
 ainsi : les lettres se lient, une ligne pend du bord droit, et une ligne qui mélange les deux
 sens est ordonnée par l'algorithme Unicode, si bien qu'un prix garde son nombre à l'endroit :
 
@@ -28,7 +28,7 @@ aspect sur une machine sans police arabe. L'hébreu et le hindi ont aussi leur p
 | **Paragraphe** | Le menu d'alignement dans **Texte de base** | Dans quel sens se lit le paragraphe où est le curseur |
 | **Segment** | **Plus...** dans le groupe Sens | Dans quel sens se lit la sélection, ou ce que vous tapez ensuite |
 
-Le sens de page est propre à NoteCraft ; les applications d'où viennent les gens n'ont pas ce
+Le sens de page est propre à ErgoNote ; les applications d'où viennent les gens n'ont pas ce
 réglage, et un carnet écrit en arabe en a besoin.
 
 ## Où le réglage est gardé

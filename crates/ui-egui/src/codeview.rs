@@ -361,9 +361,9 @@ pub fn files(dir: &Path, page_file: &str, named: &[String]) -> Vec<Entry> {
     let mut assets: Vec<Entry> = Vec::new();
     let mut page = None;
     for (folder, prefix) in [(dir.to_path_buf(), ""), (dir.join("assets"), "assets/")] {
-        let Ok(entries) = notecraft_store::vfs::read_dir(&folder) else { continue };
+        let Ok(entries) = ergonote_store::vfs::read_dir(&folder) else { continue };
         for entry in entries.flatten() {
-            if !notecraft_store::vfs::is_file(&entry.path()) {
+            if !ergonote_store::vfs::is_file(&entry.path()) {
                 continue;
             }
             let file = entry.file_name().to_string_lossy().into_owned();
@@ -395,7 +395,7 @@ fn kind_of(path: &Path, name: &str, page_file: &str) -> Kind {
     let ext = name.rsplit_once('.').map(|(_, e)| e.to_ascii_lowercase()).unwrap_or_default();
     match ext.as_str() {
         "svg" => {
-            if head_of(path, 4096).is_some_and(|head| notecraft_ink::svg::is_ink(&head)) {
+            if head_of(path, 4096).is_some_and(|head| ergonote_ink::svg::is_ink(&head)) {
                 Kind::Ink
             } else {
                 Kind::Svg
@@ -411,7 +411,7 @@ fn kind_of(path: &Path, name: &str, page_file: &str) -> Kind {
 }
 
 fn office_text(path: &Path) -> (String, bool) {
-    let Ok(file) = notecraft_store::vfs::File::open(path) else { return ("The package could not be opened.".into(), false) };
+    let Ok(file) = ergonote_store::vfs::File::open(path) else { return ("The package could not be opened.".into(), false) };
     let Ok(mut archive) = zip::ZipArchive::new(file) else { return ("The file is not a readable Office Open XML package.".into(), false) };
     let mut names = Vec::new();
     let mut text = String::new();
@@ -461,8 +461,8 @@ fn pdf_text(path: &Path) -> (String, bool) {
 /// is drawn anew. Named by its file name alone, the last page's picture was shown for the
 /// next page's (issue #135).
 fn picture_uri(path: &Path) -> String {
-    let meta = notecraft_store::vfs::metadata(path).ok();
-    let bytes = meta.as_ref().map_or(0, notecraft_store::vfs::Metadata::len);
+    let meta = ergonote_store::vfs::metadata(path).ok();
+    let bytes = meta.as_ref().map_or(0, ergonote_store::vfs::Metadata::len);
     // The browser build's file shim has no modification time; there the size alone tells.
     #[cfg(not(target_arch = "wasm32"))]
     let nanos = meta.and_then(|m| m.modified().ok()).and_then(|t| t.duration_since(std::time::UNIX_EPOCH).ok()).map_or(0, |d| d.as_nanos());
@@ -483,7 +483,7 @@ fn attachment_icon_name(name: &str) -> String {
 /// drawing that may be megabytes.
 fn head_of(path: &Path, want: usize) -> Option<String> {
     use std::io::Read;
-    let mut file = notecraft_store::vfs::File::open(path).ok()?;
+    let mut file = ergonote_store::vfs::File::open(path).ok()?;
     let mut buffer = vec![0u8; want];
     let read = file.read(&mut buffer).ok()?;
     buffer.truncate(read);
@@ -592,7 +592,7 @@ pub fn show(ui: &mut Ui, state: &mut State, entries: &[Entry], dir: &Path, t: &T
             match entry.kind {
                 Kind::Picture => {
                     let path = dir.join(entry.name.replace('/', std::path::MAIN_SEPARATOR_STR));
-                    match notecraft_store::vfs::read(&path) {
+                    match ergonote_store::vfs::read(&path) {
                         Ok(bytes) => {
                             egui::ScrollArea::both().id_salt("code-picture").max_height(height - 40.0).show(ui, |ui| {
                                 ui.add(egui::Image::from_bytes(picture_uri(&path), bytes).max_width(ui.available_width()).fit_to_original_size(1.0));
@@ -613,9 +613,9 @@ pub fn show(ui: &mut Ui, state: &mut State, entries: &[Entry], dir: &Path, t: &T
                     let icon = attachment_icon_name(&entry.name);
                     let icon_path = dir.join(icon.replace('/', std::path::MAIN_SEPARATOR_STR));
                     let fallback_path = dir.join(format!("{}.svg", entry.name).replace('/', std::path::MAIN_SEPARATOR_STR));
-                    if let Ok((uri, bytes)) = notecraft_store::vfs::read(&icon_path)
+                    if let Ok((uri, bytes)) = ergonote_store::vfs::read(&icon_path)
                         .map(|bytes| (picture_uri(&icon_path), bytes))
-                        .or_else(|_| notecraft_store::vfs::read(&fallback_path).map(|bytes| (picture_uri(&fallback_path), bytes)))
+                        .or_else(|_| ergonote_store::vfs::read(&fallback_path).map(|bytes| (picture_uri(&fallback_path), bytes)))
                     {
                         ui.horizontal(|ui| {
                             ui.add(egui::Image::from_bytes(uri, bytes).fit_to_exact_size(vec2(72.0, 84.0)));
@@ -687,7 +687,7 @@ pub fn show(ui: &mut Ui, state: &mut State, entries: &[Entry], dir: &Path, t: &T
                     let room = egui::vec2(ui.available_width(), (height - 70.0).max(80.0));
                     let (rect, _) = ui.allocate_exact_size(room, Sense::hover());
                     ui.painter().rect_filled(rect, 2.0, t.editor);
-                    match notecraft_store::vfs::read_to_string(dir.join(&entry.name)).ok().and_then(|text| notecraft_ink::svg::read(&text).ok()) {
+                    match ergonote_store::vfs::read_to_string(dir.join(&entry.name)).ok().and_then(|text| ergonote_ink::svg::read(&text).ok()) {
                         Some((drawing, _)) => {
                             // Drawn to fit, so a sheet the size of a page can be seen in
                             // the room the view has.
@@ -871,10 +871,10 @@ pub fn show(ui: &mut Ui, state: &mut State, entries: &[Entry], dir: &Path, t: &T
 }
 
 /// The same stroke at a different size, for drawing a whole sheet in a small space.
-fn scale_stroke(stroke: &notecraft_ink::Stroke, scale: f32) -> notecraft_ink::Stroke {
-    let mut out = notecraft_ink::Stroke::with_gain(stroke.tool, stroke.colour, (stroke.width * scale).max(0.4), stroke.gain);
+fn scale_stroke(stroke: &ergonote_ink::Stroke, scale: f32) -> ergonote_ink::Stroke {
+    let mut out = ergonote_ink::Stroke::with_gain(stroke.tool, stroke.colour, (stroke.width * scale).max(0.4), stroke.gain);
     for dab in &stroke.dabs {
-        out.add(notecraft_ink::Dab { x: dab.x * scale, y: dab.y * scale, pressure: dab.pressure });
+        out.add(ergonote_ink::Dab { x: dab.x * scale, y: dab.y * scale, pressure: dab.pressure });
     }
     out
 }
@@ -933,7 +933,7 @@ mod tests {
     #[test]
     fn office_text_is_cut_at_a_characters_edge() {
         use std::io::Write;
-        let t = notecraft_store::testing::TempDir::new("codeview-office-unicode");
+        let t = ergonote_store::testing::TempDir::new("codeview-office-unicode");
         let path = t.path().join("long.docx");
         let words = "a".repeat(MAX_SHOWN - 1) + "\u{e9}";
         let xml = format!(
@@ -984,7 +984,7 @@ mod tests {
     /// write that text over the whole file, losing everything after the cut, notice and all.
     #[test]
     fn a_file_cut_for_the_view_is_not_written_back() {
-        let t = notecraft_store::testing::TempDir::new("codeview-cut-read-only");
+        let t = ergonote_store::testing::TempDir::new("codeview-cut-read-only");
         let dir = t.path().join("page");
         std::fs::create_dir_all(&dir).expect("page folder");
         let whole = format!("# Long\n\n{}\n\nEND_SENTINEL\n", "words ".repeat(MAX_SHOWN / 5));
@@ -1006,7 +1006,7 @@ mod tests {
     /// name alone, so egui drew the first page's `assets/a.png` for the second page's.
     #[test]
     fn pictures_of_the_same_name_on_two_pages_are_two_pictures() {
-        let t = notecraft_store::testing::TempDir::new("codeview-picture-names");
+        let t = ergonote_store::testing::TempDir::new("codeview-picture-names");
         let red = t.path().join("red").join("assets").join("a.png");
         let lime = t.path().join("lime").join("assets").join("a.png");
         for (path, bytes) in [(&red, b"red picture".as_slice()), (&lime, b"lime picture".as_slice())] {
@@ -1031,12 +1031,12 @@ mod tests {
 
     #[test]
     fn the_page_file_comes_first_and_an_unnamed_file_is_an_orphan() {
-        let t = notecraft_store::testing::TempDir::new("codeview-files");
+        let t = ergonote_store::testing::TempDir::new("codeview-files");
         let dir = t.path().join("page");
         std::fs::create_dir_all(dir.join("assets")).expect("folders");
         std::fs::write(dir.join("index.html"), "<html></html>").expect("page file");
         std::fs::write(dir.join("_node.toml"), "title = \"P\"").expect("node");
-        std::fs::write(dir.join("ink.svg"), "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:nc=\"https://notecraft.org/ns/ink\"></svg>")
+        std::fs::write(dir.join("ink.svg"), "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:nc=\"https://ergonote.org/ns/ink\"></svg>")
             .expect("ink");
         std::fs::write(dir.join("assets").join("koala.png"), [0u8; 10]).expect("picture");
 

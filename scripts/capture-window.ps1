@@ -2,7 +2,7 @@
 Takes a picture of one window (not the desktop) with the Windows PrintWindow call, so other
 windows on top of it do not appear. Windows only.
 
-  scripts\capture-window.ps1 -Process notecraft -Out shot.png
+  scripts\capture-window.ps1 -Process ergonote -Out shot.png
 
 The window must be open and not minimized. A window drawn with some graphics drivers can come
 out black; the headless screenshot tests (see docs/testing.md) do not have that limit.

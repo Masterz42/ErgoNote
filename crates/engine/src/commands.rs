@@ -2,14 +2,14 @@
 
 use crate::error::EngineError;
 use crate::session::Session;
-use notecraft_model::{Dir, NodeColor, NodeKind, PageFormat};
-use notecraft_store::check::Report;
-use notecraft_store::page::Page;
-use notecraft_store::page::Version;
-use notecraft_store::recycle::Recycled;
-use notecraft_store::search::Hit;
-use notecraft_store::tags::Tagged;
-use notecraft_store::{StoreError, assets, check, ops, page, page_templates, recycle, search, tags, tree};
+use ergonote_model::{Dir, NodeColor, NodeKind, PageFormat};
+use ergonote_store::check::Report;
+use ergonote_store::page::Page;
+use ergonote_store::page::Version;
+use ergonote_store::recycle::Recycled;
+use ergonote_store::search::Hit;
+use ergonote_store::tags::Tagged;
+use ergonote_store::{StoreError, assets, check, ops, page, page_templates, recycle, search, tags, tree};
 use std::collections::BTreeMap;
 use std::path::PathBuf;
 
@@ -255,7 +255,7 @@ fn tags_find(s: &mut Session, p: &Params) -> Result<Output, EngineError> {
         Some(_) => return Err(EngineError::BadParam("unchecked must be true or false".into())),
     };
     let want = match p.get("tag").map(|t| t.trim()).filter(|t| !t.is_empty()) {
-        Some(t) => Some(notecraft_model::Tag::parse(t).ok_or_else(|| EngineError::BadParam(format!("there is no tag called {t}")))?),
+        Some(t) => Some(ergonote_model::Tag::parse(t).ok_or_else(|| EngineError::BadParam(format!("there is no tag called {t}")))?),
         None => None,
     };
     // Without a scope, every open notebook: the ones opened from another folder too.
@@ -294,14 +294,14 @@ fn page_direction(s: &mut Session, p: &Params) -> Result<Output, EngineError> {
 fn page_containers(s: &mut Session, p: &Params) -> Result<Output, EngineError> {
     let path = s.resolve(req(p, "path")?)?;
     let Some(want) = p.get("boxes") else {
-        return Ok(Output::Text(notecraft_model::container::write(&page::containers(&path)?)));
+        return Ok(Output::Text(ergonote_model::container::write(&page::containers(&path)?)));
     };
-    let boxes = notecraft_model::container::parse(want);
+    let boxes = ergonote_model::container::parse(want);
     if boxes.is_empty() && !want.trim().is_empty() {
         return Err(EngineError::BadParam("boxes is x,y,width,blocks per container, separated by semicolons".into()));
     }
     page::set_containers(&path, &boxes)?;
-    Ok(Output::Text(notecraft_model::container::write(&boxes)))
+    Ok(Output::Text(ergonote_model::container::write(&boxes)))
 }
 
 /// A page's sheet (issue #269). Auto is no sheet: the page grows with its content.
@@ -312,11 +312,11 @@ fn page_paper_size(s: &mut Session, p: &Params) -> Result<Output, EngineError> {
         let paper = if want.is_empty() || want.eq_ignore_ascii_case("auto") {
             None
         } else {
-            Some(notecraft_model::paper::Paper::parse(want).ok_or_else(|| EngineError::BadParam(format!("'{want}' is not a paper size")))?)
+            Some(ergonote_model::paper::Paper::parse(want).ok_or_else(|| EngineError::BadParam(format!("'{want}' is not a paper size")))?)
         };
         page::set_paper_size(&path, paper)?;
     }
-    Ok(Output::Text(page::paper_size(&path)?.map_or_else(|| "auto".to_string(), notecraft_model::paper::Paper::write)))
+    Ok(Output::Text(page::paper_size(&path)?.map_or_else(|| "auto".to_string(), ergonote_model::paper::Paper::write)))
 }
 
 fn page_paper(s: &mut Session, p: &Params) -> Result<Output, EngineError> {
@@ -333,7 +333,7 @@ fn page_paper(s: &mut Session, p: &Params) -> Result<Output, EngineError> {
         let want = want.trim();
         let want = (!want.is_empty() && want != "none").then_some(want);
         if let Some(c) = want
-            && notecraft_model::NodeColor::parse(c).is_none()
+            && ergonote_model::NodeColor::parse(c).is_none()
         {
             return Err(EngineError::BadParam(format!("'{c}' is not one of the page colours")));
         }
@@ -352,7 +352,7 @@ fn page_paper(s: &mut Session, p: &Params) -> Result<Output, EngineError> {
     };
     let (paper, colour) = (keep(paper, was_paper), keep(colour, was_colour));
     if let Some(c) = colour.as_deref()
-        && notecraft_model::NodeColor::parse(c).is_none()
+        && ergonote_model::NodeColor::parse(c).is_none()
     {
         return Err(EngineError::BadParam(format!("'{c}' is not one of the page colours")));
     }
@@ -364,31 +364,31 @@ fn page_paper(s: &mut Session, p: &Params) -> Result<Output, EngineError> {
 fn page_columns(s: &mut Session, p: &Params) -> Result<Output, EngineError> {
     let path = s.resolve(req(p, "path")?)?;
     let Some(want) = p.get("widths") else {
-        return Ok(Output::Text(notecraft_model::tablecols::write(&page::table_columns(&path)?)));
+        return Ok(Output::Text(ergonote_model::tablecols::write(&page::table_columns(&path)?)));
     };
-    let widths = notecraft_model::tablecols::parse(want);
+    let widths = ergonote_model::tablecols::parse(want);
     if widths.is_empty() && !want.trim().is_empty() {
         return Err(EngineError::BadParam(
             "widths is block:w,w,w per table, separated by semicolons, with a ! for a table whose borders are hidden, and block@row.column=l|c|r~colour for aligned and shaded cells".into(),
         ));
     }
     page::set_table_columns(&path, &widths)?;
-    Ok(Output::Text(notecraft_model::tablecols::write(&widths)))
+    Ok(Output::Text(ergonote_model::tablecols::write(&widths)))
 }
 
 fn page_justify(s: &mut Session, p: &Params) -> Result<Output, EngineError> {
     let path = s.resolve(req(p, "path")?)?;
     let Some(want) = p.get("blocks") else {
-        return Ok(Output::Text(notecraft_model::justify::write(&page::justified(&path)?)));
+        return Ok(Output::Text(ergonote_model::justify::write(&page::justified(&path)?)));
     };
-    let marked = notecraft_model::justify::parse(want);
+    let marked = ergonote_model::justify::parse(want);
     if marked.is_empty() && !want.trim().is_empty() {
         return Err(EngineError::BadParam(
             "blocks is the paragraphs' positions among the page's blocks, separated by commas, each with an optional :low, :medium or :high, or a spacing such as s3=6/12/18".into(),
         ));
     }
     page::set_justified(&path, &marked)?;
-    Ok(Output::Text(notecraft_model::justify::write(&marked)))
+    Ok(Output::Text(ergonote_model::justify::write(&marked)))
 }
 
 /// Opens a notebook that lives outside the notebooks folder, keeping the open ones.
@@ -739,8 +739,8 @@ pub fn registry() -> &'static [CommandSpec] {
 #[cfg(test)]
 fn commands_markdown() -> String {
     let mut out = String::from(
-        "# Commands\n\nGenerated from the command registry. Do not edit by hand: run\n`UPDATE_DOCS=1 cargo test -p notecraft-engine commands_doc` to refresh it.\n\
-         Every front end (window, `notecraft-cli run`, the control channel) uses these ids.\n\n",
+        "# Commands\n\nGenerated from the command registry. Do not edit by hand: run\n`UPDATE_DOCS=1 cargo test -p ergonote-engine commands_doc` to refresh it.\n\
+         Every front end (window, `ergonote-cli run`, the control channel) uses these ids.\n\n",
     );
     for c in REGISTRY {
         out.push_str(&format!("## `{}`\n\n{}{}.\n\n", c.id, c.label, if c.changes_tree { " (changes the tree)" } else { "" }));
@@ -760,8 +760,8 @@ fn commands_markdown() -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use notecraft_store::Settings;
-    use notecraft_store::testing::TempDir;
+    use ergonote_store::Settings;
+    use ergonote_store::testing::TempDir;
 
     #[test]
     fn commands_doc_matches_the_registry() {
@@ -811,7 +811,7 @@ mod tests {
         assert!(!registry().iter().any(|command| command.id == "notebook.welcome"));
     }
 
-    /// OneNote gives a new notebook one section and one empty page. NoteCraft does the same,
+    /// OneNote gives a new notebook one section and one empty page. ErgoNote does the same,
     /// so the user can start typing instead of building a structure first.
     #[test]
     fn a_new_notebook_starts_with_one_section_and_one_page() {
@@ -821,12 +821,12 @@ mod tests {
         let tree = s.tree();
         let section = tree.first().and_then(|n| n.children.first()).expect("a section");
         assert_eq!(section.info.title, FIRST_SECTION);
-        assert_eq!(section.info.kind, notecraft_model::NodeKind::Section);
+        assert_eq!(section.info.kind, ergonote_model::NodeKind::Section);
         let page = section.children.first().expect("a page");
         assert_eq!(page.info.title, tree::UNTITLED_PAGE);
-        assert_eq!(page.info.kind, notecraft_model::NodeKind::Page);
+        assert_eq!(page.info.kind, ergonote_model::NodeKind::Page);
         assert!(page.children.is_empty());
-        assert_eq!(tree.first().map(notecraft_store::Node::count), Some(3), "the notebook, the section and the page");
+        assert_eq!(tree.first().map(ergonote_store::Node::count), Some(3), "the notebook, the section and the page");
         // The page is real: its title and the date it was started, like a new OneNote page.
         match s.run("page.load", &p(&[("path", page.path.to_str().expect("utf8"))])).expect("load") {
             Output::Page(pg) => {
@@ -842,7 +842,7 @@ mod tests {
         // The page follows the notebook's format.
         let md = path_of(s.run("notebook.create", &p(&[("name", "Notes"), ("format", "cmgfm")])).expect("nb"));
         assert!(
-            md.join(notecraft_model::names::slug(FIRST_SECTION)).join(notecraft_model::names::slug(tree::UNTITLED_PAGE)).join("index.md").is_file()
+            md.join(ergonote_model::names::slug(FIRST_SECTION)).join(ergonote_model::names::slug(tree::UNTITLED_PAGE)).join("index.md").is_file()
         );
         // `empty=true` is the way to skip it.
         let bare = path_of(s.run("notebook.create", &p(&[("name", "Bare"), ("empty", "true")])).expect("nb"));
@@ -1118,7 +1118,7 @@ mod tests {
             }
             other => panic!("{other:?}"),
         }
-        let info = notecraft_store::tree::read_node(&page).expect("node info");
+        let info = ergonote_store::tree::read_node(&page).expect("node info");
         assert_eq!(info.title, "Untitled page", "the tree shows the same fallback");
         assert_eq!(info.order, 40, "an untitled page still takes the order it was asked for");
         let text = std::fs::read_to_string(page.join("index.md")).expect("page file");

@@ -58,7 +58,7 @@ fn civil_from_days(z: i64) -> (i32, u8, u8) {
 /// Today's local date, from the system clock and the offset the app already knows.
 pub fn today() -> (i32, u8, u8) {
     let secs = web_time::SystemTime::now().duration_since(web_time::UNIX_EPOCH).map(|d| d.as_secs() as i64).unwrap_or(0);
-    civil_from_days((secs + i64::from(notecraft_model::time::local_offset())).div_euclid(86_400))
+    civil_from_days((secs + i64::from(ergonote_model::time::local_offset())).div_euclid(86_400))
 }
 
 /// Categories to show on this date: the holiday groups in their window, then the season.

@@ -1,8 +1,8 @@
 //! Text the toolbar inserts into the page source, for each format. Pure functions,
 //! so they are tested without a window.
 
-use notecraft_model::PageFormat;
-use notecraft_store::assets::{MediaKind, media_kind};
+use ergonote_model::PageFormat;
+use ergonote_store::assets::{MediaKind, media_kind};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Snippet {
@@ -76,11 +76,11 @@ pub fn attachment(format: PageFormat, link: &str, name: &str) -> String {
     let kind = media_kind(link);
     let icon = attachment_icon(link);
     match (format, kind) {
-        (PageFormat::Html, MediaKind::Image) => format!("\n<img src=\"{link}\" alt=\"{}\">\n", notecraft_formats::html::escape(name)),
+        (PageFormat::Html, MediaKind::Image) => format!("\n<img src=\"{link}\" alt=\"{}\">\n", ergonote_formats::html::escape(name)),
         (PageFormat::Html, MediaKind::Video) => format!("\n<video src=\"{link}\" controls></video>\n"),
         (PageFormat::Html, MediaKind::Audio) => format!("\n<audio src=\"{link}\" controls></audio>\n"),
         (PageFormat::Html, MediaKind::Other) => {
-            format!("\n<p><a href=\"{link}\"><img src=\"{icon}\" alt=\"\" width=\"48\"><br>{}</a></p>\n", notecraft_formats::html::escape(name))
+            format!("\n<p><a href=\"{link}\"><img src=\"{icon}\" alt=\"\" width=\"48\"><br>{}</a></p>\n", ergonote_formats::html::escape(name))
         }
         (PageFormat::Cmgfm, MediaKind::Image) => format!("\n![{name}]({link})\n"),
         (PageFormat::Cmgfm, _) => format!("\n[![{name}]({icon}) {name}]({link})\n"),
@@ -115,7 +115,7 @@ fn attachment_icon_extension() -> &'static str {
 pub fn file_link(format: PageFormat, target: &str, name: &str) -> String {
     let url = file_url(target);
     match format {
-        PageFormat::Html => format!("\n<p><a href=\"{}\">{}</a></p>\n", notecraft_formats::html::escape(&url), notecraft_formats::html::escape(name)),
+        PageFormat::Html => format!("\n<p><a href=\"{}\">{}</a></p>\n", ergonote_formats::html::escape(&url), ergonote_formats::html::escape(name)),
         PageFormat::Cmgfm => format!("\n[{name}]({url})\n"),
     }
 }
@@ -139,7 +139,7 @@ fn file_url(path: &str) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use notecraft_formats::{html, markdown};
+    use ergonote_formats::{html, markdown};
 
     #[test]
     fn a_link_to_a_file_that_stays_where_it_is() {
@@ -222,13 +222,13 @@ mod tests {
 
     #[test]
     fn every_printout_page_is_its_own_resizable_image_block() {
-        use notecraft_formats::markdown::Block;
+        use ergonote_formats::markdown::Block;
         for format in [PageFormat::Html, PageFormat::Cmgfm] {
             let mut text = attachment(format, "assets/a.pdf", "a.pdf");
             for page in 1..=3 {
                 text.push_str(&printout_page(format, &format!("assets/a.pdf.printout-{page:03}.png"), page));
             }
-            let (blocks, _) = notecraft_formats::boxes::read(format, &text);
+            let (blocks, _) = ergonote_formats::boxes::read(format, &text);
             let images = blocks.iter().filter(|b| matches!(b, Block::Image { src, .. } if src.contains("printout"))).count();
             assert_eq!(images, 3, "{format:?}: {blocks:?}");
         }
@@ -236,8 +236,8 @@ mod tests {
 
     #[test]
     fn resized_printout_pages_survive_a_save_and_reload_as_separate_blocks() {
-        use notecraft_formats::markdown::Block;
-        use notecraft_model::Container;
+        use ergonote_formats::markdown::Block;
+        use ergonote_model::Container;
         for format in [PageFormat::Html, PageFormat::Cmgfm] {
             let mut text = String::new();
             for file in ["a.pdf", "b.pdf"] {
@@ -246,7 +246,7 @@ mod tests {
                     text.push_str(&printout_page(format, &format!("assets/{file}.printout-{page:03}.png"), page));
                 }
             }
-            let (mut blocks, _) = notecraft_formats::boxes::read(format, &text);
+            let (mut blocks, _) = ergonote_formats::boxes::read(format, &text);
             let before = blocks.len();
             if let Some(Block::Image { width, height, .. }) =
                 blocks.iter_mut().find(|b| matches!(b, Block::Image { src, .. } if src.contains("printout")))
@@ -255,8 +255,8 @@ mod tests {
                 *height = Some(400.0);
             }
             let boxes = [Container::new(0.0, 0.0, 500.0, blocks.len())];
-            let saved = notecraft_formats::boxes::write(format, &blocks, Some(&boxes));
-            let (again, _) = notecraft_formats::boxes::read(format, &saved);
+            let saved = ergonote_formats::boxes::write(format, &blocks, Some(&boxes));
+            let (again, _) = ergonote_formats::boxes::read(format, &saved);
             assert_eq!(again, blocks, "{format:?}: {saved}");
             assert_eq!(again.len(), before);
         }

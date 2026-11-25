@@ -4,11 +4,11 @@
 //! timestamp under its (empty) title.
 
 use crate::html::escape;
-use notecraft_model::kv::quote;
+use ergonote_model::kv::quote;
 
 /// `title` is `None` for a page that has not been named yet: the "Add Page" case. No
 /// `title` key is written at all, so the page reads back as untitled wherever one is read
-/// (`notecraft_store::tree::read_node`, `notecraft_store::tree::raw_title`) rather than
+/// (`ergonote_store::tree::read_node`, `ergonote_store::tree::raw_title`) rather than
 /// carrying the word "Untitled" as if a writer had typed it. A page is always free to be
 /// given a real title later, which writes the key in for the first time.
 pub fn markdown_page(title: Option<&str>, id: &str, order: u32, now: &str) -> String {
@@ -17,7 +17,7 @@ pub fn markdown_page(title: Option<&str>, id: &str, order: u32, now: &str) -> St
 
 /// [`markdown_page`] with the date line written in `lang` ("fr" or "en").
 pub fn markdown_page_lang(title: Option<&str>, id: &str, order: u32, now: &str, lang: &str) -> String {
-    let stamp = notecraft_model::time::long_from_iso_lang(now, lang).unwrap_or_else(|| now.to_string());
+    let stamp = ergonote_model::time::long_from_iso_lang(now, lang).unwrap_or_else(|| now.to_string());
     let title_line = title.map(|t| format!("title: {}\n", quote(t))).unwrap_or_default();
     // The stamp is plain words, not italics: the page draws it in its own quiet grey, and
     // marks round it would be shown as marks the moment the caret landed on the line.
@@ -36,9 +36,9 @@ pub fn html_page(title: Option<&str>, id: &str, order: u32, now: &str) -> String
 /// [`html_page`] with the date line written in `lang` ("fr" or "en").
 pub fn html_page_lang(title: Option<&str>, id: &str, order: u32, now: &str, lang: &str) -> String {
     let title_line = title.map(|t| format!("<title>{}</title>\n", escape(t))).unwrap_or_default();
-    let stamp = escape(&notecraft_model::time::long_from_iso_lang(now, lang).unwrap_or_else(|| now.to_string()));
+    let stamp = escape(&ergonote_model::time::long_from_iso_lang(now, lang).unwrap_or_else(|| now.to_string()));
     format!(
-        "<!doctype html>\n<html>\n<head>\n<meta charset=\"utf-8\">\n{title_line}<meta name=\"notecraft:id\" content=\"{id}\">\n<meta name=\"notecraft:order\" content=\"{order}\">\n<meta name=\"notecraft:created\" content=\"{now}\">\n<meta name=\"notecraft:updated\" content=\"{now}\">\n</head>\n<body>\n<p class=\"page-date\">{stamp}</p>\n</body>\n</html>\n"
+        "<!doctype html>\n<html>\n<head>\n<meta charset=\"utf-8\">\n{title_line}<meta name=\"ergonote:id\" content=\"{id}\">\n<meta name=\"ergonote:order\" content=\"{order}\">\n<meta name=\"ergonote:created\" content=\"{now}\">\n<meta name=\"ergonote:updated\" content=\"{now}\">\n</head>\n<body>\n<p class=\"page-date\">{stamp}</p>\n</body>\n</html>\n"
     )
 }
 
@@ -71,7 +71,7 @@ mod tests {
 
         let html = html_page(None, "abc", 20, "2026-10-17T00:00:00Z");
         assert!(!html.contains("<title>"), "no title element at all:\n{html}");
-        assert!(html.contains("name=\"notecraft:id\" content=\"abc\""), "the other metadata is still there");
+        assert!(html.contains("name=\"ergonote:id\" content=\"abc\""), "the other metadata is still there");
     }
 
     #[test]
@@ -100,7 +100,7 @@ not a time
     fn html_page_escapes_the_title() {
         let page = html_page(Some("A <b> & C"), "abc", 10, "2026-10-17T00:00:00Z");
         assert!(page.contains("<title>A &lt;b&gt; &amp; C</title>"));
-        assert!(page.contains("name=\"notecraft:id\" content=\"abc\""));
+        assert!(page.contains("name=\"ergonote:id\" content=\"abc\""));
         assert!(page.contains("<body>"));
     }
 }

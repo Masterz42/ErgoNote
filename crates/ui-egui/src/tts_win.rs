@@ -472,7 +472,7 @@ $ws.Options.SetRequestHeader('User-Agent', 'Mozilla/5.0 (Windows NT 10.0; Win64;
 $ws.Options.SetRequestHeader('Pragma', 'no-cache')
 $ws.Options.SetRequestHeader('Cache-Control', 'no-cache')
 $cts = New-Object System.Threading.CancellationTokenSource(18000)
-$ws.ConnectAsync([Uri]$env:NOTECRAFT_EDGE_URL, $cts.Token).GetAwaiter().GetResult()
+$ws.ConnectAsync([Uri]$env:ERGONOTE_EDGE_URL, $cts.Token).GetAwaiter().GetResult()
 function Send-Str([string]$s) {
     $b = [Text.Encoding]::UTF8.GetBytes($s)
     $seg = New-Object System.ArraySegment[byte]($b, 0, $b.Length)
@@ -480,9 +480,9 @@ function Send-Str([string]$s) {
 }
 $ts = [DateTime]::UtcNow.ToString('ddd MMM dd yyyy HH:mm:ss') + ' GMT+0000 (Coordinated Universal Time)'
 Send-Str ("X-Timestamp:$ts`r`nContent-Type:application/json; charset=utf-8`r`nPath:speech.config`r`n`r`n{`"context`":{`"synthesis`":{`"audio`":{`"metadataoptions`":{`"sentenceBoundaryEnabled`":`"false`",`"wordBoundaryEnabled`":`"true`"},`"outputFormat`":`"audio-24khz-48kbitrate-mono-mp3`"}}}}")
-Send-Str ("X-RequestId:$($env:NOTECRAFT_EDGE_REQ)`r`nContent-Type:application/ssml+xml`r`nX-Timestamp:$ts`r`nPath:ssml`r`n`r`n$($env:NOTECRAFT_EDGE_SSML)")
-$mp3 = [IO.File]::Create($env:NOTECRAFT_TTS_MP3)
-$tsv = New-Object IO.StreamWriter($env:NOTECRAFT_TTS_TSV, $false, [Text.UTF8Encoding]::new($false))
+Send-Str ("X-RequestId:$($env:ERGONOTE_EDGE_REQ)`r`nContent-Type:application/ssml+xml`r`nX-Timestamp:$ts`r`nPath:ssml`r`n`r`n$($env:ERGONOTE_EDGE_SSML)")
+$mp3 = [IO.File]::Create($env:ERGONOTE_TTS_MP3)
+$tsv = New-Object IO.StreamWriter($env:ERGONOTE_TTS_TSV, $false, [Text.UTF8Encoding]::new($false))
 try {
     $buf = New-Object byte[] 65536
     $done = $false
@@ -533,11 +533,11 @@ try {
 "#;
     let Ok(mut child) = std::process::Command::new("powershell")
         .args(["-NoProfile", "-NonInteractive", "-WindowStyle", "Hidden", "-Command", ps_script])
-        .env("NOTECRAFT_EDGE_URL", &url)
-        .env("NOTECRAFT_EDGE_REQ", &conn_id)
-        .env("NOTECRAFT_EDGE_SSML", &ssml)
-        .env("NOTECRAFT_TTS_MP3", mp3)
-        .env("NOTECRAFT_TTS_TSV", tsv)
+        .env("ERGONOTE_EDGE_URL", &url)
+        .env("ERGONOTE_EDGE_REQ", &conn_id)
+        .env("ERGONOTE_EDGE_SSML", &ssml)
+        .env("ERGONOTE_TTS_MP3", mp3)
+        .env("ERGONOTE_TTS_TSV", tsv)
         .stdout(std::process::Stdio::null())
         .stderr(std::process::Stdio::null())
         .creation_flags(CREATE_NO_WINDOW)
@@ -600,12 +600,12 @@ pub fn play_audio(path: &Path, is_wav: bool, pid_slot: &AtomicU32, stop_flag: &A
         return false;
     }
     let script = if is_wav {
-        "(New-Object System.Media.SoundPlayer $env:NOTECRAFT_AUDIO).PlaySync()"
+        "(New-Object System.Media.SoundPlayer $env:ERGONOTE_AUDIO).PlaySync()"
     } else {
         r#"
 Add-Type -AssemblyName PresentationCore
 $p = New-Object System.Windows.Media.MediaPlayer
-$p.Open((New-Object System.Uri($env:NOTECRAFT_AUDIO)))
+$p.Open((New-Object System.Uri($env:ERGONOTE_AUDIO)))
 $t = 0
 while (-not $p.NaturalDuration.HasTimeSpan -and $t -lt 100) {
     Start-Sleep -Milliseconds 50
@@ -623,7 +623,7 @@ $p.Close()
     };
     let Ok(mut child) = std::process::Command::new("powershell")
         .args(["-NoProfile", "-NonInteractive", "-WindowStyle", "Hidden", "-STA", "-Command", script])
-        .env("NOTECRAFT_AUDIO", path)
+        .env("ERGONOTE_AUDIO", path)
         .stdout(std::process::Stdio::null())
         .stderr(std::process::Stdio::null())
         .creation_flags(CREATE_NO_WINDOW)

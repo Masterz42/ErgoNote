@@ -1,4 +1,4 @@
-use notecraft_formats::{csv, html, markdown, render};
+use ergonote_formats::{csv, html, markdown, render};
 
 #[test]
 fn multiline_csv_cells_remain_in_one_row_in_both_page_formats() {

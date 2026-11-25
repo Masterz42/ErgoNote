@@ -7,7 +7,7 @@ updated: 2026-10-18T00:00:00Z
 tags: []
 ---
 
-Viele Notiz-Apps halten ein ganzes Notizbuch in einer einzigen Binärdatei, und ein Texteditor zeigt darin nur Zeichensalat. Eine NoteCraft-Seite ist ein Ordner mit gewöhnlichen Dateien, und die Codeansicht zeigt Ihnen diesen Ordner, Datei für Datei. Probieren Sie es jetzt aus: Klicken Sie auf die Schaltfläche `< >` neben dieser Seite.
+Viele Notiz-Apps halten ein ganzes Notizbuch in einer einzigen Binärdatei, und ein Texteditor zeigt darin nur Zeichensalat. Eine ErgoNote-Seite ist ein Ordner mit gewöhnlichen Dateien, und die Codeansicht zeigt Ihnen diesen Ordner, Datei für Datei. Probieren Sie es jetzt aus: Klicken Sie auf die Schaltfläche `< >` neben dieser Seite.
 
 ## Was Sie sehen
 

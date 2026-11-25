@@ -1,4 +1,4 @@
-//! Where NoteCraft keeps its files on Android.
+//! Where ErgoNote keeps its files on Android.
 //!
 //! Android gives every app two folders of its own and no others without a permission:
 //! internal storage (`Context.getFilesDir()`), private to the app, and app-specific external
@@ -7,13 +7,13 @@
 //! (`packaging/installation artifacts.md`) records.
 //!
 //! - Settings, logs and the unpacked Welcome payload are application files: internal storage.
-//! - Notebooks are the user's: `NoteCraft` in external storage, so they can be copied off the
+//! - Notebooks are the user's: `ErgoNote` in external storage, so they can be copied off the
 //!   device. When the device has no external storage, internal storage is used instead.
 
 use std::path::{Path, PathBuf};
 
-/// The folder name the notebooks live in, as on the desktop (`Documents/NoteCraft`).
-pub const NOTEBOOKS_FOLDER: &str = "NoteCraft";
+/// The folder name the notebooks live in, as on the desktop (`Documents/ErgoNote`).
+pub const NOTEBOOKS_FOLDER: &str = "ErgoNote";
 
 /// The app's folders on one device.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -47,12 +47,12 @@ mod tests {
 
     #[test]
     fn notebooks_go_to_external_storage_and_settings_stay_private() {
-        let internal = Path::new("/data/user/0/com.alientechsoftware.notecraft/files");
-        let external = Path::new("/storage/emulated/0/Android/data/com.alientechsoftware.notecraft/files");
+        let internal = Path::new("/data/user/0/com.ergonote.app/files");
+        let external = Path::new("/storage/emulated/0/Android/data/com.ergonote.app/files");
         let layout = layout(Some(internal), Some(external)).expect("layout");
-        assert_eq!(layout.notebooks, external.join("NoteCraft"));
+        assert_eq!(layout.notebooks, external.join("ErgoNote"));
         assert_eq!(layout.settings, internal.join("settings.toml"));
-        assert_eq!(layout.payload, internal.join("demo").join("welcome-to-notecraft"));
+        assert_eq!(layout.payload, internal.join("demo").join("welcome-to-ergonote"));
         assert!(layout.app_data.starts_with(internal));
     }
 
@@ -60,7 +60,7 @@ mod tests {
     fn without_external_storage_the_notebooks_stay_internal() {
         let internal = Path::new("/data/user/0/app/files");
         let layout = layout(Some(internal), None).expect("layout");
-        assert_eq!(layout.notebooks, internal.join("NoteCraft"));
+        assert_eq!(layout.notebooks, internal.join("ErgoNote"));
     }
 
     #[test]

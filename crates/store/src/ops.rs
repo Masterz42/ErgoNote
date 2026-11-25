@@ -5,8 +5,8 @@ use crate::page::write_atomic;
 use crate::settings::{FormatSource, Settings};
 use crate::tree::{self, child_dirs, page_file, read_node};
 use crate::vfs as fs;
-use notecraft_formats::{frontmatter, html, templates};
-use notecraft_model::{NodeColor, NodeKind, PageFormat, id::new_id, kv, names, time::iso_now};
+use ergonote_formats::{frontmatter, html, templates};
+use ergonote_model::{NodeColor, NodeKind, PageFormat, id::new_id, kv, names, time::iso_now};
 use std::collections::HashSet;
 use std::path::{Path, PathBuf};
 
@@ -263,8 +263,8 @@ pub fn copy_node(path: &Path, dest: &Path) -> Result<PathBuf> {
 
 /// File > Save a Copy (issue #301): copies a page (with its subpages, files and ink), a section,
 /// a section group or a whole notebook into `folder`, anywhere on disk, as content of its own.
-/// The copy leaves out NoteCraft's own records kept beside the content (a page's saved
-/// versions, a notebook's recycle bin and templates: everything under `.notecraft`), and every
+/// The copy leaves out ErgoNote's own records kept beside the content (a page's saved
+/// versions, a notebook's recycle bin and templates: everything under `.ergonote`), and every
 /// node in it gets an id of its own, so opening the copy beside the original confuses neither.
 /// The original is not touched. Returns where the copy is.
 pub fn save_copy(node: &Path, folder: &Path) -> Result<PathBuf> {
@@ -291,12 +291,12 @@ pub fn save_copy(node: &Path, folder: &Path) -> Result<PathBuf> {
     Ok(target)
 }
 
-/// Removes every `.notecraft` folder under `dir`.
+/// Removes every `.ergonote` folder under `dir`.
 fn drop_records(dir: &Path) -> std::io::Result<()> {
     for entry in fs::read_dir(dir)? {
         let entry = entry?;
         if entry.file_type()?.is_dir() {
-            if entry.file_name() == ".notecraft" {
+            if entry.file_name() == ".ergonote" {
                 fs::remove_dir_all(entry.path())?;
             } else {
                 drop_records(&entry.path())?;
@@ -306,7 +306,7 @@ fn drop_records(dir: &Path) -> std::io::Result<()> {
     Ok(())
 }
 
-/// Copies a folder and everything in it except NoteCraft's `.notecraft` records.
+/// Copies a folder and everything in it except ErgoNote's `.ergonote` records.
 fn copy_content(from: &Path, to: &Path) -> std::io::Result<()> {
     fs::create_dir(to)?;
     for entry in fs::read_dir(from)? {
@@ -314,7 +314,7 @@ fn copy_content(from: &Path, to: &Path) -> std::io::Result<()> {
         let kind = entry.file_type()?;
         let target = to.join(entry.file_name());
         if kind.is_dir() {
-            if entry.file_name() == ".notecraft" {
+            if entry.file_name() == ".ergonote" {
                 continue;
             }
             copy_content(&entry.path(), &target)?;
@@ -352,7 +352,7 @@ fn renew_ids(dir: &Path) -> Result<()> {
         let text = fs::read_to_string(&file).map_err(|e| StoreError::io("read", &file, e))?;
         let id = new_id();
         let updated = match format {
-            PageFormat::Html => html::set_meta(&text, "notecraft:id", &id),
+            PageFormat::Html => html::set_meta(&text, "ergonote:id", &id),
             PageFormat::Cmgfm => {
                 let (front, body) = frontmatter::split_front(&text);
                 format!("{}{body}", frontmatter::set_value(&front, "id", &id))
@@ -432,7 +432,7 @@ fn set_node_order(path: &Path, order: u32) -> Result<()> {
     if let Some((format, file)) = page_file(path) {
         let text = fs::read_to_string(&file).map_err(|e| StoreError::io("read", &file, e))?;
         let updated = match format {
-            PageFormat::Html => html::set_meta(&text, "notecraft:order", &order.to_string()),
+            PageFormat::Html => html::set_meta(&text, "ergonote:order", &order.to_string()),
             PageFormat::Cmgfm => {
                 let (front, body) = frontmatter::split_front(&text);
                 format!("{}{body}", frontmatter::set_value(&front, "order", &order.to_string()))
@@ -504,14 +504,14 @@ fn create_node_inner(
 }
 
 /// Deletes a node and everything inside it. `path` must be inside `root` and be a
-/// NoteCraft node. Returns the number of nodes removed.
+/// ErgoNote node. Returns the number of nodes removed.
 pub fn delete_node(root: &Path, path: &Path) -> Result<usize> {
     let root = fs::canonicalize(root).map_err(|e| StoreError::io("open", root, e))?;
     let path = fs::canonicalize(path).map_err(|e| StoreError::io("open", path, e))?;
     if path == root || !path.starts_with(&root) {
         return Err(StoreError::invalid("only a notebook, section, group or page inside the notebooks folder can be deleted"));
     }
-    let node = tree::load_tree(&path).ok_or_else(|| StoreError::invalid(format!("{} is not a NoteCraft node", path.display())))?;
+    let node = tree::load_tree(&path).ok_or_else(|| StoreError::invalid(format!("{} is not a ErgoNote node", path.display())))?;
     let count = node.count();
     remove_tree(&path).map_err(|e| StoreError::io("delete", &path, e))?;
     Ok(count)
@@ -552,7 +552,7 @@ pub fn set_color(dir: &Path, color: Option<NodeColor>) -> Result<()> {
         return Err(StoreError::invalid("a page has no colour of its own; colour its section instead"));
     }
     let file = dir.join("_node.toml");
-    let text = fs::read_to_string(&file).map_err(|_| StoreError::NotFound(format!("{} is not a NoteCraft folder", dir.display())))?;
+    let text = fs::read_to_string(&file).map_err(|_| StoreError::NotFound(format!("{} is not a ErgoNote folder", dir.display())))?;
     let out = match color {
         Some(c) => {
             let line = format!("color = {}", kv::quote(c.id()));
@@ -594,14 +594,14 @@ pub fn set_title(dir: &Path, title: &str) -> Result<()> {
     } else {
         let title = clean_title(title)?;
         let file = dir.join("_node.toml");
-        let text = fs::read_to_string(&file).map_err(|_| StoreError::NotFound(format!("{} is not a NoteCraft folder", dir.display())))?;
+        let text = fs::read_to_string(&file).map_err(|_| StoreError::NotFound(format!("{} is not a ErgoNote folder", dir.display())))?;
         write_atomic(&file, &kv::replace_line(&text, "title =", &format!("title = {}", kv::quote(&title))))
     }
 }
 
 /// Writes `title` into a page's head: replaces its existing title key, or inserts one if
 /// it has none yet, in the same spot a new page would have written it (see
-/// `notecraft_formats::templates`). A page with no title of its own needs this path the
+/// `ergonote_formats::templates`). A page with no title of its own needs this path the
 /// first time it is given one, which a plain find-and-replace cannot do.
 fn write_page_title(format: PageFormat, text: &str, title: &str) -> String {
     match format {
@@ -609,7 +609,7 @@ fn write_page_title(format: PageFormat, text: &str, title: &str) -> String {
             if html::between(text, "<title>", "</title>").is_some() {
                 html::replace_between(text, "<title>", "</title>", &html::escape(title))
             } else {
-                match text.find("<meta name=\"notecraft:id\"") {
+                match text.find("<meta name=\"ergonote:id\"") {
                     Some(i) => format!("{}<title>{}</title>\n{}", &text[..i], html::escape(title), &text[i..]),
                     None => text.to_string(),
                 }
@@ -689,8 +689,8 @@ mod tests {
         crate::assets::attach_bytes(&page, "pic.png", b"not really a picture").expect("asset");
         crate::page::save_body(&page, "<p>first</p>").expect("save");
         crate::page::save_body(&page, "<p>second</p>").expect("save");
-        assert!(page.join(".notecraft").join("versions").is_dir(), "the page has history");
-        fs::create_dir_all(nb.join(".notecraft").join("recycle-bin")).expect("bin");
+        assert!(page.join(".ergonote").join("versions").is_dir(), "the page has history");
+        fs::create_dir_all(nb.join(".ergonote").join("recycle-bin")).expect("bin");
         let out = t.path().join("copies");
         fs::create_dir_all(&out).expect("out");
 
@@ -700,7 +700,7 @@ mod tests {
             let info = read_node(&copy).expect("a node");
             assert_eq!(info.kind, kind);
             assert_ne!(info.id, read_node(node).expect("original").id, "{kind:?}: an id of its own");
-            assert!(!copy.join(".notecraft").exists(), "{kind:?}: no history or recycle bin");
+            assert!(!copy.join(".ergonote").exists(), "{kind:?}: no history or recycle bin");
         }
         // The copied page is whole: its words and its files.
         let copied_page = fs::canonicalize(&out).expect("out").join(tree::folder_name(&page));
@@ -709,7 +709,7 @@ mod tests {
         // Copying again picks a free name, and the original is as it was.
         let again = save_copy(&page, &out).expect("again");
         assert_ne!(again, copied_page);
-        assert!(page.join(".notecraft").join("versions").is_dir());
+        assert!(page.join(".ergonote").join("versions").is_dir());
         // Not into itself, and only nodes.
         assert!(save_copy(&nb, &section).is_err());
         assert!(save_copy(&out, t.path()).is_err());
@@ -724,7 +724,7 @@ mod tests {
             let t = TempDir::new(&format!("retitle-{}", format.id()));
             let s = settings(&t);
             let nb = create_notebook(&root(&t), "Book", Some(format), &s).expect("notebook");
-            let page = create_node(&nb, "First name", notecraft_model::NodeKind::Page, Some(format), &s).expect("page");
+            let page = create_node(&nb, "First name", ergonote_model::NodeKind::Page, Some(format), &s).expect("page");
 
             // A page written before the title moved out of the body carries it as a
             // heading too. Renaming moves both, or the window and the page disagree.

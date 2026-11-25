@@ -3,8 +3,8 @@
 use crate::error::{Result, StoreError};
 use crate::tree::{page_file, raw_title, read_node};
 use crate::vfs as fs;
-use notecraft_formats::{boxes, frontmatter, html};
-use notecraft_model::{Container, Dir, PageFormat, container, id::new_id, justify, kv, tablecols, time::iso_now};
+use ergonote_formats::{boxes, frontmatter, html};
+use ergonote_model::{Container, Dir, PageFormat, container, id::new_id, justify, kv, tablecols, time::iso_now};
 use std::path::{Path, PathBuf};
 
 /// Pages larger than this are refused (a guard against hostile or accidental input).
@@ -30,7 +30,7 @@ pub struct Page {
 }
 
 /// A saved copy of a page file, newest first. The page's own format and assets remain
-/// ordinary files; versions are kept in its hidden `.notecraft/versions` folder.
+/// ordinary files; versions are kept in its hidden `.ergonote/versions` folder.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Version {
     pub id: String,
@@ -126,7 +126,7 @@ pub fn restore_version(dir: &Path, id: &str) -> Result<()> {
 }
 
 fn version_dir(dir: &Path) -> PathBuf {
-    dir.join(".notecraft").join("versions")
+    dir.join(".ergonote").join("versions")
 }
 
 fn valid_version_id(id: &str) -> bool {
@@ -205,7 +205,7 @@ fn body_of(format: PageFormat, text: &str) -> String {
 
 /// The name the page direction goes by in both formats.
 const DIR_KEY: &str = "dir";
-const DIR_META: &str = "notecraft:dir";
+const DIR_META: &str = "ergonote:dir";
 
 /// The direction written in a page's own file, if any.
 fn read_direction(text: &str, format: PageFormat) -> Option<Dir> {
@@ -251,10 +251,10 @@ pub fn set_direction(dir: &Path, want: Option<Dir>) -> Result<()> {
 /// Where older versions kept the boxes: a line in the head or the front matter. Still read, so
 /// an older page keeps its arrangement, and cleared the next time the boxes are written.
 const BOXES_KEY: &str = "containers";
-const BOXES_META: &str = "notecraft:containers";
+const BOXES_META: &str = "ergonote:containers";
 
 /// The containers a page keeps. They are elements in the page's own text
-/// ([`notecraft_formats::boxes`]); a page from an older version has them on a line in its head or
+/// ([`ergonote_formats::boxes`]); a page from an older version has them on a line in its head or
 /// front matter instead, and that is read when the text has none. An empty list means the page
 /// has never been arranged, and is one column of blocks.
 pub fn containers(dir: &Path) -> Result<Vec<Container>> {
@@ -333,7 +333,7 @@ pub fn head_text(dir: &Path) -> Result<String> {
 
 /// The ink files in a page's folder, in name order.
 ///
-/// A file is ink because its SVG carries NoteCraft's ink namespace, not because of what
+/// A file is ink because its SVG carries ErgoNote's ink namespace, not because of what
 /// it is called: an ordinary picture dropped in the folder is never mistaken for one, and
 /// neither is the plain copy that Save Picture writes. Only the first few kilobytes of
 /// each file are read.
@@ -346,7 +346,7 @@ pub fn ink_files(dir: &Path) -> Vec<String> {
             continue;
         }
         let Ok(head) = read_head(&entry.path(), 4096) else { continue };
-        if notecraft_ink::svg::is_ink(&head) {
+        if ergonote_ink::svg::is_ink(&head) {
             found.push(name);
         }
     }
@@ -369,9 +369,9 @@ fn read_head(path: &Path, want: usize) -> std::io::Result<String> {
 /// way OneNote gives a page its rule lines and its page colour, and both live in the head
 /// beside the direction.
 const PAPER_KEY: &str = "paper";
-const PAPER_META: &str = "notecraft:paper";
+const PAPER_META: &str = "ergonote:paper";
 const COLOUR_KEY: &str = "page-color";
-const COLOUR_META: &str = "notecraft:page-color";
+const COLOUR_META: &str = "ergonote:page-color";
 
 /// The paper and the colour a page carries, as they are written: `(paper, colour)`. Either
 /// is `None` when the page says nothing and the window's own choice stands.
@@ -415,7 +415,7 @@ pub fn set_appearance(dir: &Path, paper: Option<&str>, colour: Option<&str>) -> 
 }
 
 const RULES_KEY: &str = "rule-color";
-const RULES_META: &str = "notecraft:rule-color";
+const RULES_META: &str = "ergonote:rule-color";
 
 /// The colour a page's rule and grid lines are drawn in (issue #288), as it is written, or
 /// `None` when the page says nothing and its lines are the theme's own grey.
@@ -449,25 +449,25 @@ pub fn set_rule_colour(dir: &Path, colour: Option<&str>) -> Result<()> {
 }
 
 const PAPER_SIZE_KEY: &str = "paper_size";
-const PAPER_SIZE_META: &str = "notecraft:paper-size";
+const PAPER_SIZE_META: &str = "ergonote:paper-size";
 
 /// The sheet the page is written for (issue #269). `None` is Auto: the page grows with its
 /// content. A line that does not read is Auto too.
-pub fn paper_size(dir: &Path) -> Result<Option<notecraft_model::paper::Paper>> {
+pub fn paper_size(dir: &Path) -> Result<Option<ergonote_model::paper::Paper>> {
     let (format, file) = page_file(dir).ok_or_else(|| StoreError::NotFound(format!("{} is not a page", dir.display())))?;
     let text = fs::read_to_string(&file).map_err(|e| StoreError::io("read", &file, e))?;
     let raw = match format {
         PageFormat::Html => html::meta(&text, PAPER_SIZE_META),
         PageFormat::Cmgfm => frontmatter::value(&frontmatter::split_front(&text).0, PAPER_SIZE_KEY),
     };
-    Ok(raw.and_then(|r| notecraft_model::paper::Paper::parse(&r)))
+    Ok(raw.and_then(|r| ergonote_model::paper::Paper::parse(&r)))
 }
 
 /// Writes it into the page's own file. `None` takes the line out, which is Auto.
-pub fn set_paper_size(dir: &Path, paper: Option<notecraft_model::paper::Paper>) -> Result<()> {
+pub fn set_paper_size(dir: &Path, paper: Option<ergonote_model::paper::Paper>) -> Result<()> {
     let (format, file) = page_file(dir).ok_or_else(|| StoreError::NotFound(format!("{} is not a page", dir.display())))?;
     let text = fs::read_to_string(&file).map_err(|e| StoreError::io("read", &file, e))?;
-    let line = paper.map(notecraft_model::paper::Paper::write);
+    let line = paper.map(ergonote_model::paper::Paper::write);
     let out = match format {
         PageFormat::Html => html::set_meta(&text, PAPER_SIZE_META, line.as_deref().unwrap_or_default()),
         PageFormat::Cmgfm => {
@@ -483,7 +483,7 @@ pub fn set_paper_size(dir: &Path, paper: Option<notecraft_model::paper::Paper>) 
 }
 
 const COLUMNS_KEY: &str = "columns";
-const COLUMNS_META: &str = "notecraft:columns";
+const COLUMNS_META: &str = "ergonote:columns";
 
 /// The column widths the page's tables were given. Empty means every table is drawn at
 /// the usual width, which is what a page says until a column is dragged.
@@ -515,14 +515,14 @@ pub fn set_table_columns(dir: &Path, widths: &tablecols::Widths) -> Result<()> {
 }
 
 const JUSTIFY_KEY: &str = "justify";
-const JUSTIFY_META: &str = "notecraft:justify";
+const JUSTIFY_META: &str = "ergonote:justify";
 
 /// Which paragraphs of the page are justified. Empty means every paragraph is drawn ragged
 /// at its far edge, which is what a page says until one is asked for.
 ///
 /// The line names the paragraphs by their place among the page's blocks; the words of the
 /// page are not touched, so the file reads the same to any other program. See
-/// [`notecraft_model::justify`] and `docs/dom_serialization/page-model.md` section 2 for why it is here and
+/// [`ergonote_model::justify`] and `docs/dom_serialization/page-model.md` section 2 for why it is here and
 /// not in the markup.
 pub fn justified(dir: &Path) -> Result<justify::Justified> {
     let (format, file) = page_file(dir).ok_or_else(|| StoreError::NotFound(format!("{} is not a page", dir.display())))?;
@@ -561,7 +561,7 @@ pub fn save_body(dir: &Path, body: &str) -> Result<String> {
     let text = fs::read_to_string(&file).map_err(|e| StoreError::io("read", &file, e))?;
     let now = iso_now();
     let out = match format {
-        PageFormat::Html => html::set_meta(&html::replace_inner(&text, body), "notecraft:updated", &now),
+        PageFormat::Html => html::set_meta(&html::replace_inner(&text, body), "ergonote:updated", &now),
         PageFormat::Cmgfm => {
             let (front, _) = frontmatter::split_front(&text);
             let front = if front.is_empty() { front } else { kv::replace_line(&front, "updated:", &format!("updated: {now}")) };
@@ -611,8 +611,8 @@ mod tests {
         let t = crate::testing::TempDir::new("page-size-limit");
         let settings = crate::settings::Settings::at(t.path().join("settings.toml"));
         let notebook = crate::ops::create_notebook(t.path(), "Notebook", None, &settings).expect("notebook");
-        for format in [notecraft_model::PageFormat::Html, notecraft_model::PageFormat::Cmgfm] {
-            let page = crate::ops::create_node(&notebook, &format!("Page {}", format.id()), notecraft_model::NodeKind::Page, Some(format), &settings)
+        for format in [ergonote_model::PageFormat::Html, ergonote_model::PageFormat::Cmgfm] {
+            let page = crate::ops::create_node(&notebook, &format!("Page {}", format.id()), ergonote_model::NodeKind::Page, Some(format), &settings)
                 .expect("page");
             save_body(&page, "kept").expect("a small save");
             let (_, file) = crate::tree::page_file(&page).expect("the page file");
@@ -633,14 +633,13 @@ mod tests {
     /// its words, and Auto takes it out again.
     #[test]
     fn a_page_keeps_its_paper_size_in_both_formats() {
-        use notecraft_model::paper::{Paper, Size};
+        use ergonote_model::paper::{Paper, Size};
         let t = crate::testing::TempDir::new("page-paper-size");
         let settings = crate::settings::Settings::at(t.path().join("settings.toml"));
         let notebook = crate::ops::create_notebook(t.path(), "Notebook", None, &settings).expect("notebook");
-        for format in [notecraft_model::PageFormat::Html, notecraft_model::PageFormat::Cmgfm] {
-            let page =
-                crate::ops::create_node(&notebook, &format!("Sheet {}", format.id()), notecraft_model::NodeKind::Page, Some(format), &settings)
-                    .expect("page");
+        for format in [ergonote_model::PageFormat::Html, ergonote_model::PageFormat::Cmgfm] {
+            let page = crate::ops::create_node(&notebook, &format!("Sheet {}", format.id()), ergonote_model::NodeKind::Page, Some(format), &settings)
+                .expect("page");
             assert_eq!(paper_size(&page).expect("read"), None, "{format:?}: a new page is Auto");
             let letter = Paper { size: Size::Letter, landscape: true, margins: [10.0, 12.5, 10.0, 12.5] };
             set_paper_size(&page, Some(letter)).expect("set");
@@ -659,7 +658,7 @@ mod tests {
         let t = crate::testing::TempDir::new("page-versions");
         let settings = crate::settings::Settings::at(t.path().join("settings.toml"));
         let notebook = crate::ops::create_notebook(t.path(), "Notebook", None, &settings).expect("notebook");
-        let page = crate::ops::create_node(&notebook, "Page", notecraft_model::NodeKind::Page, None, &settings).expect("page");
+        let page = crate::ops::create_node(&notebook, "Page", ergonote_model::NodeKind::Page, None, &settings).expect("page");
         let initial = load_page(&page).expect("initial page").body;
 
         save_body(&page, "first version").expect("first save");
@@ -677,7 +676,7 @@ mod tests {
         let t = crate::testing::TempDir::new("page-version-body");
         let settings = crate::settings::Settings::at(t.path().join("settings.toml"));
         let notebook = crate::ops::create_notebook(t.path(), "Notebook", None, &settings).expect("notebook");
-        let page = crate::ops::create_node(&notebook, "Page", notecraft_model::NodeKind::Page, None, &settings).expect("page");
+        let page = crate::ops::create_node(&notebook, "Page", ergonote_model::NodeKind::Page, None, &settings).expect("page");
         // The copy kept is of the page as it was before the first save; saves within a few
         // minutes of each other share one.
         let initial = load_page(&page).expect("initial").body;
@@ -699,10 +698,10 @@ mod tests {
         let t = crate::testing::TempDir::new("ink-files");
         let s = crate::settings::Settings::at(t.path().join("s.toml"));
         let nb = crate::ops::create_notebook(&t.path().join("nb"), "NB", None, &s).expect("nb");
-        let page = crate::ops::create_node(&nb, "P", notecraft_model::NodeKind::Page, None, &s).expect("page");
+        let page = crate::ops::create_node(&nb, "P", ergonote_model::NodeKind::Page, None, &s).expect("page");
 
         let ours = "<?xml version=\"1.0\"?>
-<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:nc=\"https://notecraft.org/ns/ink\"><title>Ink</title></svg>";
+<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:nc=\"https://ergonote.org/ns/ink\"><title>Ink</title></svg>";
         fs::write(page.join("ink.svg"), ours).expect("write");
         fs::write(page.join("ink-2.svg"), ours).expect("write");
         // A picture of someone's own, and the plain copy the Draw tab writes: neither is ink.
@@ -721,7 +720,7 @@ mod tests {
         let t = crate::testing::TempDir::new("ink-files-unicode");
         let s = crate::settings::Settings::at(t.path().join("s.toml"));
         let nb = crate::ops::create_notebook(&t.path().join("nb"), "NB", None, &s).expect("nb");
-        let page = crate::ops::create_node(&nb, "P", notecraft_model::NodeKind::Page, None, &s).expect("page");
+        let page = crate::ops::create_node(&nb, "P", ergonote_model::NodeKind::Page, None, &s).expect("page");
         let mut svg = "<svg xmlns=\"http://www.w3.org/2000/svg\"><!--".to_string();
         svg.push_str(&"a".repeat(4095 - svg.len()));
         svg.push_str("\u{e9}--><rect width=\"1\" height=\"1\"/></svg>");
@@ -736,7 +735,7 @@ mod tests {
     use crate::ops;
     use crate::settings::Settings;
     use crate::testing::TempDir;
-    use notecraft_model::NodeKind;
+    use ergonote_model::NodeKind;
 
     fn setup(label: &str, format: PageFormat) -> (TempDir, std::path::PathBuf) {
         let t = TempDir::new(label);
@@ -757,8 +756,8 @@ mod tests {
         let again = load_page(&page).expect("load");
         assert_eq!(again.body, "<h1>Page</h1><p>Hello</p>");
         let raw = fs::read_to_string(page.join("index.html")).expect("raw");
-        assert!(raw.contains("<title>Page</title>") && raw.contains("name=\"notecraft:id\""));
-        assert!(raw.contains("name=\"notecraft:updated\""));
+        assert!(raw.contains("<title>Page</title>") && raw.contains("name=\"ergonote:id\""));
+        assert!(raw.contains("name=\"ergonote:updated\""));
     }
 
     #[test]
@@ -814,7 +813,7 @@ mod tests {
     /// beside widths and hidden borders, and the words of the page are not touched (issue #170).
     #[test]
     fn aligned_table_cells_survive_a_save_and_a_reopen() {
-        use notecraft_model::tablecols::Align;
+        use ergonote_model::tablecols::Align;
         for format in [PageFormat::Cmgfm, PageFormat::Html] {
             let (_t, dir) = setup("table-align", format);
             let body = match format {
@@ -940,7 +939,7 @@ mod tests {
 
             // A body with its boxes in it replaces it.
             let body =
-                notecraft_formats::boxes::write(format, &notecraft_formats::markdown::parse("one\n"), Some(&[Container::new(10.0, 10.0, 300.0, 1)]));
+                ergonote_formats::boxes::write(format, &ergonote_formats::markdown::parse("one\n"), Some(&[Container::new(10.0, 10.0, 300.0, 1)]));
             save_body(&dir, &body).expect("save boxed");
             let now = fs::read_to_string(&file).expect("read");
             assert!(!now.contains("0,0,300,1"), "{format:?}: the older line is gone:\n{now}");

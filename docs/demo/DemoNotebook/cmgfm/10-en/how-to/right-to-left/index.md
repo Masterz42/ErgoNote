@@ -7,7 +7,7 @@ updated: 2026-10-18T00:00:00Z
 tags: []
 ---
 
-Arabic, Hebrew, Persian and Urdu read from the right. NoteCraft draws them that way: the letters
+Arabic, Hebrew, Persian and Urdu read from the right. ErgoNote draws them that way: the letters
 join, a line of them hangs from the right edge, and a line that mixes the two directions is laid
 out by the Unicode algorithm, so a price keeps its number the right way round:
 
@@ -28,7 +28,7 @@ machine with no Arabic font installed. Hebrew and Hindi have their own bundled f
 | **Paragraph** | The alignment menu in **Basic Text** | Which way the paragraph the caret is in reads |
 | **Run** | **More...** in the Direction group | Which way the selection reads, or what you type next |
 
-Page direction is NoteCraft's own; the apps people come from have no such setting, and a
+Page direction is ErgoNote's own; the apps people come from have no such setting, and a
 notebook written in Arabic wants one.
 
 ## Where the setting is kept

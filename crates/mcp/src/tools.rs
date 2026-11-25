@@ -23,7 +23,7 @@ pub struct Tool {
 pub static TOOLS: &[Tool] = &[
     Tool {
         name: "list_commands",
-        description: "Every NoteCraft command with its parameters. These are the same actions the window's menus and buttons run; `execute` runs any of them.",
+        description: "Every ErgoNote command with its parameters. These are the same actions the window's menus and buttons run; `execute` runs any of them.",
         params: &[],
         needs_window: false,
         writes: false,
@@ -234,7 +234,7 @@ pub fn call(backend: &mut dyn Backend, name: &str, args: &Value) -> Result<Strin
             // Nothing to show it in. The path is still checked, so the answer is useful.
             let page = execute(backend, "open.page", json!({"path": path.clone()}))?;
             Err(format!(
-                "no NoteCraft window is running, so nothing was opened. The page is {page}. Start a window on it with `notecraft-cli open \"{path}\"`."
+                "no ErgoNote window is running, so nothing was opened. The page is {page}. Start a window on it with `ergonote-cli open \"{path}\"`."
             ))
         }
         "screenshot" => {
@@ -248,22 +248,22 @@ pub fn call(backend: &mut dyn Backend, name: &str, args: &Value) -> Result<Strin
     }
 }
 
-const TREE_URI: &str = "notecraft://tree";
-const COMMANDS_URI: &str = "notecraft://commands";
-const PAGE_PREFIX: &str = "notecraft://page/";
+const TREE_URI: &str = "ergonote://tree";
+const COMMANDS_URI: &str = "ergonote://commands";
+const PAGE_PREFIX: &str = "ergonote://page/";
 
 pub fn resources() -> Vec<Value> {
     vec![
         json!({"uri": TREE_URI, "name": "Notebook tree", "description": "Every notebook, section and page, with its path", "mimeType": "text/plain"}),
-        json!({"uri": COMMANDS_URI, "name": "Commands", "description": "Every NoteCraft command and its parameters", "mimeType": "application/json"}),
+        json!({"uri": COMMANDS_URI, "name": "Commands", "description": "Every ErgoNote command and its parameters", "mimeType": "application/json"}),
     ]
 }
 
 pub fn resource_templates() -> Vec<Value> {
     vec![json!({
-        "uriTemplate": "notecraft://page/{path}",
+        "uriTemplate": "ergonote://page/{path}",
         "name": "Page",
-        "description": "One page's body, by its path, for example notecraft://page/work/projects/kickoff",
+        "description": "One page's body, by its path, for example ergonote://page/work/projects/kickoff",
         "mimeType": "text/plain",
     })]
 }
@@ -310,15 +310,15 @@ mod tests {
 
     #[test]
     fn open_without_a_window_names_the_page_and_how_to_show_it() {
-        let t = notecraft_store::testing::TempDir::new("mcp-open-headless");
-        let settings = notecraft_store::Settings::at(t.path().join("settings.toml"));
+        let t = ergonote_store::testing::TempDir::new("mcp-open-headless");
+        let settings = ergonote_store::Settings::at(t.path().join("settings.toml"));
         let mut b = crate::Headless::open(&t.path().join("nb"), settings).unwrap_or_else(|e| panic!("{e}"));
         call(&mut b, "new_notebook", &json!({"name": "Work"})).unwrap_or_else(|e| panic!("{e}"));
         let e = call(&mut b, "open", &json!({"path": "work"})).err().unwrap_or_default();
-        assert!(e.contains("no NoteCraft window") && e.contains("untitled-page") && e.contains("notecraft-cli open"), "{e}");
+        assert!(e.contains("no ErgoNote window") && e.contains("untitled-page") && e.contains("ergonote-cli open"), "{e}");
         // A path that is not there says so, not that a window is missing.
         let e = call(&mut b, "open", &json!({"path": "work/nothing-here"})).err().unwrap_or_default();
-        assert!(!e.contains("no NoteCraft window"), "{e}");
+        assert!(!e.contains("no ErgoNote window"), "{e}");
     }
 
     #[test]

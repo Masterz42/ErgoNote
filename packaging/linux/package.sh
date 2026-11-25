@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build NoteCraft Linux release packages from one staged FHS tree.
+# Build ErgoNote Linux release packages from one staged FHS tree.
 #
 # Usage:
 #   packaging/linux/package.sh [--skip-build] [--formats "tar appimage deb rpm"]
@@ -36,32 +36,32 @@ done
 DIST="${DIST:-$ROOT/dist/linux}"
 WORK="${CARGO_TARGET_DIR:-$ROOT/target}/linux-package"
 STAGE="$WORK/root"
-BASENAME="notecraft-$VERSION-linux-$ARCH"
+BASENAME="ergonote-$VERSION-linux-$ARCH"
 
 has_format() { case " $FORMATS " in *" $1 "*) return 0 ;; *) return 1 ;; esac; }
 need_command() { command -v "$1" >/dev/null 2>&1 || { echo "required tool not found: $1" >&2; exit 1; }; }
 
-echo "==> NoteCraft $VERSION for Linux $ARCH ($FORMATS)"
+echo "==> ErgoNote $VERSION for Linux $ARCH ($FORMATS)"
 mkdir -p "$DIST"
 rm -rf "$WORK"
 
 if [ "$SKIP_BUILD" = 0 ]; then
-    (cd "$ROOT" && cargo build --release --locked -p notecraft)
+    (cd "$ROOT" && cargo build --release --locked -p ergonote)
 fi
 
-BIN="${CARGO_TARGET_DIR:-$ROOT/target}/release/notecraft"
+BIN="${CARGO_TARGET_DIR:-$ROOT/target}/release/ergonote"
 [ -x "$BIN" ] || { echo "release binary not found: $BIN" >&2; exit 1; }
-install -Dm755 "$BIN" "$STAGE/usr/bin/notecraft"
-install -Dm644 "$ROOT/packaging/linux/com.alientechsoftware.notecraft.desktop" \
-    "$STAGE/usr/share/applications/com.alientechsoftware.notecraft.desktop"
+install -Dm755 "$BIN" "$STAGE/usr/bin/ergonote"
+install -Dm644 "$ROOT/packaging/linux/com.ergonote.app.desktop" \
+    "$STAGE/usr/share/applications/com.ergonote.app.desktop"
 
 for size in 32 64 128 256 512; do
-    install -Dm644 "$ROOT/assets/brand/notecraft-$size.png" \
-        "$STAGE/usr/share/icons/hicolor/${size}x${size}/apps/com.alientechsoftware.notecraft.png"
+    install -Dm644 "$ROOT/assets/brand/ergonote-$size.png" \
+        "$STAGE/usr/share/icons/hicolor/${size}x${size}/apps/com.ergonote.app.png"
 done
-mkdir -p "$STAGE/usr/share/doc/notecraft"
-install -Dm644 "$ROOT/LICENSE" "$STAGE/usr/share/doc/notecraft/LICENSE"
-install -Dm644 "$ROOT/NOTICE" "$STAGE/usr/share/doc/notecraft/NOTICE"
+mkdir -p "$STAGE/usr/share/doc/ergonote"
+install -Dm644 "$ROOT/LICENSE" "$STAGE/usr/share/doc/ergonote/LICENSE"
+install -Dm644 "$ROOT/NOTICE" "$STAGE/usr/share/doc/ergonote/NOTICE"
 
 # The app offers both generated formats on first launch of each app version.
 DEMO_SOURCE="$ROOT/docs/demo/DemoNotebook"
@@ -71,7 +71,7 @@ for format in html cmgfm; do
     count=$(find "$DEMO_SOURCE/$format" -mindepth 1 -maxdepth 1 -type d -regex '.*/\(1[0-9]\|2[0-9]\)-.*' | wc -l)
     [ "$count" -eq 13 ] || { echo "$format demo has $count language folders, expected 13" >&2; exit 1; }
 done
-DEMO_DEST="$STAGE/usr/share/notecraft/demo/welcome-to-notecraft"
+DEMO_DEST="$STAGE/usr/share/ergonote/demo/welcome-to-ergonote"
 mkdir -p "$DEMO_DEST"
 cp -R "$DEMO_SOURCE/." "$DEMO_DEST/"
 [ -f "$DEMO_DEST/html/_node.toml" ] && [ -f "$DEMO_DEST/html/00-start/welcome/index.html" ] && \
@@ -106,15 +106,15 @@ fi
 
 if has_format appimage; then
     need_command appimagetool
-    APPDIR="$WORK/NoteCraft.AppDir"
+    APPDIR="$WORK/ErgoNote.AppDir"
     cp -R "$STAGE" "$APPDIR"
     install -Dm755 "$ROOT/packaging/linux/AppRun" "$APPDIR/AppRun"
     sed 's/^Exec=.*/Exec=AppRun %U/; s/^TryExec=.*/TryExec=AppRun/' \
-        "$ROOT/packaging/linux/com.alientechsoftware.notecraft.desktop" > "$APPDIR/com.alientechsoftware.notecraft.desktop"
-    install -Dm644 "$ROOT/assets/brand/notecraft-256.png" "$APPDIR/com.alientechsoftware.notecraft.png"
+        "$ROOT/packaging/linux/com.ergonote.app.desktop" > "$APPDIR/com.ergonote.app.desktop"
+    install -Dm644 "$ROOT/assets/brand/ergonote-256.png" "$APPDIR/com.ergonote.app.png"
     (cd "$DIST" && appimagetool "$APPDIR" "$DIST/$BASENAME.AppImage")
     echo "wrote $DIST/$BASENAME.AppImage"
 fi
 
-"$STAGE/usr/bin/notecraft" --version
+"$STAGE/usr/bin/ergonote" --version
 echo "==> done: $DIST"

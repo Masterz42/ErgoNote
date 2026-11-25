@@ -4,7 +4,7 @@ title: Imágenes y archivos
 
 # Imágenes y archivos
 
-Arrastra un archivo desde tu explorador de archivos hasta esta página. NoteCraft te pregunta qué
+Arrastra un archivo desde tu explorador de archivos hasta esta página. ErgoNote te pregunta qué
 hacer con él:
 
 - **Insertar la imagen**: una copia va a la carpeta `assets` de esta página y la página la muestra.
@@ -30,13 +30,13 @@ de más de 512 MB se rechaza.
 ## Pegar
 
 Una tabla copiada de otra aplicación de notas o de una hoja de cálculo se pega como tabla. Para
-pegar una imagen, haz clic en la página y pulsa **Ctrl+V**. NoteCraft guarda una copia en la carpeta
+pegar una imagen, haz clic en la página y pulsa **Ctrl+V**. ErgoNote guarda una copia en la carpeta
 `assets` de la página y la inserta en la nota.
 
 ## Impresiones
 
 Algunas aplicaciones pueden convertir un PDF o un documento en imágenes sobre la página.
-NoteCraft todavía no puede; un PDF que adjuntes se queda como archivo, y el diálogo lo dice.
+ErgoNote todavía no puede; un PDF que adjuntes se queda como archivo, y el diálogo lo dice.
 
 Siguiente: [Dos formatos de página](../page-formats/).
 

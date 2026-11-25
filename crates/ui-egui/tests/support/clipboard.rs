@@ -3,7 +3,7 @@
 //! shares with other programs. This is the one exemption to the no-mocks rule (see `AGENTS.md`);
 //! it lives here, in the test folder, and product code has no hook for it.
 
-use notecraft_ui_egui::clipboard::{Board, Picture};
+use ergonote_ui_egui::clipboard::{Board, Picture};
 use std::sync::{Arc, Mutex};
 
 /// An in-memory clipboard. Clones share one clipboard, so a test keeps one clone to put text on

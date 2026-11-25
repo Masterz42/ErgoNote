@@ -13,7 +13,7 @@ fn git(root: &Path, args: &[&str]) -> Result<String, String> {
 }
 
 fn validation_path(root: &Path) -> Result<PathBuf, String> {
-    let path = PathBuf::from(git(root, &["rev-parse", "--git-path", "notecraft-push-validation"])?);
+    let path = PathBuf::from(git(root, &["rev-parse", "--git-path", "ergonote-push-validation"])?);
     Ok(if path.is_absolute() { path } else { root.join(path) })
 }
 
@@ -99,7 +99,7 @@ mod tests {
     }
 
     fn test_repo() -> PathBuf {
-        let root = std::env::temp_dir().join(format!("notecraft-push-stamp-{}", std::process::id()));
+        let root = std::env::temp_dir().join(format!("ergonote-push-stamp-{}", std::process::id()));
         let _ = fs::remove_dir_all(&root);
         fs::create_dir_all(&root).expect("create temporary repository");
         git_ok(&root, &["init", "-q", "-b", "feat/test"]);
@@ -127,7 +127,7 @@ mod tests {
 
     #[test]
     fn validation_requires_a_clean_worktree() {
-        let root = std::env::temp_dir().join(format!("notecraft-push-clean-{}", std::process::id()));
+        let root = std::env::temp_dir().join(format!("ergonote-push-clean-{}", std::process::id()));
         let _ = fs::remove_dir_all(&root);
         fs::create_dir_all(&root).expect("create temporary repository");
         git_ok(&root, &["init", "-q"]);

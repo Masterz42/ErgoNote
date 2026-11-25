@@ -3,13 +3,13 @@
 //!
 //! Every change is kept at once; the dialog has no Save button to forget. What a rename or a
 //! removal does to the lines that carry a tag is decided in the model
-//! ([`notecraft_model::tag`]): a rename keeps the tag on every line, a removal leaves the
+//! ([`ergonote_model::tag`]): a rename keeps the tag on every line, a removal leaves the
 //! marker word as ordinary words.
 
 use crate::theme::Tokens;
 use egui::{Align2, Context, Sense, Ui, vec2};
-use notecraft_model::tag::SYMBOLS;
-use notecraft_model::{CustomTag, NodeColor};
+use ergonote_model::tag::SYMBOLS;
+use ergonote_model::{CustomTag, NodeColor};
 
 /// The dialog while it is open: the tags as they stand and the name being typed for a new one.
 #[derive(Clone, Debug, Default)]
@@ -203,7 +203,7 @@ mod tests {
         crate::fonts::install_once(&ctx);
         let mut out = ctx.run_ui(egui::RawInput::default(), |_| {});
         out.textures_delta.clear();
-        for s in notecraft_model::tag::SYMBOLS.into_iter().chain(["↑", "↓", "×"]) {
+        for s in ergonote_model::tag::SYMBOLS.into_iter().chain(["↑", "↓", "×"]) {
             assert!(ctx.fonts_mut(|f| f.has_glyphs(&egui::FontId::proportional(14.0), s)), "{s} would draw as a box");
         }
     }

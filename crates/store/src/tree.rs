@@ -1,8 +1,8 @@
 //! Reading the notebook tree from folders.
 
 use crate::vfs as fs;
-use notecraft_formats::{frontmatter, html};
-use notecraft_model::{NodeColor, NodeKind, PageFormat, kv};
+use ergonote_formats::{frontmatter, html};
+use ergonote_model::{NodeColor, NodeKind, PageFormat, kv};
 use std::path::{Path, PathBuf};
 
 /// What a folder says about itself.
@@ -89,7 +89,7 @@ pub fn read_node(dir: &Path) -> Option<NodeInfo> {
     if let Some((format, file)) = page_file(dir) {
         let text = fs::read_to_string(&file).unwrap_or_default();
         let (id, order) = match format {
-            PageFormat::Html => (html::meta(&text, "notecraft:id"), html::meta(&text, "notecraft:order").and_then(|v| v.parse().ok())),
+            PageFormat::Html => (html::meta(&text, "ergonote:id"), html::meta(&text, "ergonote:order").and_then(|v| v.parse().ok())),
             PageFormat::Cmgfm => {
                 let (front, _) = frontmatter::split_front(&text);
                 (frontmatter::value(&front, "id"), frontmatter::value(&front, "order").and_then(|v| v.parse().ok()))

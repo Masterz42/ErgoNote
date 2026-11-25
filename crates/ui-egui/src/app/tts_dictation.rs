@@ -1,6 +1,6 @@
 use super::*;
 
-impl NoteCraftApp {
+impl ErgoNoteApp {
     pub(super) fn read_page_aloud(&mut self) {
         let Some(ed) = self.editor.as_ref() else {
             self.say(crate::tl_id!("ui.open_a_page_first"));
@@ -458,9 +458,9 @@ impl NoteCraftApp {
                     }
                 };
                 let tmp = std::env::temp_dir();
-                let mp3 = tmp.join("notecraft_tts.mp3");
-                let tsv = tmp.join("notecraft_tts.words.tsv");
-                let wav = tmp.join("notecraft_tts.wav");
+                let mp3 = tmp.join("ergonote_tts.mp3");
+                let tsv = tmp.join("ergonote_tts.words.tsv");
+                let wav = tmp.join("ergonote_tts.wav");
 
                 // 1) Priority 1: online Edge Neural voice with millisecond WordBoundary sync.
                 if crate::tts_win::synthesize_edge_mp3(edge_voice, edge_rate, &clean, (&mp3, &tsv), &pid_slot, &stop_flag) && wait_unpaused() {
@@ -497,11 +497,11 @@ impl NoteCraftApp {
                     return;
                 }
                 let cmd = format!(
-                    "Add-Type -AssemblyName System.Speech; $s = New-Object System.Speech.Synthesis.SpeechSynthesizer; $s.Rate = {win_rate}; $s.add_SpeakProgress({{ param($sender, $e) [Console]::Out.WriteLine('AT:' + $e.CharacterPosition); [Console]::Out.Flush() }}); $s.Speak($env:NOTECRAFT_TTS)"
+                    "Add-Type -AssemblyName System.Speech; $s = New-Object System.Speech.Synthesis.SpeechSynthesizer; $s.Rate = {win_rate}; $s.add_SpeakProgress({{ param($sender, $e) [Console]::Out.WriteLine('AT:' + $e.CharacterPosition); [Console]::Out.Flush() }}); $s.Speak($env:ERGONOTE_TTS)"
                 );
                 if let Ok(mut child) = std::process::Command::new("powershell")
                     .args(["-NoProfile", "-NonInteractive", "-WindowStyle", "Hidden", "-Command", &cmd])
-                    .env("NOTECRAFT_TTS", &clean)
+                    .env("ERGONOTE_TTS", &clean)
                     .stdout(std::process::Stdio::piped())
                     .creation_flags(CREATE_NO_WINDOW)
                     .spawn()
@@ -546,10 +546,10 @@ impl NoteCraftApp {
                 use std::io::Write;
                 use std::sync::atomic::Ordering;
                 let home = std::env::var("HOME").unwrap_or_default();
-                let mp3 = "/tmp/notecraft_tts.mp3";
-                let vtt = "/tmp/notecraft_tts.vtt";
-                let tsv = "/tmp/notecraft_tts.words.tsv";
-                let wav = "/tmp/notecraft_tts.wav";
+                let mp3 = "/tmp/ergonote_tts.mp3";
+                let vtt = "/tmp/ergonote_tts.vtt";
+                let tsv = "/tmp/ergonote_tts.words.tsv";
+                let wav = "/tmp/ergonote_tts.wav";
                 let wait_unpaused = || -> bool {
                     while paused_flag.load(Ordering::SeqCst) {
                         if stop_flag.load(Ordering::SeqCst) {
@@ -592,8 +592,8 @@ impl NoteCraftApp {
                 let py_script = "\
 import asyncio, os, edge_tts
 async def main():
-    c = edge_tts.Communicate(os.environ['NOTECRAFT_TTS'], os.environ['NOTECRAFT_TTS_VOICE'], rate=os.environ['NOTECRAFT_TTS_RATE'], boundary='WordBoundary')
-    with open(os.environ['NOTECRAFT_TTS_MP3'], 'wb') as f, open(os.environ['NOTECRAFT_TTS_TSV'], 'w', encoding='utf-8') as w:
+    c = edge_tts.Communicate(os.environ['ERGONOTE_TTS'], os.environ['ERGONOTE_TTS_VOICE'], rate=os.environ['ERGONOTE_TTS_RATE'], boundary='WordBoundary')
+    with open(os.environ['ERGONOTE_TTS_MP3'], 'wb') as f, open(os.environ['ERGONOTE_TTS_TSV'], 'w', encoding='utf-8') as w:
         async for chunk in c.stream():
             if chunk['type'] == 'audio':
                 f.write(chunk['data'])
@@ -604,11 +604,11 @@ async def main():
 asyncio.run(main())";
                 let mut edge_py = std::process::Command::new(&py);
                 edge_py.args(["-c", py_script]);
-                edge_py.env("NOTECRAFT_TTS", &clean);
-                edge_py.env("NOTECRAFT_TTS_VOICE", edge_voice);
-                edge_py.env("NOTECRAFT_TTS_RATE", edge_rate);
-                edge_py.env("NOTECRAFT_TTS_MP3", mp3);
-                edge_py.env("NOTECRAFT_TTS_TSV", tsv);
+                edge_py.env("ERGONOTE_TTS", &clean);
+                edge_py.env("ERGONOTE_TTS_VOICE", edge_voice);
+                edge_py.env("ERGONOTE_TTS_RATE", edge_rate);
+                edge_py.env("ERGONOTE_TTS_MP3", mp3);
+                edge_py.env("ERGONOTE_TTS_TSV", tsv);
                 let mut edge_ok = run_tracked(edge_py);
                 if !edge_ok && !stop_flag.load(Ordering::SeqCst) {
                     // 1b) CLI fallback with VTT sentence intervals.
@@ -638,8 +638,8 @@ asyncio.run(main())";
                 }
 
                 // 2) Offline fallback: local Piper neural voice synced against actual WAV duration.
-                let piper_bin = format!("{home}/.local/share/notecraft-tts/piper/piper");
-                let piper_model = format!("{home}/.local/share/notecraft-tts/{piper_file}");
+                let piper_bin = format!("{home}/.local/share/ergonote-tts/piper/piper");
+                let piper_model = format!("{home}/.local/share/ergonote-tts/{piper_file}");
                 if !stop_flag.load(Ordering::SeqCst)
                     && std::path::Path::new(&piper_bin).is_file()
                     && std::path::Path::new(&piper_model).is_file()
@@ -780,9 +780,9 @@ asyncio.run(main())";
                 const CREATE_NO_WINDOW: u32 = 0x0800_0000;
                 let never_stop = AtomicBool::new(false);
                 let tmp = std::env::temp_dir();
-                let wav = tmp.join("notecraft_word.wav");
-                let mp3 = tmp.join("notecraft_word.mp3");
-                let tsv = tmp.join("notecraft_word.tsv");
+                let wav = tmp.join("ergonote_word.wav");
+                let mp3 = tmp.join("ergonote_word.mp3");
+                let tsv = tmp.join("ergonote_word.tsv");
                 if crate::tts_win::synthesize_piper_wav(piper_file, piper_scale, &word, &wav, &preview_pid, &never_stop)
                     && crate::tts_win::play_audio(&wav, true, &preview_pid, &never_stop)
                 {
@@ -794,11 +794,11 @@ asyncio.run(main())";
                     return;
                 }
                 let cmd = format!(
-                    "Add-Type -AssemblyName System.Speech; $s = New-Object System.Speech.Synthesis.SpeechSynthesizer; $s.Rate = {win_rate}; $s.Speak($env:NOTECRAFT_WORD)"
+                    "Add-Type -AssemblyName System.Speech; $s = New-Object System.Speech.Synthesis.SpeechSynthesizer; $s.Rate = {win_rate}; $s.Speak($env:ERGONOTE_WORD)"
                 );
                 if let Ok(mut child) = std::process::Command::new("powershell")
                     .args(["-NoProfile", "-NonInteractive", "-WindowStyle", "Hidden", "-Command", &cmd])
-                    .env("NOTECRAFT_WORD", &word)
+                    .env("ERGONOTE_WORD", &word)
                     .creation_flags(CREATE_NO_WINDOW)
                     .spawn()
                 {
@@ -821,8 +821,8 @@ asyncio.run(main())";
                 use std::io::Write;
                 use std::sync::atomic::Ordering;
                 let proc_id = std::process::id();
-                let wav = std::env::temp_dir().join(format!("notecraft_word_{proc_id}_{seq}.wav"));
-                let mp3 = std::env::temp_dir().join(format!("notecraft_word_{proc_id}_{seq}.mp3"));
+                let wav = std::env::temp_dir().join(format!("ergonote_word_{proc_id}_{seq}.wav"));
+                let mp3 = std::env::temp_dir().join(format!("ergonote_word_{proc_id}_{seq}.mp3"));
                 let play_tracked = |mut cmd: std::process::Command| -> bool {
                     if let Ok(mut child) = cmd.spawn() {
                         preview_pid.store(child.id(), Ordering::SeqCst);
@@ -835,8 +835,8 @@ asyncio.run(main())";
                 };
 
                 // 1) Local neural Piper voice when installed for the active language (natural voice in ~0.4s offline).
-                let piper_bin = format!("{home}/.local/share/notecraft-tts/piper/piper");
-                let piper_model = format!("{home}/.local/share/notecraft-tts/{piper_file}");
+                let piper_bin = format!("{home}/.local/share/ergonote-tts/piper/piper");
+                let piper_model = format!("{home}/.local/share/ergonote-tts/{piper_file}");
                 if std::path::Path::new(&piper_bin).is_file()
                     && std::path::Path::new(&piper_model).is_file()
                     && let Ok(mut child) = std::process::Command::new(&piper_bin)
@@ -981,7 +981,7 @@ asyncio.run(main())";
                 let _ = std::process::Command::new("kill").args(["-CONT", &s]).status();
                 let _ = std::process::Command::new("kill").args(["-TERM", &s]).status();
             }
-            let _ = std::process::Command::new("pkill").args(["-f", "notecraft_tts\\."]).status();
+            let _ = std::process::Command::new("pkill").args(["-f", "ergonote_tts\\."]).status();
         }
         #[cfg(all(target_os = "windows", not(test)))]
         if pid > 0 {
@@ -1307,10 +1307,10 @@ asyncio.run(main())";
                 if let Some(blk) = ed.blocks.get(b_idx)
                     && matches!(
                         blk,
-                        notecraft_formats::markdown::Block::Heading { .. }
-                            | notecraft_formats::markdown::Block::Paragraph(_)
-                            | notecraft_formats::markdown::Block::Item { .. }
-                            | notecraft_formats::markdown::Block::Quote(_)
+                        ergonote_formats::markdown::Block::Heading { .. }
+                            | ergonote_formats::markdown::Block::Paragraph(_)
+                            | ergonote_formats::markdown::Block::Item { .. }
+                            | ergonote_formats::markdown::Block::Quote(_)
                     )
                 {
                     let whole = pageedit::block_text(blk);
@@ -1347,10 +1347,10 @@ asyncio.run(main())";
         for (b_idx, blk) in ed.blocks.iter().enumerate() {
             if matches!(
                 blk,
-                notecraft_formats::markdown::Block::Heading { .. }
-                    | notecraft_formats::markdown::Block::Paragraph(_)
-                    | notecraft_formats::markdown::Block::Item { .. }
-                    | notecraft_formats::markdown::Block::Quote(_)
+                ergonote_formats::markdown::Block::Heading { .. }
+                    | ergonote_formats::markdown::Block::Paragraph(_)
+                    | ergonote_formats::markdown::Block::Item { .. }
+                    | ergonote_formats::markdown::Block::Quote(_)
             ) {
                 let txt = if let Some(c) = ed.caret.as_ref()
                     && c.block == b_idx
@@ -1481,7 +1481,7 @@ asyncio.run(main())";
             }
             let ok = !matches!(
                 ed.blocks.get(c.block),
-                Some(notecraft_formats::markdown::Block::Code { .. } | notecraft_formats::markdown::Block::MathBlock(_))
+                Some(ergonote_formats::markdown::Block::Code { .. } | ergonote_formats::markdown::Block::MathBlock(_))
             );
             if !ok {
                 self.prediction_selected = None;
@@ -1781,7 +1781,7 @@ asyncio.run(main())";
             std::thread::spawn(move || {
                 use std::os::windows::process::CommandExt;
                 const CREATE_NO_WINDOW: u32 = 0x0800_0000;
-                let tmp = std::env::temp_dir().join("notecraft_dictation.txt");
+                let tmp = std::env::temp_dir().join("ergonote_dictation.txt");
                 let _ = std::fs::remove_file(&tmp);
                 let out_str = tmp.to_string_lossy().replace('\'', "''");
                 let ps = format!(
@@ -1818,7 +1818,7 @@ asyncio.run(main())";
 
         #[cfg(all(target_os = "linux", not(test)))]
         {
-            let wav = "/tmp/notecraft_dictation.wav";
+            let wav = "/tmp/ergonote_dictation.wav";
             let _ = std::fs::remove_file(wav);
             let candidates: [(&str, &[&str]); 4] = [
                 ("pw-record", &[wav]),
@@ -1857,7 +1857,7 @@ asyncio.run(main())";
 
         #[cfg(all(target_os = "macos", not(test)))]
         {
-            let wav = "/tmp/notecraft_dictation.wav";
+            let wav = "/tmp/ergonote_dictation.wav";
             let _ = std::fs::remove_file(wav);
             let candidates: [(&str, &[&str]); 2] = [
                 ("rec", &["-c", "1", "-r", "16000", wav]),

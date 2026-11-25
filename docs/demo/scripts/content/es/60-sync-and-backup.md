@@ -4,10 +4,10 @@ title: Sincronizar y copias de seguridad
 
 # Sincronizar y copias de seguridad
 
-NoteCraft no tiene sincronización propia ni cuenta. Un cuaderno es una carpeta de archivos
+ErgoNote no tiene sincronización propia ni cuenta. Un cuaderno es una carpeta de archivos
 pequeños, así que pon la carpeta de cuadernos donde tu herramienta de sincronización ya mira:
 OneDrive, Dropbox, Google Drive, iCloud Drive, Syncthing, una carpeta compartida de red o un
-repositorio git. Ninguno necesita entender NoteCraft. Copian archivos.
+repositorio git. Ninguno necesita entender ErgoNote. Copian archivos.
 
 ## Por qué funciona
 
@@ -19,7 +19,7 @@ repositorio git. Ninguno necesita entender NoteCraft. Copian archivos.
   rutas 255, y nunca se escribe nada que Windows rechace.
 - **Las copias en conflicto se detectan.** Cuando una herramienta deja una copia en conflicto
   junto a una página, el comprobador lo informa: **Archivo**, luego **Comprobar**, o
-  `notecraft-cli check` desde la terminal.
+  `ergonote-cli check` desde la terminal.
 
 ## Copia de seguridad
 
@@ -34,7 +34,7 @@ sustituyen una copia de seguridad independiente del cuaderno.
 
 ## Lo que no se maneja
 
-NoteCraft no fusiona dos versiones de una página. Si tu herramienta de sincronización crea una
+ErgoNote no fusiona dos versiones de una página. Si tu herramienta de sincronización crea una
 copia en conflicto, tú decides qué versión conservar.
 
 Siguiente: [Hazlo tuyo](../make-it-yours/).

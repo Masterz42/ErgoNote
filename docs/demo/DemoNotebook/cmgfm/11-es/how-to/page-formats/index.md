@@ -25,7 +25,7 @@ Un ajuste cambia solo las páginas nuevas. Las que ya tienes conservan su format
 
 ## Mira el código de esta página
 
-Pulsa el botón `< >` junto a la página. La cabecera del archivo lleva la identidad y las fechas de la página como etiquetas `<meta name="notecraft:...">`; una página Markdown lleva lo mismo en su cabecera inicial. NoteCraft solo edita lo que hay dentro de `<body>`.
+Pulsa el botón `< >` junto a la página. La cabecera del archivo lleva la identidad y las fechas de la página como etiquetas `<meta name="ergonote:...">`; una página Markdown lleva lo mismo en su cabecera inicial. ErgoNote solo edita lo que hay dentro de `<body>`.
 
 Siguiente: [Sincronizar y copias de seguridad](../sync-and-backup/).
 

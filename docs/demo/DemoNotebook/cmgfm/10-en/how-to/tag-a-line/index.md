@@ -30,7 +30,7 @@ A to-do line is a task list item, which every Markdown reader understands.
 
 #remember The booking reference is in the attached file.
 
-NoteCraft draws the mark instead of the word, but the word is what is in the file, so your notes
+ErgoNote draws the mark instead of the word, but the word is what is in the file, so your notes
 stay readable in any editor and searchable from a terminal. A word that only looks like a tag,
 like #ideas without a space after it, is left alone.
 

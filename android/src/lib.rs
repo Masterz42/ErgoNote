@@ -1,5 +1,5 @@
 #![deny(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::unimplemented, clippy::todo, clippy::unreachable)]
-//! NoteCraft for Android.
+//! ErgoNote for Android.
 //!
 //! The APK is a plain `android.app.NativeActivity` with no Java code. Android loads this
 //! library and calls `android_main` ([`activity`]), which finds the app's folders, refreshes

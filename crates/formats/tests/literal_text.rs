@@ -1,5 +1,5 @@
-use notecraft_formats::{Block, Span, blocks_to_html, blocks_to_markdown};
-use notecraft_formats::{html, markdown};
+use ergonote_formats::{Block, Span, blocks_to_html, blocks_to_markdown};
+use ergonote_formats::{html, markdown};
 
 #[test]
 fn literal_punctuation_and_block_starts_round_trip_in_both_formats() {
@@ -91,10 +91,10 @@ fn literal_inline_tags_survive_inside_styled_text() {
             [Span { text: text.into(), underline: true, ..Default::default() }, Span { text: text.into(), font_size: Some(18), ..Default::default() }]
         {
             let original = vec![Block::Paragraph(vec![span])];
-            for format in notecraft_model::PageFormat::ALL {
+            for format in ergonote_model::PageFormat::ALL {
                 let mut blocks = original.clone();
                 for _ in 0..3 {
-                    blocks = notecraft_formats::boxes::read(format, &notecraft_formats::boxes::write(format, &blocks, None)).0;
+                    blocks = ergonote_formats::boxes::read(format, &ergonote_formats::boxes::write(format, &blocks, None)).0;
                     assert_eq!(blocks, original, "{format:?}: {text:?}");
                 }
             }
@@ -113,11 +113,11 @@ fn table_pipes_do_not_split_literal_or_formatted_cells() {
         Span { text: "label".into(), link: Some(r"path\with|pipe".into()), ..Default::default() },
     ] {
         let original = vec![Block::Table { head: vec![vec![span]], rows: vec![] }];
-        for format in notecraft_model::PageFormat::ALL {
+        for format in ergonote_model::PageFormat::ALL {
             let mut blocks = original.clone();
             for _ in 0..3 {
-                let body = notecraft_formats::boxes::write(format, &blocks, None);
-                blocks = notecraft_formats::boxes::read(format, &body).0;
+                let body = ergonote_formats::boxes::write(format, &blocks, None);
+                blocks = ergonote_formats::boxes::read(format, &body).0;
                 assert_eq!(blocks, original, "{format:?}: {body}");
             }
         }

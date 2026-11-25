@@ -25,7 +25,7 @@ Un réglage ne change que les nouvelles pages. Celles que vous avez gardent leur
 
 ## Regardez la source de cette page
 
-Cliquez sur le bouton `< >` à côté de la page. L'en-tête du fichier porte l'identité et les dates de la page sous forme de balises `<meta name="notecraft:...">` ; une page Markdown porte la même chose dans son en-tête. NoteCraft ne modifie que ce qui est dans `<body>`.
+Cliquez sur le bouton `< >` à côté de la page. L'en-tête du fichier porte l'identité et les dates de la page sous forme de balises `<meta name="ergonote:...">` ; une page Markdown porte la même chose dans son en-tête. ErgoNote ne modifie que ce qui est dans `<body>`.
 
 Suite : [Synchronisation et sauvegarde](../sync-and-backup/).
 

@@ -1,7 +1,7 @@
 //! Containers: the level between a page and its paragraphs.
 //!
 //! A page in OneNote is not one column of text. It is a sheet with boxes on it, each holding
-//! paragraphs, pictures and tables, each placed where the writer put it. NoteCraft calls
+//! paragraphs, pictures and tables, each placed where the writer put it. ErgoNote calls
 //! those containers, and this is what one is: a place on the page, a width, and how many of
 //! the page's blocks belong to it.
 //!

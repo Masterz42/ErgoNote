@@ -1,5 +1,5 @@
 [package]
-name = "notecraft-demo"
+name = "ergonote-demo"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
@@ -8,17 +8,17 @@ publish.workspace = true
 description = "Builds the Welcome notebook in docs/demo/DemoNotebook from docs/demo/scripts/content"
 
 [[bin]]
-name = "notecraft-demo"
+name = "ergonote-demo"
 path = "src/main.rs"
 
 [lints]
 workspace = true
 
 [dependencies]
-notecraft-model = { workspace = true }
+ergonote-model = { workspace = true }
 # To check that a page's justified paragraph really is a paragraph, with the same reader
 # the editor uses.
-notecraft-formats = { workspace = true }
-notecraft-store = { workspace = true }
+ergonote-formats = { workspace = true }
+ergonote-store = { workspace = true }
 # The demo ships real handwriting, drawn with the same crate the pen uses.
-notecraft-ink = { workspace = true }
+ergonote-ink = { workspace = true }

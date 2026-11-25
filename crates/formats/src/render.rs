@@ -689,7 +689,7 @@ fn b() {}"
 
     #[test]
     fn html_round_trips_through_blocks() {
-        // A page written by NoteCraft comes back the same after a trip through the blocks.
+        // A page written by ErgoNote comes back the same after a trip through the blocks.
         for body in [
             "<h1>Title</h1>\n<p>Words with <b>bold</b> and <i>slant</i>.</p>\n",
             "<ul>\n<li>one</li>\n<li>two</li>\n</ul>\n",

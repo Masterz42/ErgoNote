@@ -1,18 +1,18 @@
 [package]
-name = "notecraft-store"
+name = "ergonote-store"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 publish.workspace = true
-description = "NoteCraft store: notebooks as plain folders. Reading and writing the tree, pages, attachments, settings and search"
+description = "ErgoNote store: notebooks as plain folders. Reading and writing the tree, pages, attachments, settings and search"
 
 [lints]
 workspace = true
 
 [dependencies]
-notecraft-model = { workspace = true }
-notecraft-formats = { workspace = true }
+ergonote-model = { workspace = true }
+ergonote-formats = { workspace = true }
 # Only to tell an ink file from an ordinary picture by its namespace.
-notecraft-ink = { workspace = true }
+ergonote-ink = { workspace = true }
 log = { workspace = true }

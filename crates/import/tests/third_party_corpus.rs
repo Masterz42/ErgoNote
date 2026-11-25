@@ -2,14 +2,14 @@ use std::fs;
 use std::io::Read;
 use std::path::Path;
 
-use notecraft_import::{Options, run};
-use notecraft_model::PageFormat;
-use notecraft_store::testing::TempDir;
+use ergonote_import::{Options, run};
+use ergonote_model::PageFormat;
+use ergonote_store::testing::TempDir;
 
 const FIXTURES: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/tests/fixtures/3p");
 const LARGE_FIXTURE_NAMES: [&str; 2] = ["Large Desktop.one", "Large OneDrive.one"];
 
-fn quiet(_: &notecraft_import::Event<'_>) {}
+fn quiet(_: &ergonote_import::Event<'_>) {}
 
 fn verify_source(
     source: &Path,

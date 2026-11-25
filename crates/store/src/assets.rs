@@ -4,7 +4,7 @@
 use crate::error::{Result, StoreError};
 use crate::tree::page_file;
 use crate::vfs as fs;
-use notecraft_model::names;
+use ergonote_model::names;
 use std::collections::HashSet;
 use std::path::Path;
 
@@ -42,12 +42,12 @@ fn assets_dir(page_dir: &Path) -> Result<std::path::PathBuf> {
     Ok(dir)
 }
 
-/// Where a page records which files in its `assets` folder are icons NoteCraft made for an
+/// Where a page records which files in its `assets` folder are icons ErgoNote made for an
 /// attachment, one name to a line. A file is only ever treated as a generated icon, hidden
 /// from the attachment list and removed with its attachment, when it is recorded here or the
 /// page shows it as an attachment's icon: a name alone, such as `report.pdf.png`, may just as
 /// well be a picture the user attached (issue #103).
-const ICON_RECORD: &str = ".notecraft/icons";
+const ICON_RECORD: &str = ".ergonote/icons";
 
 fn recorded_icons(page_dir: &Path) -> HashSet<String> {
     fs::read_to_string(page_dir.join(ICON_RECORD))
@@ -72,7 +72,7 @@ fn set_recorded(page_dir: &Path, icon: &str, recorded: bool) -> Result<()> {
 }
 
 /// Whether a file of this name in the page's `assets` folder may be written as an icon: there
-/// is none yet, or the one there is an icon NoteCraft made. A user's own file is never replaced.
+/// is none yet, or the one there is an icon ErgoNote made. A user's own file is never replaced.
 fn icon_slot_free(page_dir: &Path, icon: &str) -> bool {
     !crate::vfs::exists(&page_dir.join("assets").join(icon)) || is_generated_icon(page_dir, icon)
 }
@@ -221,7 +221,7 @@ pub fn list(page_dir: &Path) -> Vec<(String, u64)> {
     out
 }
 
-/// Whether `name` in the page's `assets` folder is an icon NoteCraft made for the attachment
+/// Whether `name` in the page's `assets` folder is an icon ErgoNote made for the attachment
 /// whose name it extends: recorded when it was made, or, for one made before icons were
 /// recorded, drawn on the page as an attachment card's icon. A user's picture is never written
 /// that way: it has its own name as its alt text.
@@ -270,7 +270,7 @@ mod tests {
     use crate::ops;
     use crate::settings::Settings;
     use crate::testing::TempDir;
-    use notecraft_model::NodeKind;
+    use ergonote_model::NodeKind;
 
     fn page(t: &TempDir) -> std::path::PathBuf {
         let s = Settings::at(t.path().join("s.toml"));
@@ -353,7 +353,7 @@ mod tests {
         fs::write(&src, b"document").expect("source");
         attach_file(&p, &src).expect("attach");
         let icon = ["brief.docx.png", "brief.docx.svg"].into_iter().find(|i| p.join("assets").join(i).is_file()).expect("an icon was made");
-        assert!(recorded_icons(&p).contains(icon), "and recorded as NoteCraft's");
+        assert!(recorded_icons(&p).contains(icon), "and recorded as ErgoNote's");
         assert_eq!(list(&p), vec![("brief.docx".to_string(), 8)], "the icon is not one of the user's files");
 
         remove(&p, "brief.docx").expect("remove");
@@ -370,10 +370,10 @@ mod tests {
         let nb = ops::create_notebook(&t.path().join("nb"), "NB", None, &s).expect("nb");
         for (format, card) in [
             (
-                notecraft_model::PageFormat::Html,
+                ergonote_model::PageFormat::Html,
                 "<p><a href=\"assets/old.pdf\"><img src=\"assets/old.pdf.png\" alt=\"\" width=\"48\"><br>old.pdf</a></p>",
             ),
-            (notecraft_model::PageFormat::Cmgfm, "[![old.pdf](assets/old.pdf.png) old.pdf](assets/old.pdf)\n\n![old.pdf.svg](assets/old.pdf.svg)\n"),
+            (ergonote_model::PageFormat::Cmgfm, "[![old.pdf](assets/old.pdf.png) old.pdf](assets/old.pdf)\n\n![old.pdf.svg](assets/old.pdf.svg)\n"),
         ] {
             let p = ops::create_node(&nb, &format!("P {}", format.id()), NodeKind::Page, Some(format), &s).expect("page");
             crate::page::save_body(&p, card).expect("the card");

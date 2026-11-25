@@ -7,7 +7,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 for tool in cargo jq shasum; do
   command -v "$tool" >/dev/null || { echo "missing tool: $tool" >&2; exit 1; }
 done
-VERSION="$(cd "$ROOT" && cargo metadata --no-deps --locked --format-version 1 | jq -er '[.packages[] | select(.name == "notecraft" or .name == "notecraft-cli") | .version] | if length == 2 and (unique | length) == 1 then .[0] else error("GUI and CLI Cargo versions differ or are missing") end')"
+VERSION="$(cd "$ROOT" && cargo metadata --no-deps --locked --format-version 1 | jq -er '[.packages[] | select(.name == "ergonote" or .name == "ergonote-cli") | .version] | if length == 2 and (unique | length) == 1 then .[0] else error("GUI and CLI Cargo versions differ or are missing") end')"
 source "$ROOT/packaging/OSX/provenance.sh"
 build_source="$(source_provenance "$ROOT")"
 build_sha="$(printf '%s\n' "$build_source" | head -n 1)"
@@ -51,10 +51,10 @@ case "$ARCH" in
   *) echo "unsupported architecture: $ARCH" >&2; exit 2 ;;
 esac
 DIST="${DIST:-$ROOT/dist/macos}"
-DMG="$DIST/NoteCraft-$VERSION-macos-$ARCH.dmg"
-ZIP="$DIST/NoteCraft-cli-$VERSION-macos-$ARCH.zip"
+DMG="$DIST/ErgoNote-$VERSION-macos-$ARCH.dmg"
+ZIP="$DIST/ErgoNote-cli-$VERSION-macos-$ARCH.zip"
 [[ -f "$DMG" && -f "$ZIP" ]] || { echo "package artifacts are missing" >&2; exit 1; }
-WORK="$(mktemp -d "${TMPDIR:-/tmp}/notecraft-verify.XXXXXX")"
+WORK="$(mktemp -d "${TMPDIR:-/tmp}/ergonote-verify.XXXXXX")"
 MOUNT="$WORK/mount"
 mkdir -p "$MOUNT"
 mounted=0
@@ -80,15 +80,15 @@ codesign --verify --strict --verbose=2 "$DMG"
 hdiutil attach -readonly -nobrowse -mountpoint "$MOUNT" "$DMG" >/dev/null
 mounted=1
 [[ "$(readlink "$MOUNT/Applications")" = /Applications ]]
-APP="$MOUNT/NoteCraft.app"
-[[ -x "$APP/Contents/MacOS/notecraft" && -x "$APP/Contents/MacOS/notecraft-cli" ]]
-[[ -s "$APP/Contents/Resources/notecraft.icns" ]]
+APP="$MOUNT/ErgoNote.app"
+[[ -x "$APP/Contents/MacOS/ergonote" && -x "$APP/Contents/MacOS/ergonote-cli" ]]
+[[ -s "$APP/Contents/Resources/ergonote.icns" ]]
 for entry in html/_node.toml html/00-start/welcome/index.html cmgfm/_node.toml cmgfm/00-start/welcome/index.md; do
-  [[ -s "$APP/Contents/Resources/demo/welcome-to-notecraft/$entry" ]] || { echo "the app bundle demo is missing $entry" >&2; exit 1; }
+  [[ -s "$APP/Contents/Resources/demo/welcome-to-ergonote/$entry" ]] || { echo "the app bundle demo is missing $entry" >&2; exit 1; }
 done
 for format in html cmgfm; do
   languages=0
-  for folder in "$APP/Contents/Resources/demo/welcome-to-notecraft/$format"/*; do
+  for folder in "$APP/Contents/Resources/demo/welcome-to-ergonote/$format"/*; do
     [[ -d "$folder" ]] || continue
     name="${folder##*/}"
     if [[ "$name" =~ ^(1[0-9]|2[0-9])-[a-z]{2}$ ]]; then languages=$((languages + 1)); fi
@@ -99,27 +99,27 @@ done
 for doc in licenses/LICENSE-MIT licenses/LICENSE-APACHE licenses/NOTICE ATTRIBUTION.md licenses/PDF-RENDERING-NOTICES.txt; do
   [[ -s "$APP/Contents/Resources/$doc" ]] || { echo "app notice missing: $doc" >&2; exit 1; }
 done
-diff -rq "$ROOT/docs/demo/DemoNotebook" "$APP/Contents/Resources/demo/welcome-to-notecraft"
+diff -rq "$ROOT/docs/demo/DemoNotebook" "$APP/Contents/Resources/demo/welcome-to-ergonote"
 plutil -lint "$APP/Contents/Info.plist"
-[[ "$(plutil -extract CFBundleIdentifier raw -o - "$APP/Contents/Info.plist")" = com.alientechsoftware.notecraft ]]
-[[ "$(plutil -extract CFBundleExecutable raw -o - "$APP/Contents/Info.plist")" = notecraft ]]
+[[ "$(plutil -extract CFBundleIdentifier raw -o - "$APP/Contents/Info.plist")" = com.ergonote.app ]]
+[[ "$(plutil -extract CFBundleExecutable raw -o - "$APP/Contents/Info.plist")" = ergonote ]]
 [[ "$(plutil -extract CFBundleShortVersionString raw -o - "$APP/Contents/Info.plist")" = "${VERSION%%[-+]*}" ]]
-[[ "$(plutil -extract NoteCraftVersion raw -o - "$APP/Contents/Info.plist")" = "$VERSION" ]]
+[[ "$(plutil -extract ErgoNoteVersion raw -o - "$APP/Contents/Info.plist")" = "$VERSION" ]]
 [[ "$(plutil -extract CFBundleVersion raw -o - "$APP/Contents/Info.plist")" =~ ^[0-9]+$ ]]
 [[ "$(plutil -extract CFBundleVersion raw -o - "$APP/Contents/Info.plist")" = "$build_number" ]]
-[[ "$(plutil -extract NoteCraftBuildCommit raw -o - "$APP/Contents/Info.plist")" = "$build_sha" ]]
+[[ "$(plutil -extract ErgoNoteBuildCommit raw -o - "$APP/Contents/Info.plist")" = "$build_sha" ]]
 codesign --verify --strict --deep --verbose=2 "$APP"
-codesign --verify --strict --verbose=2 "$APP/Contents/MacOS/notecraft-cli"
-check_dmg_provenance "$MOUNT/BuildProvenance.txt" "$APP/Contents/MacOS/notecraft"
-check_architectures "$APP/Contents/MacOS/notecraft"
-check_architectures "$APP/Contents/MacOS/notecraft-cli"
-ditto "$APP" "$WORK/NoteCraft.app"
-codesign --verify --strict --deep --verbose=2 "$WORK/NoteCraft.app"
-check_dmg_provenance "$MOUNT/BuildProvenance.txt" "$WORK/NoteCraft.app/Contents/MacOS/notecraft"
+codesign --verify --strict --verbose=2 "$APP/Contents/MacOS/ergonote-cli"
+check_dmg_provenance "$MOUNT/BuildProvenance.txt" "$APP/Contents/MacOS/ergonote"
+check_architectures "$APP/Contents/MacOS/ergonote"
+check_architectures "$APP/Contents/MacOS/ergonote-cli"
+ditto "$APP" "$WORK/ErgoNote.app"
+codesign --verify --strict --deep --verbose=2 "$WORK/ErgoNote.app"
+check_dmg_provenance "$MOUNT/BuildProvenance.txt" "$WORK/ErgoNote.app/Contents/MacOS/ergonote"
 if [[ "$ARCH" = universal || ( "$ARCH" = aarch64 && "$(uname -m)" = arm64 ) || \
       ( "$ARCH" = x86_64 && "$(uname -m)" = x86_64 ) ]]; then
-  check_version "$WORK/NoteCraft.app/Contents/MacOS/notecraft" notecraft
-  check_version "$WORK/NoteCraft.app/Contents/MacOS/notecraft-cli" notecraft-cli
+  check_version "$WORK/ErgoNote.app/Contents/MacOS/ergonote" ergonote
+  check_version "$WORK/ErgoNote.app/Contents/MacOS/ergonote-cli" ergonote-cli
 else
   echo "skipping $ARCH execution on $(uname -m)"
 fi
@@ -127,14 +127,14 @@ hdiutil detach "$MOUNT" >/dev/null
 mounted=0
 
 ditto -x -k "$ZIP" "$WORK/extracted"
-CLI="$WORK/extracted/NoteCraft-cli-$VERSION-macos-$ARCH/notecraft-cli"
+CLI="$WORK/extracted/ErgoNote-cli-$VERSION-macos-$ARCH/ergonote-cli"
 [[ -x "$CLI" ]]
 check_architectures "$CLI"
 codesign --verify --strict --verbose=2 "$CLI"
 check_cli_provenance "${CLI%/*}/BuildProvenance.txt" "$CLI"
 if [[ "$ARCH" = universal || ( "$ARCH" = aarch64 && "$(uname -m)" = arm64 ) || \
       ( "$ARCH" = x86_64 && "$(uname -m)" = x86_64 ) ]]; then
-  check_version "$CLI" notecraft-cli
+  check_version "$CLI" ergonote-cli
 fi
 for doc in licenses/LICENSE-MIT licenses/LICENSE-APACHE licenses/NOTICE ATTRIBUTION.md licenses/PDF-RENDERING-NOTICES.txt; do
   [[ -s "${CLI%/*}/$doc" ]] || { echo "CLI notice missing: $doc" >&2; exit 1; }

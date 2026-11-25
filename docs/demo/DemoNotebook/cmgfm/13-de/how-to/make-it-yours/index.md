@@ -12,7 +12,7 @@ tags: []
 
 Die Sonne oder der Mond oben rechts öffnet die Designauswahl: hell und dunkel, jeweils in
 sieben Akzentfarben, 14 insgesamt. Ein Farbfeld wählt diesen Modus. Der Schalter unter den
-Feldern lässt NoteCraft wieder der Hell-Dunkel-Einstellung Ihres Systems folgen.
+Feldern lässt ErgoNote wieder der Hell-Dunkel-Einstellung Ihres Systems folgen.
 
 Jede Farbe in jedem Design wird durch einen Test gegen ihren Hintergrund geprüft, also kann kein
 Design Ihnen Text zeigen, den Sie nicht lesen können.
@@ -35,7 +35,7 @@ und Zoom werden gemerkt.
 
 ## Dort öffnen, wo Sie aufgehört haben
 
-NoteCraft öffnet die Seite wieder, auf der Sie geschlossen haben, mit den Abschnitten darüber
+ErgoNote öffnet die Seite wieder, auf der Sie geschlossen haben, mit den Abschnitten darüber
 ausgeklappt.
 
 ## Einstellungen auf der Festplatte

@@ -1,6 +1,6 @@
 ---
 id: 944c43b9c914b1dd6805
-title: "Import OneNote into NoteCraft"
+title: "Import OneNote into ErgoNote"
 order: 95
 created: 2026-10-18T00:00:00Z
 updated: 2026-10-18T00:00:00Z
@@ -19,18 +19,18 @@ Choose **Import notebook folder** and select a folder such as `2026`. Its name b
 
 ## Import file
 
-Choose **Import file** and select one `.one` file. NoteCraft creates a notebook named after the file.
+Choose **Import file** and select one `.one` file. ErgoNote creates a notebook named after the file.
 
 ## What happens during import
 
-NoteCraft creates the destination inside the configured notebooks folder, opens the imported notebook after a successful import, and adds it to Recently opened. The original OneNote files are never changed. A progress dialog shows the current section and lets you cancel safely.
+ErgoNote creates the destination inside the configured notebooks folder, opens the imported notebook after a successful import, and adds it to Recently opened. The original OneNote files are never changed. A progress dialog shows the current section and lets you cancel safely.
 
-If a notebook with the same name already exists, NoteCraft avoids overwriting it by adding a Windows-style suffix: `2026`, `2026 (1)`, `2026 (2)`, and so on.
+If a notebook with the same name already exists, ErgoNote avoids overwriting it by adding a Windows-style suffix: `2026`, `2026 (1)`, `2026 (2)`, and so on.
 
 Folder imports recurse through nested folders. Folders become section groups, `.one` files become sections, and pages and nested pages keep their names and hierarchy.
 
 ![Imported notebook](assets/imported-notebook.png)
 
-While an import is running, NoteCraft shows one themed progress dialog with the current section, progress count, and a Cancel import button.
+While an import is running, ErgoNote shows one themed progress dialog with the current section, progress count, and a Cancel import button.
 
 ![Import progress](assets/import-progress.png)

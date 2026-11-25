@@ -2,7 +2,7 @@
 //!
 //! Every editor has an undo, and a note taker without one is not safe to write in: one
 //! Delete on a picked block of cells, one Backspace at the top of a line, one box dragged
-//! away, and the words are gone with nothing to ask for them back. NoteCraft had undo for
+//! away, and the words are gone with nothing to ask for them back. ErgoNote had undo for
 //! ink strokes only; this is undo for the page.
 //!
 //! **Whole states, not edits.** A step here is the page as it stood: its text, its blocks,
@@ -15,8 +15,8 @@
 //! no pause longer than [`PAUSE`], folds into the step before it, which is what Word and
 //! OneNote do: Ctrl+Z there takes back what was just written, not the last character.
 
-use notecraft_formats::Block;
-use notecraft_model::Container;
+use ergonote_formats::Block;
+use ergonote_model::Container;
 use std::time::Duration;
 // std's own Instant panics on wasm32-unknown-unknown, which has no clock; web_time is the
 // same type everywhere else and performance.now()/Date.now() there.
@@ -48,10 +48,10 @@ pub struct Step {
     pub caret: Option<crate::pageedit::Caret>,
     /// The table widths the page kept at this step, so undoing a column put into a table
     /// puts the widths back with it (issue #154). `None` where the step did not note them.
-    pub columns: Option<notecraft_model::tablecols::Widths>,
+    pub columns: Option<ergonote_model::tablecols::Widths>,
     /// Which paragraphs were justified or aligned at this step (issue #258). `None` where the
     /// step did not note them.
-    pub justified: Option<notecraft_model::justify::Justified>,
+    pub justified: Option<ergonote_model::justify::Justified>,
     /// Whether pictures were locked onto the sheet at this step.
     pub lock_images: Option<bool>,
     pub kind: Kind,
@@ -183,7 +183,7 @@ impl History {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use notecraft_formats::markdown::parse;
+    use ergonote_formats::markdown::parse;
 
     fn step(text: &str, kind: Kind) -> Step {
         Step::new(text.to_string(), parse(text), Vec::new(), None, kind)

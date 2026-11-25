@@ -4,7 +4,7 @@
 //! character ([UAX #9], rules P2 and P3): the first letter that is itself left-to-right or
 //! right-to-left decides, and digits, spaces and punctuation do not vote. That is what this
 //! does. It is not the whole algorithm: reordering a mixed line is a separate job that
-//! NoteCraft does not do yet (see `docs/gaps.md`).
+//! ErgoNote does not do yet (see `docs/gaps.md`).
 //!
 //! Deriving the direction from the text, rather than storing it, means it survives a copy,
 //! a sync and an edit in another program, which is the point of keeping notes as plain files.

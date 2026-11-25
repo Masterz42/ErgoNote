@@ -23,7 +23,7 @@ pub struct Time {
 /// The date as the page shows it.
 pub fn date_text(date: Date) -> String {
     let iso = format!("{:04}-{:02}-{:02}T12:00:00Z", date.year, date.month, date.day);
-    notecraft_model::time::date_from_iso(&iso).unwrap_or(iso)
+    ergonote_model::time::date_from_iso(&iso).unwrap_or(iso)
 }
 
 /// The time as the page shows it: 12-hour, with AM or PM.

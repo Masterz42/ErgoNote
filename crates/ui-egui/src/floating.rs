@@ -117,7 +117,7 @@ pub struct FontBoxes {
 }
 
 /// The egui memory key under which the ribbon stores the [`FontBoxes`] for this frame.
-pub const FONT_BOXES_KEY: &str = "notecraft-font-boxes";
+pub const FONT_BOXES_KEY: &str = "ergonote-font-boxes";
 
 /// A mini toolbar: rows of buttons. Plain data, so any place can build its own.
 #[derive(Clone, Debug, Default, PartialEq)]
@@ -133,7 +133,7 @@ fn button(glyph: Glyph, label: &'static str, tip: &'static str, act: Act) -> Bar
     BarButton { glyph, label, tip, act }
 }
 
-/// The toolbar OneNote shows over a right click on text, with what NoteCraft can do. The
+/// The toolbar OneNote shows over a right click on text, with what ErgoNote can do. The
 /// editor has no fonts, sizes, colours or highlighter to offer, so they are left off rather
 /// than drawn and ignored.
 pub fn text_bar() -> Bar {
@@ -193,7 +193,7 @@ pub fn show_bar(ctx: &Context, id: Id, anchor: Rect, bar: &Bar, t: &Tokens, acts
                             width: 96.0,
                             items: &fonts.families,
                             empty_note: fonts.families_note.as_deref(),
-                            accept: &|typed| notecraft_formats::markdown::valid_font_family(typed),
+                            accept: &|typed| ergonote_formats::markdown::valid_font_family(typed),
                         },
                     );
                     if let Some(name) = families.chosen {
@@ -237,11 +237,11 @@ pub fn show_bar(ctx: &Context, id: Id, anchor: Rect, bar: &Bar, t: &Tokens, acts
                     "A",
                     &[
                         None,
-                        Some(notecraft_model::NodeColor::Red),
-                        Some(notecraft_model::NodeColor::Blue),
-                        Some(notecraft_model::NodeColor::Green),
-                        Some(notecraft_model::NodeColor::Orange),
-                        Some(notecraft_model::NodeColor::Purple),
+                        Some(ergonote_model::NodeColor::Red),
+                        Some(ergonote_model::NodeColor::Blue),
+                        Some(ergonote_model::NodeColor::Green),
+                        Some(ergonote_model::NodeColor::Orange),
+                        Some(ergonote_model::NodeColor::Purple),
                     ],
                     false,
                     dark,
@@ -253,11 +253,11 @@ pub fn show_bar(ctx: &Context, id: Id, anchor: Rect, bar: &Bar, t: &Tokens, acts
                     "ab",
                     &[
                         None,
-                        Some(notecraft_model::NodeColor::Yellow),
-                        Some(notecraft_model::NodeColor::Green),
-                        Some(notecraft_model::NodeColor::Blue),
-                        Some(notecraft_model::NodeColor::Magenta),
-                        Some(notecraft_model::NodeColor::Orange),
+                        Some(ergonote_model::NodeColor::Yellow),
+                        Some(ergonote_model::NodeColor::Green),
+                        Some(ergonote_model::NodeColor::Blue),
+                        Some(ergonote_model::NodeColor::Magenta),
+                        Some(ergonote_model::NodeColor::Orange),
                     ],
                     true,
                     dark,
@@ -277,7 +277,7 @@ pub fn show_bar(ctx: &Context, id: Id, anchor: Rect, bar: &Bar, t: &Tokens, acts
 fn color_swatch_row(
     ui: &mut Ui,
     tag: &str,
-    choices: &[Option<notecraft_model::NodeColor>],
+    choices: &[Option<ergonote_model::NodeColor>],
     is_highlight: bool,
     dark: bool,
     t: &Tokens,

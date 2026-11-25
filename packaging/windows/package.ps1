@@ -1,11 +1,11 @@
 <#
 .SYNOPSIS
-  Build, sign and package NoteCraft for Windows.
+  Build, sign and package ErgoNote for Windows.
 
 .DESCRIPTION
   Produces, in $env:DIST (default: dist/release):
-    notecraft-<version>-windows-x64.msi            per-machine installer (WiX v5)
-    notecraft-<version>-windows-x64-portable.zip   NoteCraft app, bundled Welcome notebook, and CLI
+    ergonote-<version>-windows-x64.msi            per-machine installer (WiX v5)
+    ergonote-<version>-windows-x64-portable.zip   ErgoNote app, bundled Welcome notebook, and CLI
     SHA256SUMS.txt                                 checksums of the files above
 
   The binaries link the C runtime statically (+crt-static), so neither the MSI nor the portable
@@ -15,7 +15,7 @@
   Only x64 is built. Other targets are untested.
 
   Needs: Rust (MSVC toolchain), the Windows SDK (signtool.exe, only when signing), and WiX v5
-  with its UI and Util extensions (installer dialogs, "Launch NoteCraft" on the finish page):
+  with its UI and Util extensions (installer dialogs, "Launch ErgoNote" on the finish page):
     dotnet tool install --global wix --version 5.0.2
     wix extension add -g WixToolset.UI.wixext/5.0.2
     wix extension add -g WixToolset.Util.wixext/5.0.2
@@ -28,8 +28,8 @@
 param(
   [switch] $SkipBuild,
   [switch] $ZipOnly,
-  [string] $BridgeProject = (Join-Path $PSScriptRoot '..\..\tools\officeimo\OfficeIMO.NoteCraft.Bridge\OfficeIMO.NoteCraft.Bridge.csproj'),
-  [string] $BridgeBinary = $env:NOTECRAFT_OFFICEIMO_BRIDGE
+  [string] $BridgeProject = (Join-Path $PSScriptRoot '..\..\tools\officeimo\OfficeIMO.ErgoNote.Bridge\OfficeIMO.ErgoNote.Bridge.csproj'),
+  [string] $BridgeBinary = $env:ERGONOTE_OFFICEIMO_BRIDGE
 )
 $ErrorActionPreference = 'Stop'
 $Root = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
@@ -43,8 +43,8 @@ function Invoke-Native([string] $What, [scriptblock] $Block) {
 }
 
 # The version lives in one place: [workspace.package] version in the root Cargo.toml.
-# NOTECRAFT_VERSION overrides it for a test run (the release workflow sets it).
-$Version = $env:NOTECRAFT_VERSION
+# ERGONOTE_VERSION overrides it for a test run (the release workflow sets it).
+$Version = $env:ERGONOTE_VERSION
 if (-not $Version) {
   $inPkg = $false
   foreach ($line in Get-Content (Join-Path $Root 'Cargo.toml')) {
@@ -60,14 +60,14 @@ $Dist = if ($env:DIST) { $env:DIST } else { Join-Path $Root 'dist\release' }
 $TargetDir = if ($env:CARGO_TARGET_DIR) { $env:CARGO_TARGET_DIR } else { Join-Path $Root 'target' }
 New-Item -ItemType Directory -Force -Path $Dist | Out-Null
 
-Write-Output "NoteCraft $Version for Windows $Arch ($Target)"
+Write-Output "ErgoNote $Version for Windows $Arch ($Target)"
 
 if (-not $SkipBuild) {
   # Static CRT: no VC++ redistributable needed. Scoped to the target so host build scripts and
   # proc-macros are unaffected.
   $flagVar = 'CARGO_TARGET_' + ($Target.ToUpper() -replace '-', '_') + '_RUSTFLAGS'
   [Environment]::SetEnvironmentVariable($flagVar, '-C target-feature=+crt-static')
-  Invoke-Native "cargo build ($Target)" { cargo build --release --locked -p notecraft -p notecraft-cli --target $Target }
+  Invoke-Native "cargo build ($Target)" { cargo build --release --locked -p ergonote -p ergonote-cli --target $Target }
 }
 
 $Bin = Join-Path $TargetDir "$Target\release"
@@ -80,7 +80,7 @@ function Get-PeHeader([string] $Path) {
   $pe = [BitConverter]::ToInt32($bytes, 0x3C)
   return @{ Machine = [BitConverter]::ToUInt16($bytes, $pe + 4); Subsystem = [BitConverter]::ToUInt16($bytes, $pe + 0x5C) }
 }
-foreach ($check in @(@('notecraft.exe', 2), @('notecraft-cli.exe', 3))) {
+foreach ($check in @(@('ergonote.exe', 2), @('ergonote-cli.exe', 3))) {
   $h = Get-PeHeader (Join-Path $Bin $check[0])
   if ($h.Machine -ne 0x8664) { throw "$($check[0]) is for machine 0x$('{0:X}' -f $h.Machine), expected 0x8664 ($Arch)" }
   if ($h.Subsystem -ne $check[1]) { throw "$($check[0]) has PE subsystem $($h.Subsystem), expected $($check[1])" }
@@ -96,21 +96,21 @@ public static extern System.IntPtr FindResource(System.IntPtr m, System.IntPtr n
 [System.Runtime.InteropServices.DllImport("kernel32.dll")]
 public static extern bool FreeLibrary(System.IntPtr m);
 '@
-foreach ($name in @('notecraft.exe', 'notecraft-cli.exe')) {
+foreach ($name in @('ergonote.exe', 'ergonote-cli.exe')) {
   $file = Join-Path $Bin $name
   $m = [Nc.Res]::LoadLibraryEx($file, [IntPtr]::Zero, 0x22)  # as data file, as image resource
   if ($m -eq [IntPtr]::Zero) { throw "could not open $name to check its resources" }
   $icon = [Nc.Res]::FindResource($m, [IntPtr]1, [IntPtr]14)  # resource 1, RT_GROUP_ICON
   [void][Nc.Res]::FreeLibrary($m)
-  if ($icon -eq [IntPtr]::Zero) { throw "$name has no icon resource: build.rs did not embed assets/app-icon/notecraft.ico" }
+  if ($icon -eq [IntPtr]::Zero) { throw "$name has no icon resource: build.rs did not embed assets/app-icon/ergonote.ico" }
   $product = (Get-Item $file).VersionInfo.ProductName
-  if ($product -ne 'NoteCraft') { throw "$name has product name '$product' in its version information, expected NoteCraft" }
+  if ($product -ne 'ErgoNote') { throw "$name has product name '$product' in its version information, expected ErgoNote" }
   Write-Output "ok ${name}: icon and version information"
 }
 $Stage = Join-Path $TargetDir "windows-package\$Arch"
 Remove-Item -Recurse -Force $Stage -ErrorAction SilentlyContinue
 New-Item -ItemType Directory -Force -Path $Stage | Out-Null
-Copy-Item (Join-Path $Bin 'notecraft.exe'), (Join-Path $Bin 'notecraft-cli.exe') $Stage
+Copy-Item (Join-Path $Bin 'ergonote.exe'), (Join-Path $Bin 'ergonote-cli.exe') $Stage
 # The installer leaves this marker beside the app. The first launch after installing shows the first-use wizard again.
 [IO.File]::WriteAllText((Join-Path $Stage 'first-use.pending'), '')
 
@@ -125,7 +125,7 @@ Copy-Item (Join-Path $Bin 'notecraft.exe'), (Join-Path $Bin 'notecraft-cli.exe')
   }
   $files = @(Get-ChildItem -Path $DemoSource -File -Recurse)
   if ($files.Count -eq 0) { throw "generated demo formats are empty: $DemoSource" }
-  $DemoStage = Join-Path $Stage 'demo\welcome-to-notecraft'
+  $DemoStage = Join-Path $Stage 'demo\welcome-to-ergonote'
   New-Item -ItemType Directory -Force -Path $DemoStage | Out-Null
   Copy-Item (Join-Path $DemoSource '*') $DemoStage -Recurse
   if (-not (Test-Path (Join-Path $DemoStage 'html\00-start\welcome\index.html')) -or
@@ -134,18 +134,18 @@ Copy-Item (Join-Path $Bin 'notecraft.exe'), (Join-Path $Bin 'notecraft-cli.exe')
   }
 
 # The importer is part of the Windows product, not an optional file that can silently be
-# omitted from a release. Build and stage the self-contained OfficeIMO bridge beside NoteCraft.
+# omitted from a release. Build and stage the self-contained OfficeIMO bridge beside ErgoNote.
 $BridgeStage = Join-Path $TargetDir 'officeimo-package'
 Remove-Item -Recurse -Force $BridgeStage -ErrorAction SilentlyContinue
 New-Item -ItemType Directory -Force -Path $BridgeStage | Out-Null
 $LASTEXITCODE = 0
 & (Join-Path $Root 'tools\officeimo\package.ps1') -BridgeProject $BridgeProject -BridgeBinary $BridgeBinary -Rid 'win-x64' -Version $Version -OutputRoot $BridgeStage
 if ($LASTEXITCODE -ne 0) { throw "OfficeIMO bridge packaging failed with exit code $LASTEXITCODE" }
-$BridgeExe = Join-Path $BridgeStage 'importers\officeimo\win-x64\officeimo-notecraft.exe'
+$BridgeExe = Join-Path $BridgeStage 'importers\officeimo\win-x64\officeimo-ergonote.exe'
 if (-not (Test-Path $BridgeExe)) { throw "OfficeIMO bridge was not produced: $BridgeExe" }
 Copy-Item (Join-Path $BridgeStage 'importers') $Stage -Recurse
 
-& (Join-Path $PSScriptRoot 'sign.ps1') (Join-Path $Stage 'notecraft.exe') (Join-Path $Stage 'notecraft-cli.exe')
+& (Join-Path $PSScriptRoot 'sign.ps1') (Join-Path $Stage 'ergonote.exe') (Join-Path $Stage 'ergonote-cli.exe')
 
 # The notices travel with the program: the installer and the portable zip both carry them, and the
 # licence texts they name, so a copy handed on alone still says what it contains.
@@ -175,8 +175,8 @@ if (-not $ZipOnly) {
     return $sb.ToString()
   }
   $paragraphs = [System.Collections.Generic.List[string]]::new()
-  $paragraphs.Add('\b NoteCraft\b0')
-  $paragraphs.Add((ConvertTo-RtfText 'NoteCraft is dual-licensed under the MIT License or the Apache License, Version 2.0, at your option. Both licence texts follow. Bundled fonts and other third-party material keep their own open licences, listed in NOTICE and ATTRIBUTION.md at https://github.com/Masterz42/ErgoNote.'))
+  $paragraphs.Add('\b ErgoNote\b0')
+  $paragraphs.Add((ConvertTo-RtfText 'ErgoNote is dual-licensed under the MIT License or the Apache License, Version 2.0, at your option. Both licence texts follow. Bundled fonts and other third-party material keep their own open licences, listed in NOTICE and ATTRIBUTION.md at https://github.com/Masterz42/ErgoNote.'))
   foreach ($file in 'LICENSE-MIT', 'LICENSE-APACHE') {
     $title = $true  # each file opens with its licence's name: show it bold
     foreach ($para in ((Get-Content -Raw (Join-Path $Root $file)) -split '\r?\n\s*\r?\n')) {
@@ -191,11 +191,11 @@ if (-not $ZipOnly) {
     ($paragraphs -join "\par`r`n") + "\par`r`n}`r`n"
   [System.IO.File]::WriteAllText($LicenseRtf, $rtf, [System.Text.Encoding]::ASCII)
 
-  $Msi = Join-Path $Dist "notecraft-$Version-windows-$Arch.msi"
+  $Msi = Join-Path $Dist "ergonote-$Version-windows-$Arch.msi"
   Invoke-Native 'wix build' {
-    wix build (Join-Path $PSScriptRoot 'notecraft.wxs') -arch $Arch `
+    wix build (Join-Path $PSScriptRoot 'ergonote.wxs') -arch $Arch `
       -ext WixToolset.UI.wixext -ext WixToolset.Util.wixext `
-      -d "Version=$MsiVersion" -d "BinDir=$Stage" -d "IconPath=$(Join-Path $Root 'assets\app-icon\notecraft.ico')" `
+      -d "Version=$MsiVersion" -d "BinDir=$Stage" -d "IconPath=$(Join-Path $Root 'assets\app-icon\ergonote.ico')" `
       -d "LicenseRtf=$LicenseRtf" `
       -o $Msi
   }
@@ -206,7 +206,7 @@ if (-not $ZipOnly) {
 }
 
 # ---- portable zip ------------------------------------------------------------------------------
-$Portable = Join-Path $TargetDir "windows-package\notecraft-$Version-windows-$Arch-portable"
+$Portable = Join-Path $TargetDir "windows-package\ergonote-$Version-windows-$Arch-portable"
 Remove-Item -Recurse -Force $Portable -ErrorAction SilentlyContinue
 New-Item -ItemType Directory -Force -Path $Portable | Out-Null
 Copy-Item (Join-Path $Stage '*.exe') $Portable
@@ -217,13 +217,13 @@ foreach ($f in 'README.md', 'LICENSE-MIT', 'LICENSE-APACHE', 'NOTICE', 'ATTRIBUT
   $p = Join-Path $Root $f
   if (Test-Path $p) { Copy-Item $p $Portable }
 }
-$Zip = Join-Path $Dist "notecraft-$Version-windows-$Arch-portable.zip"
+$Zip = Join-Path $Dist "ergonote-$Version-windows-$Arch-portable.zip"
 Remove-Item -Force $Zip -ErrorAction SilentlyContinue
 Compress-Archive -Path $Portable -DestinationPath $Zip
 $Outputs += $Zip
 
 # Smoke-test the CLI: it must start and report the version it was built as.
-Invoke-Native 'notecraft-cli --version' { & (Join-Path $Stage 'notecraft-cli.exe') --version }
+Invoke-Native 'ergonote-cli --version' { & (Join-Path $Stage 'ergonote-cli.exe') --version }
 
 # ---- checksums ---------------------------------------------------------------------------------
 $lines = foreach ($f in $Outputs) { "$((Get-FileHash -Algorithm SHA256 $f).Hash.ToLower())  $(Split-Path $f -Leaf)" }

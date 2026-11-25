@@ -1,7 +1,7 @@
 #![deny(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::unimplemented, clippy::todo, clippy::unreachable)]
-//! NoteCraft as an MCP server (layer L5).
+//! ErgoNote as an MCP server (layer L5).
 //!
-//! The Model Context Protocol lets an assistant call a program's actions. NoteCraft already
+//! The Model Context Protocol lets an assistant call a program's actions. ErgoNote already
 //! has one list of actions, the engine's command registry, so this crate is a thin skin over
 //! it: no new behaviour, no second code path, and the same commands the window and the
 //! command line run.

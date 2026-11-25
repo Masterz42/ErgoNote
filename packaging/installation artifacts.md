@@ -11,17 +11,17 @@ Every distribution has two logically separate artifacts:
 
 1. **Application binaries and bundled source content**: executable code plus the two generated
    Welcome notebook formats, deployed to the platform's normal application location.
-2. **Managed Welcome notebook**: a per-user copy in the target user's normal `NoteCraft`
+2. **Managed Welcome notebook**: a per-user copy in the target user's normal `ErgoNote`
    notebooks folder, created or replaced by the app only after the user chooses Yes.
 
-Each installer carries the generated content with the app so NoteCraft can provision it without a
+Each installer carries the generated content with the app so ErgoNote can provision it without a
 separate setup download or network request. The content remains ordinary notebook files; it is not
 executable code.
 
 The authored notebook source is `docs/demo/scripts/content`. `cargo xtask demo` generates the
 official HTML and CMGFM notebooks under `docs/demo/DemoNotebook`, each with all 13 languages.
 Both are built, bundled, and tested for parity. Installers use this generated source, never
-`my-notebooks/welcome-notebook` or another local test copy. NoteCraft supports both formats for
+`my-notebooks/welcome-notebook` or another local test copy. ErgoNote supports both formats for
 the Welcome notebook and for notebooks created or opened by users.
 
 ## Separation of responsibility
@@ -36,7 +36,7 @@ The running app owns the per-user copy after the user confirms:
   default; whether to create the demo notebook in that format; and a thank-you page with Finish.
 - The wizard does not reopen for later app versions. Installation copies nothing into the notebooks
   folder; the package ships the generated editions only as the wizard's source.
-- On Yes on the demo page, create or completely replace only `welcome-to-notecraft` from the bundled
+- On Yes on the demo page, create or completely replace only `welcome-to-ergonote` from the bundled
   edition for the chosen format when Finish is pressed. The edition's notebook folder becomes the
   managed notebook, so the notebook list finds it, and the Welcome page opens. The other format is
   not installed.
@@ -48,32 +48,32 @@ The running app owns the per-user copy after the user confirms:
 
 Desktop apps copy the chosen edition from the installed package or app bundle into the selected
 user notebook root only after Yes in step 3. The desktop setup launcher installs nothing; it starts
-NoteCraft. Android and the browser have separate startup paths; each must
+ErgoNote. Android and the browser have separate startup paths; each must
 apply the same per-version confirmation before replacing a user's Welcome notebook. Android
 app-specific storage follows Android's normal uninstall lifecycle.
 
 ## Platform installation contract
 
 The expected notebook destination is the platform's normal user notebook location. Desktop setup
-uses the app's saved notebook root when present, otherwise its current Documents/NoteCraft default.
+uses the app's saved notebook root when present, otherwise its current Documents/ErgoNote default.
 On Android, it is the same app-specific
-`NoteCraft` folder used for notebooks created on-device. Use platform APIs to find these locations;
+`ErgoNote` folder used for notebooks created on-device. Use platform APIs to find these locations;
 do not guess a home or storage path when the platform provides an API.
 
 | Platform | Application binaries | User Assistance notebook | Installation owner |
 |---|---|---|---|
-| Website demo | Browser app (JavaScript and WebAssembly) | `/NoteCraft/welcome-to-notecraft`, containing HTML and CMGFM | Browser prompt must ask before copying from the two-format archive |
-| Windows | Normal per-machine or per-user app location | Current user's Documents/NoteCraft/welcome-to-notecraft | First-use wizard copies the chosen edition from the package's bundled source after Yes |
-| Linux | Normal package or portable-app location | Current user's Documents/NoteCraft/welcome-to-notecraft | First-use wizard copies the chosen edition from the package's bundled source after Yes |
-| macOS | `NoteCraft.app` copied to Applications | Current user's Documents/NoteCraft/welcome-to-notecraft | First-use wizard copies the chosen edition from app resources after Yes |
-| Android | Installed APK application package | App-specific external files/NoteCraft/welcome-to-notecraft | APK startup must ask before copying the asset formats |
+| Website demo | Browser app (JavaScript and WebAssembly) | `/ErgoNote/welcome-to-ergonote`, containing HTML and CMGFM | Browser prompt must ask before copying from the two-format archive |
+| Windows | Normal per-machine or per-user app location | Current user's Documents/ErgoNote/welcome-to-ergonote | First-use wizard copies the chosen edition from the package's bundled source after Yes |
+| Linux | Normal package or portable-app location | Current user's Documents/ErgoNote/welcome-to-ergonote | First-use wizard copies the chosen edition from the package's bundled source after Yes |
+| macOS | `ErgoNote.app` copied to Applications | Current user's Documents/ErgoNote/welcome-to-ergonote | First-use wizard copies the chosen edition from app resources after Yes |
+| Android | Installed APK application package | App-specific external files/ErgoNote/welcome-to-ergonote | APK startup must ask before copying the asset formats |
 
 The browser archive contains both directories under `docs/demo/DemoNotebook`, is version-checked
-in the website workflow, and is loaded under the same `/NoteCraft` root as other browser notebooks.
+in the website workflow, and is loaded under the same `/ErgoNote` root as other browser notebooks.
 The generic engine sample remains a separate sample notebook and is not the release Welcome
 notebook.
 
-The Android app unpacks both editions from the APK asset `welcome-to-notecraft.zip` into its
+The Android app unpacks both editions from the APK asset `welcome-to-ergonote.zip` into its
 internal storage once per app version (application data, like the desktop's `demo` folder), then
 runs the same first-use wizard, which asks before copying the chosen edition into the notebooks
 folder (`android/src/welcome.rs`).
@@ -108,7 +108,7 @@ required.
 For each supported artifact and platform, signoff proves:
 
 1. The package contains both generated formats and all 13 languages.
-2. App startup creates or replaces only `welcome-to-notecraft` in the platform notebook root.
+2. App startup creates or replaces only `welcome-to-ergonote` in the platform notebook root.
 3. A sentinel sibling notebook stays byte-for-byte unchanged.
 4. Both format variants retain their page tree, assets, and metadata.
 5. Yes in step 3 replaces the managed Welcome notebook with the chosen edition only; No preserves
@@ -120,6 +120,6 @@ For each supported artifact and platform, signoff proves:
 8. A failed replacement is reported and does not replace the existing copy with a partial notebook.
 
 Run `cargo xtask demo-check` and
-`cargo test -p notecraft-formats --test format_parity` for the source outputs. Then inspect the
+`cargo test -p ergonote-formats --test format_parity` for the source outputs. Then inspect the
 final installer artifacts and installed result. Package staging alone does not prove deployment
 to the user's notebook folder.

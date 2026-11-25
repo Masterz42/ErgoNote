@@ -229,7 +229,7 @@ fn newest_key(f: &SectionFile) -> (Option<Date>, Option<SystemTime>, u64) {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use notecraft_store::testing::TempDir;
+    use ergonote_store::testing::TempDir;
 
     fn file(folders: &[&str], name: &str, date: Option<Date>, size: u64) -> SectionFile {
         SectionFile {

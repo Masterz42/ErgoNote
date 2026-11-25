@@ -1,6 +1,6 @@
 //! Regression coverage for literal text at persistence and live-editing boundaries.
 use super::*;
-use notecraft_model::PageFormat;
+use ergonote_model::PageFormat;
 
 fn literal(text: &str) -> Block {
     Block::Paragraph(vec![Span { text: text.into(), ..Default::default() }])

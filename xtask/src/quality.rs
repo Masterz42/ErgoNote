@@ -165,7 +165,7 @@ mod tests {
 
     #[test]
     fn staged_size_uses_git_blob_instead_of_hydrated_worktree_file() {
-        let root = std::env::temp_dir().join(format!("notecraft-staged-size-{}", std::process::id()));
+        let root = std::env::temp_dir().join(format!("ergonote-staged-size-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&root);
         std::fs::create_dir_all(&root).expect("create temporary repository");
         let init = Command::new("git").args(["init", "-q"]).current_dir(&root).status().expect("git init");
@@ -192,7 +192,7 @@ mod tests {
     #[test]
     fn stray_files_are_named() {
         assert!(stray_file("local/settings.toml").is_some());
-        assert!(stray_file("apps/notecraft-cli/local/notecraft.log").is_some());
+        assert!(stray_file("apps/ergonote-cli/local/ergonote.log").is_some());
         assert!(stray_file("target/debug/x.exe").is_some());
         assert!(stray_file("my-notebooks/welcome/page.html").is_some());
         assert!(stray_file("notes.log").is_some());

@@ -11,7 +11,7 @@
 use crate::theme::Tokens;
 use egui::FontId;
 use egui::text::{LayoutJob, TextFormat};
-use notecraft_model::PageFormat;
+use ergonote_model::PageFormat;
 
 /// One piece of the page text and how it is drawn.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -96,7 +96,7 @@ fn markdown_pieces(text: &str, out: &mut Vec<(std::ops::Range<usize>, Style)>) {
         let trimmed = line.trim_start();
         let indent = line.len() - trimmed.len();
         // A tag marker at the start of a line is syntax, so it is dimmed like the rest.
-        if let (Some(tag), _) = notecraft_model::Tag::split(trimmed) {
+        if let (Some(tag), _) = ergonote_model::Tag::split(trimmed) {
             let marker = tag.marker();
             let len = marker.len().min(trimmed.len());
             out.push((start + indent..start + indent + len, Style::Marker));
@@ -295,9 +295,9 @@ fn tag_font_size(tag: &str) -> Option<u8> {
     })
 }
 
-fn tag_span_prop<T>(tag: &str, read: impl Fn(&notecraft_formats::Span) -> Option<T>) -> Option<T> {
+fn tag_span_prop<T>(tag: &str, read: impl Fn(&ergonote_formats::Span) -> Option<T>) -> Option<T> {
     let source = format!("{tag}x</span>");
-    let spans = notecraft_formats::markdown::parse_inline(&source);
+    let spans = ergonote_formats::markdown::parse_inline(&source);
     let span = spans.first()?;
     (spans.len() == 1 && span.text == "x").then(|| read(span)).flatten()
 }
@@ -472,12 +472,12 @@ pub fn inline_pieces(text: &str) -> Vec<(std::ops::Range<usize>, Style)> {
 
 /// Which edge a line hangs from: the right one when it reads right to left. A line with
 /// no letters of its own follows `page`, the direction the whole page was given.
-pub fn halign(text: &str, page: Option<notecraft_model::Dir>) -> egui::Align {
-    if notecraft_model::direction_in(text, page).is_rtl() { egui::Align::RIGHT } else { egui::Align::LEFT }
+pub fn halign(text: &str, page: Option<ergonote_model::Dir>) -> egui::Align {
+    if ergonote_model::direction_in(text, page).is_rtl() { egui::Align::RIGHT } else { egui::Align::LEFT }
 }
 
 /// The layout for one block being written in: inline marks styled, in the block's own size.
-pub fn inline_job(text: &str, base: f32, strong: bool, t: &Tokens, wrap_width: f32, page: Option<notecraft_model::Dir>) -> LayoutJob {
+pub fn inline_job(text: &str, base: f32, strong: bool, t: &Tokens, wrap_width: f32, page: Option<ergonote_model::Dir>) -> LayoutJob {
     inline_job_inner(text, base, strong, t, wrap_width, page, None, false)
 }
 
@@ -501,10 +501,10 @@ pub fn inline_job_with_fonts(
     strong: bool,
     t: &Tokens,
     wrap_width: f32,
-    page: Option<notecraft_model::Dir>,
+    page: Option<ergonote_model::Dir>,
 ) -> LayoutJob {
     let families = ctx.fonts(|fonts| fonts.definitions().families.keys().cloned().collect::<std::collections::BTreeSet<_>>());
-    let dys_spaced = ctx.data(|d| d.get_temp::<bool>(egui::Id::new("notecraft-dys-spaced")).unwrap_or(false));
+    let dys_spaced = ctx.data(|d| d.get_temp::<bool>(egui::Id::new("ergonote-dys-spaced")).unwrap_or(false));
     inline_job_inner(text, base, strong, t, wrap_width, page, Some(&families), dys_spaced)
 }
 
@@ -515,7 +515,7 @@ fn inline_job_inner(
     strong: bool,
     t: &Tokens,
     wrap_width: f32,
-    page: Option<notecraft_model::Dir>,
+    page: Option<ergonote_model::Dir>,
     available: Option<&std::collections::BTreeSet<egui::FontFamily>>,
     dys_spaced: bool,
 ) -> LayoutJob {
@@ -599,18 +599,18 @@ fn inline_job_inner(
                     }
                 }
                 if let Some((_, u_col)) = underline_colors.iter().filter(|(r, _)| r.start <= *start && r.end >= *end).min_by_key(|(r, _)| r.len())
-                    && let Some(nc) = notecraft_model::NodeColor::parse(u_col)
+                    && let Some(nc) = ergonote_model::NodeColor::parse(u_col)
                 {
                     let (cr, cg, cb) = nc.rgb(false);
                     format.underline = egui::Stroke::new(2.2, egui::Color32::from_rgb(cr, cg, cb));
                 }
                 if let Some((_, t_col)) = text_colors.iter().filter(|(r, _)| r.start <= *start && r.end >= *end).min_by_key(|(r, _)| r.len())
-                    && let Some(nc) = notecraft_model::NodeColor::parse(t_col)
+                    && let Some(nc) = ergonote_model::NodeColor::parse(t_col)
                 {
                     format.color = crate::theme::text_swatch_color(nc, dark);
                 }
                 if let Some((_, h_col)) = highlight_colors.iter().filter(|(r, _)| r.start <= *start && r.end >= *end).min_by_key(|(r, _)| r.len())
-                    && let Some(nc) = notecraft_model::NodeColor::parse(h_col)
+                    && let Some(nc) = ergonote_model::NodeColor::parse(h_col)
                 {
                     format.background = crate::theme::highlight_bg(nc, dark);
                 }
@@ -636,7 +636,7 @@ fn inline_job_inner(
 }
 
 /// The layout egui draws: the pieces above, turned into one job.
-pub fn job(format: PageFormat, text: &str, base: f32, t: &Tokens, wrap_width: f32, page: Option<notecraft_model::Dir>) -> LayoutJob {
+pub fn job(format: PageFormat, text: &str, base: f32, t: &Tokens, wrap_width: f32, page: Option<ergonote_model::Dir>) -> LayoutJob {
     let mut job = LayoutJob {
         wrap: egui::text::TextWrapping { max_width: wrap_width, ..Default::default() },
         halign: halign(text, page),
@@ -723,7 +723,7 @@ mod tests {
     fn a_font_size_span_changes_the_editor_text_size() {
         let text = "<span style=\"font-size: 18pt\">large</span>";
         let tokens = crate::theme::Theme::DEFAULT.tokens();
-        let job = inline_job(text, 11.0, false, &tokens, 1000.0, Some(notecraft_model::Dir::Ltr));
+        let job = inline_job(text, 11.0, false, &tokens, 1000.0, Some(ergonote_model::Dir::Ltr));
         let section = job.sections.iter().find(|section| section.format.font_id.size > 11.0).expect("sized text section");
         assert_eq!(section.format.font_id.size, 18.0);
     }
@@ -779,7 +779,7 @@ mod tests {
     fn editor_draws_nested_underline_and_scripts_without_styling_their_tags() {
         let text = "<u>under <sup>مرحبا</sup> end</u> plain <sub>2</sub>";
         let tokens = crate::theme::Theme::DEFAULT.tokens();
-        let job = inline_job(text, 20.0, false, &tokens, 1000.0, Some(notecraft_model::Dir::Ltr));
+        let job = inline_job(text, 20.0, false, &tokens, 1000.0, Some(ergonote_model::Dir::Ltr));
         let format = |part: &str| {
             job.sections
                 .iter()
@@ -804,7 +804,7 @@ mod tests {
     fn editor_keeps_combined_marks_and_does_not_format_literal_code_tags() {
         let text = "**<u>bold</u>** `<u>`plain`</u>` <span style=\"font-size: 20pt\"><sub>2</sub></span>";
         let tokens = crate::theme::Theme::DEFAULT.tokens();
-        let job = inline_job(text, 11.0, false, &tokens, 1000.0, Some(notecraft_model::Dir::Ltr));
+        let job = inline_job(text, 11.0, false, &tokens, 1000.0, Some(ergonote_model::Dir::Ltr));
         let format = |part: &str| {
             job.sections
                 .iter()
@@ -818,7 +818,7 @@ mod tests {
         assert_eq!(format("2").font_id.size, 14.0);
 
         let nested = "**<span style=\"text-decoration-color: green\">Photo tableau</span>**";
-        let nested_job = inline_job(nested, 14.0, false, &tokens, 1000.0, Some(notecraft_model::Dir::Ltr));
+        let nested_job = inline_job(nested, 14.0, false, &tokens, 1000.0, Some(ergonote_model::Dir::Ltr));
         let tag_sec = nested_job
             .sections
             .iter()
@@ -837,7 +837,7 @@ mod tests {
     fn editor_does_not_format_escaped_tags() {
         let text = "\\<u>plain\\</u>";
         let tokens = crate::theme::Theme::DEFAULT.tokens();
-        let job = inline_job(text, 11.0, false, &tokens, 1000.0, Some(notecraft_model::Dir::Ltr));
+        let job = inline_job(text, 11.0, false, &tokens, 1000.0, Some(ergonote_model::Dir::Ltr));
         assert!(job.sections.iter().all(|section| section.format.underline == egui::Stroke::NONE));
     }
 
@@ -952,10 +952,10 @@ mod tests {
     fn the_job_holds_every_character() {
         let t = crate::theme::Theme::DEFAULT.tokens();
         let text = "# Title\n\n- one **two**\n";
-        let laid = job(PageFormat::Cmgfm, text, 15.0, &t, 400.0, Some(notecraft_model::Dir::Ltr));
+        let laid = job(PageFormat::Cmgfm, text, 15.0, &t, 400.0, Some(ergonote_model::Dir::Ltr));
         assert_eq!(laid.text, text);
         assert!(laid.sections.len() > 3);
-        let empty = job(PageFormat::Cmgfm, "", 15.0, &t, 400.0, Some(notecraft_model::Dir::Ltr));
+        let empty = job(PageFormat::Cmgfm, "", 15.0, &t, 400.0, Some(ergonote_model::Dir::Ltr));
         assert_eq!(empty.sections.len(), 1, "an empty page still has one section to type into");
     }
 }

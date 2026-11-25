@@ -12,7 +12,7 @@ include!(concat!(env!("OUT_DIR"), "/i18n_source_ids.rs"));
 /// Follow the platform's preferred language until the user chooses one explicitly.
 pub const AUTO: &str = "auto";
 
-/// Languages shown by NoteCraft. Only French and English are maintained for now; the owner
+/// Languages shown by ErgoNote. Only French and English are maintained for now; the owner
 /// decided on 2026-11-19 that the other catalogs stay on disk but are neither offered nor
 /// loaded.
 static EMBEDDED: &craft_i18n::Embedded = &[("en", "", include_str!("../../../i18n/en.tsv")), ("fr", "", include_str!("../../../i18n/fr.tsv"))];
@@ -36,7 +36,7 @@ pub struct LanguageChoice {
     pub name: String,
 }
 
-/// Languages NoteCraft can actually display, with their names in their own language.
+/// Languages ErgoNote can actually display, with their names in their own language.
 pub fn available_languages() -> Vec<LanguageChoice> {
     let mut languages: Vec<LanguageChoice> = I18N
         .languages()

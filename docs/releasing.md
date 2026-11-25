@@ -1,6 +1,6 @@
-# Releasing NoteCraft
+# Releasing ErgoNote
 
-NoteCraft is laid out like the Craft apps (WordCraft, PdfCraft) so a release could move into their
+ErgoNote is laid out like the Craft apps (WordCraft, PdfCraft) so a release could move into their
 pipeline later with little change. It is not part of ArtCraft, and nothing here uses an ArtCraft
 name or mark.
 
@@ -22,8 +22,8 @@ One run:
 5. Runs the Packaging workflow on the tagged commit: Windows x64 (MSI and portable zip), Linux
    x86_64 and aarch64 (tar.gz, AppImage, deb and rpm), macOS Apple Silicon and Intel (DMG and
    command line zip), and Android arm64 (APK; see Android signing below).
-6. Runs the Website pipeline on the tagged commit and deploys it to notecraft.cloud, including
-   `/demo/`. The built web app is kept as `notecraft-web-<version>.zip`.
+6. Runs the Website pipeline on the tagged commit and deploys it to ergonote.cloud, including
+   `/demo/`. The built web app is kept as `ergonote-web-<version>.zip`.
 7. Publishes GitHub Release `v<version>` as a regular release marked latest, with every file above and
    one `SHA256SUMS.txt`. The notes are a fixed alpha notice plus GitHub's list of merged pull
    requests.
@@ -93,9 +93,9 @@ pick, such as a minor version.
 3. Run Actions, Release, Run workflow from `main` at that same commit and enter that Packaging run
    ID. The workflow rejects runs from another branch, commit, or workflow, and derives the release
    version from the checked-out workspace. If `main` advanced, rerun Packaging for the new commit.
-   The workflow drafts `NoteCraft v<version>`; it does not publish it.
+   The workflow drafts `ErgoNote v<version>`; it does not publish it.
 4. Android is built by the same Packaging run (`android/build.sh`, checked by `android/test.sh`):
-   `notecraft-<version>-android-arm64.apk`. Check the run's summary for how it was signed (see
+   `ergonote-<version>-android-arm64.apk`. Check the run's summary for how it was signed (see
    Android signing below), then install it on a clean emulator or device before publishing.
 5. For the website, wait for the `Deploy website` workflow on the same `main` commit to succeed.
    It publishes the browser app and the separately version-checked Welcome notebook archive from
@@ -106,7 +106,7 @@ pick, such as a minor version.
    clean target. Publish the draft only after the owner approves.
 
 The website and the packages are separate pipelines. Each bundles both
-generated Welcome formats. Desktop NoteCraft runs the first-use wizard once after installation or
+generated Welcome formats. Desktop ErgoNote runs the first-use wizard once after installation or
 a preferences reset and creates the managed Welcome notebook only when the user chooses Yes. For
 0.0.9 the wizard is verified on Windows only; the website flow is deferred for it. The Android app
 unpacks both editions into its own storage and runs the same wizard (android/src/welcome.rs). The website uses a static archive transport. The generic engine sample stays
@@ -126,8 +126,8 @@ exist, and otherwise with a key made for that one build (with a warning in the r
 | `ANDROID_KEY_PASSWORD` | Optional: the key's password, when it differs from the keystore's |
 
 Make the key once, keep a copy offline, and never commit it. For example:
-`keytool -genkeypair -keystore notecraft-release.p12 -storetype PKCS12 -alias notecraft -keyalg RSA -keysize 4096 -validity 10000`,
-then `base64 -w0 notecraft-release.p12` for the secret. The nightly release notes say which kind
+`keytool -genkeypair -keystore ergonote-release.p12 -storetype PKCS12 -alias ergonote -keyalg RSA -keysize 4096 -validity 10000`,
+then `base64 -w0 ergonote-release.p12` for the secret. The nightly release notes say which kind
 of key signed that night's APK. Until the secrets exist, each nightly APK has its own key: it
 installs, but cannot update another night's APK in place.
 
@@ -137,7 +137,7 @@ installs, but cannot update another night's APK in place.
   `docs/releases/<version>/RELEASE_NOTES.md`. After the draft exists, replace its body with those
   notes: `gh release edit v<version> --draft --notes-file <file>`.
 - Release notes are body content below the GitHub release title: do not add a duplicate H1 title
-  such as `# NoteCraft <version>` to `RELEASE_NOTES.md`.
+  such as `# ErgoNote <version>` to `RELEASE_NOTES.md`.
 - Relative images are unreliable on a release page. Use absolute release-asset URLs for the
   artwork and animated GIF, upload both assets, and verify that both the image and GIF render
   before publishing. The release is not complete if either asset is only present in the checkout.
@@ -146,18 +146,18 @@ installs, but cannot update another night's APK in place.
 
 ### Clean-machine check
 
-Before publishing, install the MSI on a machine that has never run NoteCraft. Follow the
+Before publishing, install the MSI on a machine that has never run ErgoNote. Follow the
 `packaging/installation artifacts.md` contract for the expected user notebook location. Launch
-NoteCraft and verify the first-use wizard appears: welcome page with the banner, logging, page format,
+ErgoNote and verify the first-use wizard appears: welcome page with the banner, logging, page format,
 create the demo, then thank you. Choose Yes on the demo page and verify it creates
-`welcome-to-notecraft` in the chosen format before opening it. Place a sentinel user notebook beside
+`welcome-to-ergonote` in the chosen format before opening it. Place a sentinel user notebook beside
 it and verify it is unchanged. Restart and confirm the wizard does not appear again. Reset the
 preferences and confirm it appears again. Confirm an upgrade does not show it.
 
 | File | What it is |
 |---|---|
-| `notecraft-<version>-windows-x64.msi` | Per-machine installer: Program Files, Start menu shortcut |
-| `notecraft-<version>-windows-x64-portable.zip` | App and CLI with the paired-format Welcome source |
+| `ergonote-<version>-windows-x64.msi` | Per-machine installer: Program Files, Start menu shortcut |
+| `ergonote-<version>-windows-x64-portable.zip` | App and CLI with the paired-format Welcome source |
 | `SHA256SUMS.txt` | SHA-256 of the two files above |
 
 Each file also gets a build provenance attestation. Check a download with
@@ -178,11 +178,11 @@ release's `SHA256SUMS.txt`), and puts it in place:
 
 | Install | File it downloads | What happens |
 |---|---|---|
-| Windows, in Program Files | `notecraft-<version>-windows-x64.msi` | NoteCraft closes, `msiexec /passive` upgrades it, NoteCraft starts again |
-| Windows, anywhere else | `notecraft-<version>-windows-x64-portable.zip` | NoteCraft closes, the zip is copied over its folder, NoteCraft starts again |
-| Linux AppImage | `notecraft-<version>-linux-<arch>.AppImage` | NoteCraft closes, the new AppImage replaces the old one and starts |
-| Linux deb or rpm (`/usr/bin`) | `notecraft-<version>-linux-<arch>.deb` / `.rpm` | handed to the system's software installer |
-| macOS app bundle | `NoteCraft-<version>-macos-<arch>.dmg` | NoteCraft closes, the bundle is replaced and starts; if it cannot be, the disk image opens |
+| Windows, in Program Files | `ergonote-<version>-windows-x64.msi` | ErgoNote closes, `msiexec /passive` upgrades it, ErgoNote starts again |
+| Windows, anywhere else | `ergonote-<version>-windows-x64-portable.zip` | ErgoNote closes, the zip is copied over its folder, ErgoNote starts again |
+| Linux AppImage | `ergonote-<version>-linux-<arch>.AppImage` | ErgoNote closes, the new AppImage replaces the old one and starts |
+| Linux deb or rpm (`/usr/bin`) | `ergonote-<version>-linux-<arch>.deb` / `.rpm` | handed to the system's software installer |
+| macOS app bundle | `ErgoNote-<version>-macos-<arch>.dmg` | ErgoNote closes, the bundle is replaced and starts; if it cannot be, the disk image opens |
 | anything else (web, Android, a build) | none | the releases page is offered |
 
 The updater finds files by these name endings, so **renaming a release file breaks updates
@@ -199,7 +199,7 @@ the `release` environment of the repository, never in a file.
 ## Before the first public release
 
 - Decide on signing (SignPath Foundation is free for open source; check its conditions).
-- The MSI `UpgradeCode` in `packaging/windows/notecraft.wxs` is fixed once the first MSI is public.
+- The MSI `UpgradeCode` in `packaging/windows/ergonote.wxs` is fixed once the first MSI is public.
   Changing it later stops new versions from replacing old ones.
 - The exes carry the app icon and version information (build.rs, winresource), and the packaging script checks both.
 - Smoke test the artifact: it starts with no console window, asks before refreshing the managed

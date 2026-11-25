@@ -1,12 +1,12 @@
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="assets/brand/notecraft-social-dark.png">
-    <img alt="NoteCraft. A clean-room OneNote recreation for local files and sync on your terms." src="assets/brand/notecraft-social-light.png" width="100%">
+    <source media="(prefers-color-scheme: dark)" srcset="assets/brand/ergonote-social-dark.png">
+    <img alt="ErgoNote. A clean-room OneNote recreation for local files and sync on your terms." src="assets/brand/ergonote-social-light.png" width="100%">
   </picture>
 </p>
 
 <p align="center">
-  <sub>NoteCraft is an independent, third-party open-source project. It is not affiliated with, endorsed by or sponsored by ArtCraft, <a href="https://getartcraft.com/">getartcraft.com</a> or its <a href="https://discord.com/invite/artcraft">Discord</a>.</sub>
+  <sub>ErgoNote is an independent, third-party open-source project. It is not affiliated with, endorsed by or sponsored by ArtCraft, <a href="https://getartcraft.com/">getartcraft.com</a> or its <a href="https://discord.com/invite/artcraft">Discord</a>.</sub>
 </p>
 
 <p align="center">
@@ -14,7 +14,7 @@
 </p>
 
 <p align="center">
-  NoteCraft is an open-source, clean-room recreation of the OneNote notebook experience. It keeps notebooks, sections, pages, pictures and attachments as ordinary folders and files on your device. You can choose how to sync and back them up, using tools you already trust, without a NoteCraft server or account.
+  ErgoNote is an open-source, clean-room recreation of the OneNote notebook experience. It keeps notebooks, sections, pages, pictures and attachments as ordinary folders and files on your device. You can choose how to sync and back them up, using tools you already trust, without a ErgoNote server or account.
 </p>
 
 <p align="center">
@@ -26,13 +26,13 @@
 </p>
 
 <p align="center">
-  <img src="docs/images/hero.png" alt="NoteCraft with a purple title band across the top, holding the Quick Access Toolbar, the page title and the tab names, and the Home tab of the ribbon open. On the left a tree shows two notebooks, a blue My Notebook with an orange Work section group and a teal Ideas section. The selected page Format ideas leads with its title, followed by a checklist with ticked boxes, a numbered list, a quote, a table and an equation. Its format and save state appear in the status bar." width="100%">
+  <img src="docs/images/hero.png" alt="ErgoNote with a purple title band across the top, holding the Quick Access Toolbar, the page title and the tab names, and the Home tab of the ribbon open. On the left a tree shows two notebooks, a blue My Notebook with an orange Work section group and a teal Ideas section. The selected page Format ideas leads with its title, followed by a checklist with ticked boxes, a numbered list, a quote, a table and an equation. Its format and save state appear in the status bar." width="100%">
   <br><sub><b>The sample notebooks.</b> The ribbon, coloured notebooks and sections, and a page written in the type it will be read in.</sub>
 </p>
 
 <p align="center">
   <a href="#a-tour">A tour</a> ·
-  <a href="#why-notecraft">Why NoteCraft</a> ·
+  <a href="#why-ergonote">Why ErgoNote</a> ·
   <a href="#what-works-today">What works today</a> ·
   <a href="#quick-start">Quick start</a> ·
   <a href="#downloads">Downloads</a> ·
@@ -47,7 +47,7 @@
 
 ## A tour
 
-Every picture below is NoteCraft itself, drawn off screen by its own test harness
+Every picture below is ErgoNote itself, drawn off screen by its own test harness
 (`cargo xtask screenshots`), not a mock-up.
 
 <table>
@@ -75,16 +75,16 @@ Every picture below is NoteCraft itself, drawn off screen by its own test harnes
 </tr>
 </table>
 
-## Why NoteCraft
+## Why ErgoNote
 
 - **Your notes are files.** A notebook is a folder. A page is `index.html` or `index.md` with its
   pictures beside it. Open them in any editor, grep them, put them in git, or delete the app.
 - **You can look inside.** A OneNote section is one binary file, and a text editor shows noise.
-  NoteCraft's page source view lists every file a page owns and shows what is in each, the page's
+  ErgoNote's page source view lists every file a page owns and shows what is in each, the page's
   own text with its head, the drawing, the pictures, so you can check what your notes contain
   without taking anyone's word for it. See [Look inside a page](docs/how-to/look-inside-a-page.md).
 - **Sync is your sync.** Put a notebook in the folder OneDrive, Dropbox, Syncthing or iCloud
-  already watches. There is no NoteCraft server and no account.
+  already watches. There is no ErgoNote server and no account.
 - **No depth limit.** Note taking apps usually cap sub-pages at a level or three, because their
   file format says so. Here a page is a folder, so pages nest as deep as you like.
 - **Familiar.** The Office-style ribbon, the File screen, coloured notebooks and sections, tags,
@@ -117,7 +117,7 @@ Every picture below is NoteCraft itself, drawn off screen by its own test harnes
 | **Ribbon** | Home, Insert and View, with a Source tab that appears with the page source view; a File screen for whole notebooks |
 | **Safety** | Autosave through a temporary file and a rename; a checker for the folder rules; every command tested against junk parameters |
 | **Agents** | An MCP server on stdin and stdout: the tree, search, reading and writing pages, making notebooks, running any command; with the window open it can also see what you see |
-| **Import** | `notecraft-cli import onenote` turns a folder of `.one` section files, the ones the Office note taking app writes on Windows, into notebooks, sections, pages and sub-pages in either page format, with pictures and attachments. Ink and password protected sections are not read yet |
+| **Import** | `ergonote-cli import onenote` turns a folder of `.one` section files, the ones the Office note taking app writes on Windows, into notebooks, sections, pages and sub-pages in either page format, with pictures and attachments. Ink and password protected sections are not read yet |
 
 The honest picture is in [docs/feature-parity.md](docs/feature-parity.md) (feature by feature
 against the app most people are moving from) and [docs/gaps.md](docs/gaps.md) (what is missing
@@ -128,15 +128,15 @@ or unproven).
 You need [Rust](https://rustup.rs).
 
 ```sh
-cargo run --release -p notecraft                      # the app, on ~/Documents/NoteCraft
-cargo run --release -p notecraft -- --notebooks ./my-notebooks
+cargo run --release -p ergonote                      # the app, on ~/Documents/ErgoNote
+cargo run --release -p ergonote -- --notebooks ./my-notebooks
 ```
 
 Try it on sample notebooks without touching your own:
 
 ```sh
-cargo run -p notecraft-cli -- --notebooks ./demo sample
-cargo run --release -p notecraft -- --notebooks ./demo --expand-all
+cargo run -p ergonote-cli -- --notebooks ./demo sample
+cargo run --release -p ergonote -- --notebooks ./demo --expand-all
 ```
 
 To try the Welcome demo notebook from its generated release files, first copy one format into the ignored `./my-notebooks`
@@ -144,7 +144,7 @@ folder. The copy task never writes to `docs/demo/DemoNotebook`:
 
 ```sh
 cargo xtask demo-copy html
-cargo run -p notecraft -- --notebooks ./my-notebooks --expand-all
+cargo run -p ergonote -- --notebooks ./my-notebooks --expand-all
 ```
 
 Use `cargo xtask demo-copy cmgfm` for the CMGFM version. `cargo xtask demo` rebuilds the official
@@ -177,19 +177,19 @@ name length and conflict copies, are in [docs/folder-format.md](docs/folder-form
 Every user-visible action is a command with an id, and every front end dispatches the same ones:
 
 ```sh
-notecraft-cli commands                                  # every command and its parameters
-notecraft-cli run notebook.create name=Work
-notecraft-cli run node.create parent=work kind=page title="First page"
-notecraft-cli tree
-notecraft-cli search "quarterly"
-notecraft-cli check work
+ergonote-cli commands                                  # every command and its parameters
+ergonote-cli run notebook.create name=Work
+ergonote-cli run node.create parent=work kind=page title="First page"
+ergonote-cli tree
+ergonote-cli search "quarterly"
+ergonote-cli check work
 ```
 
 The running window can be driven over a loopback port, which is how the screenshots above are
 made and how the UI tests work:
 
 ```sh
-notecraft --control 0        # prints nothing; the port and key are in control-key.local-PORT
+ergonote --control 0        # prints nothing; the port and key are in control-key.local-PORT
 ```
 
 It speaks JSON lines: `engine.execute`, `ui.open`, `ui.caret`, `ui.click`, `ui.key`, `ui.text`,
@@ -200,8 +200,8 @@ code.
 An assistant reaches the same commands over the **Model Context Protocol**, on stdin and stdout:
 
 ```sh
-notecraft-cli mcp                  # the notebooks folder, nothing running
-notecraft-cli mcp --connect 54321  # a running window, so it sees what you see
+ergonote-cli mcp                  # the notebooks folder, nothing running
+ergonote-cli mcp --connect 54321  # a running window, so it sees what you see
 ```
 
 Tools for the tree, search, reading and writing pages, making notebooks and nodes, checking a
@@ -216,14 +216,14 @@ layers, and that nothing below the UI layer knows about egui.
 
 | Layer | Crate | Job |
 |---|---|---|
-| L0 | `notecraft-model` | Node kinds, page formats, tags, name rules, ids, time |
-| L1 | `notecraft-formats` | HTML and CommonMark: front matter, parsing into blocks, writing blocks back |
-| L1 | `notecraft-math` | TeX maths typeset into drawing items (RaTeX, with a small engine of its own as the fallback) |
-| L1 | `notecraft-onenote` | Reads `.one` section files: the revision store and its objects |
-| L2 | `notecraft-store` | Notebooks as folders: the tree, pages, attachments, settings, search, the checker |
-| L4 | `notecraft-engine` | The session and the command registry |
-| L6 | `notecraft-ui-egui` | The window: tree, ribbon, the page and how it is written on, themes |
-| apps | `notecraft`, `notecraft-cli` | The desktop window and the command line |
+| L0 | `ergonote-model` | Node kinds, page formats, tags, name rules, ids, time |
+| L1 | `ergonote-formats` | HTML and CommonMark: front matter, parsing into blocks, writing blocks back |
+| L1 | `ergonote-math` | TeX maths typeset into drawing items (RaTeX, with a small engine of its own as the fallback) |
+| L1 | `ergonote-onenote` | Reads `.one` section files: the revision store and its objects |
+| L2 | `ergonote-store` | Notebooks as folders: the tree, pages, attachments, settings, search, the checker |
+| L4 | `ergonote-engine` | The session and the command registry |
+| L6 | `ergonote-ui-egui` | The window: tree, ribbon, the page and how it is written on, themes |
+| apps | `ergonote`, `ergonote-cli` | The desktop window and the command line |
 | tools | `xtask` | `cargo xtask ci` and friends |
 
 More in [docs/architecture.md](docs/architecture.md). Guides for using it are in
@@ -263,9 +263,9 @@ the earlier versions and their notes. `<ver>` in a file name is the version numb
 
 | Build | Installer | Portable |
 |---|---|---|
-| Windows x64 (64-bit Intel and AMD) | `notecraft-<ver>-windows-x64.msi` | `notecraft-<ver>-windows-x64-portable.zip` |
+| Windows x64 (64-bit Intel and AMD) | `ergonote-<ver>-windows-x64.msi` | `ergonote-<ver>-windows-x64-portable.zip` |
 | Linux x64 (glibc, 64-bit Intel and AMD) | `ergonote_<ver>_amd64.deb` | `ErgoNote-v<ver>-Linux-x86_64.tar.gz` |
-| Android (64-bit ARM, Android 8 or later) | `notecraft-<ver>-android-arm64.apk` | - |
+| Android (64-bit ARM, Android 8 or later) | `ergonote-<ver>-android-arm64.apk` | - |
 
 Windows x64 and Linux x64 builds are available. macOS is untested, so there is no build for it; the
 [Quick start](#quick-start) builds from source.
@@ -278,8 +278,8 @@ built on GitHub, against its build attestation:
 The MSI puts the program in Program Files and needs administrator rights. Its separate setup helper
 places the optional demo notebook in the normal notebooks folder (Documents by default) on first
 launch; the app itself only
-opens notebook folders. In the portable zip, run `notecraft-setup.exe` for the same setup flow or
-run `notecraft.exe` to start without setup. User notebooks remain plain folders, and uninstall
+opens notebook folders. In the portable zip, run `ergonote-setup.exe` for the same setup flow or
+run `ergonote.exe` to start without setup. User notebooks remain plain folders, and uninstall
 leaves them in place.
 
 For Linux, double-click the `.deb` to install it with the software manager, or extract the
@@ -297,17 +297,17 @@ version numbers and how a release is built.
 
 ## Logs
 
-The desktop app writes `notecraft.log` next to its settings: `%APPDATA%\NoteCraft\` on Windows. A
+The desktop app writes `ergonote.log` next to its settings: `%APPDATA%\ErgoNote\` on Windows. A
 start from the Start menu has no terminal, so this file is what to attach to a bug report. It
 records the start (version, folders), the window opening and closing, warnings and errors from the
 graphics and window libraries, and any panic with its backtrace. Page text is not logged on
 purpose, but a panic message can quote what the code was handling, so look before you share it. A log
-over 1 MB moves to `notecraft.log.old`. `notecraft --version` and `notecraft-cli --version` print
+over 1 MB moves to `ergonote.log.old`. `ergonote --version` and `ergonote-cli --version` print
 the version and write no file.
 
 ## Status and what is missing
 
-NoteCraft is **alpha**, version 0.0.9. It is not a ready product: it runs and it is tested, but
+ErgoNote is **alpha**, version 0.0.9. It is not a ready product: it runs and it is tested, but
 it is not finished, it has had little use, and a notebook you care about should have a backup. The
 folder format can still change before 0.1. The other Craft apps describe themselves the same way.
 What is missing:
@@ -322,7 +322,7 @@ What is missing:
 - The koala artwork was generated by the owner with a licensed Windows Copilot (the owner's
   statement); it is not covered by the licence below. See [ATTRIBUTION.md](ATTRIBUTION.md).
 
-**Versions.** The version on `main` is 0.0.9. A nightly release takes the next patch number each day it has new work, so check [Releases](https://github.com/Masterz42/ErgoNote/releases) for the newest build; any other change needs the owner's approval. NoteCraft follows the versioning of the Craft apps: `MAJOR.MINOR.PATCH`, still 0.x, tags like `v0.1.0`, and a hyphen such as `0.2.0-rc.1` for a pre-release. A minor release adds features, and a patch release only fixes bugs or rebuilds. We took this from the Craft apps' public tags and release guides, not from a written rule of theirs. Nightly releases are regular GitHub releases marked latest. See [docs/releasing.md](docs/releasing.md).
+**Versions.** The version on `main` is 0.0.9. A nightly release takes the next patch number each day it has new work, so check [Releases](https://github.com/Masterz42/ErgoNote/releases) for the newest build; any other change needs the owner's approval. ErgoNote follows the versioning of the Craft apps: `MAJOR.MINOR.PATCH`, still 0.x, tags like `v0.1.0`, and a hyphen such as `0.2.0-rc.1` for a pre-release. A minor release adds features, and a patch release only fixes bugs or rebuilds. We took this from the Craft apps' public tags and release guides, not from a written rule of theirs. Nightly releases are regular GitHub releases marked latest. See [docs/releasing.md](docs/releasing.md).
 
 [ROADMAP.md](ROADMAP.md) has the order of work; [docs/gaps.md](docs/gaps.md) is the full list.
 
@@ -331,7 +331,7 @@ What is missing:
 Interested in contributing? Start with the [contributor guide](CONTRIBUTING.md), then see
 [`AGENTS.md`](AGENTS.md) for project skills and [`README_DEV.md`](README_DEV.md) for the developer workflow.
 
-NoteCraft is a clean-room project. The `.one` reader is built from Microsoft's published
+ErgoNote is a clean-room project. The `.one` reader is built from Microsoft's published
 specifications ([MS-ONESTORE] and [MS-ONE]) and from using the app that writes those files,
 never from its code or its assets. The notes behind the format work are in [docs/research](docs/research).
 

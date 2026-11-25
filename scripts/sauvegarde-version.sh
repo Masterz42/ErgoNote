@@ -84,7 +84,7 @@ main() {
   copy_glob "$source_dir/ErgoNote-v$version-Android.apk" "$dest/android"
   copy_glob "$source_dir/ErgoNote-v$version-Windows-x86_64.exe" "$dest/windows"
   copy_glob "$source_dir/ErgoNote-v$version-Linux-x86_64" "$dest/linux"
-  copy_glob "$repo_root/dist/android/notecraft-$version*-android-arm64.apk" \
+  copy_glob "$repo_root/dist/android/ergonote-$version*-android-arm64.apk" \
     "$dest/android"
 
   if [ "$copied" -eq 0 ]; then

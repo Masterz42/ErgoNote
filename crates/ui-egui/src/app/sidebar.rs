@@ -1,6 +1,6 @@
 use super::*;
 
-impl NoteCraftApp {
+impl ErgoNoteApp {
     pub(super) fn templates_panel(&mut self, ui: &mut Ui) {
         let Some(pane) = self.templates_pane.as_mut() else { return };
         let tokens = self.tokens;
@@ -38,9 +38,9 @@ impl NoteCraftApp {
             ui.separator();
             let list_height = (ui.available_height() - 110.0).max(120.0);
             egui::ScrollArea::vertical().id_salt("page-templates-list").max_height(list_height).auto_shrink([false, true]).show(ui, |ui| {
-                for category in notecraft_store::page_templates::Category::ALL {
+                for category in ergonote_store::page_templates::Category::ALL {
                     let mut items = pane.templates.iter().filter(|t| t.category == category).peekable();
-                    let mine = category == notecraft_store::page_templates::Category::Mine;
+                    let mine = category == ergonote_store::page_templates::Category::Mine;
                     if items.peek().is_none() && !mine {
                         continue;
                     }
@@ -148,7 +148,7 @@ impl NoteCraftApp {
                 if pane.found.is_empty() {
                     ui.weak(crate::tl_id!("ui.no_tagged_notes_here"));
                 }
-                for tag in notecraft_model::Tag::all() {
+                for tag in ergonote_model::Tag::all() {
                     let mut lines = pane.found.iter().filter(|f| f.tag == tag).peekable();
                     if lines.peek().is_none() {
                         continue;
@@ -410,7 +410,7 @@ impl NoteCraftApp {
     pub(super) fn new_section_parent(&self) -> Option<(PathBuf, NodeKind)> {
         let mut at = self.selected.clone().or_else(|| self.editor.as_ref().map(|e| e.dir.clone()));
         while let Some(path) = at {
-            match notecraft_store::tree::read_node(&path).map(|n| n.kind) {
+            match ergonote_store::tree::read_node(&path).map(|n| n.kind) {
                 Some(kind @ (NodeKind::Notebook | NodeKind::SectionGroup)) => return Some((path, kind)),
                 Some(_) => at = path.parent().map(Path::to_path_buf),
                 None => break,
@@ -624,7 +624,7 @@ impl NoteCraftApp {
                                     background,
                                     ..Default::default()
                                 };
-                                match notecraft_store::search::match_span(&h.snippet, self.search.trim()) {
+                                match ergonote_store::search::match_span(&h.snippet, self.search.trim()) {
                                     Some((start, end)) => {
                                         job.append(&h.snippet[..start], 0.0, run(tokens.muted, Color32::TRANSPARENT));
                                         job.append(&h.snippet[start..end], 0.0, run(tokens.text, tokens.row_selected));

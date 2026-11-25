@@ -1,7 +1,7 @@
 //! Structure-only survey of a folder of `.one` files: counts, timings and error kinds, never names
-//! or content. Usage: `cargo run --release -p notecraft-onenote --example survey -- <folder>`.
+//! or content. Usage: `cargo run --release -p ergonote-onenote --example survey -- <folder>`.
 
-use notecraft_onenote::{Content, OneError, read, section};
+use ergonote_onenote::{Content, OneError, read, section};
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 use std::time::Instant;
@@ -18,7 +18,7 @@ fn walk(dir: &Path, out: &mut Vec<PathBuf>) {
     }
 }
 
-fn refs(store: &notecraft_onenote::Store, data: &[u8], blocks: &[Content], h: &mut BTreeMap<String, usize>) {
+fn refs(store: &ergonote_onenote::Store, data: &[u8], blocks: &[Content], h: &mut BTreeMap<String, usize>) {
     for b in blocks {
         let (file, ext) = match b {
             Content::Picture { file, ext, .. } | Content::File { file, ext, .. } => (file, ext),

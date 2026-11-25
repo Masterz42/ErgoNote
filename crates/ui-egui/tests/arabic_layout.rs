@@ -1,12 +1,12 @@
-//! What egui 0.36 does with Arabic, measured rather than assumed, and what NoteCraft has to
+//! What egui 0.36 does with Arabic, measured rather than assumed, and what ErgoNote has to
 //! undo because of it. If one of these tests starts failing, egui has changed underneath us
 //! and `char_at` (and `docs/gaps.md`) should be revisited.
 
 use egui_kittest::Harness;
-use notecraft_model::Dir;
-use notecraft_ui_egui::{fonts, pageedit, pagetext, theme::Theme};
+use ergonote_model::Dir;
+use ergonote_ui_egui::{fonts, pageedit, pagetext, theme::Theme};
 
-/// A harness with NoteCraft's fonts in it, which is what puts Arabic glyphs there at all.
+/// A harness with ErgoNote's fonts in it, which is what puts Arabic glyphs there at all.
 fn harness() -> Harness<'static> {
     let mut h = Harness::builder().with_size(egui::vec2(600.0, 200.0)).build_ui(|ui| fonts::install_once(ui.ctx()));
     h.run();
@@ -92,7 +92,7 @@ fn latin_hit_testing_is_unchanged() {
 
 /// The spike's deciding measurement: does what parley computes line up with what egui draws?
 ///
-/// If the two agree on the width of a run, NoteCraft can let parley say where each run goes
+/// If the two agree on the width of a run, ErgoNote can let parley say where each run goes
 /// and which character a click is on (both of which egui gets wrong for Arabic), while egui
 /// keeps drawing the glyphs, which it does correctly inside one run. That is a much smaller
 /// piece of work than drawing glyphs ourselves.
@@ -100,7 +100,7 @@ fn latin_hit_testing_is_unchanged() {
 fn parley_and_egui_agree_on_the_width_of_an_arabic_run() {
     let t = Theme::DEFAULT.tokens();
     let h = harness();
-    let mut text = notecraft_text::Text::new();
+    let mut text = ergonote_text::Text::new();
     for sample in ["مرحبا", "مرحبا بالعالم", LINE] {
         for size in [14.0f32, 16.0, 22.0] {
             let parley = text.layout(sample, size, None).width();
@@ -121,8 +121,8 @@ fn parley_and_egui_agree_on_the_width_of_an_arabic_run() {
 /// between the Arabic, and the page really draws through that painter.
 #[test]
 fn a_number_inside_an_arabic_line_is_drawn_in_order() {
-    use notecraft_formats::markdown;
-    use notecraft_ui_egui::bidi;
+    use ergonote_formats::markdown;
+    use ergonote_ui_egui::bidi;
     let t = Theme::DEFAULT.tokens();
     let line = "السعر 17 ريال";
     assert!(bidi::is_mixed(line), "this is the case egui gets wrong");
@@ -141,7 +141,7 @@ fn a_number_inside_an_arabic_line_is_drawn_in_order() {
     // picture egui paints by itself, because egui puts the digits the other way round.
     let blocks = markdown::parse(line);
     let page = render(move |ui| {
-        notecraft_ui_egui::preview::show(ui, &blocks, std::path::Path::new("."), &Theme::DEFAULT.tokens(), Some(Dir::Rtl), &Default::default());
+        ergonote_ui_egui::preview::show(ui, &blocks, std::path::Path::new("."), &Theme::DEFAULT.tokens(), Some(Dir::Rtl), &Default::default());
     });
     let plain_egui = render(move |ui| {
         let t = Theme::DEFAULT.tokens();
@@ -152,7 +152,7 @@ fn a_number_inside_an_arabic_line_is_drawn_in_order() {
     assert!(differs > 50, "the page does not draw this the way egui would: {differs} pixels differ");
 }
 
-/// Runs `f` inside a context that has NoteCraft's fonts, and hands back what it returned.
+/// Runs `f` inside a context that has ErgoNote's fonts, and hands back what it returned.
 fn run_in_ui<T>(f: impl FnMut(&egui::Ui) -> T) -> T {
     let ctx = egui::Context::default();
     let mut out = None;

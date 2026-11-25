@@ -7,10 +7,10 @@ updated: 2026-10-18T00:00:00Z
 tags: []
 ---
 
-NoteCraft has no sync of its own and no account. A notebook is a folder of small files, so put
+ErgoNote has no sync of its own and no account. A notebook is a folder of small files, so put
 your notebooks folder where your sync tool already looks: OneDrive, Dropbox, Google Drive,
 iCloud Drive, Syncthing, a network share or a git repository. None of them has to understand
-NoteCraft. They copy files.
+ErgoNote. They copy files.
 
 ## Why it works
 
@@ -21,7 +21,7 @@ NoteCraft. They copy files.
 - **Short, safe names.** Folder names are at most 64 characters, paths at most 255, and
   nothing Windows refuses is ever written.
 - **Conflict copies are noticed.** When a sync tool leaves a conflicted copy beside a page,
-  the checker reports it: **File**, then **Check**, or `notecraft-cli check` from a terminal.
+  the checker reports it: **File**, then **Check**, or `ergonote-cli check` from a terminal.
 
 ## Backup
 
@@ -35,7 +35,7 @@ Bin**. These tools work on this device and do not replace a separate backup of t
 
 ## What is not handled
 
-NoteCraft does not merge two versions of a page. If your sync tool makes a conflict copy, you
+ErgoNote does not merge two versions of a page. If your sync tool makes a conflict copy, you
 decide which version to keep.
 
 Next: [Make it yours](../make-it-yours/).

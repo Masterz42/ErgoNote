@@ -32,7 +32,7 @@ The CAB files are copied unchanged from the pinned OfficeIMO fixture set. The tw
 
 `SHA256SUMS.txt` lists hashes for every binary fixture stored in this folder. The complete OfficeIMO source inventory and generation notes are documented in the upstream `OfficeIMO.OneNote.Tests/Fixtures/SOURCE.md` at the pinned revision.
 
-The importer tests the five `.one` files in HTML and CMGFM output modes and checks `.onepkg` detection. The CAB files are preserved for future container coverage; NoteCraft currently does not import standalone `.cab` files. No claim of full OneNote package support is made.
+The importer tests the five `.one` files in HTML and CMGFM output modes and checks `.onepkg` detection. The CAB files are preserved for future container coverage; ErgoNote currently does not import standalone `.cab` files. No claim of full OneNote package support is made.
 
 Sources:
 

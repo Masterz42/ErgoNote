@@ -2,7 +2,7 @@
 
 use egui::vec2;
 use egui_kittest::Harness;
-use notecraft_ink::{Dab, Rgb, Stroke, Tool};
+use ergonote_ink::{Dab, Rgb, Stroke, Tool};
 use std::sync::{Mutex, MutexGuard, PoisonError};
 
 static PIXEL_TEST: Mutex<()> = Mutex::new(());
@@ -20,7 +20,7 @@ fn render_diagonal() -> image::RgbaImage {
     }
     let mut h = Harness::builder().with_size(vec2(240.0, 80.0)).with_pixels_per_point(1.0).build_ui(move |ui| {
         ui.painter().rect_filled(ui.max_rect(), 0.0, egui::Color32::WHITE);
-        notecraft_ui_egui::inkpad::paint_stroke(ui.painter(), egui::Pos2::ZERO, &stroke);
+        ergonote_ui_egui::inkpad::paint_stroke(ui.painter(), egui::Pos2::ZERO, &stroke);
     });
     h.run();
     h.render().expect("an offscreen renderer")
@@ -55,7 +55,7 @@ fn render_straight(
     let mut h = Harness::builder().with_size(vec2(240.0, 240.0)).with_pixels_per_point(pixels_per_point).build_ui(move |ui| {
         ui.painter().rect_filled(ui.max_rect(), 0.0, background);
         for _ in 0..copies {
-            notecraft_ui_egui::inkpad::paint_stroke(ui.painter(), egui::Pos2::ZERO, &stroke);
+            ergonote_ui_egui::inkpad::paint_stroke(ui.painter(), egui::Pos2::ZERO, &stroke);
         }
     });
     h.run();
@@ -97,7 +97,7 @@ fn one_highlighter_stroke_has_uniform_opacity_through_its_round_ends() {
                         let (lo, hi) = if paper == "light" { (51, 255) } else { (24, 51) };
                         assert!((lo + 1..hi).contains(&centre[2]), "a highlighter remains translucent: {centre:?}");
                     }
-                    if let Ok(dir) = std::env::var("NOTECRAFT_UI_VISUAL_DIR") {
+                    if let Ok(dir) = std::env::var("ERGONOTE_UI_VISUAL_DIR") {
                         let dir = std::path::PathBuf::from(dir);
                         std::fs::create_dir_all(&dir).expect("visual directory");
                         image.save(dir.join(format!("highlighter-cap-{paper}-{scale}-{tool:?}-{direction}.png"))).expect("diagnostic picture");

@@ -4,9 +4,9 @@
 use std::collections::BTreeMap;
 use std::ops::Range;
 
-use notecraft_formats::markdown::{Block, Span, parse_inline};
-use notecraft_formats::render::editable_spans;
-use notecraft_model::Tag;
+use ergonote_formats::markdown::{Block, Span, parse_inline};
+use ergonote_formats::render::editable_spans;
+use ergonote_model::Tag;
 
 use super::{FontSelection, INLINE_IMAGE_CHAR, InlineFormat, block_text, format_source_selection, selection_fonts, spans_to_editor};
 
@@ -266,7 +266,7 @@ impl InlineEdit {
         let mut source = String::new();
         for (at, (c, literal)) in self.text.chars().zip(&self.literal).enumerate() {
             if let Some((_, image)) = self.images.iter().find(|(index, _)| *index == at) {
-                source.push_str(&notecraft_formats::render::spans_to_markdown(std::slice::from_ref(image)));
+                source.push_str(&ergonote_formats::render::spans_to_markdown(std::slice::from_ref(image)));
             } else {
                 if *literal {
                     source.push('\\');

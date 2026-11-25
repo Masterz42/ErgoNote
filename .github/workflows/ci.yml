@@ -268,7 +268,7 @@ jobs:
         with:
           key: android
           save-if: ${{ github.ref == 'refs/heads/main' }}
-      - run: cargo ndk --target arm64-v8a --platform 26 clippy --locked -p notecraft-android -- -D warnings
+      - run: cargo ndk --target arm64-v8a --platform 26 clippy --locked -p ergonote-android -- -D warnings
 
   ci-status:
     name: CI

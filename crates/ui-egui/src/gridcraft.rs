@@ -1,6 +1,6 @@
 //! Handing a table to GridCraft, the spreadsheet beside this one.
 //!
-//! OneNote's Table tab ends with Convert to Excel Spreadsheet. NoteCraft has no Excel to
+//! OneNote's Table tab ends with Convert to Excel Spreadsheet. ErgoNote has no Excel to
 //! hand a table to, and would not reach for one: GridCraft is the open spreadsheet from
 //! the same workshop, so the table goes there instead.
 //!
@@ -8,7 +8,7 @@
 //! page carries on exactly as before; the table is written out as a CSV file beside the
 //! page, which is a file anything can read, GridCraft included.
 
-use notecraft_formats::markdown::Block;
+use ergonote_formats::markdown::Block;
 use std::path::{Path, PathBuf};
 
 /// Where GridCraft is, if it is installed.
@@ -58,8 +58,8 @@ pub fn hand_over(exe: &Path, page_dir: &Path, name: &str, block: &Block) -> std:
 
 /// Writes the table beside the page as `<name>.csv` and returns the file.
 pub fn write_csv(page_dir: &Path, name: &str, block: &Block) -> std::io::Result<PathBuf> {
-    let csv = notecraft_formats::csv::from_table(block)
-        .ok_or_else(|| std::io::Error::new(std::io::ErrorKind::InvalidInput, "that block is not a table"))?;
+    let csv =
+        ergonote_formats::csv::from_table(block).ok_or_else(|| std::io::Error::new(std::io::ErrorKind::InvalidInput, "that block is not a table"))?;
     let file = page_dir.join(format!("{name}.csv"));
     std::fs::write(&file, csv)?;
     Ok(file)
@@ -68,11 +68,11 @@ pub fn write_csv(page_dir: &Path, name: &str, block: &Block) -> std::io::Result<
 #[cfg(test)]
 mod tests {
     use super::*;
-    use notecraft_formats::markdown::parse;
+    use ergonote_formats::markdown::parse;
 
     #[test]
     fn it_is_found_in_the_first_folder_that_holds_it() {
-        let t = notecraft_store::testing::TempDir::new("gridcraft-find");
+        let t = ergonote_store::testing::TempDir::new("gridcraft-find");
         let (empty, here) = (t.path().join("empty"), t.path().join("here"));
         std::fs::create_dir_all(&empty).expect("dir");
         std::fs::create_dir_all(&here).expect("dir");
@@ -85,7 +85,7 @@ mod tests {
 
     #[test]
     fn the_table_is_written_beside_the_page() {
-        let t = notecraft_store::testing::TempDir::new("gridcraft-csv");
+        let t = ergonote_store::testing::TempDir::new("gridcraft-csv");
         let page = t.path().join("page");
         std::fs::create_dir_all(&page).expect("dir");
         let table = parse("| a | b |\n|---|---|\n| 1 | 2 |\n").remove(0);

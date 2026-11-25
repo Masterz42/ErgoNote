@@ -5,16 +5,16 @@
 //! storage, once per app version. That copy is application data, like the `demo` folder the
 //! desktop installers put beside the program: nothing in the user's notebooks changes here.
 //! The first-use wizard then asks, and copies only the edition the user picks into the
-//! notebooks folder, exactly as on the desktop (`notecraft_setup::install_edition`).
+//! notebooks folder, exactly as on the desktop (`ergonote_setup::install_edition`).
 
 use std::fs;
 use std::io::{self, Read, Seek};
 use std::path::{Path, PathBuf};
 
 /// The asset the APK carries the payload in.
-pub const ASSET: &str = "welcome-to-notecraft.zip";
+pub const ASSET: &str = "welcome-to-ergonote.zip";
 /// The notebook's folder name, the same on every platform.
-pub const NOTEBOOK_NAME: &str = "welcome-to-notecraft";
+pub const NOTEBOOK_NAME: &str = "welcome-to-ergonote";
 /// The file in the unpacked payload that names the app version it came from.
 pub const STAMP: &str = ".payload-version";
 /// The two editions; both must be in the payload.
@@ -104,7 +104,7 @@ fn unpack(archive: impl Read + Seek, into: &Path) -> io::Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use notecraft_store::testing::TempDir;
+    use ergonote_store::testing::TempDir;
     use std::io::{Cursor, Write};
 
     /// The real payload, packed the way `android/build.sh` packs it.
@@ -169,19 +169,19 @@ mod tests {
         let t = TempDir::new("android-welcome-install");
         let payload = t.path().join("demo").join(NOTEBOOK_NAME);
         refresh(Cursor::new(demo_archive()), &payload, "0.0.10").expect("unpack");
-        let notebooks = t.path().join("NoteCraft");
+        let notebooks = t.path().join("ErgoNote");
         fs::create_dir_all(notebooks.join("my-notes")).expect("sibling");
         fs::write(notebooks.join("my-notes").join("keep.txt"), "mine").expect("sibling file");
 
-        let installed = notecraft_setup_install(&payload, &notebooks, "cmgfm");
+        let installed = ergonote_setup_install(&payload, &notebooks, "cmgfm");
         assert_eq!(installed, notebooks.join(NOTEBOOK_NAME));
         assert!(installed.is_dir());
         assert_eq!(fs::read_to_string(notebooks.join("my-notes").join("keep.txt")).expect("kept"), "mine", "siblings stay untouched");
     }
 
     /// The installer the window calls after the wizard's Yes, reached the way the app reaches it.
-    fn notecraft_setup_install(payload: &Path, notebooks: &Path, format: &str) -> PathBuf {
-        notecraft_setup::install_edition(payload, notebooks, format).expect("install")
+    fn ergonote_setup_install(payload: &Path, notebooks: &Path, format: &str) -> PathBuf {
+        ergonote_setup::install_edition(payload, notebooks, format).expect("install")
     }
 
     #[test]

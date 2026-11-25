@@ -1,6 +1,6 @@
-use notecraft_formats::boxes;
-use notecraft_formats::markdown::{self, Block};
-use notecraft_model::PageFormat;
+use ergonote_formats::boxes;
+use ergonote_formats::markdown::{self, Block};
+use ergonote_model::PageFormat;
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
@@ -85,28 +85,28 @@ fn the_full_demo_notebooks_have_matching_pages_and_blocks() {
         let (cmgfm_format, cmgfm_page) = &cmgfm[path];
         assert_eq!(*html_format, PageFormat::Html, "{} is an HTML page", path.display());
         assert_eq!(*cmgfm_format, PageFormat::Cmgfm, "{} is a CMGFM page", path.display());
-        let html_body = notecraft_formats::html::inner(html_page);
-        let (cmgfm_head, cmgfm_body) = notecraft_formats::frontmatter::split_front(cmgfm_page);
+        let html_body = ergonote_formats::html::inner(html_page);
+        let (cmgfm_head, cmgfm_body) = ergonote_formats::frontmatter::split_front(cmgfm_page);
         assert_eq!(
-            notecraft_formats::html::title(html_page).as_deref(),
-            notecraft_formats::frontmatter::value(&cmgfm_head, "title").as_deref(),
+            ergonote_formats::html::title(html_page).as_deref(),
+            ergonote_formats::frontmatter::value(&cmgfm_head, "title").as_deref(),
             "page title metadata matches at {}",
             path.display()
         );
         for (key, meta) in [
-            ("id", "notecraft:id"),
-            ("order", "notecraft:order"),
-            ("created", "notecraft:created"),
-            ("updated", "notecraft:updated"),
-            ("dir", "notecraft:dir"),
-            ("justify", "notecraft:justify"),
-            ("columns", "notecraft:columns"),
-            ("paper", "notecraft:paper"),
-            ("page-color", "notecraft:page-color"),
+            ("id", "ergonote:id"),
+            ("order", "ergonote:order"),
+            ("created", "ergonote:created"),
+            ("updated", "ergonote:updated"),
+            ("dir", "ergonote:dir"),
+            ("justify", "ergonote:justify"),
+            ("columns", "ergonote:columns"),
+            ("paper", "ergonote:paper"),
+            ("page-color", "ergonote:page-color"),
         ] {
             assert_eq!(
-                notecraft_formats::html::meta(html_page, meta).as_deref(),
-                notecraft_formats::frontmatter::value(&cmgfm_head, key).as_deref(),
+                ergonote_formats::html::meta(html_page, meta).as_deref(),
+                ergonote_formats::frontmatter::value(&cmgfm_head, key).as_deref(),
                 "page metadata {key} matches at {}",
                 path.display()
             );
@@ -163,7 +163,7 @@ fn every_page_model_block_round_trips_through_both_formats_and_boxes() {
         "fixture must exercise inline image spans too"
     );
 
-    let containers = vec![notecraft_model::Container::new(24.0, 48.0, 540.0, expected.len())];
+    let containers = vec![ergonote_model::Container::new(24.0, 48.0, 540.0, expected.len())];
     for format in [PageFormat::Html, PageFormat::Cmgfm] {
         let serialized = boxes::write(format, &expected, Some(&containers));
         let (actual, layout) = boxes::read(format, &serialized);
@@ -185,8 +185,8 @@ fn all_demo_pages_keep_their_model_across_repeated_saves() {
     for notebook in ["html", "cmgfm"] {
         for (path, (format, source)) in pages(&root.join(notebook)) {
             let body = match format {
-                PageFormat::Html => notecraft_formats::html::inner(&source),
-                PageFormat::Cmgfm => notecraft_formats::frontmatter::split_front(&source).1,
+                PageFormat::Html => ergonote_formats::html::inner(&source),
+                PageFormat::Cmgfm => ergonote_formats::frontmatter::split_front(&source).1,
             };
             let original = boxes::read(format, &body);
             let mut current = original.clone();

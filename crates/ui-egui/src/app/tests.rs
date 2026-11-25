@@ -6,15 +6,15 @@ mod alert_tests {
 
     #[test]
     fn opening_a_notebook_folder_displays_its_page_instead_of_the_previous_notebook() {
-        let t = notecraft_store::testing::TempDir::new("open-folder-content");
-        let settings = notecraft_store::Settings::at(t.path().join("settings.toml"));
+        let t = ergonote_store::testing::TempDir::new("open-folder-content");
+        let settings = ergonote_store::Settings::at(t.path().join("settings.toml"));
         settings.set("privacy_welcome_seen", "true").expect("settings");
         let mut session = Session::new(&t.path().join("notebooks"), settings.clone()).expect("session");
-        let sample = notecraft_engine::sample::create_sample(&mut session, None).expect("sample");
-        let away = notecraft_store::ops::create_notebook(t.path(), "Away", Some(PageFormat::Html), &settings).expect("away notebook");
-        let section = notecraft_store::ops::create_node(&away, "Section", NodeKind::Section, None, &settings).expect("section");
-        let page = notecraft_store::ops::create_node(&section, "Away page", NodeKind::Page, None, &settings).expect("away page");
-        let mut app = NoteCraftApp::new(session);
+        let sample = ergonote_engine::sample::create_sample(&mut session, None).expect("sample");
+        let away = ergonote_store::ops::create_notebook(t.path(), "Away", Some(PageFormat::Html), &settings).expect("away notebook");
+        let section = ergonote_store::ops::create_node(&away, "Section", NodeKind::Section, None, &settings).expect("section");
+        let page = ergonote_store::ops::create_node(&section, "Away page", NodeKind::Page, None, &settings).expect("away page");
+        let mut app = ErgoNoteApp::new(session);
         app.open_path(&sample.md_page.to_string_lossy());
         assert!(app.editor.is_some());
         app.open_notebooks_from_folder(away);
@@ -27,14 +27,14 @@ mod alert_tests {
 
     #[test]
     fn opening_an_empty_notebook_folder_clears_the_previous_page() {
-        let t = notecraft_store::testing::TempDir::new("open-empty-folder-content");
-        let settings = notecraft_store::Settings::at(t.path().join("settings.toml"));
+        let t = ergonote_store::testing::TempDir::new("open-empty-folder-content");
+        let settings = ergonote_store::Settings::at(t.path().join("settings.toml"));
         settings.set("privacy_welcome_seen", "true").expect("settings");
         let mut session = Session::new(&t.path().join("notebooks"), settings).expect("session");
-        let sample = notecraft_engine::sample::create_sample(&mut session, None).expect("sample");
+        let sample = ergonote_engine::sample::create_sample(&mut session, None).expect("sample");
         let empty = t.path().join("Empty");
         std::fs::create_dir(&empty).expect("empty folder");
-        let mut app = NoteCraftApp::new(session);
+        let mut app = ErgoNoteApp::new(session);
         app.open_path(&sample.md_page.to_string_lossy());
         assert!(app.editor.is_some());
         app.open_notebooks_from_folder(empty);
@@ -60,23 +60,23 @@ mod alert_tests {
 
     #[test]
     fn maximum_sensitivity_reaches_four_times_the_neutral_pen_width() {
-        assert_eq!(NoteCraftApp::sensitivity_width(0), 1.0);
-        assert_eq!(NoteCraftApp::sensitivity_width(50), 1.0);
-        assert_eq!(NoteCraftApp::sensitivity_width(100), 4.0);
+        assert_eq!(ErgoNoteApp::sensitivity_width(0), 1.0);
+        assert_eq!(ErgoNoteApp::sensitivity_width(50), 1.0);
+        assert_eq!(ErgoNoteApp::sensitivity_width(100), 4.0);
     }
 
     #[test]
     fn wheel_canvas_pan_ignores_ctrl_and_write_mode_but_keeps_horizontal_shift_scroll() {
-        assert_eq!(NoteCraftApp::wheel_canvas_pan_delta(vec2(0.0, 42.0), Modifiers::NONE, false), egui::Vec2::ZERO);
-        assert_eq!(NoteCraftApp::wheel_canvas_pan_delta(vec2(0.0, 42.0), Modifiers::NONE, true), egui::vec2(0.0, 42.0));
-        assert_eq!(NoteCraftApp::wheel_canvas_pan_delta(vec2(0.0, 42.0), Modifiers::SHIFT, false), egui::vec2(42.0, 0.0));
-        assert_eq!(NoteCraftApp::wheel_canvas_pan_delta(vec2(0.0, 42.0), Modifiers::CTRL, true), egui::Vec2::ZERO);
+        assert_eq!(ErgoNoteApp::wheel_canvas_pan_delta(vec2(0.0, 42.0), Modifiers::NONE, false), egui::Vec2::ZERO);
+        assert_eq!(ErgoNoteApp::wheel_canvas_pan_delta(vec2(0.0, 42.0), Modifiers::NONE, true), egui::vec2(0.0, 42.0));
+        assert_eq!(ErgoNoteApp::wheel_canvas_pan_delta(vec2(0.0, 42.0), Modifiers::SHIFT, false), egui::vec2(42.0, 0.0));
+        assert_eq!(ErgoNoteApp::wheel_canvas_pan_delta(vec2(0.0, 42.0), Modifiers::CTRL, true), egui::Vec2::ZERO);
     }
 
     #[test]
     fn fresh_preferences_start_with_neutral_sensitivity() {
-        let t = notecraft_store::testing::TempDir::new("default-sensitivity");
-        let settings = notecraft_store::Settings::at(t.path().join("settings.toml"));
+        let t = ergonote_store::testing::TempDir::new("default-sensitivity");
+        let settings = ergonote_store::Settings::at(t.path().join("settings.toml"));
         assert_eq!(settings.get(SENSITIVITY_KEY), None);
         assert_eq!(settings.get(SENSITIVITY_KEY).and_then(|v| v.parse::<u8>().ok()).unwrap_or(DEFAULT_SENSITIVITY), 50);
         settings.set(SENSITIVITY_KEY, "100").expect("set");
@@ -87,11 +87,11 @@ mod alert_tests {
 
     #[test]
     fn an_alert_queues_behind_an_open_one_and_a_muted_key_is_never_queued() {
-        let t = notecraft_store::testing::TempDir::new("alerts");
-        let settings = notecraft_store::Settings::at(t.path().join("settings.toml"));
+        let t = ergonote_store::testing::TempDir::new("alerts");
+        let settings = ergonote_store::Settings::at(t.path().join("settings.toml"));
         settings.set("privacy_welcome_seen", "true").expect("settings");
         let session = Session::new(&t.path().join("notebooks"), settings).expect("session");
-        let mut app = NoteCraftApp::new(session);
+        let mut app = ErgoNoteApp::new(session);
 
         app.alert("first", "Title", "one");
         assert!(matches!(&app.dialog, Some(Dialog::Alert { key, .. }) if key == "first"), "the first alert opens");
@@ -110,12 +110,12 @@ mod alert_tests {
 
     #[test]
     fn a_permanently_muted_alert_is_not_opened() {
-        let t = notecraft_store::testing::TempDir::new("alerts-never");
-        let settings = notecraft_store::Settings::at(t.path().join("settings.toml"));
+        let t = ergonote_store::testing::TempDir::new("alerts-never");
+        let settings = ergonote_store::Settings::at(t.path().join("settings.toml"));
         settings.set("privacy_welcome_seen", "true").expect("settings");
         settings.set("pressure_unavailable_never", "true").expect("settings");
         let session = Session::new(&t.path().join("notebooks"), settings).expect("session");
-        let mut app = NoteCraftApp::new(session);
+        let mut app = ErgoNoteApp::new(session);
 
         app.alert("pressure_unavailable", "Pressure", "not available");
         assert!(app.dialog.is_none(), "a permanent mute suppresses the dialog");
@@ -124,11 +124,11 @@ mod alert_tests {
 
     #[test]
     fn privacy_welcome_dialog_shows_on_first_launch() {
-        let t = notecraft_store::testing::TempDir::new("privacy-first-launch");
-        let settings = notecraft_store::Settings::at(t.path().join("settings.toml"));
+        let t = ergonote_store::testing::TempDir::new("privacy-first-launch");
+        let settings = ergonote_store::Settings::at(t.path().join("settings.toml"));
         // Do NOT set privacy_welcome_seen - simulate first launch
         let session = Session::new(&t.path().join("notebooks"), settings).expect("session");
-        let app = NoteCraftApp::new(session);
+        let app = ErgoNoteApp::new(session);
 
         // Dialog should be shown because privacy_welcome_seen is not in settings
         assert!(matches!(app.dialog, Some(Dialog::FirstUseWizard { .. })), "PrivacyWelcome dialog should show on first launch");
@@ -136,11 +136,11 @@ mod alert_tests {
 
     #[test]
     fn privacy_welcome_dialog_does_not_show_after_dismissed() {
-        let t = notecraft_store::testing::TempDir::new("privacy-dismissed");
-        let settings = notecraft_store::Settings::at(t.path().join("settings.toml"));
+        let t = ergonote_store::testing::TempDir::new("privacy-dismissed");
+        let settings = ergonote_store::Settings::at(t.path().join("settings.toml"));
         settings.set("privacy_welcome_seen", "true").expect("settings");
         let session = Session::new(&t.path().join("notebooks"), settings).expect("session");
-        let app = NoteCraftApp::new(session);
+        let app = ErgoNoteApp::new(session);
 
         // Dialog should not be shown because privacy_welcome_seen is set
         assert!(app.dialog.is_none(), "PrivacyWelcome dialog should not show after being dismissed");
@@ -148,32 +148,32 @@ mod alert_tests {
 
     #[test]
     fn the_wizard_opens_once_after_install_and_not_for_later_versions() {
-        let t = notecraft_store::testing::TempDir::new("welcome-wizard-once");
-        let settings = notecraft_store::Settings::at(t.path().join("settings.toml"));
+        let t = ergonote_store::testing::TempDir::new("welcome-wizard-once");
+        let settings = ergonote_store::Settings::at(t.path().join("settings.toml"));
         settings.set("privacy_welcome_seen", "true").expect("settings");
         let upgraded = Session::new(&t.path().join("notebooks"), settings.clone()).expect("upgraded session");
-        let upgraded = NoteCraftApp::new(upgraded).with_welcome_notebook_setup(|root, _format| Ok(root.join("welcome-to-notecraft")));
+        let upgraded = ErgoNoteApp::new(upgraded).with_welcome_notebook_setup(|root, _format| Ok(root.join("welcome-to-ergonote")));
         assert!(upgraded.dialog.is_none(), "an existing user is not shown the wizard again for a later version");
 
         // A fresh install opens the wizard at the welcome page; finishing it saves every answer.
-        let fresh = notecraft_store::Settings::at(t.path().join("fresh.toml"));
+        let fresh = ergonote_store::Settings::at(t.path().join("fresh.toml"));
         let session = Session::new(&t.path().join("fresh-notebooks"), fresh.clone()).expect("fresh session");
-        let mut app = NoteCraftApp::new(session).with_welcome_notebook_setup(|root, _format| Ok(root.join("welcome-to-notecraft")));
+        let mut app = ErgoNoteApp::new(session).with_welcome_notebook_setup(|root, _format| Ok(root.join("welcome-to-ergonote")));
         assert!(matches!(app.dialog, Some(Dialog::FirstUseWizard { step: 0, .. })), "a fresh install starts at the welcome page");
         assert!(app.finish_first_use_wizard("none", PageFormat::Html, false).is_ok());
         assert_eq!(fresh.get("privacy_welcome_seen").as_deref(), Some("true"));
 
         let again = Session::new(&t.path().join("fresh-notebooks"), fresh).expect("reopened session");
-        let again = NoteCraftApp::new(again).with_welcome_notebook_setup(|root, _format| Ok(root.join("welcome-to-notecraft")));
+        let again = ErgoNoteApp::new(again).with_welcome_notebook_setup(|root, _format| Ok(root.join("welcome-to-ergonote")));
         assert!(again.dialog.is_none(), "a finished wizard does not open again");
     }
 
     #[test]
     fn welcome_notebook_prompt_waits_until_the_privacy_dialog_closes() {
-        let t = notecraft_store::testing::TempDir::new("welcome-prompt-after-privacy");
-        let settings = notecraft_store::Settings::at(t.path().join("settings.toml"));
+        let t = ergonote_store::testing::TempDir::new("welcome-prompt-after-privacy");
+        let settings = ergonote_store::Settings::at(t.path().join("settings.toml"));
         let session = Session::new(&t.path().join("notebooks"), settings).expect("session");
-        let app = NoteCraftApp::new(session).with_welcome_notebook_setup(|root, _format| Ok(root.join("welcome-to-notecraft")));
+        let app = ErgoNoteApp::new(session).with_welcome_notebook_setup(|root, _format| Ok(root.join("welcome-to-ergonote")));
 
         assert!(matches!(app.dialog, Some(Dialog::FirstUseWizard { step: 0, .. })), "the wizard opens at the logging step");
         assert!(app.queued_alerts.is_empty(), "the wizard is one window, so nothing waits behind it");
@@ -181,23 +181,23 @@ mod alert_tests {
 
     #[test]
     fn an_incomplete_first_use_wizard_is_not_marked_finished() {
-        let t = notecraft_store::testing::TempDir::new("welcome-wizard-incomplete");
-        let settings = notecraft_store::Settings::at(t.path().join("settings.toml"));
+        let t = ergonote_store::testing::TempDir::new("welcome-wizard-incomplete");
+        let settings = ergonote_store::Settings::at(t.path().join("settings.toml"));
         let session = Session::new(&t.path().join("notebooks"), settings.clone()).expect("session");
-        let mut app = NoteCraftApp::new(session);
+        let mut app = ErgoNoteApp::new(session);
         assert!(app.finish_first_use_wizard("none", PageFormat::Cmgfm, true).is_err(), "missing bundled content is reported");
         assert_eq!(settings.get("privacy_welcome_seen"), None, "a failed Finish must not acknowledge incomplete setup");
         let restarted = Session::new(&t.path().join("notebooks"), settings).expect("restart");
-        assert!(matches!(NoteCraftApp::new(restarted).dialog, Some(Dialog::FirstUseWizard { .. })), "setup remains available on restart");
+        assert!(matches!(ErgoNoteApp::new(restarted).dialog, Some(Dialog::FirstUseWizard { .. })), "setup remains available on restart");
     }
 
     #[test]
     fn failed_welcome_notebook_generation_keeps_the_prompt_and_does_not_record_a_choice() {
-        let t = notecraft_store::testing::TempDir::new("welcome-prompt-failure");
-        let settings = notecraft_store::Settings::at(t.path().join("settings.toml"));
+        let t = ergonote_store::testing::TempDir::new("welcome-prompt-failure");
+        let settings = ergonote_store::Settings::at(t.path().join("settings.toml"));
         settings.set("privacy_welcome_seen", "true").expect("settings");
         let session = Session::new(&t.path().join("notebooks"), settings.clone()).expect("session");
-        let mut app = NoteCraftApp::new(session).with_welcome_notebook_setup(|_, _| Err("copy failed".to_string()));
+        let mut app = ErgoNoteApp::new(session).with_welcome_notebook_setup(|_, _| Err("copy failed".to_string()));
 
         assert!(app.finish_first_use_wizard("none", PageFormat::Cmgfm, true).is_err());
 
@@ -206,15 +206,15 @@ mod alert_tests {
 
     #[test]
     fn the_wizard_installs_the_edition_for_the_chosen_format() {
-        let t = notecraft_store::testing::TempDir::new("welcome-wizard-format");
-        let settings = notecraft_store::Settings::at(t.path().join("settings.toml"));
+        let t = ergonote_store::testing::TempDir::new("welcome-wizard-format");
+        let settings = ergonote_store::Settings::at(t.path().join("settings.toml"));
         settings.set("privacy_welcome_seen", "true").expect("settings");
         let session = Session::new(&t.path().join("notebooks"), settings.clone()).expect("session");
         let installed_format = std::rc::Rc::new(std::cell::RefCell::new(String::new()));
         let recorder = installed_format.clone();
-        let mut app = NoteCraftApp::new(session).with_welcome_notebook_setup(move |root, format| {
+        let mut app = ErgoNoteApp::new(session).with_welcome_notebook_setup(move |root, format| {
             *recorder.borrow_mut() = format.to_string();
-            let installed = root.join("welcome-to-notecraft");
+            let installed = root.join("welcome-to-ergonote");
             std::fs::create_dir_all(installed.join("00-start/welcome")).map_err(|error| error.to_string())?;
             Ok(installed)
         });
@@ -228,37 +228,37 @@ mod alert_tests {
     /// `--first-use` writes `privacy_welcome_seen = ""` and keeps every other setting.
     #[test]
     fn first_use_flag_value_shows_the_privacy_welcome_again() {
-        let t = notecraft_store::testing::TempDir::new("privacy-first-use-flag");
-        let settings = notecraft_store::Settings::at(t.path().join("settings.toml"));
+        let t = ergonote_store::testing::TempDir::new("privacy-first-use-flag");
+        let settings = ergonote_store::Settings::at(t.path().join("settings.toml"));
         settings.set("privacy_welcome_seen", "").expect("settings");
         settings.set("theme_mode", "dark").expect("settings");
         let session = Session::new(&t.path().join("notebooks"), settings).expect("session");
-        let app = NoteCraftApp::new(session);
+        let app = ErgoNoteApp::new(session);
         assert!(matches!(app.dialog, Some(Dialog::FirstUseWizard { .. })), "an emptied key counts as not seen");
         assert_eq!(app.session.settings.get("theme_mode").as_deref(), Some("dark"), "other settings are kept");
     }
 
     #[test]
     fn privacy_welcome_dialog_reappears_after_settings_file_deleted() {
-        let t = notecraft_store::testing::TempDir::new("privacy-reset");
+        let t = ergonote_store::testing::TempDir::new("privacy-reset");
         let settings_path = t.path().join("settings.toml");
-        let settings = notecraft_store::Settings::at(settings_path.clone());
+        let settings = ergonote_store::Settings::at(settings_path.clone());
         // Simulate persistent settings file with privacy_welcome_seen already set
         settings.set("privacy_welcome_seen", "true").expect("settings");
         settings.set("other_setting", "value").expect("settings");
 
         // Verify setting exists and dialog doesn't show
         let session1 = Session::new(&t.path().join("notebooks"), settings.clone()).expect("session");
-        let app1 = NoteCraftApp::new(session1);
+        let app1 = ErgoNoteApp::new(session1);
         assert!(app1.dialog.is_none(), "Dialog should not show when privacy_welcome_seen is set");
 
         // Delete the settings file (simulates what run.cmd does with --first-use)
         let _ = std::fs::remove_file(&settings_path);
 
         // Create new settings from deleted file (triggers fresh initialization)
-        let settings2 = notecraft_store::Settings::at(settings_path);
+        let settings2 = ergonote_store::Settings::at(settings_path);
         let session2 = Session::new(&t.path().join("notebooks"), settings2).expect("session");
-        let app2 = NoteCraftApp::new(session2);
+        let app2 = ErgoNoteApp::new(session2);
 
         // Dialog should reappear because settings file is gone
         assert!(matches!(app2.dialog, Some(Dialog::FirstUseWizard { .. })), "PrivacyWelcome dialog should reappear when settings file is deleted");
@@ -266,13 +266,13 @@ mod alert_tests {
 
     #[test]
     fn delete_dialog_shows_for_notebook() {
-        let t = notecraft_store::testing::TempDir::new("delete-dialog-notebook");
+        let t = ergonote_store::testing::TempDir::new("delete-dialog-notebook");
         let nb_path = t.path().join("test-notebook");
         std::fs::create_dir_all(&nb_path).expect("create notebook dir");
 
-        let settings = notecraft_store::Settings::at(t.path().join("settings.toml"));
+        let settings = ergonote_store::Settings::at(t.path().join("settings.toml"));
         let session = Session::new(t.path(), settings).expect("session");
-        let _app = NoteCraftApp::new(session);
+        let _app = ErgoNoteApp::new(session);
 
         // Simulate triggering delete notebook dialog
         let dialog = Dialog::Delete { path: nb_path.clone(), title: "Test Notebook".to_string(), count: 0 };
@@ -283,10 +283,10 @@ mod alert_tests {
 
     #[test]
     fn delete_error_message_shown_on_deletion_failure() {
-        let t = notecraft_store::testing::TempDir::new("delete-error-feedback");
-        let settings = notecraft_store::Settings::at(t.path().join("settings.toml"));
+        let t = ergonote_store::testing::TempDir::new("delete-error-feedback");
+        let settings = ergonote_store::Settings::at(t.path().join("settings.toml"));
         let session = Session::new(t.path(), settings).expect("session");
-        let mut app = NoteCraftApp::new(session);
+        let mut app = ErgoNoteApp::new(session);
 
         // Simulate a failed delete operation by setting error status
         app.status = "The notebook could not be deleted: Permission denied".to_string();
@@ -299,10 +299,10 @@ mod alert_tests {
 
     #[test]
     fn delete_notebook_clears_editor_state() {
-        let t = notecraft_store::testing::TempDir::new("delete-clear-state");
-        let settings = notecraft_store::Settings::at(t.path().join("settings.toml"));
+        let t = ergonote_store::testing::TempDir::new("delete-clear-state");
+        let settings = ergonote_store::Settings::at(t.path().join("settings.toml"));
         let session = Session::new(t.path(), settings).expect("session");
-        let mut app = NoteCraftApp::new(session);
+        let mut app = ErgoNoteApp::new(session);
 
         // Verify initial state is empty
         assert!(app.editor.is_none(), "editor should start empty");
@@ -320,10 +320,10 @@ mod alert_tests {
 
     #[test]
     fn node_delete_error_shows_user_feedback() {
-        let t = notecraft_store::testing::TempDir::new("node-delete-error");
-        let settings = notecraft_store::Settings::at(t.path().join("settings.toml"));
+        let t = ergonote_store::testing::TempDir::new("node-delete-error");
+        let settings = ergonote_store::Settings::at(t.path().join("settings.toml"));
         let session = Session::new(t.path(), settings).expect("session");
-        let mut app = NoteCraftApp::new(session);
+        let mut app = ErgoNoteApp::new(session);
 
         // Simulate node.delete command failure
         app.status = "Could not delete: the operation failed".to_string();
@@ -336,14 +336,14 @@ mod alert_tests {
 
     #[test]
     fn sheets_added_by_hand_are_remembered_per_page() {
-        let t = notecraft_store::testing::TempDir::new("extra-sheets-per-page");
+        let t = ergonote_store::testing::TempDir::new("extra-sheets-per-page");
         let settings_path = t.path().join("settings.toml");
-        let settings = notecraft_store::Settings::at(settings_path.clone());
+        let settings = ergonote_store::Settings::at(settings_path.clone());
         settings.set("privacy_welcome_seen", "true").expect("settings");
         let notebooks = t.path().join("notebooks");
         let mut session = Session::new(&notebooks, settings).expect("session");
-        let sample = notecraft_engine::sample::create_sample(&mut session, None).expect("sample");
-        let mut app = NoteCraftApp::new(session);
+        let sample = ergonote_engine::sample::create_sample(&mut session, None).expect("sample");
+        let mut app = ErgoNoteApp::new(session);
 
         app.open_path(&sample.md_page.to_string_lossy());
         assert_eq!(app.extra_sheets, 0);
@@ -356,9 +356,9 @@ mod alert_tests {
         app.open_path(&sample.md_page.to_string_lossy());
         assert_eq!(app.extra_sheets, 2, "returning to the page restores its extra sheets");
 
-        let settings2 = notecraft_store::Settings::at(settings_path);
+        let settings2 = ergonote_store::Settings::at(settings_path);
         let session2 = Session::new(&notebooks, settings2).expect("reopen session");
-        let mut app2 = NoteCraftApp::new(session2);
+        let mut app2 = ErgoNoteApp::new(session2);
         app2.open_path(&sample.md_page.to_string_lossy());
         assert_eq!(app2.extra_sheets, 2, "extra sheets persist across restarts");
     }
@@ -367,7 +367,7 @@ mod alert_tests {
     /// usable icon and must not be reported as missing.
     #[test]
     fn an_svg_fallback_icon_is_accepted_everywhere() {
-        let t = notecraft_store::testing::TempDir::new("svg-fallback-icon");
+        let t = ergonote_store::testing::TempDir::new("svg-fallback-icon");
         let page = t.path().to_path_buf();
         let assets = page.join("assets");
         std::fs::create_dir_all(&assets).expect("assets");
@@ -385,12 +385,12 @@ mod alert_tests {
 
     #[test]
     fn a_printout_added_in_its_own_container_can_be_undone_and_redone() {
-        let t = notecraft_store::testing::TempDir::new("printout-undo");
-        let settings = notecraft_store::Settings::at(t.path().join("settings.toml"));
+        let t = ergonote_store::testing::TempDir::new("printout-undo");
+        let settings = ergonote_store::Settings::at(t.path().join("settings.toml"));
         settings.set("privacy_welcome_seen", "true").expect("settings");
         let mut session = Session::new(&t.path().join("notebooks"), settings).expect("session");
-        let sample = notecraft_engine::sample::create_sample(&mut session, None).expect("sample");
-        let mut app = NoteCraftApp::new(session);
+        let sample = ergonote_engine::sample::create_sample(&mut session, None).expect("sample");
+        let mut app = ErgoNoteApp::new(session);
         app.open_path(&sample.md_page.to_string_lossy());
         let (blocks, boxes) = app.editor.as_ref().map(|e| (e.blocks.len(), e.boxes.len())).expect("a page is open");
 
@@ -416,11 +416,11 @@ mod alert_tests {
     }
 
     fn undo_after_a_printout_insert(html: bool) {
-        let t = notecraft_store::testing::TempDir::new("printout-undo-frames");
-        let settings = notecraft_store::Settings::at(t.path().join("settings.toml"));
+        let t = ergonote_store::testing::TempDir::new("printout-undo-frames");
+        let settings = ergonote_store::Settings::at(t.path().join("settings.toml"));
         settings.set("privacy_welcome_seen", "true").expect("settings");
         let mut session = Session::new(&t.path().join("notebooks"), settings).expect("session");
-        let sample = notecraft_engine::sample::create_sample(&mut session, None).expect("sample");
+        let sample = ergonote_engine::sample::create_sample(&mut session, None).expect("sample");
         let pdf = t.path().join("sheet.pdf");
         let page = if html { sample.html_page.clone() } else { sample.md_page.clone() };
         std::fs::write(
@@ -428,17 +428,17 @@ mod alert_tests {
             "%PDF-1.4\n1 0 obj\n<</Type/Catalog/Pages 2 0 R>>\nendobj\n2 0 obj\n<</Type/Pages/Kids[3 0 R]/Count 1>>\nendobj\n3 0 obj\n<</Type/Page/Parent 2 0 R/MediaBox[0 0 200 200]/Contents 4 0 R/Resources<<>>>>\nendobj\n4 0 obj\n<</Length 33>>\nstream\n0.8 0.1 0.1 rg 20 20 100 100 re f\nendstream\nendobj\nxref\n0 5\n0000000000 65535 f \n0000000009 00000 n \n0000000054 00000 n \n0000000105 00000 n \n0000000199 00000 n \ntrailer\n<</Root 1 0 R/Size 5>>\nstartxref\n280\n%%EOF\n",
         )
         .expect("pdf");
-        let mut app = NoteCraftApp::new(session);
+        let mut app = ErgoNoteApp::new(session);
         app.open_path(&page.to_string_lossy());
         let mut h = egui_kittest::Harness::builder()
             .with_size(vec2(1200.0, 760.0))
             .with_accessibility_check(false)
-            .build_ui_state(|ui, app: &mut NoteCraftApp| app.show(ui), app);
+            .build_ui_state(|ui, app: &mut ErgoNoteApp| app.show(ui), app);
         for _ in 0..5 {
             h.step();
         }
         let shape =
-            |h: &egui_kittest::Harness<'_, NoteCraftApp>| h.state().editor.as_ref().map(|e| (e.blocks.clone(), e.boxes.clone())).expect("editor");
+            |h: &egui_kittest::Harness<'_, ErgoNoteApp>| h.state().editor.as_ref().map(|e| (e.blocks.clone(), e.boxes.clone())).expect("editor");
         let before = shape(&h);
         let dir = page.clone();
         h.state_mut().add_file(&dir, &pdf, FileChoice::Printout);
@@ -457,15 +457,12 @@ mod alert_tests {
     }
 
     /// A page from the sample notebook, open in a window, and a one-page PDF to insert.
-    fn printout_harness(
-        html: bool,
-        name: &str,
-    ) -> (notecraft_store::testing::TempDir, PathBuf, PathBuf, egui_kittest::Harness<'static, NoteCraftApp>) {
-        let t = notecraft_store::testing::TempDir::new(name);
-        let settings = notecraft_store::Settings::at(t.path().join("settings.toml"));
+    fn printout_harness(html: bool, name: &str) -> (ergonote_store::testing::TempDir, PathBuf, PathBuf, egui_kittest::Harness<'static, ErgoNoteApp>) {
+        let t = ergonote_store::testing::TempDir::new(name);
+        let settings = ergonote_store::Settings::at(t.path().join("settings.toml"));
         settings.set("privacy_welcome_seen", "true").expect("settings");
         let mut session = Session::new(&t.path().join("notebooks"), settings).expect("session");
-        let sample = notecraft_engine::sample::create_sample(&mut session, None).expect("sample");
+        let sample = ergonote_engine::sample::create_sample(&mut session, None).expect("sample");
         let pdf = t.path().join("sheet.pdf");
         let page = if html { sample.html_page.clone() } else { sample.md_page.clone() };
         std::fs::write(
@@ -473,12 +470,12 @@ mod alert_tests {
             "%PDF-1.4\n1 0 obj\n<</Type/Catalog/Pages 2 0 R>>\nendobj\n2 0 obj\n<</Type/Pages/Kids[3 0 R]/Count 1>>\nendobj\n3 0 obj\n<</Type/Page/Parent 2 0 R/MediaBox[0 0 200 200]/Contents 4 0 R/Resources<<>>>>\nendobj\n4 0 obj\n<</Length 33>>\nstream\n0.8 0.1 0.1 rg 20 20 100 100 re f\nendstream\nendobj\nxref\n0 5\n0000000000 65535 f \n0000000009 00000 n \n0000000054 00000 n \n0000000105 00000 n \n0000000199 00000 n \ntrailer\n<</Root 1 0 R/Size 5>>\nstartxref\n280\n%%EOF\n",
         )
         .expect("pdf");
-        let mut app = NoteCraftApp::new(session);
+        let mut app = ErgoNoteApp::new(session);
         app.open_path(&page.to_string_lossy());
         let mut h = egui_kittest::Harness::builder()
             .with_size(vec2(1200.0, 760.0))
             .with_accessibility_check(false)
-            .build_ui_state(|ui, app: &mut NoteCraftApp| app.show(ui), app);
+            .build_ui_state(|ui, app: &mut ErgoNoteApp| app.show(ui), app);
         for _ in 0..5 {
             h.step();
         }
@@ -517,11 +514,11 @@ mod alert_tests {
             let line = {
                 let ed = h.state_mut().editor.as_mut().expect("editor");
                 if ed.boxes.is_empty() {
-                    ed.boxes = vec![notecraft_model::container::Container::new(0.0, 0.0, 600.0, ed.blocks.len())];
+                    ed.boxes = vec![ergonote_model::container::Container::new(0.0, 0.0, 600.0, ed.blocks.len())];
                 }
                 let line = ed.blocks.len();
-                ed.blocks.push(notecraft_formats::Block::Paragraph(Vec::new()));
-                ed.boxes = notecraft_model::container::append(&ed.boxes, line, 1, 300.0, 0.0, 0.0);
+                ed.blocks.push(ergonote_formats::Block::Paragraph(Vec::new()));
+                ed.boxes = ergonote_model::container::append(&ed.boxes, line, 1, 300.0, 0.0, 0.0);
                 let index = ed.boxes.len() - 1;
                 (ed.boxes[index].x, ed.boxes[index].y) = (400.0, 2000.0);
                 ed.arranged = true;
@@ -564,17 +561,17 @@ mod alert_tests {
         let (_t, page, _pdf, mut h) = printout_harness(true, "autosave-background");
         h.state_mut().saver = crate::saver::Saver::with_writer(|dir, body| {
             std::thread::sleep(std::time::Duration::from_millis(400));
-            notecraft_store::page::save_body(dir, body).map_err(|e| e.to_string())
+            ergonote_store::page::save_body(dir, body).map_err(|e| e.to_string())
         });
         {
             let ed = h.state_mut().editor.as_mut().expect("editor");
-            let (added, _) = notecraft_formats::boxes::read(ed.format, "Written in the background\n");
+            let (added, _) = ergonote_formats::boxes::read(ed.format, "Written in the background\n");
             let at = ed.blocks.len();
             ed.blocks.extend(added.iter().cloned());
             if ed.boxes.is_empty() {
                 ed.arranged = false;
             } else {
-                ed.boxes = notecraft_model::container::append(&ed.boxes, at, added.len(), 300.0, 0.0, 0.0);
+                ed.boxes = ergonote_model::container::append(&ed.boxes, at, added.len(), 300.0, 0.0, 0.0);
             }
             ed.rebuild_body();
             ed.dirty_since = Some(Instant::now() - AUTOSAVE_AFTER - std::time::Duration::from_millis(10));
@@ -584,7 +581,7 @@ mod alert_tests {
         assert!(frame.elapsed() < std::time::Duration::from_millis(250), "the frame the autosave fired in took {:?}", frame.elapsed());
         assert!(h.state().is_dirty(), "until it is written the page counts as unsaved");
         h.state_mut().save_now();
-        let file = notecraft_store::tree::page_file(&page).expect("the page's file").1;
+        let file = ergonote_store::tree::page_file(&page).expect("the page's file").1;
         let text = std::fs::read_to_string(file).expect("read");
         assert!(text.contains("Written in the background"), "the words reached the file:\n{text}");
         assert!(!h.state().is_dirty(), "and the page is saved");
@@ -599,10 +596,10 @@ mod alert_tests {
             // A box with a line in it, moved to the right of the page's words, with the caret in it.
             let (index, line) = {
                 let ed = h.state_mut().editor.as_mut().expect("editor");
-                let (added, _) = notecraft_formats::boxes::read(ed.format, "Beside the words\n");
+                let (added, _) = ergonote_formats::boxes::read(ed.format, "Beside the words\n");
                 let line = ed.blocks.len();
                 ed.blocks.extend(added.iter().cloned());
-                ed.boxes = notecraft_model::container::append(&ed.boxes, line, added.len(), 300.0, 0.0, 0.0);
+                ed.boxes = ergonote_model::container::append(&ed.boxes, line, added.len(), 300.0, 0.0, 0.0);
                 let index = ed.boxes.len() - 1;
                 (ed.boxes[index].x, ed.boxes[index].y) = (900.0, 40.0);
                 ed.arranged = true;
@@ -619,7 +616,7 @@ mod alert_tests {
                 });
                 // Made here rather than by clicks and typing, so it is remembered here too, the
                 // way the window remembers a box the writer made.
-                NoteCraftApp::remember_step(ed);
+                ErgoNoteApp::remember_step(ed);
                 (index, line)
             };
             for _ in 0..3 {
@@ -641,10 +638,10 @@ mod alert_tests {
             let sheet = before[0].width;
             assert!(sheet > 300.0, "html={html}: the page's first box is wider than the narrow one: {before:?}");
             assert_eq!(moved.width, sheet, "html={html}: the box is widened to the sheet for the printout");
-            let range = notecraft_model::container::blocks_of(&ed.boxes, index);
+            let range = ergonote_model::container::blocks_of(&ed.boxes, index);
             assert_eq!(range.start, line, "html={html}: the box's own line is still first");
             assert!(
-                ed.blocks[range].iter().any(|b| matches!(b, notecraft_formats::Block::Image { .. })),
+                ed.blocks[range].iter().any(|b| matches!(b, ergonote_formats::Block::Image { .. })),
                 "html={html}: the printout's pages are in that box"
             );
             h.state_mut().undo();
@@ -669,7 +666,7 @@ mod alert_tests {
             let added = &ed.blocks[before_len..];
             assert!(!added.is_empty(), "html={html}: printout image should be added");
             assert!(
-                added.iter().all(|b| matches!(b, notecraft_formats::Block::Image { .. })),
+                added.iter().all(|b| matches!(b, ergonote_formats::Block::Image { .. })),
                 "html={html}: only printout image blocks should be added, got: {added:?}"
             );
             assert!(page.join("assets").join("sheet.pdf").is_file(), "html={html}: source PDF must remain in assets for native text extraction");
@@ -686,19 +683,19 @@ mod keep_boxes_tests {
 
     /// A sample page split into two boxes, the second moved to the right, with the caret on
     /// its last line.
-    fn two_boxes(html: bool, name: &str) -> (notecraft_store::testing::TempDir, PathBuf, egui_kittest::Harness<'static, NoteCraftApp>) {
-        let t = notecraft_store::testing::TempDir::new(name);
-        let settings = notecraft_store::Settings::at(t.path().join("settings.toml"));
+    fn two_boxes(html: bool, name: &str) -> (ergonote_store::testing::TempDir, PathBuf, egui_kittest::Harness<'static, ErgoNoteApp>) {
+        let t = ergonote_store::testing::TempDir::new(name);
+        let settings = ergonote_store::Settings::at(t.path().join("settings.toml"));
         settings.set("privacy_welcome_seen", "true").expect("settings");
         let mut session = Session::new(&t.path().join("notebooks"), settings).expect("session");
-        let sample = notecraft_engine::sample::create_sample(&mut session, None).expect("sample");
+        let sample = ergonote_engine::sample::create_sample(&mut session, None).expect("sample");
         let page = if html { sample.html_page.clone() } else { sample.md_page.clone() };
-        let mut app = NoteCraftApp::new(session);
+        let mut app = ErgoNoteApp::new(session);
         app.open_path(&page.to_string_lossy());
         let mut h = egui_kittest::Harness::builder()
             .with_size(vec2(1400.0, 800.0))
             .with_accessibility_check(false)
-            .build_ui_state(|ui, app: &mut NoteCraftApp| app.show(ui), app);
+            .build_ui_state(|ui, app: &mut ErgoNoteApp| app.show(ui), app);
         for _ in 0..5 {
             h.step();
         }
@@ -707,7 +704,7 @@ mod keep_boxes_tests {
             let n = ed.blocks.len();
             assert!(n >= 4, "the sample page has blocks to split");
             let first = n / 2;
-            ed.boxes = vec![notecraft_model::Container::new(0.0, 0.0, 600.0, first), notecraft_model::Container::new(900.0, 40.0, 300.0, n - first)];
+            ed.boxes = vec![ergonote_model::Container::new(0.0, 0.0, 600.0, first), ergonote_model::Container::new(900.0, 40.0, 300.0, n - first)];
             ed.arranged = true;
             let last = n - 1;
             ed.caret = ed.blocks.get(last).map(|b| pageedit::Caret {
@@ -721,7 +718,7 @@ mod keep_boxes_tests {
                 inline: None,
             });
             ed.rebuild_body();
-            NoteCraftApp::remember_step(ed);
+            ErgoNoteApp::remember_step(ed);
         }
         for _ in 0..3 {
             h.step();
@@ -730,13 +727,13 @@ mod keep_boxes_tests {
     }
 
     /// How many blocks the right-hand box holds now.
-    fn right_box(h: &egui_kittest::Harness<'static, NoteCraftApp>) -> usize {
+    fn right_box(h: &egui_kittest::Harness<'static, ErgoNoteApp>) -> usize {
         h.state().editor.as_ref().map(|e| e.boxes[1].blocks).expect("editor")
     }
 
     /// The arrangement after an insert: still two boxes, the right one where it was, every block
     /// counted, and the right box holding at least `grew` more blocks than the `was` it held.
-    fn assert_kept(h: &mut egui_kittest::Harness<'static, NoteCraftApp>, what: &str, was: usize, grew: usize) {
+    fn assert_kept(h: &mut egui_kittest::Harness<'static, ErgoNoteApp>, what: &str, was: usize, grew: usize) {
         for _ in 0..5 {
             h.step();
         }
@@ -798,7 +795,7 @@ mod keep_boxes_tests {
         for html in [false, true] {
             let (_t, page, mut h) = two_boxes(html, "keep-boxes-ink");
             let was = right_box(&h);
-            let svg = notecraft_ink::svg::write(&notecraft_ink::Drawing::default(), notecraft_ink::svg::Flavour::Editable);
+            let svg = ergonote_ink::svg::write(&ergonote_ink::Drawing::default(), ergonote_ink::svg::Flavour::Editable);
             std::fs::write(page.join("ink.svg"), svg).expect("ink");
             h.state_mut().sync_ink_reference();
             assert_kept(&mut h, &format!("html={html} ink"), was, 1);
@@ -857,48 +854,48 @@ mod keep_boxes_tests {
 #[cfg(test)]
 mod literal_formatting_tests {
     use super::*;
-    use notecraft_formats::{Block, Span};
+    use ergonote_formats::{Block, Span};
 
     #[test]
     fn clear_formatting_keeps_literal_punctuation_through_save_and_reopen() {
-        let temp = notecraft_store::testing::TempDir::new("clear-literal-formatting");
-        let settings = notecraft_store::Settings::at(temp.path().join("settings.toml"));
+        let temp = ergonote_store::testing::TempDir::new("clear-literal-formatting");
+        let settings = ergonote_store::Settings::at(temp.path().join("settings.toml"));
         let mut session = Session::new(temp.path(), settings).expect("session");
-        let sample = notecraft_engine::sample::create_sample(&mut session, None).expect("sample");
+        let sample = ergonote_engine::sample::create_sample(&mut session, None).expect("sample");
         let text = r"*literal* $5 or $6 [x](y) C:\Users\name";
         let original = vec![Block::Paragraph(vec![Span { text: text.into(), bold: true, ..Default::default() }])];
-        let body = notecraft_formats::blocks_to_html(&original);
+        let body = ergonote_formats::blocks_to_html(&original);
         session.run("page.save", &params(&[("path", &sample.html_page.to_string_lossy()), ("body", &body)])).expect("save");
-        let mut app = NoteCraftApp::new(session);
+        let mut app = ErgoNoteApp::new(session);
         app.open_page(&sample.html_page);
         let editor = app.editor.as_mut().expect("opened page");
         editor.caret = Some(pageedit::Caret { text: pageedit::caret_text(&editor.blocks[0]), ..Default::default() });
         app.clear_formatting();
         app.save_now();
-        let page = notecraft_store::page::load_page(&sample.html_page).expect("reopen");
-        let blocks = notecraft_formats::boxes::read(page.format, &page.body).0;
+        let page = ergonote_store::page::load_page(&sample.html_page).expect("reopen");
+        let blocks = ergonote_formats::boxes::read(page.format, &page.body).0;
         assert_eq!(blocks, vec![Block::Paragraph(vec![Span { text: text.into(), ..Default::default() }])]);
     }
 
-    fn opened_literal_page(blocks: &[Block], format: notecraft_model::PageFormat) -> (notecraft_store::testing::TempDir, NoteCraftApp, PathBuf) {
-        let temp = notecraft_store::testing::TempDir::new("literal-command-regression");
-        let settings = notecraft_store::Settings::at(temp.path().join("settings.toml"));
+    fn opened_literal_page(blocks: &[Block], format: ergonote_model::PageFormat) -> (ergonote_store::testing::TempDir, ErgoNoteApp, PathBuf) {
+        let temp = ergonote_store::testing::TempDir::new("literal-command-regression");
+        let settings = ergonote_store::Settings::at(temp.path().join("settings.toml"));
         let mut session = Session::new(temp.path(), settings).expect("session");
-        let sample = notecraft_engine::sample::create_sample(&mut session, None).expect("sample");
+        let sample = ergonote_engine::sample::create_sample(&mut session, None).expect("sample");
         let path = match format {
-            notecraft_model::PageFormat::Html => sample.html_page,
-            notecraft_model::PageFormat::Cmgfm => sample.md_page,
+            ergonote_model::PageFormat::Html => sample.html_page,
+            ergonote_model::PageFormat::Cmgfm => sample.md_page,
         };
-        let body = notecraft_formats::boxes::write(format, blocks, None);
+        let body = ergonote_formats::boxes::write(format, blocks, None);
         session.run("page.save", &params(&[("path", &path.to_string_lossy()), ("body", &body)])).expect("save");
-        let mut app = NoteCraftApp::new(session);
+        let mut app = ErgoNoteApp::new(session);
         app.open_page(&path);
         (temp, app, path)
     }
 
     #[test]
     fn clearing_cell_formatting_then_leaving_preserves_the_cell_text() {
-        for format in notecraft_model::PageFormat::ALL {
+        for format in ergonote_model::PageFormat::ALL {
             let text = "*literal* $5 or $6";
             let original = vec![Block::Table {
                 head: vec![
@@ -916,8 +913,8 @@ mod literal_formatting_tests {
             ed.caret.as_mut().expect("caret").write(&mut ed.blocks[0]);
             assert_eq!(pageedit::cell_text(&ed.blocks[0], (0, 0)).as_deref(), Some(text));
             app.save_now();
-            let page = notecraft_store::page::load_page(&path).expect("reopen");
-            let blocks = notecraft_formats::boxes::read(format, &page.body).0;
+            let page = ergonote_store::page::load_page(&path).expect("reopen");
+            let blocks = ergonote_formats::boxes::read(format, &page.body).0;
             let Block::Table { head, .. } = &blocks[0] else { panic!("table") };
             assert_eq!(head[0], vec![Span { text: text.into(), ..Default::default() }]);
             let Block::Table { head: before, .. } = &original[0] else { panic!("table") };
@@ -927,7 +924,7 @@ mod literal_formatting_tests {
 
     #[test]
     fn copy_and_cut_keep_one_line_literal_text_and_rich_styles() {
-        for format in notecraft_model::PageFormat::ALL {
+        for format in ergonote_model::PageFormat::ALL {
             let text = "*literal* $5 or $6";
             let original = vec![Block::Paragraph(vec![Span { text: text.into(), bold: true, ..Default::default() }])];
             let (_temp, mut app, _path) = opened_literal_page(&original, format);
@@ -937,7 +934,7 @@ mod literal_formatting_tests {
             app.clipboard("copy");
             assert_eq!(app.pending_copy.as_deref(), Some(text));
             assert_eq!(
-                notecraft_formats::markdown::parse(&notecraft_formats::html::to_markdown(app.pending_copy_html.as_deref().expect("html"))),
+                ergonote_formats::markdown::parse(&ergonote_formats::html::to_markdown(app.pending_copy_html.as_deref().expect("html"))),
                 original
             );
             assert_eq!(app.editor.as_ref().expect("editor").blocks, original);
@@ -953,15 +950,12 @@ mod literal_formatting_tests {
             Block::Paragraph(vec![Span { text: "*left*".into(), ..Default::default() }]),
             Block::Paragraph(vec![Span { text: "$5 or $6".into(), ..Default::default() }]),
         ];
-        let (_temp, mut app, _path) = opened_literal_page(&blocks, notecraft_model::PageFormat::Html);
+        let (_temp, mut app, _path) = opened_literal_page(&blocks, ergonote_model::PageFormat::Html);
         let ed = app.editor.as_mut().expect("editor");
         ed.across = Some(pageedit::Across { from: (0, 0), to: (1, pageedit::block_text(&ed.blocks[1]).len()) });
         app.clipboard("copy");
         assert_eq!(app.pending_copy.as_deref(), Some("*left*\n$5 or $6"));
-        assert_eq!(
-            notecraft_formats::markdown::parse(&notecraft_formats::html::to_markdown(app.pending_copy_html.as_deref().expect("html"))),
-            blocks
-        );
+        assert_eq!(ergonote_formats::markdown::parse(&ergonote_formats::html::to_markdown(app.pending_copy_html.as_deref().expect("html"))), blocks);
     }
 }
 
@@ -973,42 +967,42 @@ mod structural_undo_tests {
     use super::*;
 
     /// A page with a line of words and a table under it, open in the window.
-    fn page_with_table(html: bool, name: &str) -> (notecraft_store::testing::TempDir, egui_kittest::Harness<'static, NoteCraftApp>) {
-        let t = notecraft_store::testing::TempDir::new(name);
-        let settings = notecraft_store::Settings::at(t.path().join("settings.toml"));
+    fn page_with_table(html: bool, name: &str) -> (ergonote_store::testing::TempDir, egui_kittest::Harness<'static, ErgoNoteApp>) {
+        let t = ergonote_store::testing::TempDir::new(name);
+        let settings = ergonote_store::Settings::at(t.path().join("settings.toml"));
         settings.set("privacy_welcome_seen", "true").expect("settings");
         let mut session = Session::new(&t.path().join("notebooks"), settings).expect("session");
-        let sample = notecraft_engine::sample::create_sample(&mut session, None).expect("sample");
+        let sample = ergonote_engine::sample::create_sample(&mut session, None).expect("sample");
         let page = if html { sample.html_page.clone() } else { sample.md_page.clone() };
         let body = if html {
             "<p>Alpha</p><table><tr><th>A</th><th>B</th></tr><tr><td>one</td><td>two</td></tr></table>"
         } else {
             "Alpha\n\n| A | B |\n|---|---|\n| one | two |\n"
         };
-        notecraft_store::page::save_body(&page, body).expect("fixture");
-        let mut app = NoteCraftApp::new(session);
+        ergonote_store::page::save_body(&page, body).expect("fixture");
+        let mut app = ErgoNoteApp::new(session);
         app.open_path(&page.to_string_lossy());
         let mut h = egui_kittest::Harness::builder()
             .with_size(vec2(1400.0, 800.0))
             .with_accessibility_check(false)
-            .build_ui_state(|ui, app: &mut NoteCraftApp| app.show(ui), app);
+            .build_ui_state(|ui, app: &mut ErgoNoteApp| app.show(ui), app);
         for _ in 0..5 {
             h.step();
         }
         (t, h)
     }
 
-    fn settle(h: &mut egui_kittest::Harness<'static, NoteCraftApp>) {
+    fn settle(h: &mut egui_kittest::Harness<'static, ErgoNoteApp>) {
         for _ in 0..5 {
             h.step();
         }
     }
 
-    fn blocks(h: &egui_kittest::Harness<'static, NoteCraftApp>) -> Vec<notecraft_formats::Block> {
+    fn blocks(h: &egui_kittest::Harness<'static, ErgoNoteApp>) -> Vec<ergonote_formats::Block> {
         h.state().editor.as_ref().map(|e| e.blocks.clone()).expect("editor")
     }
 
-    fn put_caret(h: &mut egui_kittest::Harness<'static, NoteCraftApp>, block: usize, cell: Option<(usize, usize)>) {
+    fn put_caret(h: &mut egui_kittest::Harness<'static, ErgoNoteApp>, block: usize, cell: Option<(usize, usize)>) {
         let ed = h.state_mut().editor.as_mut().expect("editor");
         let text = match cell {
             Some(c) => pageedit::cell_text(&ed.blocks[block], c).unwrap_or_default(),
@@ -1019,7 +1013,7 @@ mod structural_undo_tests {
 
     /// Does `act`, checks it changed the page, then that one Undo puts the page back and one
     /// Redo does it again.
-    fn assert_undoable(h: &mut egui_kittest::Harness<'static, NoteCraftApp>, what: &str, act: ribbon::Act) {
+    fn assert_undoable(h: &mut egui_kittest::Harness<'static, ErgoNoteApp>, what: &str, act: ribbon::Act) {
         let before = blocks(h);
         h.state_mut().ribbon_act(act);
         settle(h);
@@ -1056,7 +1050,7 @@ mod structural_undo_tests {
                 ("delete column", E::DeleteColumn),
             ] {
                 let (_t, mut h) = page_with_table(html, "undo-table-edit");
-                let table = blocks(&h).iter().position(|b| matches!(b, notecraft_formats::Block::Table { .. })).expect("a table");
+                let table = blocks(&h).iter().position(|b| matches!(b, ergonote_formats::Block::Table { .. })).expect("a table");
                 put_caret(&mut h, table, Some((1, 0)));
                 assert_undoable(&mut h, &format!("html={html} {name}"), ribbon::Act::Table(edit));
             }
@@ -1067,7 +1061,7 @@ mod structural_undo_tests {
     /// formats, and the page saves and reopens without it. The caret lands on a real line.
     #[test]
     fn delete_table_takes_the_whole_table_out_and_can_be_undone() {
-        use notecraft_formats::Block;
+        use ergonote_formats::Block;
         for html in [false, true] {
             let (_t, mut h) = page_with_table(html, "delete-table");
             let table = blocks(&h).iter().position(|b| matches!(b, Block::Table { .. })).expect("a table");
@@ -1093,7 +1087,7 @@ mod structural_undo_tests {
     /// outside a table changes nothing.
     #[test]
     fn delete_table_on_a_table_only_page_and_outside_a_table() {
-        use notecraft_formats::Block;
+        use ergonote_formats::Block;
         let (_t, mut h) = page_with_table(false, "delete-only-table");
         put_caret(&mut h, 0, None);
         let before = blocks(&h);
@@ -1115,7 +1109,7 @@ mod structural_undo_tests {
 
     #[test]
     fn confirm_delete_table_opens_dialog_then_deletes_with_undo() {
-        use notecraft_formats::Block;
+        use ergonote_formats::Block;
         let (_t, mut h) = page_with_table(false, "confirm-delete-table");
         let table = blocks(&h).iter().position(|b| matches!(b, Block::Table { .. })).expect("a table");
         h.state_mut().ribbon_act(ribbon::Act::ConfirmDeleteTable(Some(table)));
@@ -1138,7 +1132,7 @@ mod structural_undo_tests {
     #[test]
     fn a_table_change_after_writing_in_its_cell_is_a_step_of_its_own() {
         let (_t, mut h) = page_with_table(false, "undo-table-after-typing");
-        let table = blocks(&h).iter().position(|b| matches!(b, notecraft_formats::Block::Table { .. })).expect("a table");
+        let table = blocks(&h).iter().position(|b| matches!(b, ergonote_formats::Block::Table { .. })).expect("a table");
         put_caret(&mut h, table, Some((1, 0)));
         settle(&mut h);
         h.state_mut().insert_in_page("X");
@@ -1159,28 +1153,28 @@ mod structural_undo_tests {
 #[cfg(test)]
 mod table_width_tests {
     use super::*;
-    use notecraft_model::tablecols;
+    use ergonote_model::tablecols;
 
-    type H = egui_kittest::Harness<'static, NoteCraftApp>;
+    type H = egui_kittest::Harness<'static, ErgoNoteApp>;
 
     /// An HTML page with a line and a table under it whose two columns were dragged to 210 and
     /// 290, open in the window.
-    fn page(name: &str) -> (notecraft_store::testing::TempDir, PathBuf, H) {
-        let t = notecraft_store::testing::TempDir::new(name);
-        let settings = notecraft_store::Settings::at(t.path().join("settings.toml"));
+    fn page(name: &str) -> (ergonote_store::testing::TempDir, PathBuf, H) {
+        let t = ergonote_store::testing::TempDir::new(name);
+        let settings = ergonote_store::Settings::at(t.path().join("settings.toml"));
         settings.set("privacy_welcome_seen", "true").expect("settings");
         let mut session = Session::new(&t.path().join("notebooks"), settings).expect("session");
-        let sample = notecraft_engine::sample::create_sample(&mut session, None).expect("sample");
+        let sample = ergonote_engine::sample::create_sample(&mut session, None).expect("sample");
         let page = sample.html_page.clone();
-        notecraft_store::page::save_body(&page, "<p>Alpha</p><table><tr><th>Wide</th><th>Narrow</th></tr><tr><td>A</td><td>B</td></tr></table>")
+        ergonote_store::page::save_body(&page, "<p>Alpha</p><table><tr><th>Wide</th><th>Narrow</th></tr><tr><td>A</td><td>B</td></tr></table>")
             .expect("fixture");
-        notecraft_store::page::set_table_columns(&page, &tablecols::parse("1:210,290")).expect("widths");
-        let mut app = NoteCraftApp::new(session);
+        ergonote_store::page::set_table_columns(&page, &tablecols::parse("1:210,290")).expect("widths");
+        let mut app = ErgoNoteApp::new(session);
         app.open_path(&page.to_string_lossy());
         let mut h = egui_kittest::Harness::builder()
             .with_size(vec2(1400.0, 800.0))
             .with_accessibility_check(false)
-            .build_ui_state(|ui, app: &mut NoteCraftApp| app.show(ui), app);
+            .build_ui_state(|ui, app: &mut ErgoNoteApp| app.show(ui), app);
         settle(&mut h);
         assert_eq!(widths(&h).of(1), Some([210.0, 290.0].as_slice()), "the page opened with its widths");
         (t, page, h)
@@ -1210,14 +1204,14 @@ mod table_width_tests {
         settle(&mut h);
         let want = [pageedit::COLUMN_W, 210.0, 290.0];
         assert_eq!(widths(&h).of(1), Some(want.as_slice()), "Wide and Narrow keep their widths, the new column the usual one");
-        let saved = notecraft_store::page::table_columns(&page).expect("saved widths");
+        let saved = ergonote_store::page::table_columns(&page).expect("saved widths");
         assert_eq!(saved.of(1), Some(want.as_slice()), "and the page's file says so");
 
         // Undo puts the widths back with the column, and Redo brings both again.
         h.state_mut().undo();
         settle(&mut h);
         assert_eq!(widths(&h).of(1), Some([210.0, 290.0].as_slice()), "undo puts the widths back");
-        assert_eq!(notecraft_store::page::table_columns(&page).expect("saved").of(1), Some([210.0, 290.0].as_slice()));
+        assert_eq!(ergonote_store::page::table_columns(&page).expect("saved").of(1), Some([210.0, 290.0].as_slice()));
         h.state_mut().redo();
         settle(&mut h);
         assert_eq!(widths(&h).of(1), Some(want.as_slice()), "redo brings them again");
@@ -1275,12 +1269,12 @@ mod table_width_tests {
         h.key_press(egui::Key::Enter);
         settle(&mut h);
         let ed = h.state().editor.as_ref().expect("editor");
-        assert!(matches!(ed.blocks.get(2), Some(notecraft_formats::Block::Table { .. })), "the table moved down a block: {:?}", ed.blocks);
+        assert!(matches!(ed.blocks.get(2), Some(ergonote_formats::Block::Table { .. })), "the table moved down a block: {:?}", ed.blocks);
         assert_eq!(widths(&h).of(2), Some([210.0, 290.0].as_slice()), "its widths moved with it");
         assert_eq!(widths(&h).of(1), None, "and the new line has none");
         settle(&mut h);
         h.state_mut().save();
-        let saved = notecraft_store::page::table_columns(&page).expect("saved widths");
+        let saved = ergonote_store::page::table_columns(&page).expect("saved widths");
         assert_eq!(saved.of(2), Some([210.0, 290.0].as_slice()), "the page's file follows: {saved:?}");
     }
 }
@@ -1291,7 +1285,7 @@ mod table_width_tests {
 mod table_sort_tests {
     use super::*;
 
-    type H = egui_kittest::Harness<'static, NoteCraftApp>;
+    type H = egui_kittest::Harness<'static, ErgoNoteApp>;
 
     fn settle(h: &mut H) {
         for _ in 0..5 {
@@ -1301,8 +1295,7 @@ mod table_sort_tests {
 
     fn names(h: &H) -> Vec<String> {
         let ed = h.state().editor.as_ref().expect("editor");
-        let Some(notecraft_formats::Block::Table { rows, .. }) = ed.blocks.iter().find(|b| matches!(b, notecraft_formats::Block::Table { .. }))
-        else {
+        let Some(ergonote_formats::Block::Table { rows, .. }) = ed.blocks.iter().find(|b| matches!(b, ergonote_formats::Block::Table { .. })) else {
             panic!("a table");
         };
         rows.iter().map(|r| r[0].iter().map(|s| s.text.as_str()).collect()).collect()
@@ -1311,28 +1304,28 @@ mod table_sort_tests {
     #[test]
     fn sort_from_the_ribbon_saves_and_undoes() {
         for html in [false, true] {
-            let t = notecraft_store::testing::TempDir::new("table-sort");
-            let settings = notecraft_store::Settings::at(t.path().join("settings.toml"));
+            let t = ergonote_store::testing::TempDir::new("table-sort");
+            let settings = ergonote_store::Settings::at(t.path().join("settings.toml"));
             settings.set("privacy_welcome_seen", "true").expect("settings");
             let mut session = Session::new(&t.path().join("notebooks"), settings).expect("session");
-            let sample = notecraft_engine::sample::create_sample(&mut session, None).expect("sample");
+            let sample = ergonote_engine::sample::create_sample(&mut session, None).expect("sample");
             let page = if html { sample.html_page.clone() } else { sample.md_page.clone() };
             let body = if html {
                 "<table><tr><th>Fruit</th><th>Count</th></tr><tr><td>pear</td><td>3</td></tr><tr><td><b>apple</b></td><td>10</td></tr><tr><td>fig</td><td>2</td></tr></table>"
             } else {
                 "| Fruit | Count |\n|---|---|\n| pear | 3 |\n| **apple** | 10 |\n| fig | 2 |\n"
             };
-            notecraft_store::page::save_body(&page, body).expect("fixture");
-            let mut app = NoteCraftApp::new(session);
+            ergonote_store::page::save_body(&page, body).expect("fixture");
+            let mut app = ErgoNoteApp::new(session);
             app.open_path(&page.to_string_lossy());
             let mut h = egui_kittest::Harness::builder()
                 .with_size(vec2(1400.0, 800.0))
                 .with_accessibility_check(false)
-                .build_ui_state(|ui, app: &mut NoteCraftApp| app.show(ui), app);
+                .build_ui_state(|ui, app: &mut ErgoNoteApp| app.show(ui), app);
             settle(&mut h);
             {
                 let ed = h.state_mut().editor.as_mut().expect("editor");
-                let at = ed.blocks.iter().position(|b| matches!(b, notecraft_formats::Block::Table { .. })).expect("a table");
+                let at = ed.blocks.iter().position(|b| matches!(b, ergonote_formats::Block::Table { .. })).expect("a table");
                 let text = pageedit::cell_text(&ed.blocks[at], (1, 0)).unwrap_or_default();
                 ed.caret = Some(pageedit::Caret {
                     block: at,
@@ -1350,7 +1343,7 @@ mod table_sort_tests {
             settle(&mut h);
             assert_eq!(names(&h), ["apple", "fig", "pear"], "html={html}: sorted by the caret's column");
             h.state_mut().save();
-            let saved = notecraft_store::page::load_page(&page).expect("load").body;
+            let saved = ergonote_store::page::load_page(&page).expect("load").body;
             let (a, f, p) = (saved.find("apple").expect("apple"), saved.find("fig").expect("fig"), saved.find("pear").expect("pear"));
             assert!(a < f && f < p, "html={html}: the file has the new order:\n{saved}");
             assert!(saved.contains(if html { "<b>apple</b>" } else { "**apple**" }), "html={html}: and the formatting:\n{saved}");
@@ -1427,7 +1420,7 @@ mod picture_turn_tests {
     use super::*;
     use crate::turn::Turn;
 
-    type H = egui_kittest::Harness<'static, NoteCraftApp>;
+    type H = egui_kittest::Harness<'static, ErgoNoteApp>;
 
     fn settle(h: &mut H) {
         for _ in 0..5 {
@@ -1440,7 +1433,7 @@ mod picture_turn_tests {
         ed.blocks
             .iter()
             .find_map(|b| match b {
-                notecraft_formats::Block::Image { src, width, height, .. } => Some((src.clone(), *width, *height)),
+                ergonote_formats::Block::Image { src, width, height, .. } => Some((src.clone(), *width, *height)),
                 _ => None,
             })
             .expect("a picture")
@@ -1454,31 +1447,31 @@ mod picture_turn_tests {
     #[test]
     fn a_picture_is_turned_into_a_new_file_and_undo_puts_the_old_one_back() {
         for html in [true, false] {
-            let t = notecraft_store::testing::TempDir::new("picture-turn");
-            let settings = notecraft_store::Settings::at(t.path().join("settings.toml"));
+            let t = ergonote_store::testing::TempDir::new("picture-turn");
+            let settings = ergonote_store::Settings::at(t.path().join("settings.toml"));
             settings.set("privacy_welcome_seen", "true").expect("settings");
             let mut session = Session::new(&t.path().join("notebooks"), settings).expect("session");
-            let sample = notecraft_engine::sample::create_sample(&mut session, None).expect("sample");
+            let sample = ergonote_engine::sample::create_sample(&mut session, None).expect("sample");
             let page = if html { sample.html_page.clone() } else { sample.md_page.clone() };
             let mut png = std::io::Cursor::new(Vec::new());
             image::DynamicImage::ImageRgba8(image::RgbaImage::from_pixel(30, 20, image::Rgba([0, 120, 255, 255])))
                 .write_to(&mut png, image::ImageFormat::Png)
                 .expect("png");
-            let src = notecraft_store::assets::attach_bytes(&page, "pic.png", &png.into_inner()).expect("attach");
+            let src = ergonote_store::assets::attach_bytes(&page, "pic.png", &png.into_inner()).expect("attach");
             let body = if html { format!("<p>Alpha</p><p><img src=\"{src}\" alt=\"Pic\"></p>") } else { format!("Alpha\n\n![Pic]({src})\n") };
-            notecraft_store::page::save_body(&page, &body).expect("fixture");
-            let mut app = NoteCraftApp::new(session);
+            ergonote_store::page::save_body(&page, &body).expect("fixture");
+            let mut app = ErgoNoteApp::new(session);
             app.open_path(&page.to_string_lossy());
             let mut h: H = egui_kittest::Harness::builder()
                 .with_size(vec2(1400.0, 800.0))
                 .with_accessibility_check(false)
-                .build_ui_state(|ui, app: &mut NoteCraftApp| app.show(ui), app);
+                .build_ui_state(|ui, app: &mut ErgoNoteApp| app.show(ui), app);
             settle(&mut h);
             {
                 // A size of its own, as a resize gives it, to see it swapped.
                 let ed = h.state_mut().editor.as_mut().expect("editor");
                 for b in &mut ed.blocks {
-                    if let notecraft_formats::Block::Image { width, height, .. } = b {
+                    if let ergonote_formats::Block::Image { width, height, .. } = b {
                         *width = Some(60.0);
                         *height = Some(40.0);
                     }
@@ -1495,7 +1488,7 @@ mod picture_turn_tests {
             assert_eq!(size_of(&page, &turned), (20, 30), "html={html}: the copy is turned");
             assert_eq!(size_of(&page, &src), (30, 20), "html={html}: and the original is untouched");
             h.state_mut().save_page_now();
-            assert!(notecraft_store::page::load_page(&page).expect("load").body.contains("pic-rotated.png"), "html={html}: saved");
+            assert!(ergonote_store::page::load_page(&page).expect("load").body.contains("pic-rotated.png"), "html={html}: saved");
 
             h.state_mut().undo();
             settle(&mut h);
@@ -1516,26 +1509,26 @@ mod picture_turn_tests {
 
     #[test]
     fn image_tab_enhance_crop_insert_ocr_and_delete_with_undo() {
-        let t = notecraft_store::testing::TempDir::new("image-ribbon-ops");
-        let settings = notecraft_store::Settings::at(t.path().join("settings.toml"));
+        let t = ergonote_store::testing::TempDir::new("image-ribbon-ops");
+        let settings = ergonote_store::Settings::at(t.path().join("settings.toml"));
         settings.set("privacy_welcome_seen", "true").expect("settings");
         let mut session = Session::new(&t.path().join("notebooks"), settings).expect("session");
-        let sample = notecraft_engine::sample::create_sample(&mut session, None).expect("sample");
+        let sample = ergonote_engine::sample::create_sample(&mut session, None).expect("sample");
         let page = sample.html_page.clone();
         let mut png = std::io::Cursor::new(Vec::new());
         image::DynamicImage::ImageRgba8(image::RgbaImage::from_pixel(40, 20, image::Rgba([40, 90, 200, 255])))
             .write_to(&mut png, image::ImageFormat::Png)
             .expect("png");
         let raw_bytes = png.into_inner();
-        let src = notecraft_store::assets::attach_bytes(&page, "scan.png", &raw_bytes).expect("attach");
-        notecraft_store::page::save_body(&page, &format!("<p>Titre</p><p><img src=\"{src}\" alt=\"Scan\"></p>")).expect("fixture");
+        let src = ergonote_store::assets::attach_bytes(&page, "scan.png", &raw_bytes).expect("attach");
+        ergonote_store::page::save_body(&page, &format!("<p>Titre</p><p><img src=\"{src}\" alt=\"Scan\"></p>")).expect("fixture");
 
-        let mut app = NoteCraftApp::new(session);
+        let mut app = ErgoNoteApp::new(session);
         app.open_path(&page.to_string_lossy());
         let mut h: H = egui_kittest::Harness::builder()
             .with_size(vec2(1400.0, 800.0))
             .with_accessibility_check(false)
-            .build_ui_state(|ui, app: &mut NoteCraftApp| app.show(ui), app);
+            .build_ui_state(|ui, app: &mut ErgoNoteApp| app.show(ui), app);
         settle(&mut h);
         assert!(h.state().page_has_image());
 
@@ -1592,7 +1585,7 @@ mod picture_turn_tests {
         let ed = h.state().editor.as_ref().expect("ed");
         assert!(ed.boxes.len() >= 3);
         let blks = h.state().editor_blocks();
-        assert!(blks.iter().any(|b| matches!(b, notecraft_formats::Block::Heading { .. }) && pageedit::block_text(b) == "Leçon 1"));
+        assert!(blks.iter().any(|b| matches!(b, ergonote_formats::Block::Heading { .. }) && pageedit::block_text(b) == "Leçon 1"));
         assert!(blks.iter().any(|b| pageedit::block_text(b) == "Colonne droite"));
         h.state_mut().undo();
         settle(&mut h);
@@ -1608,8 +1601,8 @@ mod recent_range_tests {
     /// back from it, today included.
     #[test]
     fn ranges_begin_at_the_users_midnight() {
-        let now = notecraft_model::time::secs_from_iso("2026-11-15T20:30:00Z").expect("now");
-        let at = |iso: &str| notecraft_model::time::secs_from_iso(iso);
+        let now = ergonote_model::time::secs_from_iso("2026-11-15T20:30:00Z").expect("now");
+        let at = |iso: &str| ergonote_model::time::secs_from_iso(iso);
         assert_eq!(RecentRange::Today.since(now, 0), at("2026-11-15T00:00:00Z"));
         // Denver, seven hours behind: its midnight is 07:00 UTC.
         assert_eq!(RecentRange::Today.since(now, -7 * 3600), at("2026-11-15T07:00:00Z"));
@@ -1626,7 +1619,7 @@ mod backup_and_print_tests {
 
     #[test]
     fn zip_backup_and_recovery_roundtrip() {
-        let src = notecraft_store::testing::TempDir::new("zip-src");
+        let src = ergonote_store::testing::TempDir::new("zip-src");
         let page = src.path().join("mon-cartable").join("français").join("cours-1");
         std::fs::create_dir_all(page.join("assets")).expect("mkdirs");
         std::fs::write(page.join("index.html"), "<h1>Cours</h1><p>Test</p>").expect("html");
@@ -1635,12 +1628,12 @@ mod backup_and_print_tests {
         // Temporary print artifact should be excluded from ZIP backups.
         std::fs::write(page.join("_impression.html"), "<html/>").expect("tmp print");
 
-        let zip_dir = notecraft_store::testing::TempDir::new("zip-out");
+        let zip_dir = ergonote_store::testing::TempDir::new("zip-out");
         let zip_file = zip_dir.path().join("backup.zip");
         let count = write_notebooks_zip(src.path(), &zip_file).expect("write zip");
         assert_eq!(count, 3);
 
-        let restored = notecraft_store::testing::TempDir::new("zip-restored");
+        let restored = ergonote_store::testing::TempDir::new("zip-restored");
         let restored_count = extract_notebooks_zip(&zip_file, restored.path()).expect("extract zip");
         assert_eq!(restored_count, 3);
         let r_page = restored.path().join("mon-cartable").join("français").join("cours-1");
@@ -1652,7 +1645,7 @@ mod backup_and_print_tests {
     #[test]
     fn printable_base_href_handles_unix_and_windows_paths() {
         assert_eq!(file_base_href(Path::new("/home/ada/page")), "file:///home/ada/page/");
-        assert_eq!(file_base_href(Path::new(r"C:\Users\Ada\NoteCraft\page")), "file:///C:/Users/Ada/NoteCraft/page/");
+        assert_eq!(file_base_href(Path::new(r"C:\Users\Ada\ErgoNote\page")), "file:///C:/Users/Ada/ErgoNote/page/");
     }
 }
 
@@ -1660,20 +1653,20 @@ mod backup_and_print_tests {
 mod section_tabs_bar_tests {
     use super::*;
 
-    type H = egui_kittest::Harness<'static, NoteCraftApp>;
+    type H = egui_kittest::Harness<'static, ErgoNoteApp>;
 
     #[test]
     fn toggling_section_tabs_bar_persists_and_draws_sections() {
-        let t = notecraft_store::testing::TempDir::new("section-tabs-bar");
+        let t = ergonote_store::testing::TempDir::new("section-tabs-bar");
         let settings_path = t.path().join("settings.toml");
         let notebooks_dir = t.path().join("notebooks");
 
-        let settings = notecraft_store::Settings::at(settings_path.clone());
+        let settings = ergonote_store::Settings::at(settings_path.clone());
         settings.set("privacy_welcome_seen", "true").expect("settings");
         let mut session = Session::new(&notebooks_dir, settings).expect("session");
-        let sample = notecraft_engine::sample::create_sample(&mut session, None).expect("sample");
+        let sample = ergonote_engine::sample::create_sample(&mut session, None).expect("sample");
 
-        let mut app = NoteCraftApp::new(session);
+        let mut app = ErgoNoteApp::new(session);
         assert!(app.section_tabs_bar, "enabled by default");
         assert!(!app.organisers, "left notebooks column hidden while section tabs are enabled by default");
         app.open_path(&sample.html_page.to_string_lossy());
@@ -1690,14 +1683,14 @@ mod section_tabs_bar_tests {
         let mut h: H = egui_kittest::Harness::builder()
             .with_size(vec2(1400.0, 800.0))
             .with_accessibility_check(false)
-            .build_ui_state(|ui, app: &mut NoteCraftApp| app.show(ui), app);
+            .build_ui_state(|ui, app: &mut ErgoNoteApp| app.show(ui), app);
         for _ in 0..3 {
             h.step();
         }
         // Reopening with the same settings file keeps the horizontal section bar enabled and hides notebooks.
-        let reloaded_settings = notecraft_store::Settings::at(settings_path);
+        let reloaded_settings = ergonote_store::Settings::at(settings_path);
         let reloaded_session = Session::new(&notebooks_dir, reloaded_settings).expect("reload");
-        let mut reloaded_app = NoteCraftApp::new(reloaded_session);
+        let mut reloaded_app = ErgoNoteApp::new(reloaded_session);
         assert!(reloaded_app.section_tabs_bar);
         assert!(!reloaded_app.organisers);
 
@@ -1709,16 +1702,16 @@ mod section_tabs_bar_tests {
 
     #[test]
     fn dys_features_v1_1_work_and_persist() {
-        let t = notecraft_store::testing::TempDir::new("dys-v1-1");
+        let t = ergonote_store::testing::TempDir::new("dys-v1-1");
         let settings_path = t.path().join("settings.toml");
         let notebooks_dir = t.path().join("notebooks");
 
-        let settings = notecraft_store::Settings::at(settings_path);
+        let settings = ergonote_store::Settings::at(settings_path);
         settings.set("privacy_welcome_seen", "true").expect("settings");
         let mut session = Session::new(&notebooks_dir, settings).expect("session");
-        let sample = notecraft_engine::sample::create_sample(&mut session, None).expect("sample");
+        let sample = ergonote_engine::sample::create_sample(&mut session, None).expect("sample");
 
-        let mut app = NoteCraftApp::new(session);
+        let mut app = ErgoNoteApp::new(session);
         app.open_path(&sample.html_page.to_string_lossy());
         app.ribbon_act(ribbon::Act::ToggleLockImages);
         app.ribbon_act(ribbon::Act::ToggleDysSpacing);
@@ -1740,7 +1733,7 @@ mod section_tabs_bar_tests {
         let mut h: H = egui_kittest::Harness::builder()
             .with_size(vec2(1400.0, 800.0))
             .with_accessibility_check(false)
-            .build_ui_state(|ui, app: &mut NoteCraftApp| app.show(ui), app);
+            .build_ui_state(|ui, app: &mut ErgoNoteApp| app.show(ui), app);
         for _ in 0..3 {
             h.step();
         }
@@ -1764,21 +1757,21 @@ mod section_tabs_bar_tests {
 
     #[test]
     fn android_ime_paragraph_roundtrip_updates_caret_and_mobile_ribbon_renders() {
-        let t = notecraft_store::testing::TempDir::new("android-ime");
-        let settings = notecraft_store::Settings::at(t.path().join("settings.toml"));
+        let t = ergonote_store::testing::TempDir::new("android-ime");
+        let settings = ergonote_store::Settings::at(t.path().join("settings.toml"));
         settings.set("privacy_welcome_seen", "true").expect("settings");
         let notebooks_dir = t.path().join("notebooks");
         let mut session = Session::new(&notebooks_dir, settings).expect("session");
-        let sample = notecraft_engine::sample::create_sample(&mut session, None).expect("sample");
+        let sample = ergonote_engine::sample::create_sample(&mut session, None).expect("sample");
 
-        let mut app = NoteCraftApp::new(session).with_simple_mobile(true);
+        let mut app = ErgoNoteApp::new(session).with_simple_mobile(true);
         app.open_path(&sample.html_page.to_string_lossy());
         app.full_page = true;
         assert_eq!(app.ime_paragraph_state(), None);
 
         let ctx = Context::default();
         if let Some(ed) = app.editor.as_mut() {
-            let block = ed.blocks.iter().position(|b| matches!(b, notecraft_formats::Block::Paragraph(_))).expect("paragraph block");
+            let block = ed.blocks.iter().position(|b| matches!(b, ergonote_formats::Block::Paragraph(_))).expect("paragraph block");
             ed.caret = Some(pageedit::Caret {
                 block,
                 text: "Bonjor".to_string(),
@@ -1805,32 +1798,26 @@ mod section_tabs_bar_tests {
         let mut h: H = egui_kittest::Harness::builder()
             .with_size(vec2(412.0, 800.0))
             .with_accessibility_check(false)
-            .build_ui_state(|ui, app: &mut NoteCraftApp| app.show(ui), app);
+            .build_ui_state(|ui, app: &mut ErgoNoteApp| app.show(ui), app);
         for _ in 0..3 {
             h.step();
         }
     }
 
-    fn setup_mobile_ime_paragraph_app(name: &str, markdown_body: &str) -> (notecraft_store::testing::TempDir, NoteCraftApp, usize) {
-        let t = notecraft_store::testing::TempDir::new(name);
-        let settings = notecraft_store::Settings::at(t.path().join("settings.toml"));
+    fn setup_mobile_ime_paragraph_app(name: &str, markdown_body: &str) -> (ergonote_store::testing::TempDir, ErgoNoteApp, usize) {
+        let t = ergonote_store::testing::TempDir::new(name);
+        let settings = ergonote_store::Settings::at(t.path().join("settings.toml"));
         settings.set("privacy_welcome_seen", "true").expect("settings");
         let notebooks_dir = t.path().join("notebooks");
         let mut session = Session::new(&notebooks_dir, settings).expect("session");
-        let sample = notecraft_engine::sample::create_sample(&mut session, None).expect("sample");
-        notecraft_store::page::save_body(&sample.md_page, markdown_body).expect("save sample");
+        let sample = ergonote_engine::sample::create_sample(&mut session, None).expect("sample");
+        ergonote_store::page::save_body(&sample.md_page, markdown_body).expect("save sample");
 
-        let mut app = NoteCraftApp::new(session).with_simple_mobile(true);
+        let mut app = ErgoNoteApp::new(session).with_simple_mobile(true);
         app.open_path(&sample.md_page.to_string_lossy());
         app.full_page = true;
-        let block = app
-            .editor
-            .as_ref()
-            .expect("ed")
-            .blocks
-            .iter()
-            .position(|b| matches!(b, notecraft_formats::Block::Paragraph(_)))
-            .expect("paragraph block");
+        let block =
+            app.editor.as_ref().expect("ed").blocks.iter().position(|b| matches!(b, ergonote_formats::Block::Paragraph(_))).expect("paragraph block");
         (t, app, block)
     }
 
@@ -1867,7 +1854,7 @@ mod section_tabs_bar_tests {
         assert_eq!((s, e), (17, 17));
         let _ = app.apply_ime_paragraph(&ctx, "Texte **Bonjour** suite".to_string(), 23, 23).expect("plain suffix");
         let spans = match &app.editor.as_ref().expect("ed").blocks[block] {
-            notecraft_formats::Block::Paragraph(spans) => spans,
+            ergonote_formats::Block::Paragraph(spans) => spans,
             other => panic!("expected paragraph, got {other:?}"),
         };
         assert!(spans.iter().any(|sp| sp.bold && sp.text == "Bonjour"), "{spans:?}");
@@ -1880,7 +1867,7 @@ mod section_tabs_bar_tests {
         assert!(res_it.1.as_ref().is_some_and(|rw| rw.open == "*" && rw.close == "*"));
         assert_eq!(app2.ime_paragraph_state().expect("ime2").1, "Un *mot*");
         let spans2 = match &app2.editor.as_ref().expect("ed").blocks[block2] {
-            notecraft_formats::Block::Paragraph(spans) => spans,
+            ergonote_formats::Block::Paragraph(spans) => spans,
             other => panic!("expected paragraph, got {other:?}"),
         };
         assert!(spans2.iter().any(|sp| sp.italic && sp.text == "mot"), "{spans2:?}");
@@ -1897,7 +1884,7 @@ mod section_tabs_bar_tests {
         assert!(app3.editor.as_ref().expect("ed").pending_format.as_ref().is_some_and(|p| p.italic && !p.bold));
         let _ = app3.apply_ime_paragraph(&ctx, "Debut ***mot***fin".to_string(), 18, 18).expect("italic tail");
         let spans3 = match &app3.editor.as_ref().expect("ed").blocks[block3] {
-            notecraft_formats::Block::Paragraph(spans) => spans,
+            ergonote_formats::Block::Paragraph(spans) => spans,
             other => panic!("expected paragraph, got {other:?}"),
         };
         assert!(spans3.iter().any(|sp| sp.bold && sp.italic && sp.text == "mot"), "{spans3:?}");
@@ -1930,9 +1917,9 @@ mod section_tabs_bar_tests {
         assert_eq!(caret.block, block + 1);
         assert_eq!(caret.text, "");
         assert_eq!(caret.selection, (0, 0));
-        let notecraft_formats::Block::Paragraph(spans0) = &ed.blocks[block] else { panic!("p0") };
+        let ergonote_formats::Block::Paragraph(spans0) = &ed.blocks[block] else { panic!("p0") };
         assert!(spans0.iter().any(|s| s.bold && s.text == "bonjour") && !spans0.iter().any(|s| s.text.contains('*')), "{spans0:?}");
-        let notecraft_formats::Block::Paragraph(spans1) = &ed.blocks[block + 1] else { panic!("p1") };
+        let ergonote_formats::Block::Paragraph(spans1) = &ed.blocks[block + 1] else { panic!("p1") };
         assert!(spans1.is_empty(), "{spans1:?}");
         let counted_boxes: usize = ed.boxes.iter().map(|c| c.blocks).sum();
         assert!(ed.boxes.is_empty() || counted_boxes == ed.blocks.len(), "boxes={:?} blocks={}", ed.boxes, ed.blocks.len());
@@ -2022,13 +2009,13 @@ mod section_tabs_bar_tests {
 
     #[test]
     fn smart_select_all_and_operation_table_template_work() {
-        let t = notecraft_store::testing::TempDir::new("smart-select-op");
-        let settings = notecraft_store::Settings::at(t.path().join("settings.toml"));
+        let t = ergonote_store::testing::TempDir::new("smart-select-op");
+        let settings = ergonote_store::Settings::at(t.path().join("settings.toml"));
         settings.set("privacy_welcome_seen", "true").expect("settings");
         let mut session = Session::new(&t.path().join("notebooks"), settings).expect("session");
-        let sample = notecraft_engine::sample::create_sample(&mut session, None).expect("sample");
+        let sample = ergonote_engine::sample::create_sample(&mut session, None).expect("sample");
 
-        let mut app = NoteCraftApp::new(session);
+        let mut app = ErgoNoteApp::new(session);
         app.open_path(&sample.html_page.to_string_lossy());
         let before = app.editor.as_ref().expect("ed").blocks.len();
         app.ribbon_act(ribbon::Act::InsertSchoolTable("operation"));
@@ -2058,13 +2045,13 @@ mod section_tabs_bar_tests {
 
     #[test]
     fn tts_cues_speed_and_prediction_dictation_integrate() {
-        let t = notecraft_store::testing::TempDir::new("tts-prediction-dictation");
-        let settings = notecraft_store::Settings::at(t.path().join("settings.toml"));
+        let t = ergonote_store::testing::TempDir::new("tts-prediction-dictation");
+        let settings = ergonote_store::Settings::at(t.path().join("settings.toml"));
         settings.set("privacy_welcome_seen", "true").expect("settings");
         let mut session = Session::new(&t.path().join("notebooks"), settings).expect("session");
-        let sample = notecraft_engine::sample::create_sample(&mut session, None).expect("sample");
+        let sample = ergonote_engine::sample::create_sample(&mut session, None).expect("sample");
 
-        let mut app = NoteCraftApp::new(session);
+        let mut app = ErgoNoteApp::new(session);
         app.open_path(&sample.html_page.to_string_lossy());
         app.tts_speed = super::TtsSpeed::Slow;
         app.read_page_aloud();
@@ -2077,7 +2064,7 @@ mod section_tabs_bar_tests {
         assert!(fast_total < slow_total, "fast speed {fast_total}s < slow speed {slow_total}s");
 
         if let Some(ed) = app.editor.as_mut() {
-            let block = ed.blocks.iter().position(|b| matches!(b, notecraft_formats::Block::Paragraph(_))).expect("p");
+            let block = ed.blocks.iter().position(|b| matches!(b, ergonote_formats::Block::Paragraph(_))).expect("p");
             ed.caret = Some(pageedit::Caret {
                 block,
                 text: "Mon bato".to_string(),
@@ -2097,17 +2084,17 @@ mod section_tabs_bar_tests {
 
     #[test]
     fn alignment_ribbon_highlight_and_table_cell_formatting_work() {
-        let t = notecraft_store::testing::TempDir::new("align-table-cell-fixes");
-        let settings = notecraft_store::Settings::at(t.path().join("settings.toml"));
+        let t = ergonote_store::testing::TempDir::new("align-table-cell-fixes");
+        let settings = ergonote_store::Settings::at(t.path().join("settings.toml"));
         settings.set("privacy_welcome_seen", "true").expect("settings");
         let mut session = Session::new(&t.path().join("notebooks"), settings).expect("session");
-        let sample = notecraft_engine::sample::create_sample(&mut session, None).expect("sample");
+        let sample = ergonote_engine::sample::create_sample(&mut session, None).expect("sample");
 
-        let mut app = NoteCraftApp::new(session);
+        let mut app = ErgoNoteApp::new(session);
         app.open_path(&sample.html_page.to_string_lossy());
 
         // 1. Active alignment is reported for the ribbon highlight and toggles off cleanly.
-        let p_block = app.editor.as_ref().expect("ed").blocks.iter().position(|b| matches!(b, notecraft_formats::Block::Paragraph(_))).expect("p");
+        let p_block = app.editor.as_ref().expect("ed").blocks.iter().position(|b| matches!(b, ergonote_formats::Block::Paragraph(_))).expect("p");
         if let Some(ed) = app.editor.as_mut() {
             ed.caret = Some(pageedit::Caret {
                 block: p_block,
@@ -2121,15 +2108,15 @@ mod section_tabs_bar_tests {
             });
         }
         assert_eq!(app.caret_align(), None);
-        app.ribbon_act(ribbon::Act::Align(notecraft_model::justify::Align::Center));
-        assert_eq!(app.caret_align(), Some(notecraft_model::justify::Align::Center));
-        app.ribbon_act(ribbon::Act::Align(notecraft_model::justify::Align::Center));
+        app.ribbon_act(ribbon::Act::Align(ergonote_model::justify::Align::Center));
+        assert_eq!(app.caret_align(), Some(ergonote_model::justify::Align::Center));
+        app.ribbon_act(ribbon::Act::Align(ergonote_model::justify::Align::Center));
         assert_eq!(app.caret_align(), None);
 
         // 2. Partial and whole-cell inline formatting (Bold, Underline, TextColor) work inside table cells.
         app.ribbon_act(ribbon::Act::InsertTable(2, 2));
         let tbl_block =
-            app.editor.as_ref().expect("ed").blocks.iter().position(|b| matches!(b, notecraft_formats::Block::Table { .. })).expect("table");
+            app.editor.as_ref().expect("ed").blocks.iter().position(|b| matches!(b, ergonote_formats::Block::Table { .. })).expect("table");
         if let Some(ed) = app.editor.as_mut() {
             pageedit::set_cell_text(&mut ed.blocks[tbl_block], (1, 0), "Bonjour monde");
             ed.caret = Some(pageedit::Caret {
@@ -2144,10 +2131,10 @@ mod section_tabs_bar_tests {
             });
         }
         app.ribbon_act(ribbon::Act::Mark("bold"));
-        app.ribbon_act(ribbon::Act::TextColor(Some(notecraft_model::NodeColor::Red)));
+        app.ribbon_act(ribbon::Act::TextColor(Some(ergonote_model::NodeColor::Red)));
         {
             let ed = app.editor.as_ref().expect("ed");
-            let notecraft_formats::Block::Table { rows, .. } = &ed.blocks[tbl_block] else { panic!("table") };
+            let ergonote_formats::Block::Table { rows, .. } = &ed.blocks[tbl_block] else { panic!("table") };
             let spans = &rows[0][0];
             assert!(spans.iter().any(|s| s.bold && s.text.contains("Bonjour")), "expected bold partial cell span: {spans:?}");
             assert!(spans.iter().any(|s| s.text_color.as_deref() == Some("red") && s.text.contains("Bonjour")), "expected red cell span: {spans:?}");
@@ -2162,25 +2149,25 @@ mod section_tabs_bar_tests {
         }
         app.ribbon_act(ribbon::Act::Mark("underline"));
         let ed = app.editor.as_ref().expect("ed");
-        let notecraft_formats::Block::Table { rows, .. } = &ed.blocks[tbl_block] else { panic!("table") };
+        let ergonote_formats::Block::Table { rows, .. } = &ed.blocks[tbl_block] else { panic!("table") };
         let spans = &rows[0][0];
         assert!(spans.iter().all(|s| s.underline), "expected whole-cell underline in table: {spans:?}");
     }
 
     #[test]
     fn orthography_check_dialog_and_support_creator_work() {
-        let t = notecraft_store::testing::TempDir::new("orthography-support-update");
-        let settings = notecraft_store::Settings::at(t.path().join("settings.toml"));
+        let t = ergonote_store::testing::TempDir::new("orthography-support-update");
+        let settings = ergonote_store::Settings::at(t.path().join("settings.toml"));
         settings.set("privacy_welcome_seen", "true").expect("settings");
         let notebooks_dir = t.path().join("notebooks");
         let mut session = Session::new(&notebooks_dir, settings).expect("session");
-        let _ = notecraft_engine::sample::create_sample(&mut session, None).expect("sample");
-        let mut app = NoteCraftApp::new(session);
+        let _ = ergonote_engine::sample::create_sample(&mut session, None).expect("sample");
+        let mut app = ErgoNoteApp::new(session);
 
         app.ribbon_act(ribbon::Act::SupportCreator);
         assert!(matches!(app.dialog, Some(super::Dialog::SupportCreator)));
 
-        let url = super::NoteCraftApp::feedback_page_url();
+        let url = super::ErgoNoteApp::feedback_page_url();
         let expected_prefix = format!("https://masterz42.github.io/ErgoNote/retours.html?type=bug&v={}&os=", crate::backstage::VERSION);
         assert!(url.starts_with(&expected_prefix), "unexpected feedback url: {url}");
         app.ribbon_act(ribbon::Act::ReportBug);
@@ -2215,15 +2202,15 @@ mod section_tabs_bar_tests {
 
     #[test]
     fn mobile_portrait_tiles_navigation_and_back_button_work() {
-        let t = notecraft_store::testing::TempDir::new("mobile-portrait-tiles");
-        let settings = notecraft_store::Settings::at(t.path().join("settings.toml"));
+        let t = ergonote_store::testing::TempDir::new("mobile-portrait-tiles");
+        let settings = ergonote_store::Settings::at(t.path().join("settings.toml"));
         settings.set("privacy_welcome_seen", "true").expect("settings");
         let notebooks_dir = t.path().join("notebooks");
         let mut session = Session::new(&notebooks_dir, settings).expect("session");
-        let first_page = notecraft_engine::sample::create_school_binder(&mut session).expect("school binder");
+        let first_page = ergonote_engine::sample::create_school_binder(&mut session).expect("school binder");
         let section_dir = first_page.parent().expect("section parent").to_path_buf();
 
-        let mut app = NoteCraftApp::new(session).with_simple_mobile(true);
+        let mut app = ErgoNoteApp::new(session).with_simple_mobile(true);
         app.open_path(&first_page.to_string_lossy());
         app.full_page = true;
 
@@ -2238,7 +2225,7 @@ mod section_tabs_bar_tests {
         let mut h: H = egui_kittest::Harness::builder()
             .with_size(vec2(360.0, 760.0))
             .with_accessibility_check(false)
-            .build_ui_state(|ui, app: &mut NoteCraftApp| app.show(ui), app);
+            .build_ui_state(|ui, app: &mut ErgoNoteApp| app.show(ui), app);
         for _ in 0..3 {
             h.step();
         }
@@ -2254,15 +2241,15 @@ mod section_tabs_bar_tests {
 
     #[test]
     fn toggling_simple_mode_persists_and_switches_ui() {
-        let t = notecraft_store::testing::TempDir::new("simple-mode-toggle");
+        let t = ergonote_store::testing::TempDir::new("simple-mode-toggle");
         let settings_path = t.path().join("settings.toml");
-        let settings = notecraft_store::Settings::at(&settings_path);
+        let settings = ergonote_store::Settings::at(&settings_path);
         settings.set("privacy_welcome_seen", "true").expect("settings");
         let notebooks_dir = t.path().join("notebooks");
         let mut session = Session::new(&notebooks_dir, settings).expect("session");
-        let first_page = notecraft_engine::sample::create_school_binder(&mut session).expect("school binder");
+        let first_page = ergonote_engine::sample::create_school_binder(&mut session).expect("school binder");
 
-        let mut app = NoteCraftApp::new(session);
+        let mut app = ErgoNoteApp::new(session);
         assert!(!app.simple_mode);
         assert!(!app.is_simple_mobile());
 
@@ -2275,7 +2262,7 @@ mod section_tabs_bar_tests {
         let mut h: H = egui_kittest::Harness::builder()
             .with_size(vec2(1024.0, 700.0))
             .with_accessibility_check(false)
-            .build_ui_state(|ui, app: &mut NoteCraftApp| app.show(ui), app);
+            .build_ui_state(|ui, app: &mut ErgoNoteApp| app.show(ui), app);
         for _ in 0..2 {
             h.step();
         }
@@ -2290,24 +2277,24 @@ mod section_tabs_bar_tests {
 
     #[test]
     fn tts_vtt_and_wav_helpers_work() {
-        assert_eq!(super::NoteCraftApp::parse_vtt_timestamp_secs("00:01:02.500"), Some(62.5));
-        assert_eq!(super::NoteCraftApp::wav_duration_secs(&[]), None);
-        assert_eq!(super::NoteCraftApp::mp3_duration_secs(&[]), None);
-        let mut cues = super::NoteCraftApp::parse_vtt_word_cues("", "Bonjour monde", super::TtsSpeed::Normal, 0.0).unwrap_or_default();
-        let _ = super::NoteCraftApp::apply_word_boundary_tsv(&mut cues, "0.0\t0.4\tBonjour\n", 0.0);
-        let _ = super::NoteCraftApp::apply_vtt_to_cues("", &mut cues, 0.0);
-        super::NoteCraftApp::rescale_tts_cues(&mut cues, 1.0, 0.0);
+        assert_eq!(super::ErgoNoteApp::parse_vtt_timestamp_secs("00:01:02.500"), Some(62.5));
+        assert_eq!(super::ErgoNoteApp::wav_duration_secs(&[]), None);
+        assert_eq!(super::ErgoNoteApp::mp3_duration_secs(&[]), None);
+        let mut cues = super::ErgoNoteApp::parse_vtt_word_cues("", "Bonjour monde", super::TtsSpeed::Normal, 0.0).unwrap_or_default();
+        let _ = super::ErgoNoteApp::apply_word_boundary_tsv(&mut cues, "0.0\t0.4\tBonjour\n", 0.0);
+        let _ = super::ErgoNoteApp::apply_vtt_to_cues("", &mut cues, 0.0);
+        super::ErgoNoteApp::rescale_tts_cues(&mut cues, 1.0, 0.0);
     }
 
     #[test]
     fn ime_table_cell_active_tracks_table_caret() {
-        let dir = notecraft_store::testing::TempDir::new("ime-table-active");
+        let dir = ergonote_store::testing::TempDir::new("ime-table-active");
         let settings_path = dir.path().join("settings.toml");
-        let s = notecraft_store::Settings::at(&settings_path);
+        let s = ergonote_store::Settings::at(&settings_path);
         s.set("privacy_welcome_seen", "true").expect("settings");
         let mut session = Session::new(&dir.path().join("nb"), s).expect("session");
-        let page = notecraft_engine::sample::create_school_binder(&mut session).expect("school binder");
-        let mut app = NoteCraftApp::new(session);
+        let page = ergonote_engine::sample::create_school_binder(&mut session).expect("school binder");
+        let mut app = ErgoNoteApp::new(session);
         app.open_path(&page.to_string_lossy());
         assert!(!app.ime_table_cell_active());
 
@@ -2320,25 +2307,25 @@ mod section_tabs_bar_tests {
 
     #[test]
     fn deleting_final_letter_on_page_clears_block() {
-        let t = notecraft_store::testing::TempDir::new("delete-last-letter");
-        let settings = notecraft_store::Settings::at(t.path().join("settings.toml"));
+        let t = ergonote_store::testing::TempDir::new("delete-last-letter");
+        let settings = ergonote_store::Settings::at(t.path().join("settings.toml"));
         settings.set("privacy_welcome_seen", "true").expect("settings");
         let mut session = Session::new(&t.path().join("notebooks"), settings).expect("session");
-        let sample = notecraft_engine::sample::create_sample(&mut session, None).expect("sample");
-        let mut app = NoteCraftApp::new(session);
+        let sample = ergonote_engine::sample::create_sample(&mut session, None).expect("sample");
+        let mut app = ErgoNoteApp::new(session);
         app.open_path(&sample.md_page.to_string_lossy());
         let mut h: H = egui_kittest::Harness::builder()
             .with_size(vec2(1024.0, 700.0))
             .with_accessibility_check(false)
-            .build_ui_state(|ui, app: &mut NoteCraftApp| app.show(ui), app);
+            .build_ui_state(|ui, app: &mut ErgoNoteApp| app.show(ui), app);
         for _ in 0..3 {
             h.step();
         }
         // Replace page with a single paragraph containing only `"m"` (caret at offset 1) and press Backspace.
         {
             let ed = h.state_mut().editor.as_mut().expect("editor");
-            ed.blocks = vec![notecraft_formats::Block::Paragraph(vec![notecraft_formats::Span { text: "m".into(), ..Default::default() }])];
-            ed.boxes = vec![notecraft_model::Container::new(0.0, 0.0, 600.0, 1)];
+            ed.blocks = vec![ergonote_formats::Block::Paragraph(vec![ergonote_formats::Span { text: "m".into(), ..Default::default() }])];
+            ed.boxes = vec![ergonote_model::Container::new(0.0, 0.0, 600.0, 1)];
             ed.arranged = true;
             ed.rebuild_body();
             ed.caret = Some(pageedit::Caret {
@@ -2365,8 +2352,8 @@ mod section_tabs_bar_tests {
         // Also verify Delete clears `"m"` when caret is at offset 0.
         {
             let ed = h.state_mut().editor.as_mut().expect("editor");
-            ed.blocks = vec![notecraft_formats::Block::Paragraph(vec![notecraft_formats::Span { text: "m".into(), ..Default::default() }])];
-            ed.boxes = vec![notecraft_model::Container::new(0.0, 0.0, 600.0, 1)];
+            ed.blocks = vec![ergonote_formats::Block::Paragraph(vec![ergonote_formats::Span { text: "m".into(), ..Default::default() }])];
+            ed.boxes = vec![ergonote_model::Container::new(0.0, 0.0, 600.0, 1)];
             ed.arranged = true;
             ed.rebuild_body();
             ed.caret = Some(pageedit::Caret {
@@ -2394,23 +2381,23 @@ mod section_tabs_bar_tests {
     #[test]
     fn ocr_reconstruct_can_be_undone_with_ctrl_z() {
         for keep_bg in [true, false] {
-            let t = notecraft_store::testing::TempDir::new("ocr-undo-ctrlz");
-            let settings = notecraft_store::Settings::at(t.path().join("settings.toml"));
+            let t = ergonote_store::testing::TempDir::new("ocr-undo-ctrlz");
+            let settings = ergonote_store::Settings::at(t.path().join("settings.toml"));
             settings.set("privacy_welcome_seen", "true").expect("settings");
             let mut session = Session::new(&t.path().join("notebooks"), settings).expect("session");
-            let sample = notecraft_engine::sample::create_sample(&mut session, None).expect("sample");
+            let sample = ergonote_engine::sample::create_sample(&mut session, None).expect("sample");
             let pdf = t.path().join("doc.pdf");
             std::fs::write(
                 &pdf,
                 "%PDF-1.4\n1 0 obj\n<</Type/Catalog/Pages 2 0 R>>\nendobj\n2 0 obj\n<</Type/Pages/Kids[3 0 R]/Count 1>>\nendobj\n3 0 obj\n<</Type/Page/Parent 2 0 R/MediaBox[0 0 200 200]/Contents 4 0 R/Resources<<>>>>\nendobj\n4 0 obj\n<</Length 33>>\nstream\n0.8 0.1 0.1 rg 20 20 100 100 re f\nendstream\nendobj\nxref\n0 5\n0000000000 65535 f \n0000000009 00000 n \n0000000054 00000 n \n0000000105 00000 n \n0000000199 00000 n \ntrailer\n<</Root 1 0 R/Size 5>>\nstartxref\n280\n%%EOF\n",
             )
             .expect("pdf");
-            let mut app = NoteCraftApp::new(session);
+            let mut app = ErgoNoteApp::new(session);
             app.open_path(&sample.md_page.to_string_lossy());
             let mut h: H = egui_kittest::Harness::builder()
                 .with_size(vec2(1024.0, 700.0))
                 .with_accessibility_check(false)
-                .build_ui_state(|ui, app: &mut NoteCraftApp| app.show(ui), app);
+                .build_ui_state(|ui, app: &mut ErgoNoteApp| app.show(ui), app);
             for _ in 0..3 {
                 h.step();
             }
@@ -2421,7 +2408,7 @@ mod section_tabs_bar_tests {
             let (before_blocks, before_boxes, before_lock, img_idx) = {
                 let st = h.state();
                 let ed = st.editor.as_ref().expect("editor");
-                let idx = ed.blocks.iter().position(|b| matches!(b, notecraft_formats::Block::Image { .. })).expect("printout image block");
+                let idx = ed.blocks.iter().position(|b| matches!(b, ergonote_formats::Block::Image { .. })).expect("printout image block");
                 (ed.blocks.clone(), ed.boxes.clone(), st.lock_images, idx)
             };
             let doc = crate::ocr::OcrDocument {

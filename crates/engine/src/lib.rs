@@ -1,5 +1,5 @@
 #![deny(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::unimplemented, clippy::todo, clippy::unreachable)]
-//! NoteCraft engine (layer L4): the session and the command registry.
+//! ErgoNote engine (layer L4): the session and the command registry.
 //!
 //! **Everything is a command.** Every user-visible action is a `CommandSpec` with an
 //! id, a label, a documented parameter list and a `run` function. The window, the

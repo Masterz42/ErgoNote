@@ -4,8 +4,8 @@ title: Graphiques Vega et D3
 
 # Graphiques Vega et D3
 
-NoteCraft draws Mermaid chart blocks directly on the page. The examples below are rendered
-charts. Vega specifications and D3 programs are also useful ways to describe charts, but NoteCraft
+ErgoNote draws Mermaid chart blocks directly on the page. The examples below are rendered
+charts. Vega specifications and D3 programs are also useful ways to describe charts, but ErgoNote
 currently keeps those as code; it does not execute or render them as charts.
 
 ## Rendered charts
@@ -61,7 +61,7 @@ gantt
 
 ## Vega source: a bar chart
 
-This specification is shown as JSON source, not drawn by NoteCraft yet.
+This specification is shown as JSON source, not drawn by ErgoNote yet.
 
 ```json
 {
@@ -103,7 +103,7 @@ This specification is shown as JSON source, not drawn by NoteCraft yet.
 
 ## D3 source: a bar chart
 
-This JavaScript is source code for a D3 chart. NoteCraft displays the code but does not run it.
+This JavaScript is source code for a D3 chart. ErgoNote displays the code but does not run it.
 
 ```javascript
 const data = [
@@ -162,6 +162,6 @@ svg.append("path")
 ```
 
 Use the rendered Mermaid blocks to see charts in the page. Keep Vega and D3 examples as code
-until NoteCraft adds support for those formats.
+until ErgoNote adds support for those formats.
 
 Next: [Right to left](../right-to-left/).

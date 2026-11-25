@@ -1,7 +1,7 @@
 #![recursion_limit = "256"]
 #![deny(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::unimplemented, clippy::todo, clippy::unreachable)]
 #![allow(deprecated)]
-//! NoteCraft egui front end (layer L6).
+//! ErgoNote egui front end (layer L6).
 //!
 //! A thin, swappable layer over the engine: nothing below it depends on egui. It
 //! draws the notebook tree with code-drawn icons, edits pages in either format with
@@ -45,7 +45,7 @@ pub(crate) mod tts_win;
 pub mod turn;
 pub mod versions;
 pub mod input_language {
-    pub use notecraft_input_language::{Watcher, active_lang_code, is_rtl, watch_changes};
+    pub use ergonote_input_language::{Watcher, active_lang_code, is_rtl, watch_changes};
 }
 pub mod inkpad;
 pub mod mathview;
@@ -69,7 +69,7 @@ pub mod telemetry_export;
 mod testing_dir;
 pub mod theme;
 
-pub use app::{ImeRewrite, NoteCraftApp};
+pub use app::{ErgoNoteApp, ImeRewrite};
 
 /// Translate a source string supplied dynamically by an enum or a shared UI helper.
 #[macro_export]
@@ -88,7 +88,7 @@ macro_rules! tl_id {
 }
 
 /// The app icon (256 x 256, transparent corners). See ATTRIBUTION.md.
-pub const LOGO_PNG: &[u8] = include_bytes!("../../../assets/brand/notecraft-256.png");
+pub const LOGO_PNG: &[u8] = include_bytes!("../../../assets/brand/ergonote-256.png");
 /// The brand banner for the first-use wizard, light and dark variants.
-pub const BANNER_LIGHT_PNG: &[u8] = include_bytes!("../../../assets/brand/notecraft-social-light.png");
-pub const BANNER_DARK_PNG: &[u8] = include_bytes!("../../../assets/brand/notecraft-social-dark.png");
+pub const BANNER_LIGHT_PNG: &[u8] = include_bytes!("../../../assets/brand/ergonote-social-light.png");
+pub const BANNER_DARK_PNG: &[u8] = include_bytes!("../../../assets/brand/ergonote-social-dark.png");

@@ -34,8 +34,8 @@ class BundleDemoTests(unittest.TestCase):
                 html = bundle.read("html/00-start/welcome/index.html").decode()
                 cmgfm = bundle.read("cmgfm/00-start/welcome/index.md").decode()
                 for page in (html, cmgfm):
-                    self.assertIn(f"Welcome to NoteCraft (Ver {self.version})", page)
-                    self.assertIn(f"NoteCraft {self.version}. This notebook", page)
+                    self.assertIn(f"Welcome to ErgoNote (Ver {self.version})", page)
+                    self.assertIn(f"ErgoNote {self.version}. This notebook", page)
             self.assertTrue((self.root / "docs/demo/DemoNotebook/cmgfm/00-start/welcome/index.md").is_file())
 
     def test_rejects_a_demo_generated_for_a_different_release(self) -> None:

@@ -1,13 +1,13 @@
 //! The File screen: what Office calls the backstage. It takes over the window and shows the
 //! notebooks with where they live, and the things done to a whole notebook rather than to a
-//! page. Anything that needs a service NoteCraft does not have is listed and marked as not
+//! page. Anything that needs a service ErgoNote does not have is listed and marked as not
 //! built, rather than hidden, so nobody goes looking for it.
 
 use crate::icons::{self, Icon};
 use crate::theme::Tokens;
 use egui::{Align2, Sense, Ui, vec2};
-use notecraft_model::NodeColor;
-use notecraft_store::tree::Node;
+use ergonote_model::NodeColor;
+use ergonote_store::tree::Node;
 
 /// What the File screen asks the window to do.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -100,10 +100,10 @@ impl CopyChoice {
         let here = self.here.as_deref()?;
         let want = match scope {
             CopyScope::Page => return Some(here.to_path_buf()),
-            CopyScope::Section => notecraft_model::NodeKind::Section,
-            CopyScope::Notebook => notecraft_model::NodeKind::Notebook,
+            CopyScope::Section => ergonote_model::NodeKind::Section,
+            CopyScope::Notebook => ergonote_model::NodeKind::Notebook,
         };
-        here.ancestors().find(|p| notecraft_store::tree::read_node(p).is_some_and(|n| n.kind == want)).map(std::path::Path::to_path_buf)
+        here.ancestors().find(|p| ergonote_store::tree::read_node(p).is_some_and(|n| n.kind == want)).map(std::path::Path::to_path_buf)
     }
 }
 
@@ -122,7 +122,7 @@ pub const SIDE: [(&str, bool); 10] = [
     ("About", true),
 ];
 
-/// Where NoteCraft comes from. Named once, here, so there is one place to change it.
+/// Where ErgoNote comes from. Named once, here, so there is one place to change it.
 pub const REPOSITORY: &str = "https://github.com/Masterz42/ErgoNote";
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 /// The newest published release. Every nightly build has a version number of its own, so the
@@ -330,7 +330,7 @@ fn save_copy_page(ui: &mut Ui, copy: &mut CopyChoice, show_path: &dyn Fn(&std::p
         (CopyScope::Notebook, crate::tl_id!("ui.this_notebook")),
     ] {
         let Some(node) = copy.node(scope) else { continue };
-        let title = notecraft_store::tree::read_node(&node).map(|n| n.title).unwrap_or_default();
+        let title = ergonote_store::tree::read_node(&node).map(|n| n.title).unwrap_or_default();
         let text = crate::i18n::format_message_id("ui.scope_title", &[("scope", label), ("title", &title)]);
         if ui.radio(copy.scope == scope, text).clicked() {
             copy.scope = scope;
@@ -574,7 +574,7 @@ fn about_page(
 ) {
     heading(ui, "À propos d'ErgoNote", t);
     ui.horizontal_top(|ui| {
-        ui.add(egui::Image::from_bytes("bytes://notecraft-logo", crate::LOGO_PNG).fit_to_exact_size(vec2(64.0, 64.0)));
+        ui.add(egui::Image::from_bytes("bytes://ergonote-logo", crate::LOGO_PNG).fit_to_exact_size(vec2(64.0, 64.0)));
         ui.add_space(8.0);
         ui.vertical(|ui| {
             ui.label(egui::RichText::new("ErgoNote — Cahier numérique adapté TND").size(20.0).strong().color(t.accent));
@@ -617,7 +617,7 @@ fn about_page(
     });
     ui.add_space(14.0);
     ui.label(egui::RichText::new(crate::tl_id!("ui.local_diagnostics")).strong().size(14.0).color(t.strong));
-    ui.label(egui::RichText::new(crate::tl_id!("ui.logs_and_telemetry_stay_on_this_device_notecraft_doe_87b8387dee")).size(11.5).color(t.muted));
+    ui.label(egui::RichText::new(crate::tl_id!("ui.logs_and_telemetry_stay_on_this_device_ergonote_doe_87b8387dee")).size(11.5).color(t.muted));
     if let Some(id) = session_id {
         let label = crate::i18n::format_message_id("ui.session_id_id", &[("id", id)]);
         ui.label(egui::RichText::new(label).strong().monospace().size(11.5).color(t.text));
@@ -700,7 +700,7 @@ fn options_page(
     ui.label(egui::RichText::new(crate::tl_id!("ui.privacy_is_our_top_priority_logs_and_telemetry_stay_17a34813d0")).strong().color(t.strong));
     ui.add_space(12.0);
     ui.label(egui::RichText::new(crate::tl_id!("ui.local_diagnostics_and_usage")).strong().size(15.0).color(t.strong));
-    ui.label(egui::RichText::new(crate::tl_id!("ui.choose_what_notecraft_records_locally_nothing_is_upl_fc372d68e8")).size(12.0).color(t.muted));
+    ui.label(egui::RichText::new(crate::tl_id!("ui.choose_what_ergonote_records_locally_nothing_is_upl_fc372d68e8")).size(12.0).color(t.muted));
     ui.horizontal(|ui| {
         ui.label(egui::RichText::new(crate::tl_id!("ui.level")).strong());
         let selected_level = crate::tl!(level);

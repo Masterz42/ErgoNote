@@ -1,11 +1,11 @@
 //! File > About and File > Options: "Check for updates" (issue #253).
 //!
-//! Nothing here runs until the button is pressed. Then NoteCraft asks GitHub for the newest
+//! Nothing here runs until the button is pressed. Then ErgoNote asks GitHub for the newest
 //! release, and if it is newer than this copy, downloads the file made for this computer,
 //! checks it against the SHA-256 the release publishes, and puts it in place:
 //!
-//! - Windows, installed: the MSI runs with a progress bar only, then NoteCraft starts again.
-//! - Windows, portable: the zip is unpacked and copied over this folder, then NoteCraft starts
+//! - Windows, installed: the MSI runs with a progress bar only, then ErgoNote starts again.
+//! - Windows, portable: the zip is unpacked and copied over this folder, then ErgoNote starts
 //!   again.
 //! - Linux, AppImage: the new AppImage replaces this one, then it starts.
 //! - Linux, deb or rpm: the package is handed to the system's software installer.
@@ -20,10 +20,10 @@ use std::path::{Path, PathBuf};
 
 /// The newest published release, as GitHub's API describes it.
 pub const RELEASES_API: &str = "https://api.github.com/repos/Masterz42/ErgoNote/releases/latest";
-/// Every file NoteCraft downloads comes from under here: NoteCraft's own releases on GitHub.
+/// Every file ErgoNote downloads comes from under here: ErgoNote's own releases on GitHub.
 pub const DOWNLOADS: &str = "https://github.com/Masterz42/ErgoNote/releases/download/";
 
-/// Whether a file's address is one of NoteCraft's own release downloads. Anything else in the
+/// Whether a file's address is one of ErgoNote's own release downloads. Anything else in the
 /// release answer is never fetched.
 pub fn is_release_download(url: &str) -> bool {
     url.strip_prefix(DOWNLOADS).is_some_and(|rest| !rest.is_empty() && !rest.contains("..") && !rest.contains(['?', '#', '\\']))
@@ -143,7 +143,7 @@ fn is_hex_digest(text: &str) -> bool {
     text.len() == 64 && text.bytes().all(|b| b.is_ascii_hexdigit())
 }
 
-/// How this copy of NoteCraft was installed, which decides the file to download.
+/// How this copy of ErgoNote was installed, which decides the file to download.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Install {
     WindowsMsi,
@@ -228,8 +228,8 @@ fn starts_with_ignore_case(path: &Path, prefix: &Path) -> bool {
     path.starts_with(&format!("{prefix}\\"))
 }
 
-/// The `.app` folder an executable sits in: `/Applications/NoteCraft.app/Contents/MacOS/notecraft`
-/// gives `/Applications/NoteCraft.app`.
+/// The `.app` folder an executable sits in: `/Applications/ErgoNote.app/Contents/MacOS/ergonote`
+/// gives `/Applications/ErgoNote.app`.
 pub fn bundle_of(exe: &Path) -> Option<PathBuf> {
     exe.ancestors().find(|p| p.extension().is_some_and(|e| e == "app")).map(Path::to_path_buf)
 }
@@ -350,7 +350,7 @@ pub fn download_root(os: &str, temp: &Path, xdg_cache: Option<PathBuf>, home: Op
             .unwrap_or_else(|| temp.to_path_buf()),
         _ => temp.to_path_buf(),
     };
-    base.join("notecraft-update")
+    base.join("ergonote-update")
 }
 
 /// A path written into a POSIX shell script, quoted so spaces and quotes stay part of it.
@@ -405,12 +405,12 @@ pub fn mac_script(pid: u32, dmg: &Path, bundle: &Path) -> String {
     )
 }
 
-/// The batch file that runs the MSI with a progress bar only, then starts NoteCraft again.
+/// The batch file that runs the MSI with a progress bar only, then starts ErgoNote again.
 pub fn msi_script(pid: u32, msi: &Path, exe: &Path) -> String {
     format!("@echo off\r\n{}msiexec /i {} /passive /norestart\r\nstart \"\" {}\r\n", cmd_wait(pid), cmd_quote(msi), cmd_quote(exe))
 }
 
-/// The batch file that copies an unpacked portable zip over this folder, then starts NoteCraft again.
+/// The batch file that copies an unpacked portable zip over this folder, then starts ErgoNote again.
 pub fn portable_script(pid: u32, unpacked: &Path, folder: &Path, exe: &Path) -> String {
     format!(
         "@echo off\r\n{}robocopy {} {} /E /IS /IT /NFL /NDL /NJH /NJS /NP >nul\r\nstart \"\" {}\r\n",
@@ -518,9 +518,9 @@ mod net {
             Some(h) => h.clone(),
             None => {
                 let sums = release.assets.iter().find(|a| a.name == "SHA256SUMS.txt").ok_or("the release has no checksums")?;
-                // `parse_release` keeps only NoteCraft's own downloads; checked again before fetching.
+                // `parse_release` keeps only ErgoNote's own downloads; checked again before fetching.
                 if !is_release_download(&sums.url) {
-                    return Err("the checksum list is not one of NoteCraft's release files".into());
+                    return Err("the checksum list is not one of ErgoNote's release files".into());
                 }
                 let text = agent
                     .get(&sums.url)
@@ -571,7 +571,7 @@ mod net {
         version: &str,
     ) -> Result<(), String> {
         if !is_release_download(&asset.url) {
-            return Err(format!("{} is not one of NoteCraft's release files", asset.url));
+            return Err(format!("{} is not one of ErgoNote's release files", asset.url));
         }
         let mut response = agent.get(&asset.url).call().map_err(|e| e.to_string())?;
         let total = asset.size.or_else(|| response.headers().get("content-length").and_then(|v| v.to_str().ok()).and_then(|v| v.parse().ok()));
@@ -623,7 +623,7 @@ mod net {
                 let unpacked = dir.join("unpacked");
                 let _ = std::fs::remove_dir_all(&unpacked);
                 unzip(file, &unpacked)?;
-                let folder = exe.parent().ok_or("NoteCraft's folder is unknown")?;
+                let folder = exe.parent().ok_or("ErgoNote's folder is unknown")?;
                 let script = dir.join("install.cmd");
                 std::fs::write(&script, portable_script(pid, &unpacked_root(&unpacked), folder, &exe)).map_err(|e| e.to_string())?;
                 run_cmd(&script)?;
@@ -646,7 +646,7 @@ mod net {
                 Ok(Status::Restart { version })
             }
             Install::MacApp => {
-                let bundle = bundle_of(&exe).ok_or("NoteCraft's app bundle is unknown")?;
+                let bundle = bundle_of(&exe).ok_or("ErgoNote's app bundle is unknown")?;
                 let script = dir.join("install.sh");
                 std::fs::write(&script, mac_script(pid, file, &bundle)).map_err(|e| e.to_string())?;
                 run_sh(&script)?;
@@ -687,7 +687,7 @@ mod net {
 #[cfg(any(target_os = "linux", target_os = "windows", target_os = "macos"))]
 pub use net::{start, start_silent};
 
-/// Android / Web checks: Android invokes Java `checkForUpdates()` via `NoteCraftApp` hooks;
+/// Android / Web checks: Android invokes Java `checkForUpdates()` via `ErgoNoteApp` hooks;
 /// Web directs the user to the releases page.
 #[cfg(not(any(target_os = "linux", target_os = "windows", target_os = "macos")))]
 pub fn start(ctx: egui::Context, status: std::sync::Arc<std::sync::Mutex<Status>>) {
@@ -712,8 +712,8 @@ mod tests {
 
     /// GitHub's answer for v0.0.8, cut down to the fields used. Real data, not made up.
     const RELEASE: &str = include_str!("../tests/fixtures/release-latest.json");
-    const SUMS: &str = "3db9d6248d84d08a57e76052944215c1c01c66a1bc47f4b5ec327ddbb8c6b825  notecraft-0.0.8-windows-x64.msi\n\
-                        a2c7d71e9b452c172ca6db899368118619bfead70f95b502dccc7785272f9a2c  notecraft-0.0.8-windows-x64-portable.zip\n";
+    const SUMS: &str = "3db9d6248d84d08a57e76052944215c1c01c66a1bc47f4b5ec327ddbb8c6b825  ergonote-0.0.8-windows-x64.msi\n\
+                        a2c7d71e9b452c172ca6db899368118619bfead70f95b502dccc7785272f9a2c  ergonote-0.0.8-windows-x64-portable.zip\n";
 
     fn release() -> Release {
         parse_release(&serde_json::from_str(RELEASE).expect("fixture parses")).expect("a release")
@@ -736,14 +736,14 @@ mod tests {
     }
 
     #[test]
-    fn only_notecraft_release_files_are_downloaded() {
+    fn only_ergonote_release_files_are_downloaded() {
         assert!(is_release_download("https://github.com/Masterz42/ErgoNote/releases/download/v0.0.8/SHA256SUMS.txt"));
-        assert!(!is_release_download("https://github.com/someone-else/notecraft/releases/download/v0.0.8/x.msi"));
+        assert!(!is_release_download("https://github.com/someone-else/ergonote/releases/download/v0.0.8/x.msi"));
         assert!(!is_release_download("https://example.com/Masterz42/ErgoNote/releases/download/v1/x.msi"));
         assert!(!is_release_download("http://github.com/Masterz42/ErgoNote/releases/download/v1/x.msi"));
         assert!(!is_release_download("https://github.com/Masterz42/ErgoNote/releases/download/../../x"));
         assert!(!is_release_download("https://github.com/Masterz42/ErgoNote/releases/download/"));
-        // A file in the answer that is not one of NoteCraft's downloads is left out of the release.
+        // A file in the answer that is not one of ErgoNote's downloads is left out of the release.
         let mut json: serde_json::Value = serde_json::from_str(RELEASE).expect("fixture parses");
         json["assets"][0]["browser_download_url"] = "https://example.com/evil.AppImage".into();
         let r = parse_release(&json).expect("a release");
@@ -753,20 +753,20 @@ mod tests {
 
     #[test]
     fn downloads_go_to_a_folder_of_this_users_own() {
-        let dir = notecraft_store::testing::TempDir::new("update-download-root");
+        let dir = ergonote_store::testing::TempDir::new("update-download-root");
         // Path::is_absolute uses the host's rules, even when testing the Linux policy.
         let root = dir.path().canonicalize().expect("absolute test folder");
         let temp = root.join("temp");
         let home = root.join("home");
         let cache = home.join(".c");
-        assert_eq!(download_root("linux", &temp, Some(cache.clone()), Some(home.clone())), cache.join("notecraft-update"));
-        assert_eq!(download_root("linux", &temp, None, Some(home.clone())), home.join(".cache").join("notecraft-update"));
-        assert_eq!(download_root("linux", &temp, Some("relative".into()), Some(home.clone())), home.join(".cache").join("notecraft-update"));
-        assert_eq!(download_root("linux", &temp, Some("relative".into()), None), temp.join("notecraft-update"));
-        assert_eq!(download_root("linux", &temp, None, Some("relative".into())), temp.join("notecraft-update"));
-        assert_eq!(download_root("linux", &temp, None, None), temp.join("notecraft-update"));
+        assert_eq!(download_root("linux", &temp, Some(cache.clone()), Some(home.clone())), cache.join("ergonote-update"));
+        assert_eq!(download_root("linux", &temp, None, Some(home.clone())), home.join(".cache").join("ergonote-update"));
+        assert_eq!(download_root("linux", &temp, Some("relative".into()), Some(home.clone())), home.join(".cache").join("ergonote-update"));
+        assert_eq!(download_root("linux", &temp, Some("relative".into()), None), temp.join("ergonote-update"));
+        assert_eq!(download_root("linux", &temp, None, Some("relative".into())), temp.join("ergonote-update"));
+        assert_eq!(download_root("linux", &temp, None, None), temp.join("ergonote-update"));
         for os in ["windows", "macos"] {
-            assert_eq!(download_root(os, &temp, Some(cache.clone()), Some(home.clone())), temp.join("notecraft-update"));
+            assert_eq!(download_root(os, &temp, Some(cache.clone()), Some(home.clone())), temp.join("ergonote-update"));
         }
     }
 
@@ -784,11 +784,11 @@ mod tests {
     fn each_install_gets_its_own_file() {
         let r = release();
         let name = |i: Install, arch: &str| asset_for(i, arch, &r).map(|a| a.name.clone());
-        assert_eq!(name(Install::WindowsMsi, "x86_64").as_deref(), Some("notecraft-0.0.8-windows-x64.msi"));
-        assert_eq!(name(Install::WindowsPortable, "x86_64").as_deref(), Some("notecraft-0.0.8-windows-x64-portable.zip"));
-        assert_eq!(name(Install::LinuxAppImage, "x86_64").as_deref(), Some("notecraft-0.0.8-linux-x86_64.AppImage"));
-        assert_eq!(name(Install::LinuxDeb, "x86_64").as_deref(), Some("notecraft-0.0.8-linux-x86_64.deb"));
-        assert_eq!(name(Install::LinuxRpm, "x86_64").as_deref(), Some("notecraft-0.0.8-linux-x86_64.rpm"));
+        assert_eq!(name(Install::WindowsMsi, "x86_64").as_deref(), Some("ergonote-0.0.8-windows-x64.msi"));
+        assert_eq!(name(Install::WindowsPortable, "x86_64").as_deref(), Some("ergonote-0.0.8-windows-x64-portable.zip"));
+        assert_eq!(name(Install::LinuxAppImage, "x86_64").as_deref(), Some("ergonote-0.0.8-linux-x86_64.AppImage"));
+        assert_eq!(name(Install::LinuxDeb, "x86_64").as_deref(), Some("ergonote-0.0.8-linux-x86_64.deb"));
+        assert_eq!(name(Install::LinuxRpm, "x86_64").as_deref(), Some("ergonote-0.0.8-linux-x86_64.rpm"));
         // v0.0.8 had no ARM Linux or macOS files: those installs are sent to the releases page.
         assert_eq!(name(Install::LinuxAppImage, "aarch64"), None);
         assert_eq!(name(Install::MacApp, "aarch64"), None);
@@ -797,12 +797,12 @@ mod tests {
     }
 
     #[test]
-    fn the_install_kind_follows_where_notecraft_runs_from() {
+    fn the_install_kind_follows_where_ergonote_runs_from() {
         let windows = |exe: &str| Machine { os: "windows", exe: exe.into(), program_files: vec![r"C:\Program Files".into()], ..Machine::default() };
-        assert_eq!(Install::of(&windows(r"C:\Program Files\NoteCraft\notecraft.exe")), Install::WindowsMsi);
-        assert_eq!(Install::of(&windows(r"c:\program files\NoteCraft\notecraft.exe")), Install::WindowsMsi);
-        assert_eq!(Install::of(&windows(r"C:\Program Files Extra\notecraft.exe")), Install::WindowsPortable);
-        assert_eq!(Install::of(&windows(r"D:\Tools\notecraft\notecraft.exe")), Install::WindowsPortable);
+        assert_eq!(Install::of(&windows(r"C:\Program Files\ErgoNote\ergonote.exe")), Install::WindowsMsi);
+        assert_eq!(Install::of(&windows(r"c:\program files\ErgoNote\ergonote.exe")), Install::WindowsMsi);
+        assert_eq!(Install::of(&windows(r"C:\Program Files Extra\ergonote.exe")), Install::WindowsPortable);
+        assert_eq!(Install::of(&windows(r"D:\Tools\ergonote\ergonote.exe")), Install::WindowsPortable);
         let linux = |exe: &str, appimage: Option<&str>, debian: bool, redhat: bool| Machine {
             os: "linux",
             exe: exe.into(),
@@ -811,23 +811,23 @@ mod tests {
             redhat,
             ..Machine::default()
         };
-        assert_eq!(Install::of(&linux("/tmp/.mount_x/usr/bin/notecraft", Some("/home/a/NoteCraft.AppImage"), true, false)), Install::LinuxAppImage);
-        assert_eq!(Install::of(&linux("/usr/bin/notecraft", None, true, false)), Install::LinuxDeb);
-        assert_eq!(Install::of(&linux("/usr/bin/notecraft", None, false, true)), Install::LinuxRpm);
-        assert_eq!(Install::of(&linux("/home/a/notecraft/notecraft", None, true, false)), Install::Other);
-        let mac = Machine { os: "macos", exe: "/Applications/NoteCraft.app/Contents/MacOS/notecraft".into(), ..Machine::default() };
+        assert_eq!(Install::of(&linux("/tmp/.mount_x/usr/bin/ergonote", Some("/home/a/ErgoNote.AppImage"), true, false)), Install::LinuxAppImage);
+        assert_eq!(Install::of(&linux("/usr/bin/ergonote", None, true, false)), Install::LinuxDeb);
+        assert_eq!(Install::of(&linux("/usr/bin/ergonote", None, false, true)), Install::LinuxRpm);
+        assert_eq!(Install::of(&linux("/home/a/ergonote/ergonote", None, true, false)), Install::Other);
+        let mac = Machine { os: "macos", exe: "/Applications/ErgoNote.app/Contents/MacOS/ergonote".into(), ..Machine::default() };
         assert_eq!(Install::of(&mac), Install::MacApp);
-        assert_eq!(bundle_of(&mac.exe), Some(PathBuf::from("/Applications/NoteCraft.app")));
-        assert_eq!(Install::of(&Machine { os: "macos", exe: "/Users/a/target/release/notecraft".into(), ..Machine::default() }), Install::Other);
+        assert_eq!(bundle_of(&mac.exe), Some(PathBuf::from("/Applications/ErgoNote.app")));
+        assert_eq!(Install::of(&Machine { os: "macos", exe: "/Users/a/target/release/ergonote".into(), ..Machine::default() }), Install::Other);
     }
 
     #[test]
     fn the_checksum_list_gives_each_files_digest() {
         assert_eq!(
-            sha256_from_sums(SUMS, "notecraft-0.0.8-windows-x64.msi").as_deref(),
+            sha256_from_sums(SUMS, "ergonote-0.0.8-windows-x64.msi").as_deref(),
             Some("3db9d6248d84d08a57e76052944215c1c01c66a1bc47f4b5ec327ddbb8c6b825")
         );
-        assert_eq!(sha256_from_sums(SUMS, "notecraft-0.0.8-windows-x64"), None);
+        assert_eq!(sha256_from_sums(SUMS, "ergonote-0.0.8-windows-x64"), None);
         assert_eq!(sha256_from_sums("abc *f.zip\n", "f.zip"), None, "not a digest");
         let starred = "A2C7D71E9B452C172CA6DB899368118619BFEAD70F95B502DCCC7785272F9A2C *f.zip";
         assert_eq!(sha256_from_sums(starred, "f.zip").as_deref(), Some("a2c7d71e9b452c172ca6db899368118619bfead70f95b502dccc7785272f9a2c"));
@@ -835,7 +835,7 @@ mod tests {
 
     #[test]
     fn a_files_digest_is_its_sha256() {
-        let dir = notecraft_store::testing::TempDir::new("update-sha256");
+        let dir = ergonote_store::testing::TempDir::new("update-sha256");
         let file = dir.path().join("abc.txt");
         std::fs::write(&file, b"abc").expect("write");
         assert_eq!(sha256_file(&file).expect("hash"), "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad");
@@ -844,14 +844,14 @@ mod tests {
     #[test]
     fn a_zip_unpacks_inside_its_folder_only() {
         use std::io::Write;
-        let dir = notecraft_store::testing::TempDir::new("update-unzip");
+        let dir = ergonote_store::testing::TempDir::new("update-unzip");
         let zip_path = dir.path().join("portable.zip");
         {
             let mut w = zip::ZipWriter::new(std::fs::File::create(&zip_path).expect("zip"));
             let opts = zip::write::SimpleFileOptions::default();
-            w.start_file("notecraft-1.0.0-windows-x64-portable/notecraft.exe", opts).expect("entry");
+            w.start_file("ergonote-1.0.0-windows-x64-portable/ergonote.exe", opts).expect("entry");
             w.write_all(b"new exe").expect("write");
-            w.start_file("notecraft-1.0.0-windows-x64-portable/demo/a.txt", opts).expect("entry");
+            w.start_file("ergonote-1.0.0-windows-x64-portable/demo/a.txt", opts).expect("entry");
             w.write_all(b"a").expect("write");
             w.start_file("../escaped.txt", opts).expect("entry");
             w.write_all(b"no").expect("write");
@@ -860,8 +860,8 @@ mod tests {
         let out = dir.path().join("out");
         unzip(&zip_path, &out).expect("unzip");
         let root = unpacked_root(&out);
-        assert_eq!(root, out.join("notecraft-1.0.0-windows-x64-portable"));
-        assert_eq!(std::fs::read(root.join("notecraft.exe")).expect("exe"), b"new exe");
+        assert_eq!(root, out.join("ergonote-1.0.0-windows-x64-portable"));
+        assert_eq!(std::fs::read(root.join("ergonote.exe")).expect("exe"), b"new exe");
         assert!(root.join("demo/a.txt").is_file());
         assert!(!dir.path().join("escaped.txt").exists(), "an entry naming a parent folder is skipped");
     }
@@ -870,15 +870,15 @@ mod tests {
     fn paths_in_scripts_keep_spaces_quotes_and_percent_signs() {
         assert_eq!(sh_quote(Path::new("/home/a b/it's.AppImage")), r"'/home/a b/it'\''s.AppImage'");
         assert_eq!(cmd_quote(Path::new(r"C:\Users\100% me\x.msi")), r#""C:\Users\100%% me\x.msi""#);
-        let msi = msi_script(42, Path::new(r"C:\T\n.msi"), Path::new(r"C:\Program Files\NoteCraft\notecraft.exe"));
+        let msi = msi_script(42, Path::new(r"C:\T\n.msi"), Path::new(r"C:\Program Files\ErgoNote\ergonote.exe"));
         assert!(msi.contains("PID eq 42"), "{msi}");
         assert!(msi.contains(r#"msiexec /i "C:\T\n.msi" /passive /norestart"#), "{msi}");
-        assert!(msi.ends_with("start \"\" \"C:\\Program Files\\NoteCraft\\notecraft.exe\"\r\n"), "{msi}");
-        let portable = portable_script(7, Path::new(r"C:\T\u\p"), Path::new(r"D:\nc"), Path::new(r"D:\nc\notecraft.exe"));
+        assert!(msi.ends_with("start \"\" \"C:\\Program Files\\ErgoNote\\ergonote.exe\"\r\n"), "{msi}");
+        let portable = portable_script(7, Path::new(r"C:\T\u\p"), Path::new(r"D:\nc"), Path::new(r"D:\nc\ergonote.exe"));
         assert!(portable.contains(r#"robocopy "C:\T\u\p" "D:\nc" /E"#), "{portable}");
-        let mac = mac_script(9, Path::new("/tmp/N.dmg"), Path::new("/Applications/NoteCraft.app"));
+        let mac = mac_script(9, Path::new("/tmp/N.dmg"), Path::new("/Applications/ErgoNote.app"));
         assert!(mac.contains("kill -0 9"), "{mac}");
-        assert!(mac.contains("ditto \"$src\" '/Applications/NoteCraft.app.new'"), "{mac}");
+        assert!(mac.contains("ditto \"$src\" '/Applications/ErgoNote.app.new'"), "{mac}");
     }
 
     /// The AppImage script really waits for the old process, swaps the file and starts the new
@@ -886,11 +886,11 @@ mod tests {
     #[cfg(unix)]
     #[test]
     fn the_appimage_script_waits_then_swaps_and_starts_the_new_file() {
-        let dir = notecraft_store::testing::TempDir::new("update-appimage");
-        let target = dir.path().join("NoteCraft one.AppImage");
+        let dir = ergonote_store::testing::TempDir::new("update-appimage");
+        let target = dir.path().join("ErgoNote one.AppImage");
         let marker = dir.path().join("started");
         std::fs::write(&target, "old").expect("old");
-        let new = dir.path().join("NoteCraft one.AppImage.new");
+        let new = dir.path().join("ErgoNote one.AppImage.new");
         std::fs::write(&new, format!("#!/bin/sh\necho new > {}\n", sh_quote(&marker))).expect("new");
         // A process that is still running for a moment stands for the window being closed.
         // It is reaped on a thread of its own, or it would linger as a zombie that `kill -0`

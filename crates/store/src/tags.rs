@@ -1,7 +1,7 @@
 //! Finding the tagged notes in a page, a section, a notebook or every notebook: what OneNote's
 //! Find Tags lists in its Tags Summary (issue #166).
 //!
-//! A tag is part of the line it is on (see [`notecraft_model::tag`]): a To Do is a task list
+//! A tag is part of the line it is on (see [`ergonote_model::tag`]): a To Do is a task list
 //! item, and every other tag is its marker word at the start of the line. So the pages are read
 //! the way the editor reads them, block by block, and a block counts by the same rule the editor
 //! draws its tag by. Nothing is cached or indexed: the folders are the notebook, and what they
@@ -9,9 +9,9 @@
 
 use crate::page::load_page;
 use crate::tree::{NodeInfo, child_dirs, page_file, read_node};
-use notecraft_formats::boxes;
-use notecraft_formats::markdown::{Block, Span};
-use notecraft_model::{NodeKind, Tag};
+use ergonote_formats::boxes;
+use ergonote_formats::markdown::{Block, Span};
+use ergonote_model::{NodeKind, Tag};
 use std::path::{Path, PathBuf};
 
 /// One tagged line.
@@ -58,7 +58,7 @@ pub fn tags_of(block: &Block) -> Vec<(Tag, String, Option<bool>)> {
     };
     let text = plain(spans);
     let (marked, rest) = Tag::split(&text);
-    let rest = notecraft_model::text::without_mark(rest).trim().to_string();
+    let rest = ergonote_model::text::without_mark(rest).trim().to_string();
     let mut out = Vec::new();
     if let Some(done) = task {
         out.push((Tag::ToDo, rest.clone(), Some(done)));
@@ -123,7 +123,7 @@ mod tests {
     use crate::page::save_body;
     use crate::settings::Settings;
     use crate::testing::TempDir;
-    use notecraft_model::PageFormat;
+    use ergonote_model::PageFormat;
 
     struct Fixture {
         root: PathBuf,
@@ -141,8 +141,8 @@ mod tests {
         let section = ops::create_node(&notebook, "Plans", NodeKind::Section, None, &s).expect("section");
         let html = ops::create_node(&section, "Kickoff", NodeKind::Page, Some(PageFormat::Html), &s).expect("html");
         // Written the way the editor writes an HTML page, from the same blocks.
-        let blocks = notecraft_formats::markdown::parse("#important Book the room\n\n- [ ] Send the agenda\n\nPlain words\n\nsee #idea here\n");
-        save_body(&html, &notecraft_formats::render::blocks_to_html(&blocks)).expect("save");
+        let blocks = ergonote_formats::markdown::parse("#important Book the room\n\n- [ ] Send the agenda\n\nPlain words\n\nsee #idea here\n");
+        save_body(&html, &ergonote_formats::render::blocks_to_html(&blocks)).expect("save");
         let md = ops::create_node(&section, "Minutes", NodeKind::Page, Some(PageFormat::Cmgfm), &s).expect("md");
         save_body(&md, "#question Who **owns** the budget?\n\n- [x] Write minutes\n- [ ] #critical Fix the build\n\n#ideas for later\n")
             .expect("save");

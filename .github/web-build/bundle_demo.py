@@ -27,7 +27,7 @@ def bundle_demo(source: Path, destination: Path, version: str) -> None:
             if not (format_root / relative).is_file():
                 raise ValueError(f"official {format_name} demo is missing {relative}")
 
-    expected_title = f"Welcome to NoteCraft (Ver {version})"
+    expected_title = f"Welcome to ErgoNote (Ver {version})"
     for format_name, required_files in REQUIRED_FILES.items():
         page = (source / format_name / required_files[1]).read_text(encoding="utf-8")
         if version not in page:

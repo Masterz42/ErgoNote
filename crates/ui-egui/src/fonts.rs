@@ -2,7 +2,7 @@
 //!
 //! egui bundles faces that cover Latin, Greek and Cyrillic and nothing else, so Arabic,
 //! Hebrew, Devanagari, Chinese, Japanese and Korean letters come out as empty boxes.
-//! NoteCraft adds four Noto faces (SIL Open Font License 1.1, texts in
+//! ErgoNote adds four Noto faces (SIL Open Font License 1.1, texts in
 //! `assets/fonts/OFL-*.txt`) as fallbacks behind the bundled ones: Latin text is unchanged,
 //! and anything the first face has no glyph for falls through to the first of ours that has
 //! it. The CJK face is 16 MB, most of the app's size; the owner chose to bundle it so a
@@ -25,25 +25,25 @@ pub const ARABIC_NAME: &str = "noto-naskh-arabic";
 pub const DYS_FONT_NAME: &str = "OpenDyslexic TND";
 
 /// Font family used for bold runs when no explicit font family overrides it.
-pub const BOLD_FAMILY_NAME: &str = "notecraft-bold";
+pub const BOLD_FAMILY_NAME: &str = "ergonote-bold";
 
 /// The [`egui::FontFamily`] registered for bold text.
 pub fn bold_family() -> egui::FontFamily {
     egui::FontFamily::Name(BOLD_FAMILY_NAME.into())
 }
 
-/// The faces NoteCraft bundles, in fallback order, with their bytes. The bytes live in the
+/// The faces ErgoNote bundles, in fallback order, with their bytes. The bytes live in the
 /// text crate so the window and the text layer share one copy.
-pub const BUNDLED: [(&str, &[u8]); 5] = notecraft_text::fonts::ALL;
+pub const BUNDLED: [(&str, &[u8]); 5] = ergonote_text::fonts::ALL;
 
 pub fn named_family(name: &str) -> egui::FontFamily {
-    egui::FontFamily::Name(format!("notecraft-system-font:{name}").into())
+    egui::FontFamily::Name(format!("ergonote-system-font:{name}").into())
 }
 
-pub fn page_families(blocks: &[notecraft_formats::Block]) -> BTreeSet<String> {
-    use notecraft_formats::Block;
+pub fn page_families(blocks: &[ergonote_formats::Block]) -> BTreeSet<String> {
+    use ergonote_formats::Block;
     let mut families = BTreeSet::new();
-    let mut collect = |spans: &[notecraft_formats::markdown::Span]| {
+    let mut collect = |spans: &[ergonote_formats::markdown::Span]| {
         families.extend(spans.iter().filter_map(|span| span.font_family.clone()));
     };
     for block in blocks {
@@ -104,7 +104,7 @@ fn load_family(family: &str, _definitions: &mut egui::FontDefinitions) -> Result
 
 /// Register fonts used by a page once per context, returning names that could not be loaded.
 pub fn ensure_page_fonts(ctx: &egui::Context, families: &BTreeSet<String>) -> Vec<String> {
-    let id = egui::Id::new("notecraft-page-font-results");
+    let id = egui::Id::new("ergonote-page-font-results");
     let mut results = ctx.data(|data| data.get_temp::<BTreeMap<String, bool>>(id).unwrap_or_default());
     let missing: Vec<_> = families.iter().filter(|family| !results.contains_key(*family)).cloned().collect();
     if !missing.is_empty() {
@@ -131,7 +131,7 @@ pub fn ensure_page_fonts(ctx: &egui::Context, families: &BTreeSet<String>) -> Ve
     families.iter().filter(|family| results.get(*family) == Some(&false)).cloned().collect()
 }
 
-/// egui's own definitions plus the faces NoteCraft adds.
+/// egui's own definitions plus the faces ErgoNote adds.
 pub fn definitions() -> egui::FontDefinitions {
     let mut fonts = egui::FontDefinitions::default();
     for (name, bytes) in BUNDLED {
@@ -143,14 +143,14 @@ pub fn definitions() -> egui::FontDefinitions {
     }
     // The KaTeX maths faces, each in a family of its own, `katex-<face>`: an equation names the
     // face a glyph comes from, and nothing falls back to them or from them.
-    for (face, bytes) in notecraft_text::katex::FACES {
+    for (face, bytes) in ergonote_text::katex::FACES {
         let name = format!("katex-{face}");
         fonts.font_data.insert(name.clone(), Arc::new(egui::FontData::from_static(bytes)));
         fonts.families.insert(egui::FontFamily::Name(name.clone().into()), vec![name]);
     }
     if let Some(prop) = fonts.families.get(&egui::FontFamily::Proportional).cloned() {
         fonts.families.insert(named_family(DYS_FONT_NAME), prop.clone());
-        fonts.font_data.insert(BOLD_FAMILY_NAME.to_owned(), Arc::new(egui::FontData::from_static(notecraft_text::fonts::BOLD)));
+        fonts.font_data.insert(BOLD_FAMILY_NAME.to_owned(), Arc::new(egui::FontData::from_static(ergonote_text::fonts::BOLD)));
         let mut bold_chain = vec![BOLD_FAMILY_NAME.to_owned()];
         bold_chain.extend(prop);
         fonts.families.insert(bold_family(), bold_chain);
@@ -170,7 +170,7 @@ pub fn installed(ctx: &egui::Context) -> bool {
 }
 
 fn installed_id() -> egui::Id {
-    egui::Id::new("notecraft-fonts-installed")
+    egui::Id::new("ergonote-fonts-installed")
 }
 
 /// Installs them unless this context already has them.
@@ -186,11 +186,11 @@ mod tests {
 
     #[test]
     fn page_font_requests_cover_tables_and_report_missing_families() {
-        use notecraft_formats::markdown::{Block, Span};
+        use ergonote_formats::markdown::{Block, Span};
         let named = |text: &str, name: &str| Span { text: text.into(), font_family: Some(name.into()), ..Span::default() };
         let blocks = vec![
-            Block::Paragraph(vec![named("text", "No such NoteCraft family 928474")]),
-            Block::Table { head: vec![vec![named("head", "No such NoteCraft family 928474")]], rows: vec![] },
+            Block::Paragraph(vec![named("text", "No such ErgoNote family 928474")]),
+            Block::Table { head: vec![vec![named("head", "No such ErgoNote family 928474")]], rows: vec![] },
         ];
         let families = page_families(&blocks);
         assert_eq!(families.len(), 1);
@@ -199,7 +199,7 @@ mod tests {
             install_once(ui.ctx());
             let failures = ensure_page_fonts(ui.ctx(), &families);
             assert_eq!(failures.len(), 1);
-            assert!(failures[0].contains("No such NoteCraft family 928474"));
+            assert!(failures[0].contains("No such ErgoNote family 928474"));
             assert_eq!(failures, ensure_page_fonts(ui.ctx(), &families), "failure remains visible in later frames");
         });
         output.textures_delta.clear();

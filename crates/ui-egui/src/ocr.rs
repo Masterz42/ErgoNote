@@ -116,7 +116,7 @@ pub fn resolve_pdf_printout(page_dir: &Path, image_src: &str) -> Option<(PathBuf
         return None;
     }
     let pdf_path = page_dir.join("assets").join(base);
-    notecraft_store::vfs::is_file(&pdf_path).then_some((pdf_path, page_one_based - 1))
+    ergonote_store::vfs::is_file(&pdf_path).then_some((pdf_path, page_one_based - 1))
 }
 
 #[cfg(any(target_os = "linux", target_os = "windows", target_os = "macos", target_os = "android"))]
@@ -1057,7 +1057,7 @@ fn paddle_oar_extract(bytes: &[u8]) -> Option<OcrDocument> {
 #[cfg(not(target_arch = "wasm32"))]
 pub fn extract_document(page_dir: &Path, image_src: &str, image_bytes: &[u8]) -> Result<OcrDocument, String> {
     if let Some((pdf_path, page_index)) = resolve_pdf_printout(page_dir, image_src)
-        && let Ok(pdf_bytes) = notecraft_store::vfs::read(&pdf_path)
+        && let Ok(pdf_bytes) = ergonote_store::vfs::read(&pdf_path)
     {
         #[cfg(not(target_os = "android"))]
         if let Some(doc) = pdftotext_extract_page(&pdf_bytes, page_index) {
@@ -1121,7 +1121,7 @@ mod tests {
 
     #[test]
     fn resolves_pdf_printout_asset_names() {
-        let tmp = notecraft_store::testing::TempDir::new("ocr-pdf-resolve");
+        let tmp = ergonote_store::testing::TempDir::new("ocr-pdf-resolve");
         let assets = tmp.path().join("assets");
         std::fs::create_dir_all(&assets).expect("mkdir");
         std::fs::write(assets.join("controle.pdf"), b"%PDF-1.4").expect("pdf");

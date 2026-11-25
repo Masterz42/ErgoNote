@@ -44,7 +44,7 @@ pub struct Summary {
     pub lines: Share,
     pub functions: Share,
     pub regions: Share,
-    /// Lines per crate, keyed `crates/engine` or `apps/notecraft`.
+    /// Lines per crate, keyed `crates/engine` or `apps/ergonote`.
     pub crates: BTreeMap<String, Share>,
 }
 
@@ -190,8 +190,8 @@ pub fn run(root: &Path, options: &[String]) -> Result<(), String> {
     let report_arg = report_path.to_string_lossy().into_owned();
     // Pixel tests serialize their shared renderer; semantic UI tests use no renderer and can
     // run concurrently during coverage, matching `cargo xtask ci`.
-    crate::cargo(root, &["llvm-cov", "--workspace", "--exclude", "xtask", "--exclude-from-test", "notecraft-ui-egui", "--no-report"])?;
-    crate::cargo(root, &["llvm-cov", "--package", "notecraft-ui-egui", "--no-clean"])?;
+    crate::cargo(root, &["llvm-cov", "--workspace", "--exclude", "xtask", "--exclude-from-test", "ergonote-ui-egui", "--no-report"])?;
+    crate::cargo(root, &["llvm-cov", "--package", "ergonote-ui-egui", "--no-clean"])?;
     crate::cargo(root, &["llvm-cov", "report", "--json", "--summary-only", "--output-path", &report_arg])?;
     let text = fs::read_to_string(&report_path).map_err(|e| format!("read {}: {e}", report_path.display()))?;
     let report: Value = serde_json::from_str(&text).map_err(|e| format!("{}: {e}", report_path.display()))?;
@@ -260,7 +260,7 @@ mod tests {
             "files": [
                 {"filename": "C:\\r\\crates\\engine\\src\\a.rs", "summary": {"lines": {"covered": 40, "count": 50}}},
                 {"filename": "/r/crates/engine/src/b.rs", "summary": {"lines": {"covered": 10, "count": 10}}},
-                {"filename": "/r/apps/notecraft/src/main.rs", "summary": {"lines": {"covered": 5, "count": 20}}},
+                {"filename": "/r/apps/ergonote/src/main.rs", "summary": {"lines": {"covered": 5, "count": 20}}},
                 {"filename": "/r/tests/x.rs", "summary": {"lines": {"covered": 20, "count": 20}}}
             ]
         }]})
@@ -275,7 +275,7 @@ mod tests {
         let s = summary();
         assert_eq!(s.lines, Share { covered: 75, count: 100 });
         assert_eq!(s.crates.get("crates/engine"), Some(&Share { covered: 50, count: 60 }));
-        assert_eq!(s.crates.get("apps/notecraft"), Some(&Share { covered: 5, count: 20 }));
+        assert_eq!(s.crates.get("apps/ergonote"), Some(&Share { covered: 5, count: 20 }));
         assert_eq!(s.crates.len(), 2, "a file outside crates/ and apps/ counts in the total only");
         assert!(summarize(&json!({})).is_err());
     }
@@ -292,11 +292,11 @@ mod tests {
         higher["total"]["lines"] = json!(75.4);
         assert!(drops(&higher, &s).is_empty(), "within the slack");
         higher["total"]["lines"] = json!(80.0);
-        higher["crates"]["apps/notecraft"]["lines"] = json!(30.0);
+        higher["crates"]["apps/ergonote"]["lines"] = json!(30.0);
         let fell = drops(&higher, &s);
         assert_eq!(fell.len(), 2, "{fell:?}");
         assert!(fell[0].contains("total line coverage fell from 80.0% to 75.0%"), "{fell:?}");
-        assert!(fell[1].contains("apps/notecraft"), "{fell:?}");
+        assert!(fell[1].contains("apps/ergonote"), "{fell:?}");
         // A crate the baseline has never seen is not a drop.
         assert!(drops(&json!({"total": {}, "crates": {}}), &s).is_empty());
     }

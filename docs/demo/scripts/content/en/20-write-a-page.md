@@ -37,7 +37,7 @@ $$
 \int_0^1 x^2 \, dx = \tfrac{1}{3}
 $$
 
-NoteCraft draws fractions, roots, sums, integrals, brackets and Greek letters itself. Anything it
+ErgoNote draws fractions, roots, sums, integrals, brackets and Greek letters itself. Anything it
 does not know stays visible as text rather than disappearing.
 
 ## The ribbon

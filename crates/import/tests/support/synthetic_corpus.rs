@@ -2,7 +2,7 @@ use std::fs;
 use std::io;
 use std::path::Path;
 
-use notecraft_onenote::testing::{OneNote, Toc};
+use ergonote_onenote::testing::{OneNote, Toc};
 
 /// Writes the deterministic `.one` files used by the importer regression corpus.
 pub fn generate(root: &Path) -> io::Result<()> {

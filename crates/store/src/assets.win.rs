@@ -37,7 +37,7 @@ Add-Type -AssemblyName WindowsBase
 Add-Type @"
 using System;
 using System.Runtime.InteropServices;
-public static class NoteCraftShellIcon {
+public static class ErgoNoteShellIcon {
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
     private struct SHFILEINFO {
         public IntPtr hIcon;
@@ -59,7 +59,7 @@ public static class NoteCraftShellIcon {
     }
 }
 "@
-$icon = [NoteCraftShellIcon]::GetIcon($env:NC_ICON_SOURCE)
+$icon = [ErgoNoteShellIcon]::GetIcon($env:NC_ICON_SOURCE)
 try {
     $bitmap = [System.Windows.Interop.Imaging]::CreateBitmapSourceFromHIcon(
         $icon,
@@ -76,6 +76,6 @@ try {
     )
     try { $encoder.Save($stream) } finally { $stream.Dispose() }
 } finally {
-    [void][NoteCraftShellIcon]::DestroyIcon($icon)
+    [void][ErgoNoteShellIcon]::DestroyIcon($icon)
 }
 "#;

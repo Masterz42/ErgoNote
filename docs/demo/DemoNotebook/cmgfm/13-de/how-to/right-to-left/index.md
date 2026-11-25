@@ -7,7 +7,7 @@ updated: 2026-10-18T00:00:00Z
 tags: []
 ---
 
-Arabisch, Hebräisch, Persisch und Urdu werden von rechts gelesen. NoteCraft zeichnet sie so: Die
+Arabisch, Hebräisch, Persisch und Urdu werden von rechts gelesen. ErgoNote zeichnet sie so: Die
 Buchstaben verbinden sich, eine Zeile hängt am rechten Rand, und eine Zeile, die beide
 Richtungen mischt, wird vom Unicode-Algorithmus geordnet, sodass ein Preis seine Zahl richtig
 herum behält:
@@ -30,7 +30,7 @@ mitgelieferte Schriften:
 | **Absatz** | Das Ausrichtungsmenü in **Basistext** | In welche Richtung der Absatz mit dem Cursor gelesen wird |
 | **Lauf** | **Mehr...** in der Gruppe Richtung | In welche Richtung die Auswahl gelesen wird, oder was Sie als Nächstes tippen |
 
-Die Seitenrichtung ist NoteCrafts eigene; die Anwendungen, von denen die Leute kommen, haben
+Die Seitenrichtung ist ErgoNotes eigene; die Anwendungen, von denen die Leute kommen, haben
 keine solche Einstellung, und ein auf Arabisch geschriebenes Notizbuch braucht sie.
 
 ## Wo die Einstellung gespeichert wird

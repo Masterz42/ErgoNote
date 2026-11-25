@@ -1,4 +1,4 @@
-# Testing NoteCraft
+# Testing ErgoNote
 
 Last reviewed: 2026-11-12.
 
@@ -27,8 +27,8 @@ or `cargo xtask demo both` to request both explicitly. Each can be run alone:
 | Page representation parity | `crates/formats/src/render.rs`, `crates/formats/src/boxes.rs`, `crates/formats/tests/format_parity.rs` | Block and inline-markup round trips, box layout round trips, and semantic equality for every page in the complete HTML and CMGFM demo notebooks. This is a required gate against the two serializations drifting apart. |
 | Store tests | `crates/store` | The folder format on a real temporary folder: creating nodes, the format cascade, deep nesting, unusual titles, both formats, attachments, search, the checker. |
 | Engine tests | `crates/engine` | Every command through the registry, a full workflow with commands only, path confinement, and `hostile_params_never_panic`. |
-| Command line tests | `apps/notecraft-cli` | A whole session through the command line, and error paths. |
-| Install provisioning tests | `apps/notecraft-setup` | Creates or replaces only the managed Welcome notebook, keeps sibling user notebooks unchanged, rejects incomplete payloads before replacing an existing copy, and refreshes a deleted copy on the next launch. |
+| Command line tests | `apps/ergonote-cli` | A whole session through the command line, and error paths. |
+| Install provisioning tests | `apps/ergonote-setup` | Creates or replaces only the managed Welcome notebook, keeps sibling user notebooks unchanged, rejects incomplete payloads before replacing an existing copy, and refreshes a deleted copy on the next launch. |
 | Install payload checks | `packaging/*`, `.github/web-build`, `android/test.sh` and `android/src/welcome.rs` tests | Windows, Linux, macOS, Android and browser payloads include both generated formats and all 13 language folders; release page version and archive checks guard the website bundle. |
 | MCP tests | `crates/mcp` | The protocol lifecycle over a pipe, the tool list and its schemas, a notebook made, written, searched and checked through the tools, and the errors a tool reports instead of failing. |
 | UI behaviour tests | `crates/ui-egui/tests/ui.rs` | The real window, driven headlessly through the control methods: open a page, toolbar buttons, dialogs, default format, theme, restart with the saved theme, a real TCP control connection, accessibility labels. |
@@ -52,8 +52,8 @@ visual evidence rules, and platform automation boundaries.
 
 Tests are not a substitute for looking.
 
-- **Review captures.** Set `NOTECRAFT_UI_VISUAL_DIR` to a folder and run
-  `cargo test -p notecraft-ui-egui --test ui`. The tests write PNGs there. Open them.
+- **Review captures.** Set `ERGONOTE_UI_VISUAL_DIR` to a folder and run
+  `cargo test -p ergonote-ui-egui --test ui`. The tests write PNGs there. Open them.
 - **Scripted shots.** `ui_shot` renders any state off screen from a JSON-lines script, see
   [`control-protocol.md`](control-protocol.md). `cargo xtask screenshots` rebuilds the pictures
   used in the README from `scripts/readme-screens.jsonl`.
@@ -62,8 +62,8 @@ Tests are not a substitute for looking.
 
 The tests render with egui's bundled fonts, so they do not depend on installed fonts.
 
-The real OfficeIMO bridge acceptance test is opt-in. Set `NOTECRAFT_OFFICEIMO_BRIDGE` to an
-installed bridge, then run `cargo test -p notecraft-cli --test officeimo_bridge -- --ignored`.
+The real OfficeIMO bridge acceptance test is opt-in. Set `ERGONOTE_OFFICEIMO_BRIDGE` to an
+installed bridge, then run `cargo test -p ergonote-cli --test officeimo_bridge -- --ignored`.
 It imports the public fixture in both formats as a section and a folder, repeats each import,
 and checks the notebook tree, source preservation and existing notes. It uses isolated child
 process settings and environment; default CI does not need an installed bridge.

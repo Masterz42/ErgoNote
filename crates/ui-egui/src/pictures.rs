@@ -53,7 +53,7 @@ mod tests {
     /// The same path a picture in a page's `assets` folder takes when it is drawn.
     #[test]
     fn a_jpeg_xl_attachment_loads_through_the_file_loader() {
-        use notecraft_store::testing::TempDir;
+        use ergonote_store::testing::TempDir;
         let t = TempDir::new("pictures-jxl");
         let page = t.path().join("page");
         std::fs::create_dir_all(page.join("assets")).expect("assets");

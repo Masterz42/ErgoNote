@@ -1,7 +1,7 @@
 //! The regular shapes a pen can draw: a line, a box, a circle, a star.
 //!
 //! OneNote's Draw tab has a row of them, and a drawn shape there is ink like any other
-//! stroke: it can be rubbed out, picked up and moved. NoteCraft does the same, and for
+//! stroke: it can be rubbed out, picked up and moved. ErgoNote does the same, and for
 //! the same reason - a shape that is ink needs no second kind of thing on the page, and
 //! everything the pen can already do to a stroke works on it the day it is drawn.
 //!

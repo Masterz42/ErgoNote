@@ -7,7 +7,7 @@
 //!
 //! The file is ordinary SVG: filled outlines any browser renders, because SVG has no
 //! variable-width stroke. It also carries the pen's own readings in our namespace, which is
-//! what lets a stroke be rubbed out or redrawn later (`notecraft_ink::svg`).
+//! what lets a stroke be rubbed out or redrawn later (`ergonote_ink::svg`).
 //!
 //! The pen writes anywhere on the page, as OneNote's does, rather than inside a box. The
 //! strokes are kept in the page body's own coordinates, measured from its top left corner,
@@ -15,7 +15,7 @@
 
 use crate::theme::Tokens;
 use egui::{Sense, Ui, vec2};
-use notecraft_ink::{Dab, Drawing, Rgb, Stroke, Tool, pick, shape, svg};
+use ergonote_ink::{Dab, Drawing, Rgb, Stroke, Tool, pick, shape, svg};
 use std::path::{Path, PathBuf};
 // std's own Instant panics on wasm32-unknown-unknown, which has no clock; web_time is
 // std::time on desktop and performance.now() on the web.
@@ -44,7 +44,7 @@ pub const FILE: &str = "ink.svg";
 
 /// Whether an image block is the page's own ink, which the page names so that its words
 /// and what is on it agree, and so another program opening the page sees the handwriting.
-/// NoteCraft itself does not draw it as a picture: it draws the layer.
+/// ErgoNote itself does not draw it as a picture: it draws the layer.
 pub fn is_page_ink(src: &str) -> bool {
     src.trim() == FILE
 }
@@ -53,7 +53,7 @@ pub fn is_page_ink(src: &str) -> bool {
 ///
 /// Said of a line whose file may be gone, so the file itself cannot be asked: a picture
 /// beside the page file (not in `assets/`), an SVG, with `Ink` for its words. That is the
-/// line NoteCraft writes, and no line a person would write by hand for a picture of
+/// line ErgoNote writes, and no line a person would write by hand for a picture of
 /// their own, which lives in `assets/` and says what it is a picture of.
 pub fn is_ink_line(src: &str, alt: &str) -> bool {
     let src = src.trim();
@@ -64,7 +64,7 @@ pub fn is_ink_line(src: &str, alt: &str) -> bool {
         && alt.trim().eq_ignore_ascii_case("Ink")
 }
 
-/// An earlier version of NoteCraft put a drawing into the page as a picture, pointing at
+/// An earlier version of ErgoNote put a drawing into the page as a picture, pointing at
 /// `assets/drawing-1.svg`. Nothing draws those now, so such a page showed a broken picture
 /// where its drawing had been. This says whether an image block is one of them.
 pub fn is_old_sheet(src: &str) -> bool {
@@ -136,12 +136,12 @@ impl Pad {
     /// drawn on, so a page nobody has drawn on stays as clean as it was.
     pub fn of_page(page_dir: &Path) -> Pad {
         let file = page_dir.join(FILE);
-        let read = notecraft_store::vfs::read_to_string(&file).ok().and_then(|text| svg::read(&text).ok());
+        let read = ergonote_store::vfs::read_to_string(&file).ok().and_then(|text| svg::read(&text).ok());
         // A file that is there but could not be read, or that holds lines with no readings,
         // would lose them the first time the ink is written (issue #157).
         let incomplete = match &read {
             Some((_, flat)) => *flat > 0,
-            None => notecraft_store::vfs::exists(&file),
+            None => ergonote_store::vfs::exists(&file),
         };
         let (drawing, flat) = read.unwrap_or_else(|| (Drawing::new(SHEET_W, SHEET_H), 0));
         Pad {
@@ -168,11 +168,11 @@ impl Pad {
     /// Writes the ink, with its readings, which is what the page keeps.
     pub fn save(&mut self) -> std::io::Result<()> {
         if let Some(parent) = self.file.parent() {
-            notecraft_store::vfs::create_dir_all(parent)?;
+            ergonote_store::vfs::create_dir_all(parent)?;
         }
         // The file holds what this drawing does not: it is kept, as it was, before it is
         // written over or taken away, and only then (issue #157).
-        if self.incomplete && notecraft_store::vfs::is_file(&self.file) {
+        if self.incomplete && ergonote_store::vfs::is_file(&self.file) {
             let kept = self.keep_original()?;
             self.kept_original = Some(kept);
         }
@@ -180,13 +180,13 @@ impl Pad {
         // A page drawn on and then rubbed clean loses its file rather than keeping an
         // empty one, so a page with no ink has no ink in its folder either.
         if self.drawing.is_empty() {
-            match notecraft_store::vfs::remove_file(&self.file) {
+            match ergonote_store::vfs::remove_file(&self.file) {
                 Ok(()) => {}
                 Err(e) if e.kind() == std::io::ErrorKind::NotFound => {}
                 Err(e) => return Err(e),
             }
         } else {
-            notecraft_store::vfs::write(&self.file, svg::write(&self.drawing, svg::Flavour::Editable))?;
+            ergonote_store::vfs::write(&self.file, svg::write(&self.drawing, svg::Flavour::Editable))?;
         }
         self.dirty = false;
         Ok(())
@@ -199,9 +199,9 @@ impl Pad {
         for n in 1usize..=10_000 {
             let name = if n == 1 { format!("{FILE}.bak") } else { format!("ink-{n}.svg.bak") };
             let kept = folder.join(name);
-            match notecraft_store::vfs::OpenOptions::new().write(true).create_new(true).open(&kept) {
+            match ergonote_store::vfs::OpenOptions::new().write(true).create_new(true).open(&kept) {
                 Ok(mut out) => {
-                    let mut original = notecraft_store::vfs::File::open(&self.file)?;
+                    let mut original = ergonote_store::vfs::File::open(&self.file)?;
                     std::io::copy(&mut original, &mut out)?;
                     return Ok(kept);
                 }
@@ -221,13 +221,13 @@ impl Pad {
     /// name, and is never written over (issue #158).
     pub fn save_plain(&self) -> std::io::Result<PathBuf> {
         let folder = self.file.parent().map(Path::to_path_buf).unwrap_or_default();
-        notecraft_store::vfs::create_dir_all(&folder)?;
+        ergonote_store::vfs::create_dir_all(&folder)?;
         let text = svg::write(&self.drawing, svg::Flavour::Plain);
         for n in 1usize..=10_000 {
             let name = if n == 1 { "ink-picture.svg".to_string() } else { format!("ink-picture-{n}.svg") };
             let plain = folder.join(name);
             // `create_new` refuses a name that is taken, even one taken a moment ago.
-            match notecraft_store::vfs::OpenOptions::new().write(true).create_new(true).open(&plain) {
+            match ergonote_store::vfs::OpenOptions::new().write(true).create_new(true).open(&plain) {
                 Ok(mut file) => {
                     use std::io::Write;
                     file.write_all(text.as_bytes())?;
@@ -248,7 +248,7 @@ impl Pad {
             return 0;
         }
         let file = page_dir.join(src.trim().replace('/', std::path::MAIN_SEPARATOR_STR));
-        let Ok(text) = notecraft_store::vfs::read_to_string(&file) else { return 0 };
+        let Ok(text) = ergonote_store::vfs::read_to_string(&file) else { return 0 };
         let Ok((old, _)) = svg::read(&text) else { return 0 };
         let before = self.drawing.strokes.len();
         for stroke in old.strokes {
@@ -426,7 +426,7 @@ pub fn held_area(ctx: &egui::Context) -> Option<egui::Rect> {
 /// Where the window asks the ink layer to take the press that is down now as its own: for the
 /// one frame after a pen touching the page picked up a pen (issue #9).
 pub fn claim_press_id() -> egui::Id {
-    egui::Id::new("notecraft-ink-claim-press")
+    egui::Id::new("ergonote-ink-claim-press")
 }
 
 /// Asks the ink layer, the next time it is drawn, to take the press that is down as its own.
@@ -670,7 +670,7 @@ pub fn show(
             if down {
                 if let Some((x, y)) = at {
                     let from = *pad.shape_from.get_or_insert((x, y));
-                    let dabs = notecraft_ink::shapes::trace(shape, from, (x, y), 0.6);
+                    let dabs = ergonote_ink::shapes::trace(shape, from, (x, y), 0.6);
                     let mut stroke = Stroke::with_gain(pen.tool, pen.colour, pen.width, pen.gain);
                     for dab in dabs {
                         stroke.add(dab);
@@ -1049,7 +1049,7 @@ fn frame_moves(ui: &Ui, body: egui::Rect, origin: egui::Pos2, zoom: f32, pressur
 #[cfg(test)]
 mod tests {
     use super::*;
-    use notecraft_store::testing::TempDir;
+    use ergonote_store::testing::TempDir;
 
     fn stroke(x: f32) -> Stroke {
         let mut s = Stroke::new(Tool::Pen, Rgb(0xd0, 0x21, 0x21), 4.0);
@@ -1184,14 +1184,14 @@ mod tests {
             assert_eq!(std::fs::read_to_string(&kept).expect("kept"), text, "{label}: kept as it was");
             assert!(!crate::inkpad::is_old_sheet("ink.svg.bak"));
 
-            // Saving again does not keep another copy: the file is NoteCraft's own now.
+            // Saving again does not keep another copy: the file is ErgoNote's own now.
             assert!(pad.drawing.add(stroke(20.0)));
             pad.save().expect("saved again");
             assert_eq!(pad.kept_original, None, "{label}");
             assert!(!page.join("ink-2.svg.bak").exists(), "{label}");
         }
 
-        // A file of NoteCraft's own, read whole, is written over as before, with nothing kept.
+        // A file of ErgoNote's own, read whole, is written over as before, with nothing kept.
         let t = TempDir::new("ink-keep-own");
         let page = t.path().to_path_buf();
         let mut pad = Pad::of_page(&page);

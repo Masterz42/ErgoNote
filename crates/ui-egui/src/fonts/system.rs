@@ -66,7 +66,7 @@ impl Catalog {
             .ok_or_else(|| format!("Could not read the font data for family {family:?}"))?;
         let mut data = egui::FontData::from_owned(bytes);
         data.index = index;
-        let name = format!("notecraft-system-font:{family}");
+        let name = format!("ergonote-system-font:{family}");
         let key = super::named_family(family);
         let mut chain = vec![name.clone()];
         let fallbacks =
@@ -85,7 +85,7 @@ mod folder_tests {
     /// A font folder the catalog reads: the real Noto Sans Hebrew file, copied into a fresh folder.
     #[test]
     fn a_fonts_folder_adds_its_families_to_the_catalog() {
-        let folder = std::env::temp_dir().join(format!("notecraft-fonts-folder-{}", std::process::id()));
+        let folder = std::env::temp_dir().join(format!("ergonote-fonts-folder-{}", std::process::id()));
         std::fs::create_dir_all(&folder).expect("a folder");
         let source = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../assets/fonts/NotoSansHebrew.ttf");
         std::fs::copy(&source, folder.join("NotoSansHebrew.ttf")).expect("the font file");

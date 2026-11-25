@@ -1,5 +1,5 @@
 #![deny(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::unimplemented, clippy::todo, clippy::unreachable)]
-//! NoteCraft math (layer L1): a TeX subset parsed and laid out into drawing items.
+//! ErgoNote math (layer L1): a TeX subset parsed and laid out into drawing items.
 //!
 //! `parse` turns TeX into a tree and never fails: anything it does not know is kept
 //! as literal text. `layout` turns the tree into positioned text, lines and paths

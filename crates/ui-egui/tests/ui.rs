@@ -1,16 +1,16 @@
 //! UI tests, in the style of the other Craft apps: drive the real window headlessly, assert on
-//! behaviour and on pixels, and never commit golden screenshots. Set `NOTECRAFT_UI_VISUAL_DIR`
+//! behaviour and on pixels, and never commit golden screenshots. Set `ERGONOTE_UI_VISUAL_DIR`
 //! to also write review pictures of key screens to that folder (see `docs/testing.md`).
 
 use egui_kittest::Harness;
 use egui_kittest::kittest::Queryable;
-use notecraft_engine::sample::{Sample, create_sample};
-use notecraft_engine::{Output, Params, Session};
-use notecraft_store::Settings;
-use notecraft_store::testing::TempDir;
-use notecraft_ui_egui::control::{ControlRequest, start};
-use notecraft_ui_egui::theme::{Accent, Mode, ModePref, Theme, Tokens, contrast};
-use notecraft_ui_egui::{LOGO_PNG, NoteCraftApp};
+use ergonote_engine::sample::{Sample, create_sample};
+use ergonote_engine::{Output, Params, Session};
+use ergonote_store::Settings;
+use ergonote_store::testing::TempDir;
+use ergonote_ui_egui::control::{ControlRequest, start};
+use ergonote_ui_egui::theme::{Accent, Mode, ModePref, Theme, Tokens, contrast};
+use ergonote_ui_egui::{ErgoNoteApp, LOGO_PNG};
 
 mod support;
 use serde_json::{Value, json};
@@ -21,7 +21,7 @@ use support::clipboard::MemoryBoard;
 /// Forwards the copies egui was asked to make in the frames just drawn to the test's clipboard,
 /// as the system clipboard would receive them. egui's own copies leave a frame as output and
 /// are never written to the real clipboard by a test.
-fn forward_copies(h: &mut Harness<'_, NoteCraftApp>, board: &MemoryBoard) {
+fn forward_copies(h: &mut Harness<'_, ErgoNoteApp>, board: &MemoryBoard) {
     for command in &h.output().platform_output.commands {
         if let egui::OutputCommand::CopyText(text) = command {
             board.put_text(text);
@@ -30,7 +30,7 @@ fn forward_copies(h: &mut Harness<'_, NoteCraftApp>, board: &MemoryBoard) {
 }
 
 /// Presses Ctrl+`key` and lets the frames it takes run, forwarding what was copied.
-fn press_copy(h: &mut Harness<'_, NoteCraftApp>, board: &MemoryBoard, key: &str) {
+fn press_copy(h: &mut Harness<'_, ErgoNoteApp>, board: &MemoryBoard, key: &str) {
     ask(h, "ui.key", json!({"key": key, "ctrl": true})).expect("ctrl key");
     for _ in 0..8 {
         pump(h);
@@ -63,11 +63,11 @@ fn session(t: &TempDir) -> Session {
     Session::new(&t.path().join("notebooks"), settings).expect("session")
 }
 
-fn sample_app(label: &str) -> (TempDir, NoteCraftApp, Sample) {
+fn sample_app(label: &str) -> (TempDir, ErgoNoteApp, Sample) {
     let t = TempDir::new(label);
     let mut s = session(&t);
     let sample = create_sample(&mut s, Some(LOGO_PNG)).expect("sample");
-    let mut app = NoteCraftApp::new(s);
+    let mut app = ErgoNoteApp::new(s);
     app.set_redact_paths(true);
     (t, app, sample)
 }
@@ -111,12 +111,12 @@ fn ordinary_file_host_retains_its_saved_caption() {
     assert_eq!(h.query_all_by_label_contains(" - Saved").count(), 1);
 }
 
-fn split_sample_app(label: &str) -> (TempDir, NoteCraftApp, Sample) {
+fn split_sample_app(label: &str) -> (TempDir, ErgoNoteApp, Sample) {
     let t = TempDir::new(label);
     let mut s = session(&t);
     s.settings.set("split_panes", "true").expect("split test setting");
     let sample = create_sample(&mut s, Some(LOGO_PNG)).expect("sample");
-    let mut app = NoteCraftApp::new(s);
+    let mut app = ErgoNoteApp::new(s);
     app.set_redact_paths(true);
     (t, app, sample)
 }
@@ -132,22 +132,22 @@ fn touch_event(phase: egui::TouchPhase, force: Option<f32>) -> egui::Event {
     egui::Event::Touch { device_id: egui::TouchDeviceId(0), id: egui::TouchId(0), phase, pos: egui::Pos2::new(100.0, 100.0), force }
 }
 
-fn harness(app: NoteCraftApp, theme: Theme) -> Harness<'static, NoteCraftApp> {
+fn harness(app: ErgoNoteApp, theme: Theme) -> Harness<'static, ErgoNoteApp> {
     sized_harness(app, theme, egui::vec2(1200.0, 760.0))
 }
 
 /// A window of a given size, for a test that needs more room than the usual one: the Draw
 /// tab has more groups than fit in 1200 points, and a button that is scrolled off cannot
 /// be clicked.
-fn sized_harness(mut app: NoteCraftApp, theme: Theme, size: egui::Vec2) -> Harness<'static, NoteCraftApp> {
+fn sized_harness(mut app: ErgoNoteApp, theme: Theme, size: egui::Vec2) -> Harness<'static, ErgoNoteApp> {
     app.set_theme(theme);
     let builder = Harness::builder().with_size(size).with_accessibility_check(false);
     let builder = if support::gui::pixel_test_active() { builder.renderer(support::gui::renderer()) } else { builder };
-    builder.build_ui_state(|ui, app: &mut NoteCraftApp| app.show(ui), app)
+    builder.build_ui_state(|ui, app: &mut ErgoNoteApp| app.show(ui), app)
 }
 
 /// Feeds the clicks, keys and text that control requests queued into the next frame, then runs it.
-fn pump(h: &mut Harness<'_, NoteCraftApp>) {
+fn pump(h: &mut Harness<'_, ErgoNoteApp>) {
     let events = h.state_mut().take_events();
     h.input_mut().events.extend(events);
     h.step();
@@ -164,7 +164,7 @@ fn pump(h: &mut Harness<'_, NoteCraftApp>) {
 /// Background work gets up to half a second. When the page is saved and egui has stopped asking
 /// for repaints, two quiet frames plus a short grace period are enough; do not spend the full
 /// timeout after every interaction. The deadline remains a cap for slow image loads and saves.
-fn settle(h: &mut Harness<'_, NoteCraftApp>) {
+fn settle(h: &mut Harness<'_, ErgoNoteApp>) {
     const BACKGROUND: Duration = Duration::from_millis(500);
     const QUIET: Duration = Duration::from_millis(40);
     let start = std::time::Instant::now();
@@ -190,9 +190,9 @@ fn settle(h: &mut Harness<'_, NoteCraftApp>) {
     pump(h);
 }
 
-/// Writes a review picture when `NOTECRAFT_UI_VISUAL_DIR` is set. Never asserts.
-fn review(h: &mut Harness<'_, NoteCraftApp>, name: &str) {
-    if let Some(dir) = std::env::var_os("NOTECRAFT_UI_VISUAL_DIR") {
+/// Writes a review picture when `ERGONOTE_UI_VISUAL_DIR` is set. Never asserts.
+fn review(h: &mut Harness<'_, ErgoNoteApp>, name: &str) {
+    if let Some(dir) = std::env::var_os("ERGONOTE_UI_VISUAL_DIR") {
         let dir = PathBuf::from(dir);
         let _ = std::fs::create_dir_all(&dir);
         if let Ok(img) = support::gui::render(h) {
@@ -201,7 +201,7 @@ fn review(h: &mut Harness<'_, NoteCraftApp>, name: &str) {
     }
 }
 
-fn ask(h: &mut Harness<'_, NoteCraftApp>, method: &str, p: Value) -> Result<Value, String> {
+fn ask(h: &mut Harness<'_, ErgoNoteApp>, method: &str, p: Value) -> Result<Value, String> {
     let (req, rx) = ControlRequest::new(method, p);
     let ctx = h.ctx.clone();
     h.state_mut().handle_control(&ctx, req);
@@ -227,7 +227,7 @@ fn interface_language_choice_is_saved_and_restored_in_a_new_app() {
     let t = TempDir::new("ui-language-setting");
     let s = session(&t);
     s.settings.set("ui_language", "en").expect("set English UI");
-    let mut app = NoteCraftApp::new(s);
+    let mut app = ErgoNoteApp::new(s);
     app.set_redact_paths(true);
     let mut h = harness(app, LIGHT);
     h.state_mut().open_backstage_page("Options");
@@ -241,7 +241,7 @@ fn interface_language_choice_is_saved_and_restored_in_a_new_app() {
     let settings = Settings::at(t.path().join("settings.toml"));
     assert_eq!(settings.get("ui_language").as_deref(), Some("fr"));
 
-    let mut restored = NoteCraftApp::new(Session::new(&t.path().join("notebooks"), settings).expect("reopen session"));
+    let mut restored = ErgoNoteApp::new(Session::new(&t.path().join("notebooks"), settings).expect("reopen session"));
     restored.set_redact_paths(true);
     let mut restored = harness(restored, LIGHT);
     pump(&mut restored);
@@ -258,17 +258,17 @@ fn interface_language_choice_is_saved_and_restored_in_a_new_app() {
 /// does not press it: what pressing does is covered by the tests in `update.rs`.
 #[test]
 fn about_and_options_show_the_version_and_an_update_button() {
-    use notecraft_ui_egui::backstage::VERSION;
+    use ergonote_ui_egui::backstage::VERSION;
     for page in ["About", "Options"] {
         let t = TempDir::new("ui-check-for-updates");
         let s = session(&t);
         s.settings.set("ui_language", "en").expect("set English UI");
-        let mut app = NoteCraftApp::new(s);
+        let mut app = ErgoNoteApp::new(s);
         app.set_redact_paths(true);
         let mut h = harness(app, LIGHT);
         h.state_mut().open_backstage_page(page);
         pump(&mut h);
-        let _ = h.get_by_label(&format!("You are running NoteCraft {VERSION}."));
+        let _ = h.get_by_label(&format!("You are running ErgoNote {VERSION}."));
         let _ = h.get_by_label("Check for updates");
         let _ = h.get_by_label_contains("Nothing is sent until you press the button.");
         assert!(h.output().platform_output.commands.is_empty(), "{page}: nothing is opened before the button is pressed");
@@ -284,7 +284,7 @@ fn interface_size_choice_scales_the_window_and_is_restored_in_a_new_app() {
     let t = TempDir::new("ui-interface-size");
     let s = session(&t);
     s.settings.set("ui_language", "en").expect("set English UI");
-    let mut app = NoteCraftApp::new(s);
+    let mut app = ErgoNoteApp::new(s);
     app.set_redact_paths(true);
     let mut h = harness(app, LIGHT);
     pump(&mut h);
@@ -304,7 +304,7 @@ fn interface_size_choice_scales_the_window_and_is_restored_in_a_new_app() {
 
     let settings = Settings::at(t.path().join("settings.toml"));
     assert_eq!(settings.get("ui_scale").as_deref(), Some("150"), "the choice is saved");
-    let mut restored = NoteCraftApp::new(Session::new(&t.path().join("notebooks"), settings.clone()).expect("reopen session"));
+    let mut restored = ErgoNoteApp::new(Session::new(&t.path().join("notebooks"), settings.clone()).expect("reopen session"));
     restored.set_redact_paths(true);
     let mut restored = harness(restored, LIGHT);
     pump(&mut restored);
@@ -313,7 +313,7 @@ fn interface_size_choice_scales_the_window_and_is_restored_in_a_new_app() {
 
     // A value the list does not offer, written by hand, falls back to the system's scale.
     settings.set("ui_scale", "900").expect("hand-edited setting");
-    let odd = NoteCraftApp::new(Session::new(&t.path().join("notebooks"), settings).expect("reopen session"));
+    let odd = ErgoNoteApp::new(Session::new(&t.path().join("notebooks"), settings).expect("reopen session"));
     assert_eq!(odd.ui_scale(), 100, "an unknown size is not applied");
 }
 
@@ -322,7 +322,7 @@ fn french_screen_strings_from_the_localization_screenshots_are_rendered() {
     let t = TempDir::new("ui-french-ribbon");
     let s = session(&t);
     s.settings.set("ui_language", "fr").expect("French UI setting");
-    let mut h = harness(NoteCraftApp::new(s), LIGHT);
+    let mut h = harness(ErgoNoteApp::new(s), LIGHT);
     settle(&mut h);
 
     for label in ["Accueil", "Dessin", "Presse-papiers", "Coller", "Couper", "Copier", "Gras", "Italique"] {
@@ -335,7 +335,7 @@ fn header_language_picker_changes_and_persists_interface_language() {
     let t = TempDir::new("ui-header-language");
     let s = session(&t);
     s.settings.set("ui_language", "en").expect("English UI setting");
-    let mut h = harness(NoteCraftApp::new(s), LIGHT);
+    let mut h = harness(ErgoNoteApp::new(s), LIGHT);
     settle(&mut h);
 
     h.get_by_label("Interface language: English").click();
@@ -355,7 +355,7 @@ fn header_language_picker_labels_render_light_text_on_the_purple_band() {
     let t = TempDir::new("ui-header-language-contrast");
     let s = session(&t);
     s.settings.set("ui_language", "en").expect("English UI setting");
-    let mut h = harness(NoteCraftApp::new(s), LIGHT);
+    let mut h = harness(ErgoNoteApp::new(s), LIGHT);
     settle(&mut h);
 
     h.get_by_label("Interface language: English").click();
@@ -386,7 +386,7 @@ fn french_can_be_selected_saved_and_restored_from_the_language_picker() {
     let t = TempDir::new("ui-fr-language");
     let s = session(&t);
     s.settings.set("ui_language", "en").expect("English UI setting");
-    let mut h = harness(NoteCraftApp::new(s), LIGHT);
+    let mut h = harness(ErgoNoteApp::new(s), LIGHT);
     settle(&mut h);
 
     h.get_by_label("Interface language: English").click();
@@ -398,7 +398,7 @@ fn french_can_be_selected_saved_and_restored_from_the_language_picker() {
     assert!(h.query_all_by_label_contains("Accueil").count() > 0, "the French ribbon tab is visible");
 
     let s = Session::new(&t.path().join("notebooks"), Settings::at(t.path().join("settings.toml"))).expect("reopened session");
-    let mut restored = harness(NoteCraftApp::new(s), LIGHT);
+    let mut restored = harness(ErgoNoteApp::new(s), LIGHT);
     settle(&mut restored);
     assert!(restored.query_all_by_label_contains("Accueil").count() > 0, "the French choice is restored");
 }
@@ -408,7 +408,7 @@ fn only_french_and_english_are_offered_in_the_language_picker() {
     let t = TempDir::new("ui-two-languages");
     let s = session(&t);
     s.settings.set("ui_language", "en").expect("English UI setting");
-    let mut h = harness(NoteCraftApp::new(s), LIGHT);
+    let mut h = harness(ErgoNoteApp::new(s), LIGHT);
     settle(&mut h);
 
     h.get_by_label("Interface language: English").click();
@@ -425,7 +425,7 @@ fn pressure_availability_is_detected_from_input_not_tab_selection() {
     let t = TempDir::new("ui-pressure-modes");
     let mut s = pressure_session(&t);
     let sample = create_sample(&mut s, Some(LOGO_PNG)).expect("sample");
-    let mut app = NoteCraftApp::new(s);
+    let mut app = ErgoNoteApp::new(s);
     app.set_redact_paths(true);
     app.open_path(&sample.md_page.to_string_lossy());
     let mut h = harness(app, LIGHT);
@@ -578,7 +578,7 @@ fn drawing_over_text_keeps_ink_above_the_page_without_editing_words() {
     let state = ask(&mut h, "ui.inspect", json!({})).expect("inspect overlay drawing");
     assert_eq!(state.pointer("/ink/strokes").and_then(Value::as_u64), Some(1), "the overlay owns the drag: {state}");
     let body_after = h.state().body().unwrap_or_default().replace("<img src=\"ink.svg\" alt=\"Ink\">", "");
-    let normalize = |html: &str| notecraft_formats::html::to_markdown(html).replace("\n\n- [ ]", "\n- [ ]");
+    let normalize = |html: &str| ergonote_formats::html::to_markdown(html).replace("\n\n- [ ]", "\n- [ ]");
     assert_eq!(normalize(&body_after), normalize(&text), "drawing leaves the page words unchanged apart from its ink reference");
     assert_eq!(
         state.pointer("/page/blocks").and_then(Value::as_u64),
@@ -714,7 +714,7 @@ fn ctrl_f_in_the_page_goes_to_search_and_writes_nothing() {
     }
 }
 
-fn search_for(h: &mut Harness<'_, NoteCraftApp>, query: &str) {
+fn search_for(h: &mut Harness<'_, ErgoNoteApp>, query: &str) {
     ask(h, "ui.key", json!({"key": "F", "ctrl": true})).expect("focus search");
     settle(h);
     ask(h, "ui.text", json!({"text": query})).expect("search query");
@@ -836,7 +836,7 @@ fn search_enter_opens_the_first_match_without_editing_either_page() {
     settle(&mut h);
     assert!(h.state().body().unwrap_or_default().contains("Kickoff notes"), "Enter opens the first matching page");
     assert_eq!(h.query_all_by_label("Close search").count(), 0, "keyboard navigation closes results");
-    assert_eq!(notecraft_store::page::load_page(&s.md_page).expect("original page").body, before, "search leaves the original page unchanged");
+    assert_eq!(ergonote_store::page::load_page(&s.md_page).expect("original page").body, before, "search leaves the original page unchanged");
 }
 
 /// The phone's formatting bar uses the ribbon's marks (B, I, U, highlighter, Aa) rather than
@@ -926,7 +926,7 @@ fn writing_on_the_page_changes_the_block_and_the_file() {
         let mut h = harness(app, LIGHT);
         settle(&mut h);
         let page = ask(&mut h, "ui.inspect", json!({})).expect("inspect")["page"].clone();
-        assert_eq!(page["writable"], true, "{label}: a page NoteCraft wrote can be written on");
+        assert_eq!(page["writable"], true, "{label}: a page ErgoNote wrote can be written on");
         assert_eq!(page["caret"], Value::Null, "{label}: no caret until the page is clicked in");
 
         // The caret goes in the first paragraph, and what is typed lands in that block.
@@ -1009,7 +1009,7 @@ fn tags_go_on_a_line_and_come_off_again() {
     h.run();
     h.run();
     let body = h.state().body().unwrap_or_default().to_string();
-    assert!(body.lines().any(|l| l.starts_with("#important NoteCraft pages")), "the tag is in the page:\n{body}");
+    assert!(body.lines().any(|l| l.starts_with("#important ErgoNote pages")), "the tag is in the page:\n{body}");
     // The same tag again removes it.
     h.get_by_label("Important (Ctrl+2)").click();
     h.run();
@@ -1021,7 +1021,7 @@ fn tags_go_on_a_line_and_come_off_again() {
     h.run();
     h.run();
     let body = h.state().body().unwrap_or_default().to_string();
-    assert!(body.lines().any(|l| l.starts_with("- [ ] NoteCraft pages")), "a to-do line:\n{body}");
+    assert!(body.lines().any(|l| l.starts_with("- [ ] ErgoNote pages")), "a to-do line:\n{body}");
     review(&mut h, "tags");
 }
 
@@ -1197,7 +1197,7 @@ fn a_table_pasted_from_another_app_lands_as_a_table() {
     assert!(body.contains("test"), "with the cells that were copied:\n{body}");
 }
 
-/// Writing in an Arabic line: the caret is NoteCraft's own there, so a click lands on the
+/// Writing in an Arabic line: the caret is ErgoNote's own there, so a click lands on the
 /// character under the pointer and the arrow keys step the way the eye moves.
 #[test]
 fn the_caret_in_an_arabic_line_is_ours_and_behaves() {
@@ -1247,7 +1247,7 @@ fn a_selection_can_be_made_inside_an_arabic_line() {
     pump(&mut h);
     ask(&mut h, "ui.text", json!({"text": "السعر 123 ريال"})).expect("type");
     pump(&mut h);
-    let selection = |h: &mut Harness<'_, NoteCraftApp>| -> (u64, u64) {
+    let selection = |h: &mut Harness<'_, ErgoNoteApp>| -> (u64, u64) {
         let v = ask(h, "ui.inspect", json!({})).expect("inspect");
         let caret = v.pointer("/page/caret").cloned().unwrap_or(Value::Null);
         (caret.get("at").and_then(Value::as_u64).unwrap_or(0), caret.get("anchor").and_then(Value::as_u64).unwrap_or(0))
@@ -1290,7 +1290,7 @@ fn a_line_looks_the_same_when_the_caret_arrives() {
     let caret = ask(&mut h, "ui.inspect", json!({})).expect("inspect").pointer("/page/caret").cloned().unwrap_or(Value::Null);
     let text = caret.get("text").and_then(Value::as_str).unwrap_or_default().to_string();
     assert!(!text.contains("#important"), "the line being written in shows no marker: {text:?}");
-    assert!(text.starts_with("NoteCraft pages"), "it shows the words: {text:?}");
+    assert!(text.starts_with("ErgoNote pages"), "it shows the words: {text:?}");
 
     // Leaving and coming back keeps both: the words on screen, the marker in the file.
     ask(&mut h, "ui.caret", json!({"block": 2})).expect("caret");
@@ -1315,7 +1315,7 @@ fn a_page_opens_in_the_boxes_it_was_arranged_in() {
     assert!(blocks >= 3, "the sample page has blocks in it: {blocks}");
 
     // One box for everything is what a page that was never arranged gets.
-    let boxes = |h: &mut Harness<'_, NoteCraftApp>| -> Vec<Value> {
+    let boxes = |h: &mut Harness<'_, ErgoNoteApp>| -> Vec<Value> {
         ask(h, "ui.inspect", json!({})).expect("inspect").pointer("/page/containers").and_then(Value::as_array).cloned().unwrap_or_default()
     };
     assert_eq!(boxes(&mut h).len(), 1, "one box holding the page");
@@ -1341,7 +1341,7 @@ fn a_container_can_be_dragged_and_stays_where_it_is_put() {
     app.open_path(&page);
     let mut h = harness(app, LIGHT);
     settle(&mut h);
-    let look = |h: &mut Harness<'_, NoteCraftApp>| -> Value { ask(h, "ui.inspect", json!({})).expect("inspect") };
+    let look = |h: &mut Harness<'_, ErgoNoteApp>| -> Value { ask(h, "ui.inspect", json!({})).expect("inspect") };
     let blocks = look(&mut h).pointer("/page/blocks").and_then(Value::as_u64).unwrap_or(0);
     let line = format!("40,20,320,{blocks}");
     ask(&mut h, "engine.execute", json!({"command": "page.containers", "params": {"path": page.clone(), "boxes": line}})).expect("arrange");
@@ -1389,7 +1389,7 @@ fn the_notebooks_and_the_pages_can_have_columns_of_their_own() {
     app.open_path(&s.md_page.to_string_lossy());
     let mut h = harness(app, LIGHT);
     settle(&mut h);
-    let panes = |h: &mut Harness<'_, NoteCraftApp>| -> (bool, bool) {
+    let panes = |h: &mut Harness<'_, ErgoNoteApp>| -> (bool, bool) {
         let v = ask(h, "ui.inspect", json!({})).expect("inspect");
         (
             v.pointer("/panes/split").and_then(Value::as_bool).unwrap_or(false),
@@ -1428,7 +1428,7 @@ fn a_page_can_be_added_between_two_others() {
     h.get_by_label("\u{2630}").click();
     settle(&mut h);
 
-    let titles = |h: &mut Harness<'_, NoteCraftApp>| -> Vec<String> {
+    let titles = |h: &mut Harness<'_, ErgoNoteApp>| -> Vec<String> {
         ask(h, "ui.inspect", json!({}))
             .expect("inspect")
             .pointer("/rows")
@@ -1513,12 +1513,12 @@ fn clearing_a_page_title_makes_it_untitled() {
     assert_eq!(state.pointer("/page/titleArea").and_then(Value::as_str), Some(""), "still untitled when opened again");
 }
 
-/// Issue #316: on a phone a long title was cut off at the page's edge ("Welcome to NoteCraft
+/// Issue #316: on a phone a long title was cut off at the page's edge ("Welcome to ErgoNote
 /// (Ver 0.0.1"), because the title box was a single line that scrolls sideways. It wraps now.
 /// It is still one line of text: Enter finishes it, and a pasted line break becomes a space.
 #[test]
 fn a_long_title_wraps_on_a_narrow_page() {
-    let long = "Welcome to NoteCraft (Ver 0.0.12) and a few more words";
+    let long = "Welcome to ErgoNote (Ver 0.0.12) and a few more words";
     let (_t, app, s) = sample_app("ui-title-wraps");
     let mut h = phone_harness(app);
     settle(&mut h);
@@ -1527,7 +1527,7 @@ fn a_long_title_wraps_on_a_narrow_page() {
     ask(&mut h, "ui.open", json!({"path": s.html_page.to_string_lossy()})).expect("open");
     settle(&mut h);
     review(&mut h, "title_wraps_debug");
-    let title = |h: &Harness<'_, NoteCraftApp>| {
+    let title = |h: &Harness<'_, ErgoNoteApp>| {
         h.get_all_by_role(egui::accesskit::Role::MultilineTextInput)
             .find(|n| n.value().is_some_and(|v| v.starts_with("Welcome")))
             .expect("the title box")
@@ -1612,7 +1612,7 @@ fn a_notebook_opened_from_elsewhere_joins_the_others() {
     let (t, app, _s) = sample_app("ui-open-elsewhere");
     let mut h = harness(app, LIGHT);
     settle(&mut h);
-    let count = |h: &mut Harness<'_, NoteCraftApp>| h.state().session().tree().len();
+    let count = |h: &mut Harness<'_, ErgoNoteApp>| h.state().session().tree().len();
     let before = count(&mut h);
     assert!(before >= 1, "the sample notebooks are open");
 
@@ -1620,10 +1620,10 @@ fn a_notebook_opened_from_elsewhere_joins_the_others() {
     let away = t.path().join("away");
     std::fs::create_dir_all(&away).expect("dir");
     let made = {
-        let settings = notecraft_store::Settings::at(t.path().join("settings").join("s.toml"));
-        let mut other = notecraft_engine::Session::new(&away, settings).expect("session");
-        match other.run("notebook.create", &notecraft_engine::Params::from([("name".to_string(), "Elsewhere".to_string())])) {
-            Ok(notecraft_engine::Output::Path(p)) => p,
+        let settings = ergonote_store::Settings::at(t.path().join("settings").join("s.toml"));
+        let mut other = ergonote_engine::Session::new(&away, settings).expect("session");
+        match other.run("notebook.create", &ergonote_engine::Params::from([("name".to_string(), "Elsewhere".to_string())])) {
+            Ok(ergonote_engine::Output::Path(p)) => p,
             other => panic!("expected a path, got {other:?}"),
         }
     };
@@ -1650,7 +1650,7 @@ fn the_last_page_opens_again_next_time() {
     assert!(h.state().body().is_some_and(|b| b.starts_with("# Format ideas")));
     drop(h);
     // A new window on the same notebooks folder and settings file.
-    let again = NoteCraftApp::new(session(&t));
+    let again = ErgoNoteApp::new(session(&t));
     let mut h2 = harness(again, LIGHT);
     settle(&mut h2);
     let inspect = ask(&mut h2, "ui.inspect", json!({})).expect("inspect");
@@ -1665,7 +1665,7 @@ fn deep_pages_expand_and_collapse_at_every_level() {
     let (_t, app, _s) = sample_app("ui-deep");
     let mut h = harness(app, LIGHT);
     h.run();
-    let rows = |h: &mut Harness<'_, NoteCraftApp>| ask(h, "ui.inspect", json!({})).expect("inspect")["rows"].as_array().map(Vec::len).unwrap_or(0);
+    let rows = |h: &mut Harness<'_, ErgoNoteApp>| ask(h, "ui.inspect", json!({})).expect("inspect")["rows"].as_array().map(Vec::len).unwrap_or(0);
     assert_eq!(rows(&mut h), 2, "collapsed: the two notebooks");
     h.get_by_label("Expand all").click();
     h.run();
@@ -1719,7 +1719,7 @@ fn a_page_dropped_on_a_gap_lands_between_its_neighbours() {
     h.get_by_label("\u{2630}").click();
     settle(&mut h);
     let section = "my-notebook/work/projects/";
-    let titles_here = |h: &mut Harness<'_, NoteCraftApp>| -> Vec<String> {
+    let titles_here = |h: &mut Harness<'_, ErgoNoteApp>| -> Vec<String> {
         let rows = ask(h, "ui.inspect", json!({})).expect("inspect")["rows"].clone();
         rows.as_array()
             .map(|rows| {
@@ -1826,11 +1826,11 @@ fn insert_table_dialog_makes_a_table_of_the_typed_size() {
         ask(&mut h, "ui.caret", json!({"block": 0})).expect("caret");
         settle(&mut h);
         let tables =
-            |h: &Harness<'_, NoteCraftApp>| h.state().editor_blocks().iter().filter(|b| matches!(b, notecraft_formats::Block::Table { .. })).count();
+            |h: &Harness<'_, ErgoNoteApp>| h.state().editor_blocks().iter().filter(|b| matches!(b, ergonote_formats::Block::Table { .. })).count();
         let before = tables(&h);
         h.get_by_label("Insert").click();
         h.run();
-        let open = |h: &mut Harness<'_, NoteCraftApp>| {
+        let open = |h: &mut Harness<'_, ErgoNoteApp>| {
             h.get_by_label("Table").click();
             h.run();
             h.get_by_label("Insert Table…").click();
@@ -1864,7 +1864,7 @@ fn insert_table_dialog_makes_a_table_of_the_typed_size() {
         settle(&mut h);
         let blocks = h.state().editor_blocks();
         let made = blocks.iter().find_map(|b| match b {
-            notecraft_formats::Block::Table { head, rows } => Some((head.len(), rows.len() + 1)),
+            ergonote_formats::Block::Table { head, rows } => Some((head.len(), rows.len() + 1)),
             _ => None,
         });
         assert_eq!(made, Some((12, 25)), "html={html}: 12 columns and 25 rows, heading included");
@@ -1879,7 +1879,7 @@ fn insert_table_dialog_makes_a_table_of_the_typed_size() {
             .state()
             .editor_blocks()
             .iter()
-            .any(|b| matches!(b, notecraft_formats::Block::Table { head, rows } if head.len() == 12 && rows.len() + 1 == 25));
+            .any(|b| matches!(b, ergonote_formats::Block::Table { head, rows } if head.len() == 12 && rows.len() + 1 == 25));
         assert!(reopened, "html={html}: saved and read back at 12 by 25");
     }
 }
@@ -1896,12 +1896,12 @@ fn the_ribbon_formats_what_the_caret_is_in() {
     h.get_by_label("Heading 2").click();
     h.run();
     let body = h.state().body().unwrap_or_default().to_string();
-    assert!(body.lines().any(|l| l.starts_with("## NoteCraft pages")), "the paragraph became a heading:\n{body}");
+    assert!(body.lines().any(|l| l.starts_with("## ErgoNote pages")), "the paragraph became a heading:\n{body}");
     // And back to ordinary text with the same button.
     h.get_by_label("Heading 2").click();
     h.run();
     let body = h.state().body().unwrap_or_default().to_string();
-    assert!(body.lines().any(|l| l.starts_with("NoteCraft pages")), "and back again:\n{body}");
+    assert!(body.lines().any(|l| l.starts_with("ErgoNote pages")), "and back again:\n{body}");
     // A to-do box on the same line.
     h.get_by_label("To Do Tag").click();
     h.run();
@@ -1909,13 +1909,13 @@ fn the_ribbon_formats_what_the_caret_is_in() {
     let body = h.state().body().unwrap_or_default().to_string();
     let inspect = ask(&mut h, "ui.inspect", json!({})).expect("inspect");
     let (status, caret) = (inspect["status"]["text"].clone(), inspect["page"]["caret"].clone());
-    assert!(body.lines().any(|l| l.starts_with("- [ ] NoteCraft pages")), "a to-do line (status {status}, caret {caret}):\n{body}");
+    assert!(body.lines().any(|l| l.starts_with("- [ ] ErgoNote pages")), "a to-do line (status {status}, caret {caret}):\n{body}");
 }
 
 #[test]
 fn creating_a_notebook_through_the_dialog() {
     let t = TempDir::new("ui-newnb");
-    let mut app = NoteCraftApp::new(session(&t));
+    let mut app = ErgoNoteApp::new(session(&t));
     app.set_redact_paths(true);
     let mut h = harness(app, LIGHT);
     h.run();
@@ -1933,7 +1933,7 @@ fn creating_a_notebook_through_the_dialog() {
 #[test]
 fn the_default_format_selector_changes_the_global_setting() {
     let t = TempDir::new("ui-format");
-    let mut h = harness(NoteCraftApp::new(session(&t)), LIGHT);
+    let mut h = harness(ErgoNoteApp::new(session(&t)), LIGHT);
     h.run();
     assert_eq!(h.state().session().settings.global_format().0.id(), "html");
     h.get_by_role(egui::accesskit::Role::ComboBox).click();
@@ -1988,7 +1988,7 @@ fn control_requests_run_commands_and_drive_input() {
 
 /// A link in a page is followed with a plain click when the caret is not in its line: a
 /// relative link opens the page it names, a broken one says so and stays put, a web address
-/// is handed to the browser. The resolver itself is tested in `notecraft-store`.
+/// is handed to the browser. The resolver itself is tested in `ergonote-store`.
 #[test]
 fn clicking_a_link_opens_the_page_it_names() {
     let (_t, app, s) = sample_app("ui-link");
@@ -2004,7 +2004,7 @@ fn clicking_a_link_opens_the_page_it_names() {
     let page = made.as_str().expect("a path").to_string();
     let body = "[Open the format page](../format-ideas/)\n\n[A page that is not there](../nowhere/)\n\n[The web](https://example.test/)\n";
     ask(&mut h, "engine.execute", json!({"command": "page.save", "params": {"path": page, "body": body}})).expect("save");
-    let click = |h: &mut Harness<'static, NoteCraftApp>, label: &str| {
+    let click = |h: &mut Harness<'static, ErgoNoteApp>, label: &str| {
         let rect = h.get_by_label(label).rect();
         ask(h, "ui.click", json!({"x": rect.center().x, "y": rect.center().y})).expect("click");
         for _ in 0..6 {
@@ -2115,11 +2115,11 @@ fn welcome_notebook_prompt_can_replace_and_open_the_release_copy() {
     s.settings.set("privacy_welcome_seen", "").expect("first use: the wizard opens");
     let source = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../docs/demo/DemoNotebook");
     let notebooks = t.path().join("notebooks");
-    let destination = notebooks.join("welcome-to-notecraft");
+    let destination = notebooks.join("welcome-to-ergonote");
     std::fs::create_dir_all(&destination).expect("old Welcome notebook");
     std::fs::write(destination.join("old-user-edit.txt"), "replace this managed copy").expect("old Welcome edit");
-    let app = NoteCraftApp::new(s).with_welcome_notebook_setup(move |root, format| {
-        let destination = root.join("welcome-to-notecraft");
+    let app = ErgoNoteApp::new(s).with_welcome_notebook_setup(move |root, format| {
+        let destination = root.join("welcome-to-ergonote");
         if destination.exists() {
             std::fs::remove_dir_all(&destination).map_err(|error| error.to_string())?;
         }
@@ -2145,10 +2145,10 @@ fn welcome_notebook_prompt_can_replace_and_open_the_release_copy() {
     assert!(destination.join("_node.toml").is_file(), "the chosen edition is the notebook itself, so the notebook list finds it");
     assert!(destination.join("00-start/welcome/index.md").is_file(), "the chosen CMGFM release content is installed");
     assert!(!destination.join("html").exists(), "the other edition is not installed");
-    assert_eq!(h.state().session().settings.default_format(), Some(notecraft_model::PageFormat::Cmgfm), "the format step saves the default");
+    assert_eq!(h.state().session().settings.default_format(), Some(ergonote_model::PageFormat::Cmgfm), "the format step saves the default");
     assert_eq!(
         h.state().title(),
-        Some(format!("Welcome to NoteCraft (Ver {})", env!("CARGO_PKG_VERSION")).as_str()),
+        Some(format!("Welcome to ErgoNote (Ver {})", env!("CARGO_PKG_VERSION")).as_str()),
         "the generated Welcome page is opened"
     );
     assert_eq!(h.state().session().settings.get("privacy_welcome_seen").as_deref(), Some("true"), "finishing the wizard marks it seen");
@@ -2160,8 +2160,8 @@ fn declining_the_welcome_notebook_prompt_does_not_create_it() {
     let s = session(&t);
     s.settings.set("ui_language", "en").expect("English UI setting");
     s.settings.set("privacy_welcome_seen", "").expect("first use: the wizard opens");
-    let app = NoteCraftApp::new(s).with_welcome_notebook_setup(|root, _format| {
-        let destination = root.join("welcome-to-notecraft");
+    let app = ErgoNoteApp::new(s).with_welcome_notebook_setup(|root, _format| {
+        let destination = root.join("welcome-to-ergonote");
         std::fs::create_dir_all(&destination).map_err(|error| error.to_string())?;
         Ok(destination)
     });
@@ -2178,7 +2178,7 @@ fn declining_the_welcome_notebook_prompt_does_not_create_it() {
     h.get_by_label("Finish").click();
     settle(&mut h);
 
-    assert!(!t.path().join("notebooks/welcome-to-notecraft").exists(), "No leaves the notebooks folder unchanged");
+    assert!(!t.path().join("notebooks/welcome-to-ergonote").exists(), "No leaves the notebooks folder unchanged");
     assert_eq!(h.state().session().settings.get("privacy_welcome_seen").as_deref(), Some("true"), "finishing the wizard marks it seen");
 }
 
@@ -2190,7 +2190,7 @@ fn clicking_outside_the_first_use_wizard_keeps_its_buttons_working() {
     let s = session(&t);
     s.settings.set("ui_language", "en").expect("English UI setting");
     s.settings.set("privacy_welcome_seen", "").expect("first use: the wizard opens");
-    let app = NoteCraftApp::new(s).with_welcome_notebook_setup(|root, _format| Ok(root.join("welcome-to-notecraft")));
+    let app = ErgoNoteApp::new(s).with_welcome_notebook_setup(|root, _format| Ok(root.join("welcome-to-ergonote")));
     let mut h = harness(app, LIGHT);
     settle(&mut h);
 
@@ -2222,7 +2222,7 @@ fn failed_welcome_notebook_generation_keeps_the_prompt_open() {
     let s = session(&t);
     s.settings.set("ui_language", "en").expect("English UI setting");
     s.settings.set("privacy_welcome_seen", "").expect("first use: the wizard opens");
-    let app = NoteCraftApp::new(s).with_welcome_notebook_setup(|_, _| Err("permission denied".to_string()));
+    let app = ErgoNoteApp::new(s).with_welcome_notebook_setup(|_, _| Err("permission denied".to_string()));
     let mut h = harness(app, LIGHT);
     h.get_by_label("Next").click();
     settle(&mut h);
@@ -2238,43 +2238,43 @@ fn failed_welcome_notebook_generation_keeps_the_prompt_open() {
 
     let _ = h.get_by_label("Could not update the Welcome notebook: permission denied");
     assert_eq!(h.state().session().settings.get("welcome_notebook_choice_version"), None, "a failed copy is not remembered");
-    assert!(!t.path().join("notebooks/welcome-to-notecraft").exists(), "a failed copy creates no partial notebook");
+    assert!(!t.path().join("notebooks/welcome-to-ergonote").exists(), "a failed copy creates no partial notebook");
 }
 
 #[test]
 fn an_empty_notebooks_folder_stays_empty_when_the_app_opens() {
     let t = TempDir::new("ui-empty-notebooks");
-    let app = NoteCraftApp::new(session(&t));
+    let app = ErgoNoteApp::new(session(&t));
     let mut h = harness(app, LIGHT);
     h.run();
     assert!(h.state().session().tree().is_empty(), "app startup only discovers existing user data");
-    assert!(!t.path().join("notebooks/welcome-to-notecraft").exists(), "app startup does not install demo content");
+    assert!(!t.path().join("notebooks/welcome-to-ergonote").exists(), "app startup does not install demo content");
 }
 
-/// A notebook installed by the platform is just user data: NoteCraft discovers it in the
+/// A notebook installed by the platform is just user data: ErgoNote discovers it in the
 /// ordinary notebooks root and opens it through the same path used for any other notebook.
 #[test]
 fn an_installed_welcome_notebook_is_discovered_and_opened_as_user_data() {
     let t = TempDir::new("ui-welcome");
     let notebooks = t.path().join("notebooks");
     let source = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../docs/demo/DemoNotebook/html");
-    let destination = notebooks.join("welcome-to-notecraft");
+    let destination = notebooks.join("welcome-to-ergonote");
     copy_tree(&source, &destination);
 
     let settings = Settings::at(t.path().join("settings.toml"));
     settings.set("privacy_welcome_seen", "true").expect("test settings");
     settings.set("split_panes", "false").expect("test navigation setting");
     settings.set("pressure_unavailable_never", "true").expect("test pressure setting");
-    let app = NoteCraftApp::new(Session::new(&notebooks, settings).expect("session"));
+    let app = ErgoNoteApp::new(Session::new(&notebooks, settings).expect("session"));
     let mut h = harness(app, LIGHT);
     h.run();
     assert_eq!(h.state().session().tree().len(), 1);
-    assert_eq!(h.state().session().tree()[0].info.title, "Welcome to NoteCraft");
+    assert_eq!(h.state().session().tree()[0].info.title, "Welcome to ErgoNote");
     h.state_mut().open_path(&destination.to_string_lossy());
     settle(&mut h);
     // The start page's title is in its head and the window shows it above the page. Its
     // large banner is the first thing in the body.
-    let expected_title = format!("Welcome to NoteCraft (Ver {})", env!("CARGO_PKG_VERSION"));
+    let expected_title = format!("Welcome to ErgoNote (Ver {})", env!("CARGO_PKG_VERSION"));
     assert_eq!(h.state().title(), Some(expected_title.as_str()), "opened on the start page");
     assert!(
         h.state().body().is_some_and(|b| b.starts_with("<p><img src=\"assets/banner-start.png\"")),
@@ -2307,11 +2307,11 @@ fn an_installed_welcome_notebook_is_discovered_and_opened_as_user_data() {
 #[test]
 fn the_control_port_works_end_to_end() {
     let t = TempDir::new("ui-port");
-    let probe = harness(NoteCraftApp::new(session(&t)), LIGHT);
+    let probe = harness(ErgoNoteApp::new(session(&t)), LIGHT);
     let (server, rx) = start(0, t.path(), probe.ctx.clone()).expect("start");
     let (port, key) = (server.port, std::fs::read_to_string(&server.key_file).expect("key file"));
     drop(probe);
-    let mut app = NoteCraftApp::new(session(&t));
+    let mut app = ErgoNoteApp::new(session(&t));
     app.set_redact_paths(true);
     let mut h = harness(app.with_control(server, rx), LIGHT);
     let client = std::thread::spawn(move || {
@@ -2352,8 +2352,8 @@ fn display_math_paints_ink_inside_its_box() {
     let mut h = Harness::builder().with_size(egui::vec2(400.0, 160.0)).renderer(support::gui::renderer()).build_ui(|ui| {
         let full = ui.max_rect();
         ui.painter().rect_filled(full, 0.0, egui::Color32::WHITE);
-        notecraft_ui_egui::fonts::install_once(ui.ctx());
-        notecraft_ui_egui::mathview::display(ui, "x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}", 28.0, egui::Color32::BLACK);
+        ergonote_ui_egui::fonts::install_once(ui.ctx());
+        ergonote_ui_egui::mathview::display(ui, "x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}", 28.0, egui::Color32::BLACK);
     });
     h.run();
     let img = support::gui::render(&mut h).expect("render");
@@ -2381,7 +2381,7 @@ fn an_equation_in_a_page_is_not_shown_as_tex_source() {
 #[test]
 fn the_theme_menu_offers_fourteen_themes() {
     let t = TempDir::new("ui-menu");
-    let mut h = harness(NoteCraftApp::new(session(&t)), DARK);
+    let mut h = harness(ErgoNoteApp::new(session(&t)), DARK);
     h.run();
     h.get_by_label("Theme: Dark Default").click();
     h.run();
@@ -2392,7 +2392,7 @@ fn the_theme_menu_offers_fourteen_themes() {
 #[test]
 fn picking_a_swatch_changes_the_theme_and_is_remembered() {
     let t = TempDir::new("ui-pick");
-    let mut h = harness(NoteCraftApp::new(session(&t)), LIGHT);
+    let mut h = harness(ErgoNoteApp::new(session(&t)), LIGHT);
     h.run();
     h.get_by_label("Theme: Light Default").click();
     h.run();
@@ -2401,12 +2401,12 @@ fn picking_a_swatch_changes_the_theme_and_is_remembered() {
     assert_eq!(h.state().theme(), Theme { mode: Mode::Dark, accent: Accent::Purple });
     assert_eq!(h.state().mode_pref(), ModePref::Dark);
     drop(h);
-    let again = NoteCraftApp::new(session(&t));
+    let again = ErgoNoteApp::new(session(&t));
     assert_eq!(again.mode_pref(), ModePref::Dark, "a new window starts in the saved theme");
     let mut h2 = Harness::builder()
         .with_size(egui::vec2(1200.0, 760.0))
         .with_accessibility_check(false)
-        .build_ui_state(|ui, a: &mut NoteCraftApp| a.show(ui), again);
+        .build_ui_state(|ui, a: &mut ErgoNoteApp| a.show(ui), again);
     h2.run();
     assert_eq!(h2.state().theme(), Theme { mode: Mode::Dark, accent: Accent::Purple });
 }
@@ -2418,10 +2418,10 @@ fn picking_a_swatch_changes_the_theme_and_is_remembered() {
 fn a_swatch_overrides_the_system_mode() {
     let _pixel_test = support::gui::pixel_test();
     let t = TempDir::new("ui-swatch-mode");
-    let mut app = NoteCraftApp::new(session(&t));
+    let mut app = ErgoNoteApp::new(session(&t));
     app.follow_system_theme(Accent::Default);
     assert_eq!(app.mode_pref(), ModePref::System);
-    let mut h = Harness::builder().with_size(egui::vec2(1200.0, 760.0)).build_ui_state(|ui, a: &mut NoteCraftApp| a.show(ui), app);
+    let mut h = Harness::builder().with_size(egui::vec2(1200.0, 760.0)).build_ui_state(|ui, a: &mut ErgoNoteApp| a.show(ui), app);
     h.run();
     // The harness reports a dark system, so the swatch to prove the point is the light one.
     let system = h.state().theme().mode;
@@ -2438,7 +2438,7 @@ fn a_swatch_overrides_the_system_mode() {
     let matching = img
         .pixels()
         .filter(|p| {
-            let l = notecraft_ui_egui::theme::luminance(egui::Color32::from_rgb(p[0], p[1], p[2]));
+            let l = ergonote_ui_egui::theme::luminance(egui::Color32::from_rgb(p[0], p[1], p[2]));
             if other == Mode::Dark { l < 0.1 } else { l > 0.6 }
         })
         .count();
@@ -2560,7 +2560,7 @@ fn ink_is_written_on_the_page_itself_and_saved_beside_it() {
 
     // Draw > Insert Space picks up the same tool as Insert > Insert Space, and Esc puts it down.
     let tool =
-        |h: &mut Harness<'_, NoteCraftApp>| ask(h, "ui.inspect", json!({})).expect("inspect").pointer("/canvas/insertSpace").and_then(Value::as_bool);
+        |h: &mut Harness<'_, ErgoNoteApp>| ask(h, "ui.inspect", json!({})).expect("inspect").pointer("/canvas/insertSpace").and_then(Value::as_bool);
     assert_eq!(tool(&mut h), Some(false));
     assert!(!h.get_by_label("Insert Space").accesskit_node().is_disabled(), "Draw > Insert Space is no longer a placeholder");
     h.get_by_label("Insert Space").click();
@@ -2873,7 +2873,7 @@ fn the_laser_pointer_leaves_a_fading_trail_and_nothing_on_the_page() {
     let mut h = sized_harness(app, LIGHT, egui::vec2(1400.0, 800.0));
     h.state_mut().open_path(&s.html_page.to_string_lossy());
     settle(&mut h);
-    let state = |h: &mut Harness<'_, NoteCraftApp>| ask(h, "ui.inspect", json!({})).expect("inspect");
+    let state = |h: &mut Harness<'_, ErgoNoteApp>| ask(h, "ui.inspect", json!({})).expect("inspect");
     // Red against the page: the ribbon's own red words (Pressure off) are counted before and taken off.
     let red = |img: &image::RgbaImage| {
         img.pixels().filter(|p| i32::from(p.0[0]) - i32::from(p.0[1]) > 70 && i32::from(p.0[0]) - i32::from(p.0[2]) > 60).count()
@@ -2932,7 +2932,7 @@ fn save_a_copy_copies_the_section_into_a_folder_and_leaves_the_original() {
     let out = t.path().join("copies");
     std::fs::create_dir_all(&out).expect("out");
     let section = s.html_page.parent().expect("section").to_path_buf();
-    let section_title = notecraft_store::tree::read_node(&section).expect("section").title;
+    let section_title = ergonote_store::tree::read_node(&section).expect("section").title;
     let mut h = sized_harness(app, LIGHT, egui::vec2(1600.0, 900.0));
     h.state_mut().open_path(&s.html_page.to_string_lossy());
     settle(&mut h);
@@ -2952,13 +2952,13 @@ fn save_a_copy_copies_the_section_into_a_folder_and_leaves_the_original() {
     h.get_by_label("Save the copy").click();
     settle(&mut h);
 
-    let copied = std::fs::canonicalize(&out).expect("out").join(notecraft_store::tree::folder_name(&section));
-    let info = notecraft_store::tree::read_node(&copied).expect("the copy is a section");
+    let copied = std::fs::canonicalize(&out).expect("out").join(ergonote_store::tree::folder_name(&section));
+    let info = ergonote_store::tree::read_node(&copied).expect("the copy is a section");
     assert_eq!(info.title, section_title);
-    assert_ne!(info.id, notecraft_store::tree::read_node(&section).expect("original").id, "an id of its own");
-    let page_copy = copied.join(notecraft_store::tree::folder_name(&s.html_page));
-    assert!(notecraft_store::page::load_page(&page_copy).is_ok(), "the open page came along");
-    assert!(!page_copy.join(".notecraft").exists(), "without its saved versions");
+    assert_ne!(info.id, ergonote_store::tree::read_node(&section).expect("original").id, "an id of its own");
+    let page_copy = copied.join(ergonote_store::tree::folder_name(&s.html_page));
+    assert!(ergonote_store::page::load_page(&page_copy).is_ok(), "the open page came along");
+    assert!(!page_copy.join(".ergonote").exists(), "without its saved versions");
     assert!(h.query_by_label("Open folder").is_some(), "the screen says where the copy went");
     assert_eq!(std::fs::read_dir(&section).expect("read").count(), before, "the original is as it was");
     assert!(h.state().body().is_some(), "and the page is still open");
@@ -2973,11 +2973,11 @@ fn next_unread_and_mark_as_read_follow_what_changed_since_it_was_read() {
     let mut h = sized_harness(app, LIGHT, egui::vec2(1600.0, 900.0));
     h.state_mut().open_path(&s.html_page.to_string_lossy());
     settle(&mut h);
-    let state = |h: &mut Harness<'_, NoteCraftApp>| ask(h, "ui.inspect", json!({})).expect("inspect");
-    let unread = |h: &mut Harness<'_, NoteCraftApp>| state(h)["unread"].as_array().cloned().unwrap_or_default();
-    let title = |h: &mut Harness<'_, NoteCraftApp>| state(h)["page"]["title"].clone();
-    let md_title = notecraft_store::tree::read_node(&s.md_page).expect("node").title;
-    let html_title = notecraft_store::tree::read_node(&s.html_page).expect("node").title;
+    let state = |h: &mut Harness<'_, ErgoNoteApp>| ask(h, "ui.inspect", json!({})).expect("inspect");
+    let unread = |h: &mut Harness<'_, ErgoNoteApp>| state(h)["unread"].as_array().cloned().unwrap_or_default();
+    let title = |h: &mut Harness<'_, ErgoNoteApp>| state(h)["page"]["title"].clone();
+    let md_title = ergonote_store::tree::read_node(&s.md_page).expect("node").title;
+    let html_title = ergonote_store::tree::read_node(&s.html_page).expect("node").title;
     h.get_by_label("History").click();
     settle(&mut h);
 
@@ -3047,13 +3047,13 @@ fn recent_edits_lists_the_pages_changed_lately_and_opens_one() {
         .join("\n");
     assert_ne!(old, text, "the page keeps a stamp of its own");
     std::fs::write(&file, old).expect("write");
-    let old_title = notecraft_store::tree::read_node(&s.md_page).expect("node").title;
-    let new_title = notecraft_store::tree::read_node(&s.html_page).expect("node").title;
+    let old_title = ergonote_store::tree::read_node(&s.md_page).expect("node").title;
+    let new_title = ergonote_store::tree::read_node(&s.html_page).expect("node").title;
 
     let mut h = sized_harness(app, LIGHT, egui::vec2(1600.0, 900.0));
     h.state_mut().open_path(&s.html_page.to_string_lossy());
     settle(&mut h);
-    let link = |h: &Harness<'_, NoteCraftApp>, title: &str| h.query_by_role_and_label(egui::accesskit::Role::Link, title).is_some();
+    let link = |h: &Harness<'_, ErgoNoteApp>, title: &str| h.query_by_role_and_label(egui::accesskit::Role::Link, title).is_some();
     h.get_by_label("History").click();
     settle(&mut h);
     h.get_by_label("Recent Edits").click();
@@ -3088,19 +3088,19 @@ fn a_page_version_can_be_previewed_and_compared_before_it_is_restored() {
     use egui_kittest::kittest::Queryable as _;
     let (_t, app, s) = sample_app("ui-version-preview");
     let page = s.md_page.clone();
-    notecraft_store::page::save_body(&page, "alpha\n\nbravo\n").expect("save");
+    ergonote_store::page::save_body(&page, "alpha\n\nbravo\n").expect("save");
     let file = page.join("index.md");
     let saved = std::fs::read(&file).expect("read");
     // The newest saved copy, as the list shows it first, and a line of its words.
-    let version = notecraft_store::page::versions(&page).expect("versions").into_iter().next().expect("a saved copy");
-    let (_, then) = notecraft_store::page::version_body(&page, &version.id).expect("its body");
+    let version = ergonote_store::page::versions(&page).expect("versions").into_iter().next().expect("a saved copy");
+    let (_, then) = ergonote_store::page::version_body(&page, &version.id).expect("its body");
     let then_line = then.lines().map(str::trim).find(|l| !l.is_empty()).expect("a line").to_string();
     assert!(!then.contains("bravo"), "the copy is not the page as it is now: {then}");
 
     let mut h = sized_harness(app, LIGHT, egui::vec2(1600.0, 900.0));
     h.state_mut().open_path(&page.to_string_lossy());
     settle(&mut h);
-    let open_preview = |h: &mut Harness<'_, NoteCraftApp>| {
+    let open_preview = |h: &mut Harness<'_, ErgoNoteApp>| {
         // The History tab, the first time; after that its group is named History too.
         if h.query_by_label("Page Versions").is_none() {
             h.get_by_label("History").click();
@@ -3149,11 +3149,11 @@ fn paper_size_gives_a_page_a_sheet_and_auto_takes_it_away() {
         let mut h = sized_harness(app, LIGHT, egui::vec2(1400.0, 900.0));
         h.run();
         let page = if html { s.html_page.clone() } else { s.md_page.clone() };
-        let (file, key) = if html { ("index.html", "notecraft:paper-size\" content=\"") } else { ("index.md", "paper_size: ") };
+        let (file, key) = if html { ("index.html", "ergonote:paper-size\" content=\"") } else { ("index.md", "paper_size: ") };
         ask(&mut h, "ui.open", json!({"path": page.to_string_lossy()})).expect("open");
         settle(&mut h);
         let body = h.state().body().unwrap_or_default().to_string();
-        let width = |h: &mut egui_kittest::Harness<'_, notecraft_ui_egui::app::NoteCraftApp>| {
+        let width = |h: &mut egui_kittest::Harness<'_, ergonote_ui_egui::app::ErgoNoteApp>| {
             ask(h, "ui.inspect", json!({})).expect("inspect")["paperSize"].as_str().unwrap_or_default().to_string()
         };
         assert_eq!(width(&mut h), "auto");
@@ -3225,9 +3225,9 @@ fn customize_tags_makes_a_tag_that_goes_on_a_line() {
     h.get_by_label("Red").click();
     h.run_steps(2);
     review(&mut h, "customize_tags");
-    let mine = notecraft_model::tag::custom();
+    let mine = ergonote_model::tag::custom();
     assert!(
-        mine.iter().any(|c| c.id == "asklegal" && c.name == "Ask legal" && c.symbol == "♣" && c.color == notecraft_model::NodeColor::Red),
+        mine.iter().any(|c| c.id == "asklegal" && c.name == "Ask legal" && c.symbol == "♣" && c.color == ergonote_model::NodeColor::Red),
         "the tag is defined: {mine:?}"
     );
     h.get_by_label("Close").click();
@@ -3241,7 +3241,7 @@ fn customize_tags_makes_a_tag_that_goes_on_a_line() {
     h.get_by_label("Ask legal").click();
     h.run_steps(2);
     let body = h.state().body().unwrap_or_default().to_string();
-    assert!(body.lines().any(|l| l.starts_with("#asklegal NoteCraft pages")), "the tag is in the page:\n{body}");
+    assert!(body.lines().any(|l| l.starts_with("#asklegal ErgoNote pages")), "the tag is in the page:\n{body}");
     review(&mut h, "custom_tag_on_a_line");
 
     // Renamed, it stays on the line.
@@ -3255,17 +3255,17 @@ fn customize_tags_makes_a_tag_that_goes_on_a_line() {
     pump(&mut h);
     h.get_by_role_and_label(egui::accesskit::Role::TextInput, "Tag name").type_text("Legal review");
     h.run_steps(2);
-    assert_eq!(notecraft_model::Tag::parse("asklegal").map(|t| t.label()), Some("Legal review"), "renamed");
+    assert_eq!(ergonote_model::Tag::parse("asklegal").map(|t| t.label()), Some("Legal review"), "renamed");
     let body = h.state().body().unwrap_or_default().to_string();
-    assert!(body.contains("#asklegal NoteCraft pages"), "the line keeps its tag:\n{body}");
+    assert!(body.contains("#asklegal ErgoNote pages"), "the line keeps its tag:\n{body}");
 
     // Removed, the line keeps its words.
     h.get_by_label("Remove Legal review").click();
     h.run_steps(2);
-    assert!(notecraft_model::tag::custom().iter().all(|c| c.id != "asklegal"), "removed");
-    assert_eq!(notecraft_model::Tag::split("#asklegal NoteCraft").0, None);
+    assert!(ergonote_model::tag::custom().iter().all(|c| c.id != "asklegal"), "removed");
+    assert_eq!(ergonote_model::Tag::split("#asklegal ErgoNote").0, None);
     let body = h.state().body().unwrap_or_default().to_string();
-    assert!(body.contains("#asklegal NoteCraft pages"), "nothing is taken out of the page:\n{body}");
+    assert!(body.contains("#asklegal ErgoNote pages"), "nothing is taken out of the page:\n{body}");
     h.get_by_label("Close").click();
     h.run_steps(2);
 }
@@ -3279,7 +3279,7 @@ fn the_eyedropper_takes_a_colour_from_ink_on_the_page() {
     let mut h = sized_harness(app, LIGHT, egui::vec2(1600.0, 900.0));
     h.state_mut().open_path(&s.md_page.to_string_lossy());
     settle(&mut h);
-    let ink = |h: &mut Harness<'_, NoteCraftApp>| ask(h, "ui.inspect", json!({})).expect("inspect")["ink"].clone();
+    let ink = |h: &mut Harness<'_, ErgoNoteApp>| ask(h, "ui.inspect", json!({})).expect("inspect")["ink"].clone();
     h.get_by_label("Draw").click();
     settle(&mut h);
     // A red line on the page.
@@ -3346,7 +3346,7 @@ fn ribbon_overflow_arrows_show_and_reach_the_hidden_groups() {
     settle(&mut h);
     let right = "Show more of the ribbon to the right";
     let left = "Show more of the ribbon to the left";
-    let x_of = |h: &Harness<'_, NoteCraftApp>, label: &str| h.get_by_label(label).accesskit_node().bounding_box().map_or(f64::MAX, |b| b.x0);
+    let x_of = |h: &Harness<'_, ErgoNoteApp>, label: &str| h.get_by_label(label).accesskit_node().bounding_box().map_or(f64::MAX, |b| b.x0);
     assert!(h.query_by_label(right).is_some(), "a narrow window says there is more to the right");
     assert!(h.query_by_label(left).is_none(), "and nothing to the left at the start");
     assert!(x_of(&h, "Collect All") > 900.0, "the last group starts out of sight");
@@ -3388,7 +3388,7 @@ fn the_panning_hand_drags_the_page_and_changes_nothing_on_it() {
     app.open_path(&s.html_page.to_string_lossy());
     let mut h = harness(app, LIGHT);
     settle(&mut h);
-    let state = |h: &mut Harness<'_, NoteCraftApp>| ask(h, "ui.inspect", json!({})).expect("inspect");
+    let state = |h: &mut Harness<'_, ErgoNoteApp>| ask(h, "ui.inspect", json!({})).expect("inspect");
     let offset = |v: &Value| (v["canvas"]["viewOffset"][0].as_f64().unwrap_or(0.0), v["canvas"]["viewOffset"][1].as_f64().unwrap_or(0.0));
     let body = h.state().body().unwrap_or_default().to_string();
     h.get_by_label("Draw").click();
@@ -3472,7 +3472,7 @@ fn insert_symbol_is_modal_and_escape_closes_it() {
     pump(&mut h);
     let origin = page_origin(&mut h);
     drag_by(&mut h, origin + egui::vec2(60.0, 160.0), egui::vec2(180.0, 0.0));
-    let strokes = |h: &mut Harness<'_, NoteCraftApp>| ask(h, "ui.inspect", json!({})).expect("inspect")["ink"]["strokes"].as_u64();
+    let strokes = |h: &mut Harness<'_, ErgoNoteApp>| ask(h, "ui.inspect", json!({})).expect("inspect")["ink"]["strokes"].as_u64();
     assert_eq!(strokes(&mut h), Some(1), "one stroke drawn");
     let body = h.state().body().unwrap_or_default().to_string();
 
@@ -3480,7 +3480,7 @@ fn insert_symbol_is_modal_and_escape_closes_it() {
     settle(&mut h);
     h.get_by_label("Symbol").click();
     settle(&mut h);
-    let open = |h: &Harness<'_, NoteCraftApp>| h.query_all_by_label("Choose a symbol to insert at the caret").count() > 0;
+    let open = |h: &Harness<'_, ErgoNoteApp>| h.query_all_by_label("Choose a symbol to insert at the caret").count() > 0;
     assert!(open(&h), "the symbol dialog is open");
 
     for (key, ctrl) in [("Z", true), ("Y", true)] {
@@ -3533,7 +3533,7 @@ fn undo_and_redo_of_ink_follow_what_was_done_this_session() {
     }
     ask(&mut h, "ui.release", json!({"x": ox + 240.0, "y": y})).expect("release");
     settle(&mut h);
-    let strokes = |h: &mut Harness<'_, NoteCraftApp>| ask(h, "ui.inspect", json!({})).expect("inspect")["ink"]["strokes"].as_u64();
+    let strokes = |h: &mut Harness<'_, ErgoNoteApp>| ask(h, "ui.inspect", json!({})).expect("inspect")["ink"]["strokes"].as_u64();
     assert_eq!(strokes(&mut h), Some(1), "one stroke drawn");
 
     ask(&mut h, "ui.undo", json!({})).expect("undo");
@@ -3575,7 +3575,7 @@ fn every_tool_on_the_rack_can_be_picked_up() {
     h.get_by_label("Draw").click();
     h.run();
 
-    let ink = |h: &mut Harness<'_, NoteCraftApp>| ask(h, "ui.inspect", json!({})).expect("inspect")["ink"].clone();
+    let ink = |h: &mut Harness<'_, ErgoNoteApp>| ask(h, "ui.inspect", json!({})).expect("inspect")["ink"].clone();
     for (pen, tool, colour) in [
         ("Pen red", "pen", "#d02121"),
         ("Highlighter yellow", "highlighter", "#ffdd33"),
@@ -3612,7 +3612,7 @@ fn the_rack_can_be_arranged_and_is_remembered() {
     let t = TempDir::new("ui-rack-edit");
     let mut sess = session(&t);
     let s = create_sample(&mut sess, Some(LOGO_PNG)).expect("sample");
-    let mut app = NoteCraftApp::new(sess);
+    let mut app = ErgoNoteApp::new(sess);
     app.set_redact_paths(true);
     app.open_path(&s.md_page.to_string_lossy());
     let settings = t.path().join("settings.toml");
@@ -3621,7 +3621,7 @@ fn the_rack_can_be_arranged_and_is_remembered() {
     h.get_by_label("Draw").click();
     h.run();
     let rack =
-        |h: &mut Harness<'_, NoteCraftApp>| ask(h, "ui.inspect", json!({})).expect("inspect")["ink"]["rack"].as_str().unwrap_or_default().to_string();
+        |h: &mut Harness<'_, ErgoNoteApp>| ask(h, "ui.inspect", json!({})).expect("inspect")["ink"]["rack"].as_str().unwrap_or_default().to_string();
     let before = rack(&mut h);
     assert_eq!(before.split('|').count(), 7, "the rack a notebook starts with: {before}");
 
@@ -3648,11 +3648,11 @@ fn the_rack_can_be_arranged_and_is_remembered() {
         "the rack is in the settings file:
 {saved}"
     );
-    let again = NoteCraftApp::new(session(&t));
+    let again = ErgoNoteApp::new(session(&t));
     let mut h2 = Harness::builder()
         .with_size(egui::vec2(1200.0, 760.0))
         .with_accessibility_check(false)
-        .build_ui_state(|ui, a: &mut NoteCraftApp| a.show(ui), again);
+        .build_ui_state(|ui, a: &mut ErgoNoteApp| a.show(ui), again);
     h2.run();
     let reopened = ask(&mut h2, "ui.inspect", json!({})).expect("inspect")["ink"]["rack"].as_str().unwrap_or_default().to_string();
     assert_eq!(reopened, after, "the rack came back as it was left");
@@ -3673,7 +3673,7 @@ fn ink_can_be_picked_up_moved_and_deleted() {
 
     // Two strokes, well apart.
     let body = h.state().page_rect().expect("the page");
-    let draw = |h: &mut Harness<'_, NoteCraftApp>, x: f32, y: f32| {
+    let draw = |h: &mut Harness<'_, ErgoNoteApp>, x: f32, y: f32| {
         ask(h, "ui.press", json!({"x": x, "y": y})).expect("down");
         pump(h);
         for step in 1..=4 {
@@ -3685,7 +3685,7 @@ fn ink_can_be_picked_up_moved_and_deleted() {
     };
     draw(&mut h, body.min.x + 40.0, body.min.y + 120.0);
     draw(&mut h, body.min.x + 40.0, body.min.y + 260.0);
-    let ink = |h: &mut Harness<'_, NoteCraftApp>| ask(h, "ui.inspect", json!({})).expect("inspect")["ink"].clone();
+    let ink = |h: &mut Harness<'_, ErgoNoteApp>| ask(h, "ui.inspect", json!({})).expect("inspect")["ink"].clone();
     let mut now = Value::Null;
     for _ in 0..20 {
         settle(&mut h);
@@ -3794,7 +3794,7 @@ fn the_equation_button_offers_equations_and_puts_the_one_picked_in_the_page() {
     for _ in 0..8 {
         pump(&mut h);
     }
-    for (name, _) in notecraft_ui_egui::ribbon::EQUATIONS {
+    for (name, _) in ergonote_ui_egui::ribbon::EQUATIONS {
         assert!(h.query_all_by_label(&format!("Equation: {name}")).count() >= 1, "{name} is in the list");
     }
     let row = h.get_by_label("Equation: Matrix").rect();
@@ -4050,7 +4050,7 @@ fn clicking_bare_page_starts_a_box_where_the_pointer_is() {
     ask(&mut h, "ui.open", json!({"path": page})).expect("open");
     settle(&mut h);
 
-    let boxes = |h: &mut Harness<'_, NoteCraftApp>| {
+    let boxes = |h: &mut Harness<'_, ErgoNoteApp>| {
         ask(h, "ui.inspect", json!({})).expect("inspect").pointer("/page/containers").and_then(Value::as_array).map_or(0, Vec::len)
     };
     let before = boxes(&mut h);
@@ -4279,14 +4279,14 @@ fn hide_borders_formats_only_the_selected_table_and_the_page_keeps_it() {
     ask(&mut h, "ui.open", json!({"path": page})).expect("open");
     settle(&mut h);
 
-    fn into(h: &mut Harness<'_, NoteCraftApp>, word: &str) {
+    fn into(h: &mut Harness<'_, ErgoNoteApp>, word: &str) {
         let cell = h.get_by_label(word).rect().center();
         ask(h, "ui.click", json!({"x": cell.x, "y": cell.y})).expect("into the cell");
         settle(h);
         h.get_by_label("Table").click();
         settle(h);
     }
-    fn kept(h: &mut Harness<'_, NoteCraftApp>, page: &str) -> String {
+    fn kept(h: &mut Harness<'_, ErgoNoteApp>, page: &str) -> String {
         let line = ask(h, "engine.execute", json!({"command": "page.columns", "params": {"path": page}})).expect("layout");
         line.as_str().unwrap_or_default().to_string()
     }
@@ -4333,7 +4333,7 @@ fn a_new_section_button_adds_a_section_to_the_chosen_notebook() {
         ask(&mut h, "ui.open", json!({"path": s.md_page.to_string_lossy()})).expect("open");
         settle(&mut h);
         let notebook = s.notebook.clone();
-        let before = notecraft_store::tree::child_dirs(&notebook).len();
+        let before = ergonote_store::tree::child_dirs(&notebook).len();
         review(&mut h, if split { "new_section_split" } else { "new_section_tree" });
 
         h.get_by_label("+ New section").click();
@@ -4343,12 +4343,12 @@ fn a_new_section_button_adds_a_section_to_the_chosen_notebook() {
         ask(&mut h, "ui.key", json!({"key": "Enter"})).expect("Enter");
         settle(&mut h);
 
-        let made: Vec<_> = notecraft_store::tree::child_dirs(&notebook)
+        let made: Vec<_> = ergonote_store::tree::child_dirs(&notebook)
             .into_iter()
-            .filter(|d| notecraft_store::tree::read_node(d).is_some_and(|n| n.title == "Plans" && n.kind == notecraft_model::NodeKind::Section))
+            .filter(|d| ergonote_store::tree::read_node(d).is_some_and(|n| n.title == "Plans" && n.kind == ergonote_model::NodeKind::Section))
             .collect();
         assert_eq!(made.len(), 1, "split={split}: one section named Plans was made in the notebook");
-        assert_eq!(notecraft_store::tree::child_dirs(&notebook).len(), before + 1, "split={split}: and nothing else");
+        assert_eq!(ergonote_store::tree::child_dirs(&notebook).len(), before + 1, "split={split}: and nothing else");
         let state = ask(&mut h, "ui.inspect", json!({})).expect("inspect");
         let chosen: Vec<&Value> =
             state["rows"].as_array().map(|r| r.iter().filter(|row| row["selected"] == json!(true)).collect()).unwrap_or_default();
@@ -4365,7 +4365,7 @@ fn ctrl_f1_folds_the_ribbon_and_a_tab_shows_it_over_the_page() {
     let mut h = harness(app, LIGHT);
     ask(&mut h, "ui.open", json!({"path": s.md_page.to_string_lossy()})).expect("open");
     settle(&mut h);
-    let ribbon = |h: &mut Harness<'_, NoteCraftApp>| ask(h, "ui.inspect", json!({})).expect("inspect")["ribbon"].clone();
+    let ribbon = |h: &mut Harness<'_, ErgoNoteApp>| ask(h, "ui.inspect", json!({})).expect("inspect")["ribbon"].clone();
     let top = h.state().page_rect().expect("the page").min.y;
     assert!(h.query_all_by_label("Bold").next().is_some(), "the Home tab's commands are there to begin with");
 
@@ -4429,12 +4429,12 @@ fn ctrl_page_up_and_down_step_through_the_pages_of_the_section() {
         made.push(PathBuf::from(page.as_str().expect("a path")));
     }
     // The section's pages in the order the page list shows them.
-    let listed: Vec<PathBuf> = notecraft_store::tree::child_dirs(&section)
+    let listed: Vec<PathBuf> = ergonote_store::tree::child_dirs(&section)
         .into_iter()
-        .filter(|d| notecraft_store::tree::read_node(d).is_some_and(|n| n.kind == notecraft_model::NodeKind::Page))
+        .filter(|d| ergonote_store::tree::read_node(d).is_some_and(|n| n.kind == ergonote_model::NodeKind::Page))
         .collect();
     assert!(listed.len() >= 3, "the section has pages to step through: {listed:?}");
-    let open_now = |h: &mut Harness<'_, NoteCraftApp>| {
+    let open_now = |h: &mut Harness<'_, ErgoNoteApp>| {
         let state = ask(h, "ui.inspect", json!({})).expect("inspect");
         // The page list names a page by its folder; the section is the same for all of them.
         state["page"]["path"].as_str().and_then(|p| p.rsplit('/').next()).map(str::to_string)
@@ -4481,11 +4481,11 @@ fn move_or_copy_takes_a_page_to_another_section() {
     let ideas = s.md_page.parent().expect("ideas").to_path_buf();
     let projects = s.html_page.parent().expect("projects").to_path_buf();
     std::fs::write(s.md_page.join("assets").join("kept.txt"), "kept").expect("a file");
-    let id = notecraft_store::tree::read_node(&s.md_page).map(|n| n.id).expect("id");
+    let id = ergonote_store::tree::read_node(&s.md_page).map(|n| n.id).expect("id");
 
     // Ctrl+Alt+M is Cmd+Option+M on macOS, which the control channel's key command cannot send,
     // so there the dialog is opened as the row menu opens it.
-    let open_move_or_copy = |h: &mut Harness<'_, NoteCraftApp>, page: &std::path::Path| {
+    let open_move_or_copy = |h: &mut Harness<'_, ErgoNoteApp>, page: &std::path::Path| {
         if cfg!(target_os = "macos") {
             h.state_mut().open_move_or_copy(page);
         } else {
@@ -4502,14 +4502,14 @@ fn move_or_copy_takes_a_page_to_another_section() {
     settle(&mut h);
 
     let pages_in = |dir: &std::path::Path| -> Vec<PathBuf> {
-        notecraft_store::tree::child_dirs(dir)
+        ergonote_store::tree::child_dirs(dir)
             .into_iter()
-            .filter(|d| notecraft_store::tree::read_node(d).is_some_and(|n| n.kind == notecraft_model::NodeKind::Page))
+            .filter(|d| ergonote_store::tree::read_node(d).is_some_and(|n| n.kind == ergonote_model::NodeKind::Page))
             .collect()
     };
     assert!(!s.md_page.exists(), "the page left its section");
     let moved =
-        pages_in(&projects).into_iter().find(|p| notecraft_store::tree::read_node(p).is_some_and(|n| n.id == id)).expect("the page is in Projects");
+        pages_in(&projects).into_iter().find(|p| ergonote_store::tree::read_node(p).is_some_and(|n| n.id == id)).expect("the page is in Projects");
     assert!(moved.join("assets").join("kept.txt").is_file(), "with its files");
     let open = ask(&mut h, "ui.inspect", json!({})).expect("inspect")["page"]["path"].as_str().unwrap_or_default().to_string();
     assert!(open.ends_with(&format!("projects/{}", moved.file_name().expect("name").to_string_lossy())), "and it is still the open page: {open}");
@@ -4526,7 +4526,7 @@ fn move_or_copy_takes_a_page_to_another_section() {
     let copies = pages_in(&ideas);
     assert_eq!(copies.len(), 1, "a copy is in Ideas: {copies:?}");
     assert!(copies[0].join("assets").join("kept.txt").is_file(), "with its files");
-    assert_ne!(notecraft_store::tree::read_node(&copies[0]).map(|n| n.id), Some(id), "and an id of its own");
+    assert_ne!(ergonote_store::tree::read_node(&copies[0]).map(|n| n.id), Some(id), "and an id of its own");
 }
 
 /// Issue #254: Ctrl+N and Ctrl+Alt+M did nothing while the caret was in a paragraph, because
@@ -4535,21 +4535,20 @@ fn move_or_copy_takes_a_page_to_another_section() {
 #[test]
 fn page_shortcuts_work_while_typing_in_the_page_but_not_in_search() {
     let (_t, app, s) = sample_app("ui-page-shortcuts-editing");
-    notecraft_store::page::save_body(&s.md_page, "alpha bravo").expect("fixture");
+    ergonote_store::page::save_body(&s.md_page, "alpha bravo").expect("fixture");
     let mut h = harness(app, LIGHT);
     ask(&mut h, "ui.open", json!({"path": s.md_page.to_string_lossy()})).expect("open");
     settle(&mut h);
     let section = s.md_page.parent().expect("section").to_path_buf();
     let pages = || {
-        notecraft_store::tree::child_dirs(&section)
+        ergonote_store::tree::child_dirs(&section)
             .into_iter()
-            .filter(|d| notecraft_store::tree::read_node(d).is_some_and(|n| n.kind == notecraft_model::NodeKind::Page))
+            .filter(|d| ergonote_store::tree::read_node(d).is_some_and(|n| n.kind == ergonote_model::NodeKind::Page))
             .count()
     };
     let before = pages();
-    let open_page = |h: &mut Harness<'_, NoteCraftApp>| {
-        ask(h, "ui.inspect", json!({})).expect("inspect")["page"]["path"].as_str().unwrap_or_default().to_string()
-    };
+    let open_page =
+        |h: &mut Harness<'_, ErgoNoteApp>| ask(h, "ui.inspect", json!({})).expect("inspect")["page"]["path"].as_str().unwrap_or_default().to_string();
 
     // The search box has the keyboard: Ctrl+N is its, and no page is made.
     ask(&mut h, "ui.key", json!({"key": "F", "ctrl": true})).expect("search");
@@ -4604,7 +4603,7 @@ fn page_shortcuts_work_while_typing_in_the_page_but_not_in_search() {
 fn undo_takes_back_an_inserted_date() {
     let (_t, app, s) = sample_app("ui-undo-insert-date");
     let mut h = sized_harness(app, LIGHT, egui::vec2(1400.0, 900.0));
-    notecraft_store::page::save_body(&s.md_page, "plain text").expect("fixture");
+    ergonote_store::page::save_body(&s.md_page, "plain text").expect("fixture");
     h.state_mut().open_path(&s.md_page.to_string_lossy());
     settle(&mut h);
     ask(&mut h, "ui.caret", json!({"block": 0})).expect("caret");
@@ -4764,7 +4763,7 @@ fn a_page_names_the_ink_in_its_folder_and_no_ink_that_is_gone() {
     // used to leave behind.
     let folder = s.md_page.parent().expect("section").join("drawn");
     let ink = "<?xml version=\"1.0\"?>
-<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:nc=\"https://notecraft.org/ns/ink\" width=\"820\" height=\"1100\" viewBox=\"0 0 820 1100\">
+<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:nc=\"https://ergonote.org/ns/ink\" width=\"820\" height=\"1100\" viewBox=\"0 0 820 1100\">
 <title>Ink</title>
 <path nc:tool=\"pen\" nc:width=\"3\" nc:dabs=\"10,10,0.5 40,40,0.5\" d=\"M10 10 L40 40 Z\" fill=\"#202020\"/>
 </svg>
@@ -4872,7 +4871,7 @@ fn a_click_on_open_paper_starts_a_new_box_where_it_was_made() {
 }
 
 /// Every rectangle painted in the last frame, nested shapes included.
-fn painted_rects(h: &Harness<'_, NoteCraftApp>) -> Vec<egui::Rect> {
+fn painted_rects(h: &Harness<'_, ErgoNoteApp>) -> Vec<egui::Rect> {
     fn walk(shape: &egui::Shape, out: &mut Vec<egui::Rect>) {
         match shape {
             egui::Shape::Rect(r) => out.push(r.rect),
@@ -4950,7 +4949,7 @@ fn a_click_on_open_paper_shows_only_the_cursor_until_something_is_written() {
     assert!(page["caret"] != Value::Null, "the cursor is placed where the click was: {page}");
     // A box's frame, drag strip or the outline of the line being written in, around the click:
     // anything visible drawn there narrower than the window.
-    let near = |h: &Harness<'_, NoteCraftApp>| {
+    let near = |h: &Harness<'_, ErgoNoteApp>| {
         fn walk(shape: &egui::Shape, out: &mut Vec<(egui::Rect, egui::Color32, egui::Stroke)>) {
             match shape {
                 egui::Shape::Rect(r) => out.push((r.rect, r.fill, r.stroke)),
@@ -4970,7 +4969,7 @@ fn a_click_on_open_paper_shows_only_the_cursor_until_something_is_written() {
             .map(|(r, ..)| r)
             .collect::<Vec<_>>()
     };
-    let box_drawn = |h: &Harness<'_, NoteCraftApp>| !near(h).is_empty();
+    let box_drawn = |h: &Harness<'_, ErgoNoteApp>| !near(h).is_empty();
     assert!(!box_drawn(&h), "no box is drawn before anything is written: {:?}", near(&h));
     ask(&mut h, "ui.text", json!({"text": "now a box"})).expect("type");
     settle(&mut h);
@@ -4987,7 +4986,7 @@ fn a_click_on_open_paper_saves_nothing_and_its_place_cannot_be_dragged() {
     let mut h = sized_harness(app, LIGHT, egui::vec2(1400.0, 800.0));
     settle(&mut h);
     let section = s.md_page.parent().expect("the section").to_string_lossy().into_owned();
-    // As NoteCraft writes a page itself, so opening it and saving it again would not change it.
+    // As ErgoNote writes a page itself, so opening it and saving it again would not change it.
     let html = "<div class=\"nc-box\" data-x=\"0\" data-y=\"0\" data-width=\"300\" style=\"position:absolute;left:0px;top:0px;width:300px\">\n<p>words</p>\n</div>\n";
     let made = ask(
         &mut h,
@@ -5157,7 +5156,7 @@ fn the_page_scroll_bar_works_while_the_select_tool_is_active() {
     ask(&mut h, "ui.open", json!({"path": dir})).expect("open it");
     settle(&mut h);
 
-    let page_bar = |h: &mut Harness<'_, NoteCraftApp>| {
+    let page_bar = |h: &mut Harness<'_, ErgoNoteApp>| {
         h.get_all_by_role(egui::accesskit::Role::ScrollBar)
             .map(|node| node.rect())
             .filter(|rect| rect.height() > rect.width() && rect.height() > 200.0)
@@ -5165,8 +5164,8 @@ fn the_page_scroll_bar_works_while_the_select_tool_is_active() {
             .expect("the page has a vertical scroll bar")
     };
     let origin_y =
-        |h: &mut Harness<'_, NoteCraftApp>| ask(h, "ui.inspect", json!({})).expect("inspect")["page"]["origin"][1].as_f64().unwrap_or(0.0) as f32;
-    let click_bar = |h: &mut Harness<'_, NoteCraftApp>, at: egui::Pos2| {
+        |h: &mut Harness<'_, ErgoNoteApp>| ask(h, "ui.inspect", json!({})).expect("inspect")["page"]["origin"][1].as_f64().unwrap_or(0.0) as f32;
+    let click_bar = |h: &mut Harness<'_, ErgoNoteApp>, at: egui::Pos2| {
         ask(h, "ui.click", json!({"x": at.x, "y": at.y})).expect("click the scroll bar");
         settle(h);
     };
@@ -5425,7 +5424,7 @@ fn a_selection_box_picks_up_ink_with_the_boxes_and_they_move_and_go_together() {
     settle(&mut h);
     let page = ask(&mut h, "ui.inspect", json!({})).expect("inspect")["page"].clone();
     let (ox, oy) = (page["origin"][0].as_f64().unwrap_or(0.0) as f32, page["origin"][1].as_f64().unwrap_or(0.0) as f32);
-    let drag = |h: &mut Harness<'_, NoteCraftApp>, from: egui::Pos2, to: egui::Pos2| {
+    let drag = |h: &mut Harness<'_, ErgoNoteApp>, from: egui::Pos2, to: egui::Pos2| {
         ask(h, "ui.move", json!({"x": from.x, "y": from.y})).expect("move");
         settle(h);
         ask(h, "ui.press", json!({"x": from.x, "y": from.y})).expect("down");
@@ -5447,7 +5446,7 @@ fn a_selection_box_picks_up_ink_with_the_boxes_and_they_move_and_go_together() {
     drag(&mut h, egui::pos2(ox + 400.0, oy + 100.0), egui::pos2(ox + 500.0, oy + 100.0));
     h.get_by_label("Type").click();
     settle(&mut h);
-    let ink = |h: &mut Harness<'_, NoteCraftApp>| ask(h, "ui.inspect", json!({})).expect("inspect");
+    let ink = |h: &mut Harness<'_, ErgoNoteApp>| ask(h, "ui.inspect", json!({})).expect("inspect");
     let before = ink(&mut h);
     assert_eq!(before["ink"]["strokes"], json!(1), "one line of writing: {}", before["ink"]);
     assert_eq!(before["ink"]["pointer"], json!("write"), "and the ordinary pointer again: {}", before["ink"]);
@@ -5523,7 +5522,7 @@ fn a_selection_box_shows_what_it_takes_and_ctrl_click_leaves_a_box_out() {
     settle(&mut h);
     let page = ask(&mut h, "ui.inspect", json!({})).expect("inspect")["page"].clone();
     let (ox, oy) = (page["origin"][0].as_f64().unwrap_or(0.0) as f32, page["origin"][1].as_f64().unwrap_or(0.0) as f32);
-    let line = |h: &mut Harness<'_, NoteCraftApp>, from: egui::Pos2, to: egui::Pos2| {
+    let line = |h: &mut Harness<'_, ErgoNoteApp>, from: egui::Pos2, to: egui::Pos2| {
         ask(h, "ui.move", json!({"x": from.x, "y": from.y})).expect("move");
         settle(h);
         ask(h, "ui.press", json!({"x": from.x, "y": from.y})).expect("down");
@@ -5534,7 +5533,7 @@ fn a_selection_box_shows_what_it_takes_and_ctrl_click_leaves_a_box_out() {
             pump(h);
         }
     };
-    let up = |h: &mut Harness<'_, NoteCraftApp>, at: egui::Pos2| {
+    let up = |h: &mut Harness<'_, ErgoNoteApp>, at: egui::Pos2| {
         ask(h, "ui.release", json!({"x": at.x, "y": at.y})).expect("up");
         settle(h);
     };
@@ -5610,7 +5609,7 @@ fn a_box_left_with_nothing_in_it_goes() {
     ask(&mut h, "ui.open", json!({"path": dir})).expect("open it");
     settle(&mut h);
     let count =
-        |h: &mut Harness<'_, NoteCraftApp>| ask(h, "ui.inspect", json!({})).expect("inspect")["page"]["containers"].as_array().map_or(0, Vec::len);
+        |h: &mut Harness<'_, ErgoNoteApp>| ask(h, "ui.inspect", json!({})).expect("inspect")["page"]["containers"].as_array().map_or(0, Vec::len);
     assert_eq!(count(&mut h), 3, "three boxes to begin with");
     let origin = ask(&mut h, "ui.inspect", json!({})).expect("inspect")["page"]["origin"].clone();
     let (ox, oy) = (origin[0].as_f64().unwrap_or(0.0), origin[1].as_f64().unwrap_or(0.0));
@@ -5676,7 +5675,7 @@ fn a_box_left_with_nothing_in_it_goes() {
     ask(&mut h, "engine.execute", json!({"command": "page.justify", "params": {"path": dir, "blocks": "1"}})).expect("justify it");
     ask(&mut h, "ui.open", json!({"path": dir})).expect("open it");
     settle(&mut h);
-    let marks = |h: &mut Harness<'_, NoteCraftApp>| {
+    let marks = |h: &mut Harness<'_, ErgoNoteApp>| {
         ask(h, "engine.execute", json!({"command": "page.justify", "params": {"path": dir}})).expect("read the marks")
     };
     let opened = ask(&mut h, "ui.inspect", json!({})).expect("inspect")["page"].clone();
@@ -5721,8 +5720,8 @@ fn a_box_that_is_copied_and_pasted_comes_back_as_it_was() {
 
     // What that put on the clipboard: the Markdown of the box's blocks.
     let body = h.state().body().unwrap_or_default().to_string();
-    let (blocks, _) = notecraft_formats::boxes::read(notecraft_model::PageFormat::Html, &body);
-    let markdown = notecraft_formats::render::blocks_to_markdown(&blocks);
+    let (blocks, _) = ergonote_formats::boxes::read(ergonote_model::PageFormat::Html, &body);
+    let markdown = ergonote_formats::render::blocks_to_markdown(&blocks);
     assert!(markdown.contains("# Copy me") && markdown.contains("mermaid"), "the box as Markdown: {markdown}");
 
     // A new box on the open paper to the right, and paste into it.
@@ -5743,7 +5742,7 @@ fn a_box_that_is_copied_and_pasted_comes_back_as_it_was() {
 }
 
 /// What the page says of its own diagrams, once the threads that draw them have had their say.
-fn drawn_in_page(h: &mut Harness<'_, NoteCraftApp>) -> Option<Value> {
+fn drawn_in_page(h: &mut Harness<'_, ErgoNoteApp>) -> Option<Value> {
     let began = std::time::Instant::now();
     loop {
         for _ in 0..4 {
@@ -5782,7 +5781,7 @@ fn every_chart_and_diagram_type_is_drawn_in_both_formats() {
         ("sankey", "sankey-beta\nPages,HTML,62\nPages,Markdown,31\nHTML,Fast,40"),
         ("sequence", "sequenceDiagram\n  U->>N: Type\n  N-->>U: Saved"),
         ("state", "stateDiagram-v2\n  [*] --> Clean\n  Clean --> Dirty: type"),
-        ("mindmap", "mindmap\n  root((NoteCraft))\n    Pages\n    Ink"),
+        ("mindmap", "mindmap\n  root((ErgoNote))\n    Pages\n    Ink"),
         ("timeline", "timeline\n  title History\n  2026 : Band : Charts"),
         ("journey", "journey\n  title A day\n  section Work\n    Write: 5: Me\n    Test: 3: Me"),
     ];
@@ -6008,7 +6007,7 @@ fn the_code_view_colours_the_file_and_finds_text_in_it() {
     settle(&mut h);
     h.state_mut().set_show_source(true);
     settle(&mut h);
-    let view = |h: &mut Harness<'_, NoteCraftApp>| ask(h, "ui.inspect", json!({})).expect("inspect")["codeView"].clone();
+    let view = |h: &mut Harness<'_, ErgoNoteApp>| ask(h, "ui.inspect", json!({})).expect("inspect")["codeView"].clone();
     let v = view(&mut h);
     assert_eq!(v["language"], json!("Markdown"), "{v}");
     assert!(v["colouredStretches"].as_u64().unwrap_or(0) > 10, "the file is coloured: {v}");
@@ -6124,7 +6123,7 @@ fn the_code_view_lists_the_pages_files_and_shows_the_one_that_is_picked() {
     h.run();
     let page = s.md_page.to_string_lossy().into_owned();
     let ink = "<?xml version=\"1.0\"?>
-<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:nc=\"https://notecraft.org/ns/ink\" width=\"820\" height=\"1100\">
+<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:nc=\"https://ergonote.org/ns/ink\" width=\"820\" height=\"1100\">
 <title>Ink</title>
 <path nc:tool=\"pen\" nc:width=\"3\" nc:dabs=\"10,10,0.5 40,40,0.5\" d=\"M10 10 L40 40 Z\" fill=\"#202020\"/>
 </svg>
@@ -6215,7 +6214,7 @@ fn view_page_colour_uses_the_existing_palette_and_persists_only_on_its_page() {
             h.get_by_label("Page colour").click();
             settle(&mut h);
             assert_eq!(h.get_by_label("No colour").accesskit_node().toggled(), Some(egui::accesskit::Toggled::True));
-            for colour in notecraft_model::NodeColor::ALL {
+            for colour in ergonote_model::NodeColor::ALL {
                 assert_eq!(h.get_by_label(colour.label()).accesskit_node().toggled(), Some(egui::accesskit::Toggled::False));
             }
             review(&mut h, &format!("page_colour_palette_{format}_{}", theme.id()));
@@ -6327,7 +6326,7 @@ fn a_page_keeps_the_paper_and_the_colour_it_was_given() {
 #[test]
 fn rule_line_colour_colours_the_lines_and_is_kept_with_the_page() {
     let _pixel_test = support::gui::pixel_test();
-    for (page, file, line) in [(true, "index.md", "rule-color: blue"), (false, "index.html", "notecraft:rule-color")] {
+    for (page, file, line) in [(true, "index.md", "rule-color: blue"), (false, "index.html", "ergonote:rule-color")] {
         let (_t, app, s) = sample_app("ui-rule-colour");
         let mut h = harness(app, LIGHT);
         h.run();
@@ -6388,7 +6387,7 @@ fn the_link_dialog_puts_in_edits_and_removes_a_link() {
         let mut h = harness(app, LIGHT);
         h.run();
         let page = if html { &s.html_page } else { &s.md_page };
-        notecraft_store::page::save_body(page, if html { "<p>see the plan today</p>" } else { "see the plan today" }).expect("fixture");
+        ergonote_store::page::save_body(page, if html { "<p>see the plan today</p>" } else { "see the plan today" }).expect("fixture");
         ask(&mut h, "ui.open", json!({"path": page.to_string_lossy()})).expect("open");
         settle(&mut h);
         ask(&mut h, "ui.caret", json!({"block": 0})).expect("caret");
@@ -6416,7 +6415,7 @@ fn the_link_dialog_puts_in_edits_and_removes_a_link() {
         h.get_by_label("OK").click();
         settle(&mut h);
         h.state_mut().save();
-        let body = notecraft_store::page::load_page(page).expect("load").body;
+        let body = ergonote_store::page::load_page(page).expect("load").body;
         let made = if html { "<a href=\"https://example.test/plan\">the plan</a>" } else { "[the plan](https://example.test/plan)" };
         assert!(body.contains(made), "html={html}: the words became a link:\n{body}");
         assert!(body.contains("see ") && body.contains(" today"), "html={html}: and the rest is as it was:\n{body}");
@@ -6432,7 +6431,7 @@ fn the_link_dialog_puts_in_edits_and_removes_a_link() {
         h.get_by_label("Remove link").click();
         settle(&mut h);
         h.state_mut().save();
-        let body = notecraft_store::page::load_page(page).expect("load").body;
+        let body = ergonote_store::page::load_page(page).expect("load").body;
         assert!(!body.contains("example.test"), "html={html}: the link is gone:\n{body}");
         assert!(body.contains("see the plan today"), "html={html}: and its words are kept:\n{body}");
 
@@ -6468,7 +6467,7 @@ fn a_link_to_a_page_can_be_copied_and_pasted_into_another_page() {
     ask(&mut h, "ui.open", json!({"path": other})).expect("open the other page");
     settle(&mut h);
     let root = s.notebook.parent().map(PathBuf::from).unwrap_or_else(|| s.notebook.clone());
-    let uri = notecraft_store::links::page_uri(&[root], &s.md_page).unwrap_or_default();
+    let uri = ergonote_store::links::page_uri(&[root], &s.md_page).unwrap_or_default();
     ask(&mut h, "engine.execute", json!({"command": "page.save", "params": {"path": other, "body": format!("<p><a href=\"{uri}\">go</a></p>")}}))
         .expect("save with the link");
     ask(&mut h, "ui.open", json!({"path": other})).expect("open again");
@@ -6631,7 +6630,7 @@ fn first_use_wizard_choices_survive_restarting_the_app() {
     let t = TempDir::new("ui-privacy-choice-restart");
     let settings_path = t.path().join("settings.toml");
     let s = Session::new(&t.path().join("notebooks"), Settings::at(&settings_path)).expect("session");
-    let mut h = sized_harness(NoteCraftApp::new(s), LIGHT, egui::vec2(900.0, 700.0));
+    let mut h = sized_harness(ErgoNoteApp::new(s), LIGHT, egui::vec2(900.0, 700.0));
     settle(&mut h);
 
     h.get_by_label("Next").click();
@@ -6651,7 +6650,7 @@ fn first_use_wizard_choices_survive_restarting_the_app() {
     assert!(settings.get("telemetry_level").is_some(), "the logging step saves its level");
 
     let s = Session::new(&t.path().join("notebooks"), settings).expect("reopened session");
-    let mut h = sized_harness(NoteCraftApp::new(s), LIGHT, egui::vec2(900.0, 700.0));
+    let mut h = sized_harness(ErgoNoteApp::new(s), LIGHT, egui::vec2(900.0, 700.0));
     settle(&mut h);
     assert_eq!(h.query_all_by_label("Finish").count(), 0, "a finished wizard does not open again on restart");
 }
@@ -6715,29 +6714,29 @@ fn the_rule_lines_gallery_shows_every_paper_and_picking_one_rules_the_page() {
         "Medium squares",
         "Large squares",
         "Very large squares",
-        "NoteCraft ruled",
-        "NoteCraft squares",
+        "ErgoNote ruled",
+        "ErgoNote squares",
     ] {
         assert!(h.query_all_by_label(paper).count() >= 1, "{paper} is in the gallery");
     }
     review(&mut h, "rule_lines_gallery");
 
     // Picking one rules the page and closes the gallery, and the button says what is on.
-    h.get_by_label("NoteCraft squares").click();
+    h.get_by_label("ErgoNote squares").click();
     h.run();
     h.run();
     let paper = ask(&mut h, "ui.inspect", json!({})).expect("inspect")["paper"].as_str().unwrap_or_default().to_string();
-    assert_eq!(paper, "grid", "the page is on NoteCraft's squared paper");
+    assert_eq!(paper, "grid", "the page is on ErgoNote's squared paper");
     assert_eq!(h.query_all_by_label("Wide ruled").count(), 0, "the gallery closed");
 }
 
 #[test]
 fn following_the_system_keeps_the_accent() {
     let t = TempDir::new("ui-system");
-    let mut app = NoteCraftApp::new(session(&t));
+    let mut app = ErgoNoteApp::new(session(&t));
     app.follow_system_theme(Accent::Green);
     assert_eq!(app.mode_pref(), ModePref::System);
-    let mut h = Harness::builder().with_size(egui::vec2(1200.0, 760.0)).build_ui_state(|ui, a: &mut NoteCraftApp| a.show(ui), app);
+    let mut h = Harness::builder().with_size(egui::vec2(1200.0, 760.0)).build_ui_state(|ui, a: &mut ErgoNoteApp| a.show(ui), app);
     h.run();
     assert_eq!(h.state().theme().accent, Accent::Green);
 }
@@ -6789,12 +6788,12 @@ fn results_of_an_unused_output_variant_compile() {
 }
 
 /// Two containers on the sample page, and where the first one is drawn: its top left corner.
-fn two_boxes(label: &str) -> (TempDir, Harness<'static, NoteCraftApp>, u64, (f64, f64)) {
+fn two_boxes(label: &str) -> (TempDir, Harness<'static, ErgoNoteApp>, u64, (f64, f64)) {
     two_boxes_on(label, &MemoryBoard::new())
 }
 
 /// [`two_boxes`], with the app's clipboard being `board`.
-fn two_boxes_on(label: &str, board: &MemoryBoard) -> (TempDir, Harness<'static, NoteCraftApp>, u64, (f64, f64)) {
+fn two_boxes_on(label: &str, board: &MemoryBoard) -> (TempDir, Harness<'static, ErgoNoteApp>, u64, (f64, f64)) {
     let (t, app, s) = sample_app(label);
     let mut app = app.with_clipboard(Box::new(board.clone()));
     let page = s.md_page.to_string_lossy().to_string();
@@ -6814,7 +6813,7 @@ fn two_boxes_on(label: &str, board: &MemoryBoard) -> (TempDir, Harness<'static, 
     (t, h, blocks, at)
 }
 
-fn look_at(h: &mut Harness<'_, NoteCraftApp>) -> Value {
+fn look_at(h: &mut Harness<'_, ErgoNoteApp>) -> Value {
     ask(h, "ui.inspect", json!({})).expect("inspect")
 }
 
@@ -6900,12 +6899,12 @@ fn escape_lets_go_of_a_selected_container() {
 /// The first line of words in `blocks` of a page body, to look for in what is left of it.
 fn needle(body: &str, from: usize, to: usize) -> String {
     // The page's text has its boxes written in it; the blocks are what is inside them.
-    let (blocks, _) = notecraft_formats::boxes::read(notecraft_model::PageFormat::Cmgfm, body);
-    let md = notecraft_formats::render::blocks_to_markdown(blocks.get(from..to.min(blocks.len())).unwrap_or_default());
+    let (blocks, _) = ergonote_formats::boxes::read(ergonote_model::PageFormat::Cmgfm, body);
+    let md = ergonote_formats::render::blocks_to_markdown(blocks.get(from..to.min(blocks.len())).unwrap_or_default());
     md.lines().map(|l| l.trim_start_matches(['#', '-', '*', '>', ' ']).trim()).find(|l| l.len() > 6).unwrap_or_default().to_string()
 }
 
-fn select_box_by_handle(h: &mut Harness<'_, NoteCraftApp>, ox: f64, oy: f64, x: f64) {
+fn select_box_by_handle(h: &mut Harness<'_, ErgoNoteApp>, ox: f64, oy: f64, x: f64) {
     ask(h, "ui.click", json!({"x": ox + x, "y": oy + 6.0})).expect("click the handle");
     for _ in 0..6 {
         pump(h);
@@ -7068,7 +7067,7 @@ fn clicking_into_words_lets_go_of_a_selected_box() {
 
 /// Opens `page` arranged in two boxes: the first holds two blocks, the second the rest. Returns
 /// the page's block count and where its first box is drawn.
-fn arrange_in_two(h: &mut Harness<'_, NoteCraftApp>, page: &str) -> (u64, (f64, f64)) {
+fn arrange_in_two(h: &mut Harness<'_, ErgoNoteApp>, page: &str) -> (u64, (f64, f64)) {
     ask(h, "ui.open", json!({"path": page})).expect("open");
     settle(h);
     let blocks = look_at(h).pointer("/page/blocks").and_then(Value::as_u64).unwrap_or(0);
@@ -7225,7 +7224,7 @@ fn dragging_a_picture_right_edge_resizes_it() {
 
 /// Issue #18: use the visible picture handle, not the container's resize edge. A browser
 /// may deliver the whole pointer movement in one frame, including on a mixed-content page.
-fn rendered_picture_rect(h: &Harness<'_, NoteCraftApp>, block: usize) -> egui::Rect {
+fn rendered_picture_rect(h: &Harness<'_, ErgoNoteApp>, block: usize) -> egui::Rect {
     h.ctx
         .data(|d| d.get_temp::<Vec<(usize, egui::Rect, String)>>(egui::Id::unique("embedded-object-hits")))
         .expect("rendered objects")
@@ -7237,8 +7236,8 @@ fn rendered_picture_rect(h: &Harness<'_, NoteCraftApp>, block: usize) -> egui::R
 
 #[test]
 fn a_picture_handle_keeps_the_first_drag_movement_in_both_formats() {
-    use notecraft_formats::Block;
-    use notecraft_model::PageFormat;
+    use ergonote_formats::Block;
+    use ergonote_model::PageFormat;
 
     for format in [PageFormat::Html, PageFormat::Cmgfm] {
         for (handle, delta, expected) in [
@@ -7263,7 +7262,7 @@ fn a_picture_handle_keeps_the_first_drag_movement_in_both_formats() {
             };
             s.run("page.save", &params(&[("path", &path), ("body", body)])).expect("page");
             s.run("page.containers", &params(&[("path", &path), ("boxes", "0,0,400,3")])).expect("mixed container");
-            let mut app = NoteCraftApp::new(s);
+            let mut app = ErgoNoteApp::new(s);
             app.open_path(&path);
             let mut h = harness(app, if handle % 2 == 0 { LIGHT } else { DARK });
             settle(&mut h);
@@ -7288,14 +7287,14 @@ fn a_picture_handle_keeps_the_first_drag_movement_in_both_formats() {
             ask(&mut h, "ui.release", json!({"x": to.x, "y": to.y})).expect("release corner");
             settle(&mut h);
             review(&mut h, &format!("picture-handle-after-{format:?}-{handle}"));
-            let (blocks, _) = notecraft_formats::boxes::read(format, h.state().body().expect("open page"));
+            let (blocks, _) = ergonote_formats::boxes::read(format, h.state().body().expect("open page"));
             match &blocks[1] {
                 Block::Image { width, height, .. } => {
                     assert_eq!((*width, *height), (Some(expected.0), Some(expected.1)), "the first motion must resize handle {handle} in {format:?}");
                 }
                 other => panic!("picture changed kind: {other:?}"),
             }
-            let (original, _) = notecraft_formats::boxes::read(format, body);
+            let (original, _) = ergonote_formats::boxes::read(format, body);
             assert_eq!(blocks[0], original[0]);
             assert_eq!(blocks[2], original[2]);
             let state = look_at(&mut h);
@@ -7304,15 +7303,15 @@ fn a_picture_handle_keeps_the_first_drag_movement_in_both_formats() {
             assert_eq!(state.pointer("/page/containers/0/width").and_then(Value::as_f64), Some(400.0));
             if handle == 7 {
                 ask(&mut h, "ui.undo", json!({})).expect("undo resize");
-                let (undone, _) = notecraft_formats::boxes::read(format, h.state().body().expect("undone page"));
+                let (undone, _) = ergonote_formats::boxes::read(format, h.state().body().expect("undone page"));
                 assert_eq!(undone, original, "undo restores picture and surrounding words");
                 ask(&mut h, "ui.redo", json!({})).expect("redo resize");
-                let (redone, _) = notecraft_formats::boxes::read(format, h.state().body().expect("redone page"));
+                let (redone, _) = ergonote_formats::boxes::read(format, h.state().body().expect("redone page"));
                 assert_eq!(redone, blocks, "redo restores the resized picture");
             }
             ask(&mut h, "ui.open", json!({"path": sample.deep_page.to_string_lossy()})).expect("save and leave");
             ask(&mut h, "ui.open", json!({"path": path})).expect("reopen resized page");
-            let (reopened, _) = notecraft_formats::boxes::read(format, h.state().body().expect("reopened page"));
+            let (reopened, _) = ergonote_formats::boxes::read(format, h.state().body().expect("reopened page"));
             assert_eq!(reopened, blocks, "the actual picture dimensions persist in {format:?}");
             if handle == 7 {
                 // Independently positioned pictures must still move by their body, while
@@ -7348,7 +7347,7 @@ fn a_picture_handle_keeps_the_first_drag_movement_in_both_formats() {
                 assert_eq!(resized.pointer("/page/containers/1/x").and_then(Value::as_f64), Some(100.0));
                 assert_eq!(resized.pointer("/page/containers/1/y").and_then(Value::as_f64), Some(90.0));
                 assert_eq!(resized.pointer("/page/containers/1/width").and_then(Value::as_f64), Some(280.0));
-                let (saved, _) = notecraft_formats::boxes::read(format, h.state().body().expect("saved picture"));
+                let (saved, _) = ergonote_formats::boxes::read(format, h.state().body().expect("saved picture"));
                 assert!(matches!(saved[1], Block::Image { width: Some(280.0), height: Some(140.0), .. }));
                 assert_eq!(saved[0], original[0]);
                 assert_eq!(saved[2], original[2]);
@@ -7363,8 +7362,8 @@ fn a_picture_handle_keeps_the_first_drag_movement_in_both_formats() {
 /// after stay where they were, and the arrangement survives saving and reopening in both formats.
 #[test]
 fn a_picture_in_a_shared_box_is_moved_by_dragging_it() {
-    use notecraft_formats::Block;
-    use notecraft_model::PageFormat;
+    use ergonote_formats::Block;
+    use ergonote_model::PageFormat;
 
     for format in [PageFormat::Html, PageFormat::Cmgfm] {
         for arranged in [false, true] {
@@ -7383,11 +7382,11 @@ fn a_picture_in_a_shared_box_is_moved_by_dragging_it() {
             if arranged {
                 s.run("page.containers", &params(&[("path", &path), ("boxes", "0,0,400,3")])).expect("one shared box");
             }
-            let mut app = NoteCraftApp::new(s);
+            let mut app = ErgoNoteApp::new(s);
             app.open_path(&path);
             let mut h = harness(app, LIGHT);
             settle(&mut h);
-            let (original, _) = notecraft_formats::boxes::read(format, body);
+            let (original, _) = ergonote_formats::boxes::read(format, body);
             assert!(matches!(original[1], Block::Image { .. }), "the picture is a block of its own in {what}");
 
             let state = look_at(&mut h);
@@ -7432,7 +7431,7 @@ fn a_picture_in_a_shared_box_is_moved_by_dragging_it() {
             assert_eq!(at(2, "x"), 0.0, "and where they were across in {what}");
 
             // The blocks are the page's own and in the same order; only the arrangement changed.
-            let (moved, _) = notecraft_formats::boxes::read(format, h.state().body().expect("open page"));
+            let (moved, _) = ergonote_formats::boxes::read(format, h.state().body().expect("open page"));
             assert_eq!(moved, original, "the words and the picture are untouched in {what}");
 
             // It is saved with the page.
@@ -7447,7 +7446,7 @@ fn a_picture_in_a_shared_box_is_moved_by_dragging_it() {
                 .unwrap_or_default();
             assert_eq!(kept.len(), 3, "the arrangement is still three boxes after reopening in {what}: {again}");
             assert!((kept[1] as f32 - (from_x + 80.0)).abs() < 2.0, "the picture is where it was dropped after reopening in {what}");
-            let (reopened, _) = notecraft_formats::boxes::read(format, h.state().body().expect("reopened page"));
+            let (reopened, _) = ergonote_formats::boxes::read(format, h.state().body().expect("reopened page"));
             assert_eq!(reopened, original, "the same blocks after reopening in {what}");
         }
     }
@@ -7551,7 +7550,7 @@ fn delete_and_backspace_remove_a_selected_picture() {
 /// its toolbar are meant for. Block 0 is the page's title heading, which the window does not draw
 /// because the title area above the page already shows it, so the caret lands on the line under
 /// it.
-fn right_click_on_selected_words(label: &str) -> (TempDir, Harness<'static, NoteCraftApp>) {
+fn right_click_on_selected_words(label: &str) -> (TempDir, Harness<'static, ErgoNoteApp>) {
     let (t, mut h, _, (ox, oy)) = two_boxes(label);
     ask(&mut h, "ui.caret", json!({"block": 0})).expect("caret");
     for _ in 0..4 {
@@ -7614,7 +7613,7 @@ fn bold_on_the_mini_toolbar_wraps_the_selected_words() {
 fn cut_on_the_page_menu_cuts_the_words_that_were_selected() {
     let (_t, mut h) = right_click_on_selected_words("ui-minibar-cut");
     let before = h.state().body().unwrap_or_default().to_string();
-    assert!(before.contains("NoteCraft pages are"));
+    assert!(before.contains("ErgoNote pages are"));
     h.query_all_by_label("Cut").last().expect("the menu's Cut").click();
     for _ in 0..8 {
         pump(&mut h);
@@ -7649,7 +7648,7 @@ fn a_boxs_menu_has_no_formatting_toolbar() {
 }
 
 /// A new page whose body is `body`, opened, and where the first box on it is drawn.
-fn blank_page(label: &str, body: &str) -> (TempDir, Harness<'static, NoteCraftApp>, (f64, f64)) {
+fn blank_page(label: &str, body: &str) -> (TempDir, Harness<'static, ErgoNoteApp>, (f64, f64)) {
     let (t, mut app, s) = sample_app(label);
     app.open_path(&s.md_page.to_string_lossy());
     let mut h = harness(app, LIGHT);
@@ -7723,7 +7722,7 @@ fn an_empty_line_can_be_clicked_into_again() {
     assert!(h.state().body().unwrap_or_default().contains("again"), "and typing goes in");
 }
 
-fn nav(h: &mut Harness<'_, NoteCraftApp>) -> (u64, u64, String) {
+fn nav(h: &mut Harness<'_, ErgoNoteApp>) -> (u64, u64, String) {
     let v = look_at(h);
     (
         v.pointer("/nav/back").and_then(Value::as_u64).unwrap_or(99),
@@ -7733,7 +7732,7 @@ fn nav(h: &mut Harness<'_, NoteCraftApp>) -> (u64, u64, String) {
 }
 
 /// Three pages opened one after another, so there is somewhere to go back to.
-fn three_pages(label: &str) -> (TempDir, Harness<'static, NoteCraftApp>, [String; 3]) {
+fn three_pages(label: &str) -> (TempDir, Harness<'static, ErgoNoteApp>, [String; 3]) {
     let (t, mut app, s) = sample_app(label);
     let pages = [s.md_page.to_string_lossy().to_string(), s.html_page.to_string_lossy().to_string(), s.deep_page.to_string_lossy().to_string()];
     app.open_path(&pages[0]);
@@ -7842,7 +7841,7 @@ fn undo_brings_a_deleted_box_back_and_redo_deletes_it_again() {
     assert_eq!(v.pointer("/page/blocks").and_then(Value::as_u64), Some(blocks), "undo gave the blocks back: {v}");
     assert_eq!(v.pointer("/page/containers").and_then(Value::as_array).map(Vec::len), Some(2), "and the box");
     let now = h.state().body().unwrap_or_default().to_string();
-    assert_eq!(notecraft_formats::markdown::parse(&now), notecraft_formats::markdown::parse(&original), "the page has the same blocks as it did");
+    assert_eq!(ergonote_formats::markdown::parse(&now), ergonote_formats::markdown::parse(&original), "the page has the same blocks as it did");
     assert_eq!(v.pointer("/page/history/canRedo").and_then(Value::as_bool), Some(true));
 
     ask(&mut h, "ui.redo", json!({})).expect("redo");
@@ -7886,7 +7885,7 @@ fn the_title_bar_is_a_choice_and_is_remembered() {
     for _ in 0..6 {
         pump(&mut h);
     }
-    h.get_by_label("Use NoteCraft's own title bar").click();
+    h.get_by_label("Use ErgoNote's own title bar").click();
     settle(&mut h);
     assert_eq!(look_at(&mut h).pointer("/windowFrame").and_then(Value::as_str), Some("own"));
     assert!(settings(&t).contains("window_frame = \"own\""), "kept in the settings:\n{}", settings(&t));
@@ -8073,7 +8072,7 @@ fn an_older_page_is_read_and_moved_to_the_new_form() {
 }
 
 /// A page with one paragraph of `line` on it, opened and ready to write in.
-fn page_of(h: &mut Harness<'_, NoteCraftApp>, s: &Sample, title: &str, line: &str) -> String {
+fn page_of(h: &mut Harness<'_, ErgoNoteApp>, s: &Sample, title: &str, line: &str) -> String {
     let section = s.md_page.parent().expect("section").to_string_lossy().into_owned();
     let made =
         ask(h, "engine.execute", json!({"command": "node.create", "params": {"parent": section, "kind": "page", "title": title, "format": "cmgfm"}}))
@@ -8200,7 +8199,7 @@ fn a_drag_across_an_arabic_line_selects_it_and_the_words_stay_readable() {
 /// A drag that leaves the paragraph it began in keeps going: both paragraphs are
 /// highlighted, and Copy and Delete act on the whole of it.
 ///
-/// The owner put NoteCraft beside OneNote on 2026-10-19 and this was the difference left:
+/// The owner put ErgoNote beside OneNote on 2026-10-19 and this was the difference left:
 /// there a drag across two paragraphs highlights both, here it stopped dead at the end of
 /// the one it began in. Measured before the change: 2118 pixels of the first paragraph
 /// highlighted and 0 of the second.
@@ -8220,7 +8219,7 @@ fn a_drag_can_select_across_paragraphs() {
     h.run();
     page_of(&mut h, &s, "Cross", &body);
 
-    let across = |h: &mut Harness<'_, NoteCraftApp>| -> Value {
+    let across = |h: &mut Harness<'_, ErgoNoteApp>| -> Value {
         ask(h, "ui.inspect", json!({})).expect("inspect").pointer("/page/across").cloned().unwrap_or(Value::Null)
     };
     let first = h.get_by_label(FIRST).rect();
@@ -8379,7 +8378,7 @@ fn font_size_applies_to_a_selection_across_paragraphs() {
 #[cfg(any(target_os = "linux", target_os = "windows", target_os = "macos"))]
 #[test]
 fn font_family_applies_to_a_selection_across_paragraphs() {
-    let catalog = match notecraft_ui_egui::fonts::system::Catalog::discover() {
+    let catalog = match ergonote_ui_egui::fonts::system::Catalog::discover() {
         Ok(catalog) => catalog,
         Err(error) => {
             eprintln!("System font discovery unavailable: {error}");
@@ -8466,11 +8465,11 @@ fn the_clipboard_keys_work_in_an_arabic_paragraph() {
     ask(&mut h, "ui.caret", json!({"block": 0})).expect("caret");
     settle(&mut h);
 
-    let caret = |h: &mut Harness<'_, NoteCraftApp>| -> (u64, u64) {
+    let caret = |h: &mut Harness<'_, ErgoNoteApp>| -> (u64, u64) {
         let c = ask(h, "ui.inspect", json!({})).expect("inspect").pointer("/page/caret").cloned().unwrap_or(Value::Null);
         (c.get("at").and_then(Value::as_u64).unwrap_or(0), c.get("anchor").and_then(Value::as_u64).unwrap_or(0))
     };
-    let status = |h: &mut Harness<'_, NoteCraftApp>| -> String {
+    let status = |h: &mut Harness<'_, ErgoNoteApp>| -> String {
         ask(h, "ui.inspect", json!({})).expect("inspect").pointer("/status/text").and_then(|v| v.as_str()).unwrap_or("").to_string()
     };
 
@@ -8585,19 +8584,19 @@ fn a_selected_box_takes_the_ribbon_as_a_whole() {
     app.open_path(&page);
     let mut h = sized_harness(app, LIGHT, egui::vec2(2000.0, 900.0));
     settle(&mut h);
-    let look = |h: &mut Harness<'_, NoteCraftApp>| -> Value { ask(h, "ui.inspect", json!({})).expect("inspect") };
+    let look = |h: &mut Harness<'_, ErgoNoteApp>| -> Value { ask(h, "ui.inspect", json!({})).expect("inspect") };
     let blocks = look(&mut h).pointer("/page/blocks").and_then(Value::as_u64).unwrap_or(0);
     let line = format!("40,20,320,{blocks}");
     ask(&mut h, "engine.execute", json!({"command": "page.containers", "params": {"path": page.clone(), "boxes": line}})).expect("arrange");
     ask(&mut h, "ui.open", json!({"path": page.clone()})).expect("open");
     settle(&mut h);
-    let click = |h: &mut Harness<'_, NoteCraftApp>, x: f32, y: f32| {
+    let click = |h: &mut Harness<'_, ErgoNoteApp>, x: f32, y: f32| {
         ask(h, "ui.click", json!({"x": x, "y": y})).expect("click");
         for _ in 0..6 {
             pump(h);
         }
     };
-    let click_label = |h: &mut Harness<'_, NoteCraftApp>, label: &str| {
+    let click_label = |h: &mut Harness<'_, ErgoNoteApp>, label: &str| {
         let r = h.get_by_label(label).rect();
         click(h, r.center().x, r.center().y);
     };
@@ -8657,10 +8656,10 @@ fn bold_and_italic_toggle_over_a_line_that_is_partly_marked() {
     app.open_path(&s.md_page.to_string_lossy());
     let mut h = sized_harness(app, LIGHT, egui::vec2(2000.0, 900.0));
     settle(&mut h);
-    let line = |h: &Harness<'_, NoteCraftApp>| {
+    let line = |h: &Harness<'_, ErgoNoteApp>| {
         h.state().body().unwrap_or_default().lines().find(|l| l.contains("plain folders")).unwrap_or_default().to_string()
     };
-    let select_the_line = |h: &mut Harness<'_, NoteCraftApp>| {
+    let select_the_line = |h: &mut Harness<'_, ErgoNoteApp>| {
         ask(h, "ui.caret", json!({"block": 1})).expect("caret");
         pump(h);
         ask(h, "ui.key", json!({"key": "A", "ctrl": true})).expect("select all");
@@ -8691,7 +8690,7 @@ fn font_selectors_show_selection_values_and_mixed_state_in_both_formats() {
         (&s.md_page, "<span style=\"font-family: Example Sans; font-size: 18pt\">alpha</span> plain"),
         (&s.html_page, "<p><span style=\"font-family: Example Sans; font-size: 18pt\">alpha</span> plain</p>"),
     ] {
-        notecraft_store::page::save_body(page, body).expect("fixture");
+        ergonote_store::page::save_body(page, body).expect("fixture");
         h.state_mut().open_path(&page.to_string_lossy());
         settle(&mut h);
         ask(&mut h, "ui.caret", json!({"block": 0})).expect("caret");
@@ -8737,13 +8736,13 @@ fn typed_font_size_case(html: bool, enter: bool) {
     let (theme, width) = if html == enter { (LIGHT, 2000.0) } else { (DARK, 1280.0) };
     let mut h = sized_harness(app, theme, egui::vec2(width, 900.0));
     let page = if html { &s.html_page } else { &s.md_page };
-    let format = if html { notecraft_model::PageFormat::Html } else { notecraft_model::PageFormat::Cmgfm };
+    let format = if html { ergonote_model::PageFormat::Html } else { ergonote_model::PageFormat::Cmgfm };
     let body = if html {
         "<p><span style=\"font-size: 18pt\"><b>alpha</b></span> plain</p><p>untouched paragraph</p>"
     } else {
         "<span style=\"font-size: 18pt\">**alpha**</span> plain\n\nuntouched paragraph"
     };
-    notecraft_store::page::save_body(page, body).expect("fixture");
+    ergonote_store::page::save_body(page, body).expect("fixture");
     h.state_mut().open_path(&page.to_string_lossy());
     settle(&mut h);
     let before = h.state().body().unwrap_or_default().to_string();
@@ -8769,13 +8768,13 @@ fn typed_font_size_case(html: bool, enter: bool) {
     settle(&mut h);
     assert_eq!(h.get_by_label("Font Size").value().as_deref(), Some("24"), "the box shows the typed size");
     let after = h.state().body().unwrap_or_default().to_string();
-    let (blocks, _) = notecraft_formats::boxes::read(format, &after);
+    let (blocks, _) = ergonote_formats::boxes::read(format, &after);
     assert_eq!(blocks.len(), 2, "Enter in the combo must not create a paragraph in the note");
-    let notecraft_formats::Block::Paragraph(selected) = &blocks[0] else { panic!("selected paragraph") };
+    let ergonote_formats::Block::Paragraph(selected) = &blocks[0] else { panic!("selected paragraph") };
     assert_eq!(selected.iter().map(|s| s.text.as_str()).collect::<String>(), "alpha plain", "typing in the combo did not edit the note");
     assert!(selected.iter().all(|s| s.font_size == Some(24)), "the original selection took the size: {after}");
     assert_eq!(selected.iter().filter(|s| s.bold).map(|s| s.text.as_str()).collect::<String>(), "alpha", "other marks survive");
-    let notecraft_formats::Block::Paragraph(outside) = &blocks[1] else { panic!("outside paragraph") };
+    let ergonote_formats::Block::Paragraph(outside) = &blocks[1] else { panic!("outside paragraph") };
     assert_eq!(outside.iter().map(|s| s.text.as_str()).collect::<String>(), "untouched paragraph");
     assert!(outside.iter().all(|s| s.font_size.is_none()), "the unselected paragraph is unchanged");
     review(&mut h, &format!("typed_font_size_{html}_{enter}"));
@@ -8835,7 +8834,7 @@ fn the_size_list_opens_under_the_size_box() {
 fn the_size_box_shows_the_current_size() {
     let (_t, app, s) = sample_app("ui-font-size-box-current");
     let mut h = sized_harness(app, LIGHT, egui::vec2(2000.0, 900.0));
-    notecraft_store::page::save_body(&s.md_page, "<span style=\"font-size: 18pt\">alpha</span>").expect("fixture");
+    ergonote_store::page::save_body(&s.md_page, "<span style=\"font-size: 18pt\">alpha</span>").expect("fixture");
     h.state_mut().open_path(&s.md_page.to_string_lossy());
     settle(&mut h);
     ask(&mut h, "ui.caret", json!({"block": 0})).expect("caret");
@@ -8848,8 +8847,8 @@ fn the_size_box_shows_the_current_size() {
 /// Choosing a font in the list changes the font box to that font (with the caret in plain text).
 #[test]
 fn choosing_a_font_changes_the_font_box() {
-    let Ok(catalog) = notecraft_ui_egui::fonts::system_catalog() else { return };
-    let Some(name) = catalog.families().iter().find(|n| notecraft_formats::markdown::valid_font_family(n)).cloned() else { return };
+    let Ok(catalog) = ergonote_ui_egui::fonts::system_catalog() else { return };
+    let Some(name) = catalog.families().iter().find(|n| ergonote_formats::markdown::valid_font_family(n)).cloned() else { return };
     let (_t, app, s) = sample_app("ui-font-choose");
     let mut h = sized_harness(app, LIGHT, egui::vec2(2000.0, 900.0));
     h.state_mut().open_path(&s.md_page.to_string_lossy());
@@ -8868,7 +8867,7 @@ fn choosing_a_font_changes_the_font_box() {
 fn dragging_across_text_selects_it() {
     let (_t, app, s) = sample_app("ui-drag-select");
     let mut h = sized_harness(app, LIGHT, egui::vec2(2000.0, 900.0));
-    notecraft_store::page::save_body(&s.md_page, "hello world").expect("fixture");
+    ergonote_store::page::save_body(&s.md_page, "hello world").expect("fixture");
     h.state_mut().open_path(&s.md_page.to_string_lossy());
     settle(&mut h);
     let page = ask(&mut h, "ui.inspect", json!({})).expect("inspect")["page"].clone();
@@ -8897,8 +8896,8 @@ fn dragging_across_text_selects_it() {
 /// it to the next text typed).
 #[test]
 fn choosing_a_font_without_a_caret_changes_the_font_box() {
-    let Ok(catalog) = notecraft_ui_egui::fonts::system_catalog() else { return };
-    let Some(name) = catalog.families().iter().find(|n| notecraft_formats::markdown::valid_font_family(n)).cloned() else { return };
+    let Ok(catalog) = ergonote_ui_egui::fonts::system_catalog() else { return };
+    let Some(name) = catalog.families().iter().find(|n| ergonote_formats::markdown::valid_font_family(n)).cloned() else { return };
     let (_t, app, s) = sample_app("ui-font-choose-no-caret");
     let mut h = sized_harness(app, LIGHT, egui::vec2(2000.0, 900.0));
     h.state_mut().open_path(&s.md_page.to_string_lossy());
@@ -8946,7 +8945,7 @@ fn font_controls_include_family_underline_and_scripts() {
 #[cfg(any(target_os = "linux", target_os = "windows", target_os = "macos"))]
 #[test]
 fn installed_font_family_can_be_applied_and_undone_in_both_formats() {
-    let catalog = match notecraft_ui_egui::fonts::system::Catalog::discover() {
+    let catalog = match ergonote_ui_egui::fonts::system::Catalog::discover() {
         Ok(catalog) => catalog,
         Err(error) => {
             eprintln!("System font discovery unavailable: {error}");
@@ -8956,8 +8955,8 @@ fn installed_font_family_can_be_applied_and_undone_in_both_formats() {
     let family = catalog.families().first().expect("non-empty catalog").clone();
     let (_t, app, s) = sample_app("ui-font-family-selected");
     let mut h = sized_harness(app, LIGHT, egui::vec2(2000.0, 900.0));
-    for (page, format) in [(&s.md_page, notecraft_model::PageFormat::Cmgfm), (&s.html_page, notecraft_model::PageFormat::Html)] {
-        notecraft_store::page::save_body(page, if format == notecraft_model::PageFormat::Html { "<p>simple words</p>" } else { "simple words" })
+    for (page, format) in [(&s.md_page, ergonote_model::PageFormat::Cmgfm), (&s.html_page, ergonote_model::PageFormat::Html)] {
+        ergonote_store::page::save_body(page, if format == ergonote_model::PageFormat::Html { "<p>simple words</p>" } else { "simple words" })
             .expect("write fixture");
         h.state_mut().open_path(&page.to_string_lossy());
         settle(&mut h);
@@ -8971,8 +8970,8 @@ fn installed_font_family_can_be_applied_and_undone_in_both_formats() {
         h.get_by_label(&family).click();
         settle(&mut h);
         let after = h.state().body().unwrap_or_default().to_string();
-        let (blocks, _) = notecraft_formats::boxes::read(format, &after);
-        let notecraft_formats::Block::Paragraph(spans) = &blocks[0] else { panic!("paragraph expected") };
+        let (blocks, _) = ergonote_formats::boxes::read(format, &after);
+        let ergonote_formats::Block::Paragraph(spans) = &blocks[0] else { panic!("paragraph expected") };
         assert!(spans.iter().all(|span| span.font_family.as_deref() == Some(family.as_str())), "{family}: {after}");
         let inspection = ask(&mut h, "ui.inspect", json!({})).expect("inspect");
         assert_eq!(h.get_by_label("Font Family").value().as_deref(), Some(family.as_str()), "{inspection}");
@@ -8993,7 +8992,7 @@ fn installed_font_family_can_be_applied_and_undone_in_both_formats() {
 #[cfg(any(target_os = "linux", target_os = "windows", target_os = "macos"))]
 #[test]
 fn installed_family_and_underline_apply_to_new_text() {
-    let catalog = match notecraft_ui_egui::fonts::system::Catalog::discover() {
+    let catalog = match ergonote_ui_egui::fonts::system::Catalog::discover() {
         Ok(catalog) => catalog,
         Err(error) => {
             eprintln!("System font discovery unavailable: {error}");
@@ -9002,7 +9001,7 @@ fn installed_family_and_underline_apply_to_new_text() {
     };
     let family = catalog.families().first().expect("non-empty catalog").clone();
     let (_t, app, s) = sample_app("ui-pending-family");
-    notecraft_store::page::save_body(&s.md_page, "plain").expect("fixture");
+    ergonote_store::page::save_body(&s.md_page, "plain").expect("fixture");
     let mut h = sized_harness(app, LIGHT, egui::vec2(2000.0, 900.0));
     h.state_mut().open_path(&s.md_page.to_string_lossy());
     settle(&mut h);
@@ -9019,8 +9018,8 @@ fn installed_family_and_underline_apply_to_new_text() {
     assert_eq!(h.state().body().unwrap_or_default(), before);
     ask(&mut h, "ui.text", json!({"text": "字"})).expect("typing");
     settle(&mut h);
-    let (blocks, _) = notecraft_formats::boxes::read(notecraft_model::PageFormat::Cmgfm, h.state().body().unwrap_or_default());
-    let notecraft_formats::Block::Paragraph(spans) = &blocks[0] else { panic!("paragraph expected") };
+    let (blocks, _) = ergonote_formats::boxes::read(ergonote_model::PageFormat::Cmgfm, h.state().body().unwrap_or_default());
+    let ergonote_formats::Block::Paragraph(spans) = &blocks[0] else { panic!("paragraph expected") };
     assert!(spans.iter().any(|span| span.text.contains('字') && span.underline && span.font_family.as_deref() == Some(family.as_str())), "{spans:?}");
 }
 
@@ -9028,9 +9027,9 @@ fn installed_family_and_underline_apply_to_new_text() {
 fn underline_and_scripts_toggle_and_undo_for_a_selected_line_in_both_formats() {
     let (_t, app, s) = sample_app("ui-inline-marks");
     let mut h = sized_harness(app, LIGHT, egui::vec2(2000.0, 900.0));
-    for (page, format) in [(&s.md_page, notecraft_model::PageFormat::Cmgfm), (&s.html_page, notecraft_model::PageFormat::Html)] {
+    for (page, format) in [(&s.md_page, ergonote_model::PageFormat::Cmgfm), (&s.html_page, ergonote_model::PageFormat::Html)] {
         for mark in ["Underline", "Subscript", "Superscript"] {
-            notecraft_store::page::save_body(page, if format == notecraft_model::PageFormat::Html { "<p>simple words</p>" } else { "simple words" })
+            ergonote_store::page::save_body(page, if format == ergonote_model::PageFormat::Html { "<p>simple words</p>" } else { "simple words" })
                 .expect("write fixture");
             h.state_mut().open_path(&page.to_string_lossy());
             settle(&mut h);
@@ -9042,13 +9041,13 @@ fn underline_and_scripts_toggle_and_undo_for_a_selected_line_in_both_formats() {
             h.get_by_label(mark).click();
             settle(&mut h);
             let after = h.state().body().unwrap_or_default().to_string();
-            let (blocks, _) = notecraft_formats::boxes::read(format, &after);
-            let notecraft_formats::Block::Paragraph(spans) = &blocks[0] else { panic!("paragraph expected") };
+            let (blocks, _) = ergonote_formats::boxes::read(format, &after);
+            let ergonote_formats::Block::Paragraph(spans) = &blocks[0] else { panic!("paragraph expected") };
             assert!(
                 spans.iter().all(|span| match mark {
                     "Underline" => span.underline,
-                    "Subscript" => span.script == Some(notecraft_formats::markdown::Script::Subscript),
-                    _ => span.script == Some(notecraft_formats::markdown::Script::Superscript),
+                    "Subscript" => span.script == Some(ergonote_formats::markdown::Script::Subscript),
+                    _ => span.script == Some(ergonote_formats::markdown::Script::Superscript),
                 }),
                 "{mark}: {after}"
             );
@@ -9070,11 +9069,11 @@ fn underline_and_scripts_toggle_and_undo_for_a_selected_line_in_both_formats() {
 fn formatting_shortcuts_match_existing_table_cell_actions() {
     let (_t, app, s) = sample_app("ui-formatting-table-shortcuts");
     let mut h = sized_harness(app, LIGHT, egui::vec2(2000.0, 900.0));
-    for (page, format) in [(&s.md_page, notecraft_model::PageFormat::Cmgfm), (&s.html_page, notecraft_model::PageFormat::Html)] {
+    for (page, format) in [(&s.md_page, ergonote_model::PageFormat::Cmgfm), (&s.html_page, ergonote_model::PageFormat::Html)] {
         for key in ["B", "I", "U"] {
-            notecraft_store::page::save_body(
+            ergonote_store::page::save_body(
                 page,
-                if format == notecraft_model::PageFormat::Html {
+                if format == ergonote_model::PageFormat::Html {
                     "<table><tr><th>Head</th></tr><tr><td>bravo</td></tr></table>"
                 } else {
                     "| Head |\n| --- |\n| bravo |\n"
@@ -9106,8 +9105,8 @@ fn formatting_shortcuts_match_existing_table_cell_actions() {
                 assert_eq!(h.state().body().unwrap_or_default(), before);
                 continue;
             }
-            let (blocks, _) = notecraft_formats::boxes::read(format, h.state().body().unwrap_or_default());
-            let notecraft_formats::Block::Table { rows, .. } = &blocks[0] else { panic!("table expected") };
+            let (blocks, _) = ergonote_formats::boxes::read(format, h.state().body().unwrap_or_default());
+            let ergonote_formats::Block::Table { rows, .. } = &blocks[0] else { panic!("table expected") };
             assert_eq!(rows[0][0].iter().map(|s| s.text.as_str()).collect::<String>(), "bravo");
             assert!(rows[0][0].iter().all(|s| if key == "B" { s.bold } else { s.italic }), "{key} formats the focused cell");
         }
@@ -9117,7 +9116,7 @@ fn formatting_shortcuts_match_existing_table_cell_actions() {
 #[test]
 fn formatting_shortcuts_do_not_format_a_stale_page_caret_from_search_or_source() {
     let (_t, mut app, s) = sample_app("ui-formatting-focus");
-    notecraft_store::page::save_body(&s.html_page, "<p>alpha bravo omega</p>").expect("fixture");
+    ergonote_store::page::save_body(&s.html_page, "<p>alpha bravo omega</p>").expect("fixture");
     app.open_path(&s.html_page.to_string_lossy());
     let mut h = harness(app, LIGHT);
     settle(&mut h);
@@ -9151,16 +9150,16 @@ fn formatting_shortcuts_do_not_format_a_stale_page_caret_from_search_or_source()
 #[test]
 fn paragraph_alignment_moves_the_line_saves_and_undoes() {
     use egui_kittest::kittest::NodeT as _;
-    for (format, body) in [(notecraft_model::PageFormat::Html, "<p>alpha</p><p>bravo</p>"), (notecraft_model::PageFormat::Cmgfm, "alpha\n\nbravo")] {
+    for (format, body) in [(ergonote_model::PageFormat::Html, "<p>alpha</p><p>bravo</p>"), (ergonote_model::PageFormat::Cmgfm, "alpha\n\nbravo")] {
         let (_t, app, s) = sample_app("ui-paragraph-align");
         let mut h = sized_harness(app, LIGHT, egui::vec2(1600.0, 900.0));
-        let page = if format == notecraft_model::PageFormat::Html { &s.html_page } else { &s.md_page };
-        notecraft_store::page::save_body(page, body).expect("fixture");
+        let page = if format == ergonote_model::PageFormat::Html { &s.html_page } else { &s.md_page };
+        ergonote_store::page::save_body(page, body).expect("fixture");
         h.state_mut().open_path(&page.to_string_lossy());
         settle(&mut h);
-        let left_of = |h: &Harness<'_, NoteCraftApp>, label: &str| h.get_by_label(label).accesskit_node().bounding_box().expect("drawn").x0;
-        let saved = || notecraft_store::page::justified(page).expect("read").align_of(0);
-        let caret = |h: &mut Harness<'_, NoteCraftApp>, block: usize| {
+        let left_of = |h: &Harness<'_, ErgoNoteApp>, label: &str| h.get_by_label(label).accesskit_node().bounding_box().expect("drawn").x0;
+        let saved = || ergonote_store::page::justified(page).expect("read").align_of(0);
+        let caret = |h: &mut Harness<'_, ErgoNoteApp>, block: usize| {
             ask(h, "ui.caret", json!({"block": block})).expect("caret");
             settle(h);
         };
@@ -9173,7 +9172,7 @@ fn paragraph_alignment_moves_the_line_saves_and_undoes() {
         h.run_steps(2);
         h.get_by_label("Center").click();
         settle(&mut h);
-        assert_eq!(saved(), Some(notecraft_model::justify::Align::Center), "{format:?}: the page's file says centred");
+        assert_eq!(saved(), Some(ergonote_model::justify::Align::Center), "{format:?}: the page's file says centred");
         assert_eq!(h.state().body().unwrap_or_default(), words, "{format:?}: the words are untouched");
         caret(&mut h, 1);
         let centred = left_of(&h, "alpha");
@@ -9187,16 +9186,16 @@ fn paragraph_alignment_moves_the_line_saves_and_undoes() {
         assert!((left_of(&h, "alpha") - ragged).abs() < 1.0, "{format:?}: and the line is back at the left");
         ask(&mut h, "ui.redo", json!({})).expect("redo");
         settle(&mut h);
-        assert_eq!(saved(), Some(notecraft_model::justify::Align::Center), "{format:?}: redo puts it back");
+        assert_eq!(saved(), Some(ergonote_model::justify::Align::Center), "{format:?}: redo puts it back");
 
         // Ctrl+R sets it against the right, and Ctrl+R again gives it back its own alignment.
         caret(&mut h, 0);
-        let ctrl_r = |h: &mut Harness<'_, NoteCraftApp>| {
+        let ctrl_r = |h: &mut Harness<'_, ErgoNoteApp>| {
             h.key_press_modifiers(egui::Modifiers::COMMAND, egui::Key::R);
             settle(h);
         };
         ctrl_r(&mut h);
-        assert_eq!(saved(), Some(notecraft_model::justify::Align::Right), "{format:?}: Ctrl+R");
+        assert_eq!(saved(), Some(ergonote_model::justify::Align::Right), "{format:?}: Ctrl+R");
         ctrl_r(&mut h);
         assert_eq!(saved(), None, "{format:?}: the same again takes it off");
 
@@ -9217,25 +9216,25 @@ fn paragraph_alignment_moves_the_line_saves_and_undoes() {
 #[test]
 fn paragraph_spacing_opens_room_around_a_paragraph_saves_and_undoes() {
     use egui_kittest::kittest::NodeT as _;
-    use notecraft_model::justify::Spacing;
+    use ergonote_model::justify::Spacing;
     for (format, body) in [
-        (notecraft_model::PageFormat::Html, "<p>alpha</p><p>bravo</p><p>مرحبا</p><p>charlie</p>"),
-        (notecraft_model::PageFormat::Cmgfm, "alpha\n\nbravo\n\nمرحبا\n\ncharlie"),
+        (ergonote_model::PageFormat::Html, "<p>alpha</p><p>bravo</p><p>مرحبا</p><p>charlie</p>"),
+        (ergonote_model::PageFormat::Cmgfm, "alpha\n\nbravo\n\nمرحبا\n\ncharlie"),
     ] {
         let (_t, app, s) = sample_app("ui-paragraph-spacing");
         let mut h = sized_harness(app, LIGHT, egui::vec2(1600.0, 900.0));
-        let page = if format == notecraft_model::PageFormat::Html { &s.html_page } else { &s.md_page };
-        notecraft_store::page::save_body(page, body).expect("fixture");
+        let page = if format == ergonote_model::PageFormat::Html { &s.html_page } else { &s.md_page };
+        ergonote_store::page::save_body(page, body).expect("fixture");
         h.state_mut().open_path(&page.to_string_lossy());
         settle(&mut h);
-        let top_of = |h: &Harness<'_, NoteCraftApp>, label: &str| h.get_by_label(label).accesskit_node().bounding_box().expect("drawn").y0 as f32;
-        let saved = |block: usize| notecraft_store::page::justified(page).expect("read").spacing_of(block);
-        let caret = |h: &mut Harness<'_, NoteCraftApp>, block: usize| {
+        let top_of = |h: &Harness<'_, ErgoNoteApp>, label: &str| h.get_by_label(label).accesskit_node().bounding_box().expect("drawn").y0 as f32;
+        let saved = |block: usize| ergonote_store::page::justified(page).expect("read").spacing_of(block);
+        let caret = |h: &mut Harness<'_, ErgoNoteApp>, block: usize| {
             ask(h, "ui.caret", json!({"block": block})).expect("caret");
             settle(h);
         };
         // Opens the dialog from the ribbon for the caret's paragraph and types the three values.
-        let give = |h: &mut Harness<'_, NoteCraftApp>, block: usize, before: &str, after: &str, line: &str| {
+        let give = |h: &mut Harness<'_, ErgoNoteApp>, block: usize, before: &str, after: &str, line: &str| {
             caret(h, block);
             h.get_by_label("Alignment and direction").click();
             h.run_steps(2);
@@ -9332,7 +9331,7 @@ fn paragraph_spacing_opens_room_around_a_paragraph_saves_and_undoes() {
         h.get_by_label("OK").click();
         settle(&mut h);
         assert_eq!(saved(0), None, "{format:?}: Reset takes the room off");
-        assert!(notecraft_store::page::justified(page).expect("read").is_empty(), "{format:?}");
+        assert!(ergonote_store::page::justified(page).expect("read").is_empty(), "{format:?}");
         caret(&mut h, 2);
         assert!((top_of(&h, "charlie") - charlie0).abs() < 1.5, "{format:?}: the page is back as it was: {charlie0} vs {}", top_of(&h, "charlie"));
     }
@@ -9345,21 +9344,20 @@ fn paragraph_spacing_opens_room_around_a_paragraph_saves_and_undoes() {
 fn home_mark_buttons_show_the_marks_at_the_caret_and_of_the_selection() {
     use egui_kittest::kittest::NodeT as _;
     for (format, body) in [
-        (notecraft_model::PageFormat::Html, "<p>alpha <strong>bravo</strong> <em>omega</em></p>"),
-        (notecraft_model::PageFormat::Cmgfm, "alpha **bravo** *omega*"),
+        (ergonote_model::PageFormat::Html, "<p>alpha <strong>bravo</strong> <em>omega</em></p>"),
+        (ergonote_model::PageFormat::Cmgfm, "alpha **bravo** *omega*"),
     ] {
         let (_t, app, s) = sample_app("ui-mark-state");
         let mut h = sized_harness(app, LIGHT, egui::vec2(2000.0, 900.0));
-        let page = if format == notecraft_model::PageFormat::Html { &s.html_page } else { &s.md_page };
-        notecraft_store::page::save_body(page, body).expect("fixture");
+        let page = if format == ergonote_model::PageFormat::Html { &s.html_page } else { &s.md_page };
+        ergonote_store::page::save_body(page, body).expect("fixture");
         h.state_mut().open_path(&page.to_string_lossy());
         settle(&mut h);
-        let on =
-            |h: &Harness<'_, NoteCraftApp>, label: &str| h.get_by_label(label).accesskit_node().toggled() == Some(egui::accesskit::Toggled::True);
+        let on = |h: &Harness<'_, ErgoNoteApp>, label: &str| h.get_by_label(label).accesskit_node().toggled() == Some(egui::accesskit::Toggled::True);
         // Puts the caret `right` characters into the line and selects `select` more. The line
         // being written in still shows its marks' markup (`alpha **bravo** *omega*`, issue
         // #242), and the caret counts through it.
-        let place = |h: &mut Harness<'_, NoteCraftApp>, right: usize, select: usize| {
+        let place = |h: &mut Harness<'_, ErgoNoteApp>, right: usize, select: usize| {
             ask(h, "ui.caret", json!({"block": 0})).expect("caret");
             pump(h);
             ask(h, "ui.key", json!({"key": "Home"})).expect("home");
@@ -9396,16 +9394,16 @@ fn home_mark_buttons_show_the_marks_at_the_caret_and_of_the_selection() {
 mod formatting_shortcuts_match_ribbon_and_keep_selection_history_and_storage {
     use super::*;
 
-    fn run_case(theme: Theme, format: notecraft_model::PageFormat, key: egui::Key, label: &str, mac: bool) {
+    fn run_case(theme: Theme, format: ergonote_model::PageFormat, key: egui::Key, label: &str, mac: bool) {
         let (_t, app, s) = sample_app("ui-formatting-shortcuts");
         let mut h = sized_harness(app, theme, egui::vec2(2000.0, 900.0));
         let page = match format {
-            notecraft_model::PageFormat::Cmgfm => &s.md_page,
-            notecraft_model::PageFormat::Html => &s.html_page,
+            ergonote_model::PageFormat::Cmgfm => &s.md_page,
+            ergonote_model::PageFormat::Html => &s.html_page,
         };
-        notecraft_store::page::save_body(
+        ergonote_store::page::save_body(
             page,
-            if format == notecraft_model::PageFormat::Html { "<p>alpha bravo omega</p>" } else { "alpha bravo omega" },
+            if format == ergonote_model::PageFormat::Html { "<p>alpha bravo omega</p>" } else { "alpha bravo omega" },
         )
         .expect("fixture");
         h.state_mut().open_path(&page.to_string_lossy());
@@ -9423,7 +9421,7 @@ mod formatting_shortcuts_match_ribbon_and_keep_selection_history_and_storage {
             ask(&mut h, "ui.key", json!({"key": "ArrowRight", "shift": true})).expect("select");
             pump(&mut h);
         }
-        let press = |h: &mut Harness<'_, NoteCraftApp>| {
+        let press = |h: &mut Harness<'_, ErgoNoteApp>| {
             let modifiers = egui::Modifiers { ctrl: !mac, mac_cmd: mac, command: true, ..egui::Modifiers::NONE };
             h.input_mut().events.push(egui::Event::Key { key, physical_key: None, pressed: true, repeat: false, modifiers });
             pump(h);
@@ -9435,17 +9433,17 @@ mod formatting_shortcuts_match_ribbon_and_keep_selection_history_and_storage {
         if key == egui::Key::B && !mac {
             review(&mut h, &format!("shortcut_{format:?}_{}", theme.id()));
         }
-        let (blocks, _) = notecraft_formats::boxes::read(format, &after);
-        let notecraft_formats::Block::Paragraph(spans) = &blocks[0] else { panic!("paragraph expected") };
-        let active = |s: &notecraft_formats::markdown::Span| match key {
+        let (blocks, _) = ergonote_formats::boxes::read(format, &after);
+        let ergonote_formats::Block::Paragraph(spans) = &blocks[0] else { panic!("paragraph expected") };
+        let active = |s: &ergonote_formats::markdown::Span| match key {
             egui::Key::B => s.bold,
             egui::Key::I => s.italic,
             _ => s.underline,
         };
         assert_eq!(spans.iter().filter(|s| active(s)).map(|s| s.text.as_str()).collect::<String>(), "bravo", "{label}, mac={mac}: {after}");
         press(&mut h);
-        let (blocks, _) = notecraft_formats::boxes::read(format, h.state().body().unwrap_or_default());
-        let notecraft_formats::Block::Paragraph(spans) = &blocks[0] else { panic!("paragraph expected") };
+        let (blocks, _) = ergonote_formats::boxes::read(format, h.state().body().unwrap_or_default());
+        let ergonote_formats::Block::Paragraph(spans) = &blocks[0] else { panic!("paragraph expected") };
         assert!(spans.iter().all(|s| !active(s)), "second shortcut toggles the same selection");
         ask(&mut h, "ui.undo", json!({})).expect("undo toggle");
         settle(&mut h);
@@ -9489,7 +9487,7 @@ mod formatting_shortcuts_match_ribbon_and_keep_selection_history_and_storage {
         ($name:ident, $theme:ident, $format:ident, $key:ident, $label:literal, $mac:literal) => {
             #[test]
             fn $name() {
-                run_case($theme, notecraft_model::PageFormat::$format, egui::Key::$key, $label, $mac);
+                run_case($theme, ergonote_model::PageFormat::$format, egui::Key::$key, $label, $mac);
             }
         };
     }
@@ -9524,11 +9522,11 @@ mod formatting_shortcuts_match_ribbon_and_keep_selection_history_and_storage {
 fn legacy_font_marks_toggle_partial_selection_without_losing_other_styles() {
     let (_t, app, s) = sample_app("ui-partial-legacy-marks");
     let mut h = sized_harness(app, LIGHT, egui::vec2(2000.0, 900.0));
-    for (page, format) in [(&s.md_page, notecraft_model::PageFormat::Cmgfm), (&s.html_page, notecraft_model::PageFormat::Html)] {
+    for (page, format) in [(&s.md_page, ergonote_model::PageFormat::Cmgfm), (&s.html_page, ergonote_model::PageFormat::Html)] {
         for label in ["Bold", "Italic", "Strikethrough"] {
-            notecraft_store::page::save_body(
+            ergonote_store::page::save_body(
                 page,
-                if format == notecraft_model::PageFormat::Html { "<p><u>alpha bravo omega</u></p>" } else { "<u>alpha bravo omega</u>" },
+                if format == ergonote_model::PageFormat::Html { "<p><u>alpha bravo omega</u></p>" } else { "<u>alpha bravo omega</u>" },
             )
             .expect("fixture");
             h.state_mut().open_path(&page.to_string_lossy());
@@ -9549,9 +9547,9 @@ fn legacy_font_marks_toggle_partial_selection_without_losing_other_styles() {
             h.get_by_label(label).click();
             settle(&mut h);
             let after = h.state().body().unwrap_or_default().to_string();
-            let (blocks, _) = notecraft_formats::boxes::read(format, &after);
-            let notecraft_formats::Block::Paragraph(spans) = &blocks[0] else { panic!("paragraph expected") };
-            let active = |s: &notecraft_formats::markdown::Span| match label {
+            let (blocks, _) = ergonote_formats::boxes::read(format, &after);
+            let ergonote_formats::Block::Paragraph(spans) = &blocks[0] else { panic!("paragraph expected") };
+            let active = |s: &ergonote_formats::markdown::Span| match label {
                 "Bold" => s.bold,
                 "Italic" => s.italic,
                 _ => s.strike,
@@ -9561,8 +9559,8 @@ fn legacy_font_marks_toggle_partial_selection_without_losing_other_styles() {
             h.get_by_label(label).click();
             settle(&mut h);
             let toggled = h.state().body().unwrap_or_default().to_string();
-            let (blocks, _) = notecraft_formats::boxes::read(format, &toggled);
-            let notecraft_formats::Block::Paragraph(spans) = &blocks[0] else { panic!("paragraph expected") };
+            let (blocks, _) = ergonote_formats::boxes::read(format, &toggled);
+            let ergonote_formats::Block::Paragraph(spans) = &blocks[0] else { panic!("paragraph expected") };
             assert!(spans.iter().all(|s| !active(s) && s.underline), "{label} toggles only the selection: {toggled}");
             ask(&mut h, "ui.undo", json!({})).expect("undo toggle");
             settle(&mut h);
@@ -9578,10 +9576,10 @@ fn legacy_font_marks_toggle_partial_selection_without_losing_other_styles() {
 fn underline_applies_only_to_a_partial_selection_and_undoes_in_both_formats() {
     let (_t, app, s) = sample_app("ui-partial-underline");
     let mut h = sized_harness(app, LIGHT, egui::vec2(2000.0, 900.0));
-    for (page, format) in [(&s.md_page, notecraft_model::PageFormat::Cmgfm), (&s.html_page, notecraft_model::PageFormat::Html)] {
-        notecraft_store::page::save_body(
+    for (page, format) in [(&s.md_page, ergonote_model::PageFormat::Cmgfm), (&s.html_page, ergonote_model::PageFormat::Html)] {
+        ergonote_store::page::save_body(
             page,
-            if format == notecraft_model::PageFormat::Html { "<p>alpha bravo omega</p>" } else { "alpha bravo omega" },
+            if format == ergonote_model::PageFormat::Html { "<p>alpha bravo omega</p>" } else { "alpha bravo omega" },
         )
         .expect("fixture");
         h.state_mut().open_path(&page.to_string_lossy());
@@ -9602,15 +9600,15 @@ fn underline_applies_only_to_a_partial_selection_and_undoes_in_both_formats() {
         h.get_by_label("Underline").click();
         settle(&mut h);
         let after = h.state().body().unwrap_or_default().to_string();
-        let (blocks, _) = notecraft_formats::boxes::read(format, &after);
-        let notecraft_formats::Block::Paragraph(spans) = &blocks[0] else { panic!("paragraph expected") };
+        let (blocks, _) = ergonote_formats::boxes::read(format, &after);
+        let ergonote_formats::Block::Paragraph(spans) = &blocks[0] else { panic!("paragraph expected") };
         assert_eq!(spans.iter().filter(|s| s.underline).map(|s| s.text.as_str()).collect::<String>(), "bravo", "{after}");
         assert_eq!(spans.iter().filter(|s| !s.underline).map(|s| s.text.as_str()).collect::<String>(), "alpha  omega", "{after}");
         h.get_by_label("Underline").click();
         settle(&mut h);
         let toggled = h.state().body().unwrap_or_default().to_string();
-        let (blocks, _) = notecraft_formats::boxes::read(format, &toggled);
-        let notecraft_formats::Block::Paragraph(spans) = &blocks[0] else { panic!("paragraph expected") };
+        let (blocks, _) = ergonote_formats::boxes::read(format, &toggled);
+        let ergonote_formats::Block::Paragraph(spans) = &blocks[0] else { panic!("paragraph expected") };
         assert!(spans.iter().all(|s| !s.underline), "selection remains active for toggle: {toggled}");
         ask(&mut h, "ui.undo", json!({})).expect("undo toggle");
         settle(&mut h);
@@ -9627,7 +9625,7 @@ fn underline_applies_only_to_a_partial_selection_and_undoes_in_both_formats() {
 #[test]
 fn font_size_replaces_only_the_partial_selection_inside_an_existing_size() {
     let (_t, app, s) = sample_app("ui-partial-resize");
-    notecraft_store::page::save_body(&s.md_page, "<span style=\"font-size: 18pt\">alpha bravo omega</span>").expect("fixture");
+    ergonote_store::page::save_body(&s.md_page, "<span style=\"font-size: 18pt\">alpha bravo omega</span>").expect("fixture");
     let mut h = sized_harness(app, LIGHT, egui::vec2(2000.0, 900.0));
     h.state_mut().open_path(&s.md_page.to_string_lossy());
     settle(&mut h);
@@ -9648,8 +9646,8 @@ fn font_size_replaces_only_the_partial_selection_inside_an_existing_size() {
     h.get_by_label("24").click();
     settle(&mut h);
     let body = h.state().body().unwrap_or_default();
-    let (blocks, _) = notecraft_formats::boxes::read(notecraft_model::PageFormat::Cmgfm, body);
-    let notecraft_formats::Block::Paragraph(spans) = &blocks[0] else { panic!("paragraph expected") };
+    let (blocks, _) = ergonote_formats::boxes::read(ergonote_model::PageFormat::Cmgfm, body);
+    let ergonote_formats::Block::Paragraph(spans) = &blocks[0] else { panic!("paragraph expected") };
     assert_eq!(spans.iter().filter(|s| s.font_size == Some(24)).map(|s| s.text.as_str()).collect::<String>(), "bravo", "{body}");
     assert_eq!(spans.iter().filter(|s| s.font_size == Some(18)).map(|s| s.text.as_str()).collect::<String>(), "alpha  omega", "{body}");
 }
@@ -9657,7 +9655,7 @@ fn font_size_replaces_only_the_partial_selection_inside_an_existing_size() {
 #[test]
 fn font_size_replaces_mixed_sizes_in_a_partial_selection() {
     let (_t, app, s) = sample_app("ui-partial-mixed-size");
-    notecraft_store::page::save_body(&s.md_page, "alpha <span style=\"font-size: 18pt\">bravo</span> omega").expect("fixture");
+    ergonote_store::page::save_body(&s.md_page, "alpha <span style=\"font-size: 18pt\">bravo</span> omega").expect("fixture");
     let mut h = sized_harness(app, LIGHT, egui::vec2(2000.0, 900.0));
     h.state_mut().open_path(&s.md_page.to_string_lossy());
     settle(&mut h);
@@ -9676,8 +9674,8 @@ fn font_size_replaces_mixed_sizes_in_a_partial_selection() {
     h.get_by_label("24").click();
     settle(&mut h);
     let body = h.state().body().unwrap_or_default();
-    let (blocks, _) = notecraft_formats::boxes::read(notecraft_model::PageFormat::Cmgfm, body);
-    let notecraft_formats::Block::Paragraph(spans) = &blocks[0] else { panic!("paragraph expected") };
+    let (blocks, _) = ergonote_formats::boxes::read(ergonote_model::PageFormat::Cmgfm, body);
+    let ergonote_formats::Block::Paragraph(spans) = &blocks[0] else { panic!("paragraph expected") };
     assert_eq!(spans.iter().filter(|s| s.font_size == Some(24)).map(|s| s.text.as_str()).collect::<String>(), "alpha bravo", "{body}");
     assert!(spans.iter().all(|s| s.font_size != Some(18)), "{body}");
 }
@@ -9685,7 +9683,7 @@ fn font_size_replaces_mixed_sizes_in_a_partial_selection() {
 #[cfg(any(target_os = "linux", target_os = "windows", target_os = "macos"))]
 #[test]
 fn partial_selection_keeps_font_family_when_script_is_added() {
-    let catalog = match notecraft_ui_egui::fonts::system::Catalog::discover() {
+    let catalog = match ergonote_ui_egui::fonts::system::Catalog::discover() {
         Ok(catalog) => catalog,
         Err(error) => {
             eprintln!("System font discovery unavailable: {error}");
@@ -9694,7 +9692,7 @@ fn partial_selection_keeps_font_family_when_script_is_added() {
     };
     let family = catalog.families().first().expect("non-empty catalog").clone();
     let (_t, app, s) = sample_app("ui-partial-family-script");
-    notecraft_store::page::save_body(&s.md_page, "alpha bravo omega").expect("fixture");
+    ergonote_store::page::save_body(&s.md_page, "alpha bravo omega").expect("fixture");
     let mut h = sized_harness(app, LIGHT, egui::vec2(2000.0, 900.0));
     h.state_mut().open_path(&s.md_page.to_string_lossy());
     settle(&mut h);
@@ -9717,12 +9715,12 @@ fn partial_selection_keeps_font_family_when_script_is_added() {
     h.get_by_label("Subscript").click();
     settle(&mut h);
     let body = h.state().body().unwrap_or_default();
-    let (blocks, _) = notecraft_formats::boxes::read(notecraft_model::PageFormat::Cmgfm, body);
-    let notecraft_formats::Block::Paragraph(spans) = &blocks[0] else { panic!("paragraph expected") };
+    let (blocks, _) = ergonote_formats::boxes::read(ergonote_model::PageFormat::Cmgfm, body);
+    let ergonote_formats::Block::Paragraph(spans) = &blocks[0] else { panic!("paragraph expected") };
     assert!(
         spans.iter().any(|span| span.text == "bravo"
             && span.font_family.as_deref() == Some(family.as_str())
-            && span.script == Some(notecraft_formats::markdown::Script::Subscript)),
+            && span.script == Some(ergonote_formats::markdown::Script::Subscript)),
         "{body}"
     );
     assert!(spans.iter().filter(|s| s.text != "bravo").all(|s| s.font_family.is_none() && s.script.is_none()), "{body}");
@@ -9732,8 +9730,8 @@ fn partial_selection_keeps_font_family_when_script_is_added() {
 fn pending_marks_combine_with_size_for_unicode_typing_in_both_formats() {
     let (_t, app, s) = sample_app("ui-inline-marks-caret");
     let mut h = sized_harness(app, LIGHT, egui::vec2(2000.0, 900.0));
-    for (page, format) in [(&s.md_page, notecraft_model::PageFormat::Cmgfm), (&s.html_page, notecraft_model::PageFormat::Html)] {
-        notecraft_store::page::save_body(page, if format == notecraft_model::PageFormat::Html { "<p>tail</p>" } else { "tail" }).expect("fixture");
+    for (page, format) in [(&s.md_page, ergonote_model::PageFormat::Cmgfm), (&s.html_page, ergonote_model::PageFormat::Html)] {
+        ergonote_store::page::save_body(page, if format == ergonote_model::PageFormat::Html { "<p>tail</p>" } else { "tail" }).expect("fixture");
         h.state_mut().open_path(&page.to_string_lossy());
         settle(&mut h);
         ask(&mut h, "ui.caret", json!({"block": 0})).expect("caret");
@@ -9753,12 +9751,12 @@ fn pending_marks_combine_with_size_for_unicode_typing_in_both_formats() {
         ask(&mut h, "ui.text", json!({"text": "مرحبا"})).expect("typing");
         settle(&mut h);
         let after = h.state().body().unwrap_or_default().to_string();
-        let (blocks, _) = notecraft_formats::boxes::read(format, &after);
-        let notecraft_formats::Block::Paragraph(spans) = &blocks[0] else { panic!("paragraph expected") };
+        let (blocks, _) = ergonote_formats::boxes::read(format, &after);
+        let ergonote_formats::Block::Paragraph(spans) = &blocks[0] else { panic!("paragraph expected") };
         assert!(
             spans.iter().any(|span| span.text.contains("مرحبا")
                 && span.underline
-                && span.script == Some(notecraft_formats::markdown::Script::Subscript)
+                && span.script == Some(ergonote_formats::markdown::Script::Subscript)
                 && span.font_size == Some(18)),
             "{after}"
         );
@@ -9775,7 +9773,7 @@ fn pending_marks_combine_with_size_for_unicode_typing_in_both_formats() {
 #[test]
 fn pending_marks_toggle_and_cancel_when_the_caret_moves() {
     let (_t, app, s) = sample_app("ui-pending-marks-cancel");
-    notecraft_store::page::save_body(&s.md_page, "plain").expect("fixture");
+    ergonote_store::page::save_body(&s.md_page, "plain").expect("fixture");
     let mut h = sized_harness(app, LIGHT, egui::vec2(2000.0, 900.0));
     h.state_mut().open_path(&s.md_page.to_string_lossy());
     settle(&mut h);
@@ -9787,9 +9785,9 @@ fn pending_marks_toggle_and_cancel_when_the_caret_moves() {
     }
     ask(&mut h, "ui.text", json!({"text": "X"})).expect("typing");
     settle(&mut h);
-    let (blocks, _) = notecraft_formats::boxes::read(notecraft_model::PageFormat::Cmgfm, h.state().body().unwrap_or_default());
-    let notecraft_formats::Block::Paragraph(spans) = &blocks[0] else { panic!("paragraph expected") };
-    assert!(spans.iter().any(|s| s.text == "X" && !s.underline && s.script == Some(notecraft_formats::markdown::Script::Superscript)));
+    let (blocks, _) = ergonote_formats::boxes::read(ergonote_model::PageFormat::Cmgfm, h.state().body().unwrap_or_default());
+    let ergonote_formats::Block::Paragraph(spans) = &blocks[0] else { panic!("paragraph expected") };
+    assert!(spans.iter().any(|s| s.text == "X" && !s.underline && s.script == Some(ergonote_formats::markdown::Script::Superscript)));
 
     ask(&mut h, "ui.caret", json!({"block": 0})).expect("caret");
     pump(&mut h);
@@ -9799,15 +9797,15 @@ fn pending_marks_toggle_and_cancel_when_the_caret_moves() {
     settle(&mut h);
     ask(&mut h, "ui.text", json!({"text": "Y"})).expect("typing after moving");
     settle(&mut h);
-    let (blocks, _) = notecraft_formats::boxes::read(notecraft_model::PageFormat::Cmgfm, h.state().body().unwrap_or_default());
-    let notecraft_formats::Block::Paragraph(spans) = &blocks[0] else { panic!("paragraph expected") };
+    let (blocks, _) = ergonote_formats::boxes::read(ergonote_model::PageFormat::Cmgfm, h.state().body().unwrap_or_default());
+    let ergonote_formats::Block::Paragraph(spans) = &blocks[0] else { panic!("paragraph expected") };
     assert!(spans.iter().any(|s| s.text.contains('Y') && !s.underline), "{spans:?}");
 }
 
 #[test]
 fn turning_off_an_inherited_mark_is_reported_without_changing_page() {
     let (_t, app, s) = sample_app("ui-inherited-mark");
-    notecraft_store::page::save_body(&s.md_page, "<u>words</u>").expect("fixture");
+    ergonote_store::page::save_body(&s.md_page, "<u>words</u>").expect("fixture");
     let mut h = sized_harness(app, LIGHT, egui::vec2(2000.0, 900.0));
     h.state_mut().open_path(&s.md_page.to_string_lossy());
     settle(&mut h);
@@ -9831,27 +9829,27 @@ fn turning_off_an_inherited_mark_is_reported_without_changing_page() {
 #[test]
 fn selected_line_script_switch_is_exclusive_and_can_be_toggled_off() {
     let (_t, app, s) = sample_app("ui-inline-script-switch");
-    notecraft_store::page::save_body(&s.md_page, "<u>H<sub>2</sub>O</u>").expect("write fixture");
+    ergonote_store::page::save_body(&s.md_page, "<u>H<sub>2</sub>O</u>").expect("write fixture");
     let mut h = sized_harness(app, LIGHT, egui::vec2(2000.0, 900.0));
     h.state_mut().open_path(&s.md_page.to_string_lossy());
     settle(&mut h);
-    let select = |h: &mut Harness<'_, NoteCraftApp>| {
+    let select = |h: &mut Harness<'_, ErgoNoteApp>| {
         ask(h, "ui.caret", json!({"block": 0})).expect("caret");
         pump(h);
         ask(h, "ui.key", json!({"key": "A", "ctrl": true})).expect("select text");
         pump(h);
     };
     for (button, expected) in [
-        ("Superscript", Some(notecraft_formats::markdown::Script::Superscript)),
+        ("Superscript", Some(ergonote_formats::markdown::Script::Superscript)),
         ("Superscript", None),
-        ("Subscript", Some(notecraft_formats::markdown::Script::Subscript)),
+        ("Subscript", Some(ergonote_formats::markdown::Script::Subscript)),
     ] {
         select(&mut h);
         h.get_by_label(button).click();
         settle(&mut h);
         let body = h.state().body().unwrap_or_default();
-        let (blocks, _) = notecraft_formats::boxes::read(notecraft_model::PageFormat::Cmgfm, body);
-        let notecraft_formats::Block::Paragraph(spans) = &blocks[0] else { panic!("paragraph expected") };
+        let (blocks, _) = ergonote_formats::boxes::read(ergonote_model::PageFormat::Cmgfm, body);
+        let ergonote_formats::Block::Paragraph(spans) = &blocks[0] else { panic!("paragraph expected") };
         assert_eq!(spans.iter().map(|s| s.text.as_str()).collect::<String>(), "H2O");
         assert!(spans.iter().all(|s| s.underline && s.script == expected), "{button}: {body}");
     }
@@ -9868,10 +9866,10 @@ fn selected_container_font_size_is_undoable_and_leaves_other_boxes_alone() {
     settle(&mut h);
     assert_eq!(h.get_by_label("Font Size").value().as_deref(), Some("18"), "the selected container reports its size");
     let after = h.state().body().unwrap_or_default().to_string();
-    let (blocks, _) = notecraft_formats::boxes::read(notecraft_model::PageFormat::Cmgfm, &after);
-    fn spans(block: &notecraft_formats::Block) -> &[notecraft_formats::markdown::Span] {
+    let (blocks, _) = ergonote_formats::boxes::read(ergonote_model::PageFormat::Cmgfm, &after);
+    fn spans(block: &ergonote_formats::Block) -> &[ergonote_formats::markdown::Span] {
         match block {
-            notecraft_formats::Block::Heading { spans, .. } | notecraft_formats::Block::Paragraph(spans) => spans,
+            ergonote_formats::Block::Heading { spans, .. } | ergonote_formats::Block::Paragraph(spans) => spans,
             _ => panic!("expected text block"),
         }
     }
@@ -9909,7 +9907,7 @@ fn selected_container_new_marks_are_independent_undo_steps() {
 #[cfg(any(target_os = "linux", target_os = "windows", target_os = "macos"))]
 #[test]
 fn selected_container_font_family_is_undoable_and_leaves_other_boxes_alone() {
-    let catalog = match notecraft_ui_egui::fonts::system::Catalog::discover() {
+    let catalog = match ergonote_ui_egui::fonts::system::Catalog::discover() {
         Ok(catalog) => catalog,
         Err(error) => {
             eprintln!("System font discovery unavailable: {error}");
@@ -9925,10 +9923,10 @@ fn selected_container_font_family_is_undoable_and_leaves_other_boxes_alone() {
     h.get_by_label(&family).click();
     settle(&mut h);
     let after = h.state().body().unwrap_or_default().to_string();
-    let (blocks, _) = notecraft_formats::boxes::read(notecraft_model::PageFormat::Cmgfm, &after);
-    fn spans(block: &notecraft_formats::Block) -> &[notecraft_formats::markdown::Span] {
+    let (blocks, _) = ergonote_formats::boxes::read(ergonote_model::PageFormat::Cmgfm, &after);
+    fn spans(block: &ergonote_formats::Block) -> &[ergonote_formats::markdown::Span] {
         match block {
-            notecraft_formats::Block::Heading { spans, .. } | notecraft_formats::Block::Paragraph(spans) => spans,
+            ergonote_formats::Block::Heading { spans, .. } | ergonote_formats::Block::Paragraph(spans) => spans,
             _ => panic!("expected text block"),
         }
     }
@@ -9947,14 +9945,14 @@ fn missing_page_fonts_are_visible_in_both_formats() {
     let (_t, app, s) = sample_app("ui-missing-page-font");
     let mut h = sized_harness(app, LIGHT, egui::vec2(2000.0, 900.0));
     for (page, body) in [
-        (&s.md_page, "<span style=\"font-family: NoteCraft Missing Font 928474\">words</span>"),
-        (&s.html_page, "<p><span style=\"font-family: NoteCraft Missing Font 928474\">words</span></p>"),
+        (&s.md_page, "<span style=\"font-family: ErgoNote Missing Font 928474\">words</span>"),
+        (&s.html_page, "<p><span style=\"font-family: ErgoNote Missing Font 928474\">words</span></p>"),
     ] {
-        notecraft_store::page::save_body(page, body).expect("write fixture");
+        ergonote_store::page::save_body(page, body).expect("write fixture");
         h.state_mut().open_path(&page.to_string_lossy());
         settle(&mut h);
         assert!(h.query_all_by_label_contains("These fonts could not be loaded").count() > 0, "a missing family is reported for {}", page.display());
-        assert!(h.state().body().unwrap_or_default().contains("NoteCraft Missing Font 928474"), "the name stays on the page");
+        assert!(h.state().body().unwrap_or_default().contains("ErgoNote Missing Font 928474"), "the name stays on the page");
     }
 }
 
@@ -9962,9 +9960,9 @@ fn missing_page_fonts_are_visible_in_both_formats() {
 fn legacy_font_marks_apply_to_next_typed_text_without_changing_page_first() {
     let (_t, app, s) = sample_app("ui-pending-legacy-marks");
     let mut h = sized_harness(app, LIGHT, egui::vec2(2000.0, 900.0));
-    for (page, format) in [(&s.md_page, notecraft_model::PageFormat::Cmgfm), (&s.html_page, notecraft_model::PageFormat::Html)] {
+    for (page, format) in [(&s.md_page, ergonote_model::PageFormat::Cmgfm), (&s.html_page, ergonote_model::PageFormat::Html)] {
         for label in ["Bold", "Italic", "Strikethrough"] {
-            notecraft_store::page::save_body(page, if format == notecraft_model::PageFormat::Html { "<p>plain</p>" } else { "plain" })
+            ergonote_store::page::save_body(page, if format == ergonote_model::PageFormat::Html { "<p>plain</p>" } else { "plain" })
                 .expect("fixture");
             h.state_mut().open_path(&page.to_string_lossy());
             settle(&mut h);
@@ -9977,9 +9975,9 @@ fn legacy_font_marks_apply_to_next_typed_text_without_changing_page_first() {
             ask(&mut h, "ui.text", json!({"text": "words"})).expect("type");
             settle(&mut h);
             let after = h.state().body().unwrap_or_default().to_string();
-            let (blocks, _) = notecraft_formats::boxes::read(format, &after);
-            let notecraft_formats::Block::Paragraph(spans) = &blocks[0] else { panic!("paragraph expected") };
-            let marked = |s: &notecraft_formats::markdown::Span| match label {
+            let (blocks, _) = ergonote_formats::boxes::read(format, &after);
+            let ergonote_formats::Block::Paragraph(spans) = &blocks[0] else { panic!("paragraph expected") };
+            let marked = |s: &ergonote_formats::markdown::Span| match label {
                 "Bold" => s.bold,
                 "Italic" => s.italic,
                 _ => s.strike,
@@ -9999,8 +9997,8 @@ fn legacy_font_marks_apply_to_next_typed_text_without_changing_page_first() {
 fn pending_font_marks_combine_and_can_be_switched_off_before_typing() {
     let (_t, app, s) = sample_app("ui-pending-marks-combined");
     let mut h = sized_harness(app, LIGHT, egui::vec2(2000.0, 900.0));
-    for (page, format) in [(&s.md_page, notecraft_model::PageFormat::Cmgfm), (&s.html_page, notecraft_model::PageFormat::Html)] {
-        notecraft_store::page::save_body(page, if format == notecraft_model::PageFormat::Html { "<p>plain</p>" } else { "plain" }).expect("fixture");
+    for (page, format) in [(&s.md_page, ergonote_model::PageFormat::Cmgfm), (&s.html_page, ergonote_model::PageFormat::Html)] {
+        ergonote_store::page::save_body(page, if format == ergonote_model::PageFormat::Html { "<p>plain</p>" } else { "plain" }).expect("fixture");
         h.state_mut().open_path(&page.to_string_lossy());
         settle(&mut h);
         ask(&mut h, "ui.caret", json!({"block": 0})).expect("caret");
@@ -10012,8 +10010,8 @@ fn pending_font_marks_combine_and_can_be_switched_off_before_typing() {
         ask(&mut h, "ui.text", json!({"text": "words"})).expect("type");
         settle(&mut h);
         let body = h.state().body().unwrap_or_default();
-        let (blocks, _) = notecraft_formats::boxes::read(format, body);
-        let notecraft_formats::Block::Paragraph(spans) = &blocks[0] else { panic!("paragraph expected") };
+        let (blocks, _) = ergonote_formats::boxes::read(format, body);
+        let ergonote_formats::Block::Paragraph(spans) = &blocks[0] else { panic!("paragraph expected") };
         assert!(
             spans.iter().any(|span| span.text == "words" && span.bold && span.italic && span.underline && !span.strike),
             "combined pending styles: {body}"
@@ -10120,8 +10118,8 @@ fn pending_font_size_can_change_in_a_typing_run() {
     settle(&mut h);
     ask(&mut h, "ui.text", json!({"text": "second"})).expect("second size");
     settle(&mut h);
-    let blocks = notecraft_formats::markdown::parse(h.state().body().unwrap_or_default());
-    let Some(notecraft_formats::Block::Paragraph(spans)) = blocks.get(1) else { panic!("paragraph") };
+    let blocks = ergonote_formats::markdown::parse(h.state().body().unwrap_or_default());
+    let Some(ergonote_formats::Block::Paragraph(spans)) = blocks.get(1) else { panic!("paragraph") };
     assert!(spans.iter().any(|span| span.text.contains("first") && span.font_size == Some(18)), "{spans:?}");
     assert!(spans.iter().any(|span| span.text.contains("second") && span.font_size == Some(24)), "{spans:?}");
 }
@@ -10164,12 +10162,12 @@ fn font_size_applies_to_selected_text_and_survives_reopen_in_both_formats() {
 fn the_format_painter_puts_the_formatting_on_the_words_picked_next() {
     for html in [false, true] {
         let (_t, app, s) = sample_app("ui-format-painter");
-        let spans_of = |body: &str| -> Vec<notecraft_formats::Span> {
-            let md = if html { notecraft_formats::html::to_markdown(body) } else { body.to_string() };
-            notecraft_formats::markdown::parse(&md)
+        let spans_of = |body: &str| -> Vec<ergonote_formats::Span> {
+            let md = if html { ergonote_formats::html::to_markdown(body) } else { body.to_string() };
+            ergonote_formats::markdown::parse(&md)
                 .into_iter()
                 .flat_map(|b| match b {
-                    notecraft_formats::Block::Paragraph(s) => s,
+                    ergonote_formats::Block::Paragraph(s) => s,
                     _ => Vec::new(),
                 })
                 .collect()
@@ -10177,7 +10175,7 @@ fn the_format_painter_puts_the_formatting_on_the_words_picked_next() {
         let mut h = harness(app, LIGHT);
         h.run();
         let page = if html { &s.html_page } else { &s.md_page };
-        notecraft_store::page::save_body(page, if html { "<p><b><i>Big</i></b> plain words</p>" } else { "***Big*** plain words" }).expect("fixture");
+        ergonote_store::page::save_body(page, if html { "<p><b><i>Big</i></b> plain words</p>" } else { "***Big*** plain words" }).expect("fixture");
         ask(&mut h, "ui.open", json!({"path": page.to_string_lossy()})).expect("open");
         settle(&mut h);
         ask(&mut h, "ui.caret", json!({"block": 0})).expect("caret");
@@ -10207,7 +10205,7 @@ fn the_format_painter_puts_the_formatting_on_the_words_picked_next() {
         ask(&mut h, "ui.release", json!({"x": line.max.x - 4.0, "y": line.max.y - 4.0})).expect("let go");
         settle(&mut h);
         h.state_mut().save();
-        let body = notecraft_store::page::load_page(page).expect("load").body;
+        let body = ergonote_store::page::load_page(page).expect("load").body;
         let spans = spans_of(&body);
         assert!(spans.iter().any(|s| s.text.contains("words") && s.bold && s.italic), "html={html}: the picked words took the formatting:\n{body}");
         assert!(spans.iter().any(|s| s.text.contains("plain") && !s.bold && !s.italic), "html={html}: and nothing else did:\n{body}");
@@ -10264,14 +10262,14 @@ fn font_size_undo_and_redo_preserve_page_content_in_both_formats() {
         settle(&mut h);
         let resized = h.state().body().unwrap_or_default().to_string();
         assert!(resized.contains("font-size: 24pt"), "the second size was applied for {path}: {resized}");
-        let format = if page == &s.md_page { notecraft_model::PageFormat::Cmgfm } else { notecraft_model::PageFormat::Html };
-        let (before_blocks, _) = notecraft_formats::boxes::read(format, &formatted);
-        let (after_blocks, _) = notecraft_formats::boxes::read(format, &resized);
-        let spans = |block: &notecraft_formats::Block| match block {
-            notecraft_formats::Block::Heading { spans, .. }
-            | notecraft_formats::Block::Paragraph(spans)
-            | notecraft_formats::Block::Quote(spans)
-            | notecraft_formats::Block::Item { spans, .. } => spans.clone(),
+        let format = if page == &s.md_page { ergonote_model::PageFormat::Cmgfm } else { ergonote_model::PageFormat::Html };
+        let (before_blocks, _) = ergonote_formats::boxes::read(format, &formatted);
+        let (after_blocks, _) = ergonote_formats::boxes::read(format, &resized);
+        let spans = |block: &ergonote_formats::Block| match block {
+            ergonote_formats::Block::Heading { spans, .. }
+            | ergonote_formats::Block::Paragraph(spans)
+            | ergonote_formats::Block::Quote(spans)
+            | ergonote_formats::Block::Item { spans, .. } => spans.clone(),
             _ => panic!("expected a block of text"),
         };
         let before = spans(&before_blocks[1]);
@@ -10363,7 +10361,7 @@ fn a_code_block_looks_the_same_when_the_caret_arrives() {
     let mut h = sized_harness(app, LIGHT, egui::vec2(1600.0, 1400.0));
     settle(&mut h);
     let blocks = ask(&mut h, "ui.inspect", json!({})).expect("inspect").pointer("/page/blocks").and_then(Value::as_u64).unwrap_or(0) as usize;
-    let words = |h: &Harness<'_, NoteCraftApp>| -> egui::Rect {
+    let words = |h: &Harness<'_, ErgoNoteApp>| -> egui::Rect {
         let n = h.query_all_by_label("hello code").next().or_else(|| h.query_all_by_value("hello code").next());
         n.expect("the code is on the page").rect()
     };
@@ -10408,13 +10406,13 @@ fn a_selected_box_takes_direction_tags_and_lists_as_a_whole() {
     app.open_path(&page);
     let mut h = sized_harness(app, LIGHT, egui::vec2(2000.0, 900.0));
     settle(&mut h);
-    let look = |h: &mut Harness<'_, NoteCraftApp>| -> Value { ask(h, "ui.inspect", json!({})).expect("inspect") };
+    let look = |h: &mut Harness<'_, ErgoNoteApp>| -> Value { ask(h, "ui.inspect", json!({})).expect("inspect") };
     let blocks = look(&mut h).pointer("/page/blocks").and_then(Value::as_u64).unwrap_or(0);
     ask(&mut h, "engine.execute", json!({"command": "page.containers", "params": {"path": page.clone(), "boxes": format!("40,20,320,{blocks}")}}))
         .expect("arrange");
     ask(&mut h, "ui.open", json!({"path": page.clone()})).expect("open");
     settle(&mut h);
-    let click = |h: &mut Harness<'_, NoteCraftApp>, x: f32, y: f32| {
+    let click = |h: &mut Harness<'_, ErgoNoteApp>, x: f32, y: f32| {
         ask(h, "ui.click", json!({"x": x, "y": y})).expect("click");
         for _ in 0..6 {
             pump(h);
@@ -10437,7 +10435,7 @@ fn a_selected_box_takes_direction_tags_and_lists_as_a_whole() {
     assert!(!body.contains("\u{200F}graph TD") && !body.contains("\u{200F}\\int"), "a diagram and an equation are left alone:\n{body}");
 
     // A tag goes on every line, and the same button takes it off every line.
-    let tagged = |h: &Harness<'_, NoteCraftApp>| h.state().body().unwrap_or_default().lines().filter(|l| l.contains("#important")).count();
+    let tagged = |h: &Harness<'_, ErgoNoteApp>| h.state().body().unwrap_or_default().lines().filter(|l| l.contains("#important")).count();
     let r = h.get_by_label("Important (Ctrl+2)").rect();
     click(&mut h, r.center().x, r.center().y);
     settle(&mut h);
@@ -10484,7 +10482,7 @@ fn a_picture_in_each_of_two_stacked_boxes_can_be_selected_and_resized() {
         assert!(selected, "picture block {block} was never selected: {}", look_at(&mut h));
         let index = (block / 2) as usize;
         let width =
-            |h: &mut Harness<'_, NoteCraftApp>| look_at(h).pointer(&format!("/page/containers/{index}/width")).and_then(Value::as_f64).unwrap_or(0.0);
+            |h: &mut Harness<'_, ErgoNoteApp>| look_at(h).pointer(&format!("/page/containers/{index}/width")).and_then(Value::as_f64).unwrap_or(0.0);
         let before = width(&mut h);
         let mut grew = false;
         for dy in (0..10).map(|n| 30.0 + 8.0 * f64::from(n)) {
@@ -10508,20 +10506,20 @@ fn a_picture_in_each_of_two_stacked_boxes_can_be_selected_and_resized() {
 }
 
 /// A sample app whose settings give the paper `rules` and say whether boxes snap to its grid.
-fn snapping_app(label: &str, rules: &str, snap: bool) -> (TempDir, NoteCraftApp, Sample) {
+fn snapping_app(label: &str, rules: &str, snap: bool) -> (TempDir, ErgoNoteApp, Sample) {
     let t = TempDir::new(label);
     let mut s = session(&t);
     s.settings.set("rule_lines", rules).expect("paper setting");
     s.settings.set("snap_to_grid", if snap { "true" } else { "false" }).expect("snap setting");
     let sample = create_sample(&mut s, Some(LOGO_PNG)).expect("sample");
-    let mut app = NoteCraftApp::new(s);
+    let mut app = ErgoNoteApp::new(s);
     app.set_redact_paths(true);
     (t, app, sample)
 }
 
 /// The sample's Markdown page in one box at 40,20 and 320 wide, open in a window, with the
 /// page's origin on screen.
-fn one_box_page(app: NoteCraftApp, s: &Sample) -> (Harness<'static, NoteCraftApp>, egui::Pos2) {
+fn one_box_page(app: ErgoNoteApp, s: &Sample) -> (Harness<'static, ErgoNoteApp>, egui::Pos2) {
     let page = s.md_page.to_string_lossy().to_string();
     let mut app = app;
     app.open_path(&page);
@@ -10536,7 +10534,7 @@ fn one_box_page(app: NoteCraftApp, s: &Sample) -> (Harness<'static, NoteCraftApp
     (h, origin)
 }
 
-fn page_origin(h: &mut Harness<'_, NoteCraftApp>) -> egui::Pos2 {
+fn page_origin(h: &mut Harness<'_, ErgoNoteApp>) -> egui::Pos2 {
     let v = ask(h, "ui.inspect", json!({})).expect("inspect");
     let origin = v.pointer("/page/origin").and_then(Value::as_array).cloned().unwrap_or_default();
     let at = |i: usize| origin.get(i).and_then(Value::as_f64).unwrap_or(0.0) as f32;
@@ -10544,14 +10542,14 @@ fn page_origin(h: &mut Harness<'_, NoteCraftApp>) -> egui::Pos2 {
 }
 
 /// The first box as the page keeps it: x, y, width.
-fn first_box(h: &mut Harness<'_, NoteCraftApp>) -> (f32, f32, f32) {
+fn first_box(h: &mut Harness<'_, ErgoNoteApp>) -> (f32, f32, f32) {
     let b = ask(h, "ui.inspect", json!({})).expect("inspect").pointer("/page/containers/0").cloned().unwrap_or(Value::Null);
     let n = |k: &str| b.get(k).and_then(Value::as_f64).unwrap_or(-1.0) as f32;
     (n("x"), n("y"), n("width"))
 }
 
 /// Presses at `from`, moves by `by` in two steps, and lets go there.
-fn drag_by(h: &mut Harness<'_, NoteCraftApp>, from: egui::Pos2, by: egui::Vec2) {
+fn drag_by(h: &mut Harness<'_, ErgoNoteApp>, from: egui::Pos2, by: egui::Vec2) {
     ask(h, "ui.press", json!({"x": from.x, "y": from.y})).expect("press");
     pump(h);
     let mid = from + by * 0.5;
@@ -10722,7 +10720,7 @@ fn the_view_tab_has_one_window_group_and_one_entry_per_action() {
 }
 
 /// Every straight line painted in the last frame, as its two ends.
-fn painted_segments(h: &Harness<'_, NoteCraftApp>) -> Vec<[egui::Pos2; 2]> {
+fn painted_segments(h: &Harness<'_, ErgoNoteApp>) -> Vec<[egui::Pos2; 2]> {
     fn walk(shape: &egui::Shape, out: &mut Vec<[egui::Pos2; 2]>) {
         match shape {
             egui::Shape::LineSegment { points, .. } => out.push(*points),
@@ -10895,7 +10893,7 @@ fn a_box_widened_by_its_table_resizes_from_its_drawn_edge() {
     app.open_path(&page);
     let mut h = sized_harness(app, LIGHT, egui::vec2(1400.0, 800.0));
     settle(&mut h);
-    let look = |h: &mut Harness<'_, NoteCraftApp>| -> Value { ask(h, "ui.inspect", json!({})).expect("inspect") };
+    let look = |h: &mut Harness<'_, ErgoNoteApp>| -> Value { ask(h, "ui.inspect", json!({})).expect("inspect") };
     let blocks = look(&mut h).pointer("/page/blocks").and_then(Value::as_u64).unwrap_or(0);
     // 300 points wide, holding the sample's three-column table, which is 480 points wide.
     ask(&mut h, "engine.execute", json!({"command": "page.containers", "params": {"path": page.clone(), "boxes": format!("40,20,300,{blocks}")}}))
@@ -10973,18 +10971,18 @@ fn table_cells_are_aligned_from_the_table_tab_and_the_page_keeps_it() {
     ask(&mut h, "ui.open", json!({"path": page})).expect("open");
     settle(&mut h);
 
-    fn into(h: &mut Harness<'_, NoteCraftApp>, word: &str) {
+    fn into(h: &mut Harness<'_, ErgoNoteApp>, word: &str) {
         let cell = h.get_by_label(word).rect().center();
         ask(h, "ui.click", json!({"x": cell.x, "y": cell.y})).expect("into the cell");
         settle(h);
         h.get_by_label("Table").click();
         settle(h);
     }
-    fn kept(h: &mut Harness<'_, NoteCraftApp>, page: &str) -> String {
+    fn kept(h: &mut Harness<'_, ErgoNoteApp>, page: &str) -> String {
         let line = ask(h, "engine.execute", json!({"command": "page.columns", "params": {"path": page}})).expect("layout");
         line.as_str().unwrap_or_default().to_string()
     }
-    let widths = |h: &mut Harness<'_, NoteCraftApp>| h.get_by_label("Name").rect().width() + h.get_by_label("Amount").rect().width();
+    let widths = |h: &mut Harness<'_, ErgoNoteApp>| h.get_by_label("Name").rect().width() + h.get_by_label("Amount").rect().width();
     assert_eq!(kept(&mut h, &page), "", "no cell is aligned to begin with");
     let left = h.get_by_label("12").rect();
     let names = widths(&mut h);
@@ -11044,19 +11042,19 @@ fn table_cells_are_shaded_from_the_table_tab_and_the_page_keeps_it() {
     ask(&mut h, "ui.open", json!({"path": page})).expect("open");
     settle(&mut h);
 
-    fn into(h: &mut Harness<'_, NoteCraftApp>, word: &str) {
+    fn into(h: &mut Harness<'_, ErgoNoteApp>, word: &str) {
         let cell = h.get_by_label(word).rect().center();
         ask(h, "ui.click", json!({"x": cell.x, "y": cell.y})).expect("into the cell");
         settle(h);
         h.get_by_label("Table").click();
         settle(h);
     }
-    fn kept(h: &mut Harness<'_, NoteCraftApp>, page: &str) -> String {
+    fn kept(h: &mut Harness<'_, ErgoNoteApp>, page: &str) -> String {
         let line = ask(h, "engine.execute", json!({"command": "page.columns", "params": {"path": page}})).expect("layout");
         line.as_str().unwrap_or_default().to_string()
     }
     // The colour just left of a cell's words, where the cell's background shows.
-    fn behind(h: &mut Harness<'_, NoteCraftApp>, word: &str) -> [u8; 4] {
+    fn behind(h: &mut Harness<'_, ErgoNoteApp>, word: &str) -> [u8; 4] {
         let at = h.get_by_label(word).rect();
         let image = support::gui::render(h).expect("render");
         let ppp = h.ctx.pixels_per_point();
@@ -11113,7 +11111,7 @@ fn find_tags_lists_tagged_notes_and_goes_to_them() {
     assert!(h.query_all_by_label_contains("is not built yet").next().is_none(), "Find Tags no longer says it is missing");
 
     // It starts in the open page's section, which is not where the checklist is.
-    let lines = |h: &mut Harness<'_, NoteCraftApp>| {
+    let lines = |h: &mut Harness<'_, ErgoNoteApp>| {
         let v = ask(h, "ui.inspect", json!({})).expect("inspect");
         v.pointer("/tagsSummary/lines").and_then(Value::as_array).cloned().unwrap_or_default()
     };
@@ -11161,7 +11159,7 @@ fn find_tags_lists_tagged_notes_and_goes_to_them() {
     assert_eq!(h.query_all_by_label("Tags Summary").count(), 0, "the summary closes");
 }
 /// The page's sideways scroll bar as `ui.inspect` reports it: the track and the thumb, or `None`.
-fn horizontal_bar(h: &mut Harness<'_, NoteCraftApp>) -> Option<(egui::Rect, egui::Rect)> {
+fn horizontal_bar(h: &mut Harness<'_, ErgoNoteApp>) -> Option<(egui::Rect, egui::Rect)> {
     let v = ask(h, "ui.inspect", json!({})).expect("inspect");
     let rect = |key: &str| {
         let a = v.pointer(&format!("/canvas/{key}")).and_then(Value::as_array)?;
@@ -11171,7 +11169,7 @@ fn horizontal_bar(h: &mut Harness<'_, NoteCraftApp>) -> Option<(egui::Rect, egui
     rect("horizontalBar").zip(rect("horizontalThumb"))
 }
 
-fn view_offset_x(h: &mut Harness<'_, NoteCraftApp>) -> f64 {
+fn view_offset_x(h: &mut Harness<'_, ErgoNoteApp>) -> f64 {
     let v = ask(h, "ui.inspect", json!({})).expect("inspect");
     v.pointer("/canvas/viewOffset/0").and_then(Value::as_f64).expect("horizontal view offset")
 }
@@ -11187,7 +11185,7 @@ fn content_wider_than_the_view_gets_a_horizontal_scroll_bar() {
         let mut h = harness(app, LIGHT);
         settle(&mut h);
         let blocks = ask(&mut h, "ui.inspect", json!({})).expect("inspect").pointer("/page/blocks").and_then(Value::as_u64).unwrap_or(0);
-        let arrange = |h: &mut Harness<'_, NoteCraftApp>, x: u32| {
+        let arrange = |h: &mut Harness<'_, ErgoNoteApp>, x: u32| {
             ask(
                 h,
                 "engine.execute",
@@ -11249,7 +11247,7 @@ fn a_pen_on_the_page_picks_up_the_last_pen_and_typing_puts_it_down() {
     app.open_path(&s.md_page.to_string_lossy());
     let mut h = sized_harness(app, LIGHT, egui::vec2(1400.0, 1000.0));
     settle(&mut h);
-    let ink = |h: &mut Harness<'_, NoteCraftApp>| {
+    let ink = |h: &mut Harness<'_, ErgoNoteApp>| {
         let v = ask(h, "ui.inspect", json!({})).expect("inspect");
         (
             v.pointer("/ink/pointer").and_then(Value::as_str).unwrap_or_default().to_string(),
@@ -11268,7 +11266,7 @@ fn a_pen_on_the_page_picks_up_the_last_pen_and_typing_puts_it_down() {
     assert_eq!(ink(&mut h).0, "write");
 
     let at = page_origin(&mut h) + egui::vec2(500.0, 420.0);
-    let stroke = |h: &mut Harness<'_, NoteCraftApp>, force: Option<f32>| {
+    let stroke = |h: &mut Harness<'_, ErgoNoteApp>, force: Option<f32>| {
         let contact = |phase, pos| egui::Event::Touch { device_id: egui::TouchDeviceId(0), id: egui::TouchId(0), phase, pos, force };
         h.input_mut().events.push(contact(egui::TouchPhase::Start, at));
         h.input_mut().events.push(egui::Event::PointerMoved(at));
@@ -11322,7 +11320,7 @@ fn a_pen_on_the_page_picks_up_the_last_pen_and_typing_puts_it_down() {
     assert_eq!(ink(&mut h).0, "write", "typing goes back to the caret");
     let after = h.state().body().unwrap_or_default().to_string();
     assert_eq!(after.matches('Z').count(), before.matches('Z').count() + 1, "the Z went into the page");
-    assert!(after.contains("ZNoteCraft pages"), "where the caret was before the pen: {after}");
+    assert!(after.contains("ZErgoNote pages"), "where the caret was before the pen: {after}");
 }
 /// Issue #23: Draw > Collect All brings boxes and ink that drifted apart on the canvas back
 /// together, keeps their order and does not lay one over another; one Undo puts them all back.
@@ -11352,7 +11350,7 @@ fn page_templates_add_pages_and_keep_this_page_as_one() {
     let mut h = sized_harness(app, LIGHT, egui::vec2(1500.0, 950.0));
     settle(&mut h);
     let before = h.state().body().unwrap_or_default().to_string();
-    let page = |h: &mut Harness<'_, NoteCraftApp>| {
+    let page = |h: &mut Harness<'_, ErgoNoteApp>| {
         let v = ask(h, "ui.inspect", json!({})).expect("inspect");
         let path = v.pointer("/page/path").and_then(Value::as_str).unwrap_or_default().to_string();
         let title = v.pointer("/page/title").and_then(Value::as_str).unwrap_or_default().to_string();
@@ -11409,7 +11407,7 @@ fn page_templates_add_pages_and_keep_this_page_as_one() {
     let (copy, _, _) = page(&mut h);
     assert!(copy != first_path && copy != meeting, "another new page: {copy}");
     let words = h.state().body().unwrap_or_default().to_string();
-    assert!(words.contains("NoteCraft pages are **plain files**"), "the saved page's words: {words}");
+    assert!(words.contains("ErgoNote pages are **plain files**"), "the saved page's words: {words}");
 }
 
 /// Issue #164: Insert > Insert Space is OneNote's tool. A drag down the page pushes the boxes
@@ -11432,13 +11430,13 @@ fn insert_space_drags_room_into_the_page_and_out_again() {
     .expect("two boxes");
     ask(&mut h, "ui.open", json!({"path": page.clone()})).expect("open");
     settle(&mut h);
-    let boxes = |h: &mut Harness<'_, NoteCraftApp>| {
+    let boxes = |h: &mut Harness<'_, ErgoNoteApp>| {
         let v = ask(h, "ui.inspect", json!({})).expect("inspect");
         let y = |i: usize| v.pointer(&format!("/page/containers/{i}/y")).and_then(Value::as_f64).unwrap_or(-1.0);
         (y(0), y(1))
     };
     let tool =
-        |h: &mut Harness<'_, NoteCraftApp>| ask(h, "ui.inspect", json!({})).expect("inspect").pointer("/canvas/insertSpace").and_then(Value::as_bool);
+        |h: &mut Harness<'_, ErgoNoteApp>| ask(h, "ui.inspect", json!({})).expect("inspect").pointer("/canvas/insertSpace").and_then(Value::as_bool);
     assert_eq!(boxes(&mut h), (20.0, 500.0));
     let origin = page_origin(&mut h);
 
@@ -11448,7 +11446,7 @@ fn insert_space_drags_room_into_the_page_and_out_again() {
     h.get_by_label("Pen red").click();
     settle(&mut h);
     drag_by(&mut h, origin + egui::vec2(500.0, 420.0), egui::vec2(80.0, 0.0));
-    let ink_top = |h: &mut Harness<'_, NoteCraftApp>| {
+    let ink_top = |h: &mut Harness<'_, ErgoNoteApp>| {
         ask(h, "ui.inspect", json!({})).expect("inspect").pointer("/ink/bounds/1").and_then(Value::as_f64).expect("ink bounds")
     };
     let ink_before = ink_top(&mut h);
@@ -11502,7 +11500,7 @@ fn alt_and_a_number_pick_up_a_pen_and_alt_zero_goes_back_to_typing() {
     app.open_path(&s.md_page.to_string_lossy());
     let mut h = harness(app, LIGHT);
     settle(&mut h);
-    let ink = |h: &mut Harness<'_, NoteCraftApp>| {
+    let ink = |h: &mut Harness<'_, ErgoNoteApp>| {
         let v = ask(h, "ui.inspect", json!({})).expect("inspect");
         (v.pointer("/ink/pointer").and_then(Value::as_str).unwrap_or_default().to_string(), v.pointer("/ink/nib").and_then(Value::as_u64))
     };
@@ -11543,7 +11541,7 @@ fn alt_and_a_number_pick_up_a_pen_and_alt_zero_goes_back_to_typing() {
 // ---------- phone-width windows (issue #12) ----------
 
 /// A phone held upright: 390 by 800 points, as on a common Android phone.
-fn phone_harness(app: NoteCraftApp) -> Harness<'static, NoteCraftApp> {
+fn phone_harness(app: ErgoNoteApp) -> Harness<'static, ErgoNoteApp> {
     sized_harness(app, LIGHT, egui::vec2(390.0, 800.0))
 }
 
@@ -11590,7 +11588,7 @@ fn a_phone_keeps_everything_between_the_status_bar_and_the_navigation_bar() {
     review(&mut h, "phone_system_bars");
 }
 
-fn panes(h: &mut Harness<'_, NoteCraftApp>) -> Value {
+fn panes(h: &mut Harness<'_, ErgoNoteApp>) -> Value {
     ask(h, "ui.inspect", json!({})).expect("inspect")["panes"].clone()
 }
 
@@ -11694,7 +11692,7 @@ fn the_soft_keyboard_is_wanted_only_while_a_block_has_the_caret() {
     assert!(h.state().keyboard_caret_rect().is_some(), "the caret asks for the keyboard");
 }
 
-fn scroll_ribbon_right(h: &mut Harness<'_, NoteCraftApp>) {
+fn scroll_ribbon_right(h: &mut Harness<'_, ErgoNoteApp>) {
     use egui_kittest::kittest::Queryable as _;
     let right = "Show more of the ribbon to the right";
     for _ in 0..8 {
@@ -11716,7 +11714,7 @@ fn home_ribbon_is_compact_and_zoom_sits_in_bottom_right_status_bar() {
     h.get_by_label("Home").click();
     settle(&mut h);
 
-    let box_of = |h: &Harness<'_, NoteCraftApp>, label: &str| {
+    let box_of = |h: &Harness<'_, ErgoNoteApp>, label: &str| {
         let b = h.get_by_label(label).accesskit_node().bounding_box().expect("bounding box");
         (b.x0, b.x1, b.y0, b.x1 - b.x0)
     };

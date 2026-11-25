@@ -7,7 +7,7 @@ title: Make it yours
 ## Themes
 
 The sun or moon at the top right opens the theme chooser: light and dark, each in seven accents,
-14 in all. A swatch picks that mode. The switch under the swatches makes NoteCraft follow your
+14 in all. A swatch picks that mode. The switch under the swatches makes ErgoNote follow your
 system's light or dark setting again.
 
 Every colour in every theme is checked against its background by a test, so no theme can show
@@ -31,7 +31,7 @@ are remembered.
 
 ## Opening where you left off
 
-NoteCraft reopens the page you closed on, with the sections above it expanded.
+ErgoNote reopens the page you closed on, with the sections above it expanded.
 
 ## Settings on disk
 

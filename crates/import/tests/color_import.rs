@@ -1,18 +1,18 @@
 use std::fs;
 use std::path::Path;
 
-use notecraft_import::{Options, run};
-use notecraft_model::{NodeColor, NodeKind, PageFormat};
-use notecraft_onenote::testing::{OneNote, Toc};
-use notecraft_store::testing::TempDir;
-use notecraft_store::tree::{child_dirs, read_node};
+use ergonote_import::{Options, run};
+use ergonote_model::{NodeColor, NodeKind, PageFormat};
+use ergonote_onenote::testing::{OneNote, Toc};
+use ergonote_store::testing::TempDir;
+use ergonote_store::tree::{child_dirs, read_node};
 
 #[path = "support/synthetic_corpus.rs"]
 mod synthetic_corpus;
 
 const FIXTURES: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/tests/fixtures/synthetic");
 
-fn quiet(_: &notecraft_import::Event<'_>) {}
+fn quiet(_: &ergonote_import::Event<'_>) {}
 
 fn copy_tree(source: &Path, destination: &Path) {
     fs::create_dir_all(destination).expect("create isolated fixture tree");

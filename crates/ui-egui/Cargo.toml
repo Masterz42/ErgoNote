@@ -1,29 +1,29 @@
 [package]
-name = "notecraft-ui-egui"
+name = "ergonote-ui-egui"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 publish.workspace = true
-description = "NoteCraft egui front end. Swappable: nothing below it depends on egui"
+description = "ErgoNote egui front end. Swappable: nothing below it depends on egui"
 
 [lints]
 workspace = true
 
 [dependencies]
 craft-i18n = { workspace = true }
-notecraft-input-language = { path = "../input-language" }
-notecraft-model = { workspace = true }
-notecraft-ink = { workspace = true }
-notecraft-text = { workspace = true }
-notecraft-math = { workspace = true }
-notecraft-formats = { workspace = true }
-notecraft-store = { workspace = true }
-notecraft-engine = { workspace = true }
-notecraft-import = { workspace = true }
+ergonote-input-language = { path = "../input-language" }
+ergonote-model = { workspace = true }
+ergonote-ink = { workspace = true }
+ergonote-text = { workspace = true }
+ergonote-math = { workspace = true }
+ergonote-formats = { workspace = true }
+ergonote-store = { workspace = true }
+ergonote-engine = { workspace = true }
+ergonote-import = { workspace = true }
 egui = { workspace = true }
 egui_extras = { workspace = true }
-notecraft-diagram = { workspace = true }
+ergonote-diagram = { workspace = true }
 image = { workspace = true }
 jxl-oxide = { workspace = true }
 hayro = { workspace = true }

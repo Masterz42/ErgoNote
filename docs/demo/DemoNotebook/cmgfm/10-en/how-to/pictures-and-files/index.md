@@ -7,7 +7,7 @@ updated: 2026-10-18T00:00:00Z
 tags: []
 ---
 
-Drag a file from your file manager onto this page. NoteCraft asks what to do with it:
+Drag a file from your file manager onto this page. ErgoNote asks what to do with it:
 
 - **Insert the picture**: a copy goes into this page's `assets` folder and the page shows it.
 - **Attach the file**: the same copy, shown as a link.
@@ -32,12 +32,12 @@ refused.
 ## Pasting
 
 A table copied from another note taking app or a spreadsheet pastes as a table. To paste a
-picture, click in the page and press **Ctrl+V**. NoteCraft saves a copy in the page's `assets`
+picture, click in the page and press **Ctrl+V**. ErgoNote saves a copy in the page's `assets`
 folder and inserts it in the note.
 
 ## Printouts
 
-Some apps can render a PDF or a document as pictures on your page. NoteCraft cannot do that
+Some apps can render a PDF or a document as pictures on your page. ErgoNote cannot do that
 yet; a PDF you attach is kept as a file, and the dialog says so.
 
 Next: [Two page formats](../page-formats/).

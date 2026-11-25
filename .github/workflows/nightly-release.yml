@@ -1,5 +1,5 @@
 # Nightly release: one new patch version a day, published with every platform's packages, and the
-# website (notecraft.cloud and its /demo/) redeployed from the same commit.
+# website (ergonote.cloud and its /demo/) redeployed from the same commit.
 #
 # Runs at 07:00 UTC, which is midnight Mountain Standard Time (UTC-7). GitHub cron has no time
 # zones, so while Mountain Daylight Time is in force the run lands at 01:00 local time.
@@ -146,7 +146,7 @@ jobs:
           set -euo pipefail
           cargo xtask version set "$VERSION"
           # The Welcome notebook's title carries the version; rebuild it and confirm it is current.
-          cargo run --quiet --locked -p notecraft-demo -- build both
+          cargo run --quiet --locked -p ergonote-demo -- build both
           cargo xtask demo-check
           git status --short
 
@@ -161,9 +161,9 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add Cargo.toml Cargo.lock docs/demo/DemoNotebook
           git commit -q -m "release: v$VERSION" -m "Nightly release of main at $(git rev-parse --short HEAD)."
-          git tag -f -a "$TAG" -m "NoteCraft $TAG"
+          git tag -f -a "$TAG" -m "ErgoNote $TAG"
           git push --force origin "refs/tags/$TAG"
-          echo "### NoteCraft $TAG (\`$(git rev-parse --short HEAD)\`, main at \`$(git rev-parse --short HEAD~1)\`)" >>"$GITHUB_STEP_SUMMARY"
+          echo "### ErgoNote $TAG (\`$(git rev-parse --short HEAD)\`, main at \`$(git rev-parse --short HEAD~1)\`)" >>"$GITHUB_STEP_SUMMARY"
 
   test:
     name: Build and test the tagged commit
@@ -216,7 +216,7 @@ jobs:
     with:
       deploy: true
       ref: ${{ needs.prepare.outputs.tag }}
-      artifact-name: notecraft-web
+      artifact-name: ergonote-web
     secrets:
       AZURE_STATIC_WEB_APPS_API_TOKEN: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
 
@@ -234,7 +234,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
-          pattern: notecraft-*
+          pattern: ergonote-*
           path: artifacts
 
       - name: Gather the files and write SHA256SUMS.txt
@@ -260,11 +260,11 @@ jobs:
           if [ "$ANDROID_SIGNING" = release ]; then
             android="The Android APK (\`android-arm64.apk\`, 64-bit ARM, Android 8 or later) is signed with the project's release key, so each nightly updates the last one in place. Allow installs from your browser or file manager to install it."
           else
-            android="The Android APK (\`android-arm64.apk\`, 64-bit ARM, Android 8 or later) is signed with a key made for this build only, so it cannot update an APK from another night in place: Android asks to uninstall first, and uninstalling removes notebooks kept in NoteCraft's own storage unless you choose to keep the app's data. Copy notebooks off the phone (Android/data/com.alientechsoftware.notecraft/files/NoteCraft) before switching builds."
+            android="The Android APK (\`android-arm64.apk\`, 64-bit ARM, Android 8 or later) is signed with a key made for this build only, so it cannot update an APK from another night in place: Android asks to uninstall first, and uninstalling removes notebooks kept in ErgoNote's own storage unless you choose to keep the app's data. Copy notebooks off the phone (Android/data/com.ergonote.app/files/ErgoNote) before switching builds."
           fi
-          notes="**Alpha nightly build.** NoteCraft is not a finished product. It has had little use, and the folder format can still change. Keep a backup of any notebook you care about.
+          notes="**Alpha nightly build.** ErgoNote is not a finished product. It has had little use, and the folder format can still change. Keep a backup of any notebook you care about.
 
-          Built automatically from \`main\`. The web build is live at https://notecraft.cloud/demo/.
+          Built automatically from \`main\`. The web build is live at https://ergonote.cloud/demo/.
 
           The desktop files are **not signed**. Windows SmartScreen may show \"Windows protected your PC\": choose More info, then Run anyway. macOS may say the app is from an unidentified developer: right-click it and choose Open. Check a download against \`SHA256SUMS.txt\`, or with \`gh attestation verify <file> --repo ${GITHUB_REPOSITORY}\`.
 
@@ -272,5 +272,5 @@ jobs:
 
           Your notebooks are plain folders, and no desktop installer or uninstall touches them. Report bugs at https://github.com/${GITHUB_REPOSITORY}/issues. What is missing is listed in docs/gaps.md."
           gh release create "$TAG" dist/* --repo "$GITHUB_REPOSITORY" --verify-tag --latest \
-            --title "NoteCraft $TAG" --notes "$notes" --generate-notes
+            --title "ErgoNote $TAG" --notes "$notes" --generate-notes
           echo "Published https://github.com/$GITHUB_REPOSITORY/releases/tag/$TAG" >>"$GITHUB_STEP_SUMMARY"

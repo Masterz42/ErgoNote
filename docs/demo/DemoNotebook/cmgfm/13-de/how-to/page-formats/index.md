@@ -25,7 +25,7 @@ Eine Einstellung ändert nur neue Seiten. Vorhandene Seiten behalten ihr Format,
 
 ## Sehen Sie sich den Quelltext dieser Seite an
 
-Klicken Sie auf die Schaltfläche `< >` neben der Seite. Der Kopf der Datei trägt die Kennung und die Daten der Seite als `<meta name="notecraft:...">`-Tags; eine Markdown-Seite trägt dasselbe in ihrem Vorspann. NoteCraft bearbeitet nur, was innerhalb von `<body>` steht.
+Klicken Sie auf die Schaltfläche `< >` neben der Seite. Der Kopf der Datei trägt die Kennung und die Daten der Seite als `<meta name="ergonote:...">`-Tags; eine Markdown-Seite trägt dasselbe in ihrem Vorspann. ErgoNote bearbeitet nur, was innerhalb von `<body>` steht.
 
 Weiter: [Synchronisieren und sichern](../sync-and-backup/).
 

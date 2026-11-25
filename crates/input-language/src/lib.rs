@@ -4,7 +4,7 @@
 use std::sync::Arc;
 
 /// Whether the active Windows keyboard layout belongs to a right-to-left language.
-/// Other platforms do not expose a keyboard layout through NoteCraft's window backend yet.
+/// Other platforms do not expose a keyboard layout through ErgoNote's window backend yet.
 #[cfg(windows)]
 pub fn is_rtl() -> bool {
     use windows_sys::Win32::UI::Input::KeyboardAndMouse::GetKeyboardLayout;

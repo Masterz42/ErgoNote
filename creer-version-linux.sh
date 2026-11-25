@@ -44,12 +44,12 @@ case "$FILE_VERSION" in
     *[0-9].0) FILE_VERSION="${FILE_VERSION%.0}" ;;
 esac
 BASENAME="ErgoNote-v$FILE_VERSION-Linux-$ARCH"
-BIN="$ROOT/target/release/notecraft"
+BIN="$ROOT/target/release/ergonote"
 DEMO="$ROOT/docs/demo/DemoNotebook"
 
 echo "== ErgoNote $VERSION pour Linux $ARCH =="
 if [ "$BUILD" = 1 ]; then
-    (cd "$ROOT" && cargo build --release --locked -p notecraft)
+    (cd "$ROOT" && cargo build --release --locked -p ergonote)
 fi
 [ -x "$BIN" ] || { echo "binaire release introuvable : $BIN" >&2; exit 1; }
 [ -f "$DEMO/html/_node.toml" ] && [ -f "$DEMO/cmgfm/_node.toml" ] || {
@@ -70,9 +70,9 @@ install -d "$PORT/icons" "$PORT/demo"
 install -m755 "$BIN" "$PORT/ergonote"
 install -m755 "$ROOT/packaging/linux/install-mon-cartable.sh" "$PORT/install-mon-cartable.sh"
 for size in 32 64 128 256 512; do
-    install -m644 "$ROOT/assets/brand/notecraft-$size.png" "$PORT/icons/notecraft-$size.png"
+    install -m644 "$ROOT/assets/brand/ergonote-$size.png" "$PORT/icons/ergonote-$size.png"
 done
-cp -R "$DEMO" "$PORT/demo/welcome-to-notecraft"
+cp -R "$DEMO" "$PORT/demo/welcome-to-ergonote"
 cat > "$PORT/LISEZ-MOI.txt" <<'EOF'
 ErgoNote - version portable Linux
 =================================
@@ -88,7 +88,7 @@ Deux facons de l'installer :
    double-cliquez sur ergonote. Le programme et le carnet d'accueil restent dans
    ce dossier. Pour le deplacer, deplacez le dossier entier.
 
-Les carnets sont enregistres dans Documents/NoteCraft. Ils ne sont jamais
+Les carnets sont enregistres dans Documents/ErgoNote. Ils ne sont jamais
 supprimes par une mise a jour.
 EOF
 
@@ -102,17 +102,17 @@ if command -v dpkg-deb >/dev/null 2>&1; then
         "$DEB_ROOT/usr/bin" \
         "$DEB_ROOT/usr/share/applications" \
         "$DEB_ROOT/usr/share/doc/ergonote" \
-        "$DEB_ROOT/usr/share/notecraft/demo"
+        "$DEB_ROOT/usr/share/ergonote/demo"
     install -m755 "$BIN" "$DEB_ROOT/usr/bin/ergonote"
     for size in 32 64 128 256 512; do
-        install -Dm644 "$ROOT/assets/brand/notecraft-$size.png" \
-            "$DEB_ROOT/usr/share/icons/hicolor/${size}x${size}/apps/com.alientechsoftware.notecraft.png"
+        install -Dm644 "$ROOT/assets/brand/ergonote-$size.png" \
+            "$DEB_ROOT/usr/share/icons/hicolor/${size}x${size}/apps/com.ergonote.app.png"
     done
-    cp -R "$DEMO/." "$DEB_ROOT/usr/share/notecraft/demo/welcome-to-notecraft/"
+    cp -R "$DEMO/." "$DEB_ROOT/usr/share/ergonote/demo/welcome-to-ergonote/"
     install -m644 "$ROOT/LICENSE" "$DEB_ROOT/usr/share/doc/ergonote/LICENSE"
     install -m644 "$ROOT/NOTICE" "$DEB_ROOT/usr/share/doc/ergonote/NOTICE"
 
-    cat > "$DEB_ROOT/usr/share/applications/com.alientechsoftware.notecraft.desktop" <<'EOF'
+    cat > "$DEB_ROOT/usr/share/applications/com.ergonote.app.desktop" <<'EOF'
 [Desktop Entry]
 Type=Application
 Name=ErgoNote
@@ -120,14 +120,14 @@ GenericName=Cartable numerique
 Comment=Mes cours, mes exercices et mes fiches, dans des dossiers simples
 Exec=ergonote %U
 TryExec=ergonote
-Icon=com.alientechsoftware.notecraft
+Icon=com.ergonote.app
 Terminal=false
 StartupNotify=true
-StartupWMClass=com.alientechsoftware.notecraft
+StartupWMClass=com.ergonote.app
 Categories=Office;Education;
-MimeType=x-scheme-handler/notecraft;
+MimeType=x-scheme-handler/ergonote;
 EOF
-    chmod 644 "$DEB_ROOT/usr/share/applications/com.alientechsoftware.notecraft.desktop"
+    chmod 644 "$DEB_ROOT/usr/share/applications/com.ergonote.app.desktop"
 
     SIZE_KB="$(du -sk "$DEB_ROOT/usr" | awk '{print $1}')"
     cat > "$DEB_ROOT/DEBIAN/control" <<EOF
@@ -145,7 +145,7 @@ Description: ErgoNote - cartable numerique adapte
  Notes, cours et exercices en fichiers simples, dans des dossiers.
  .
  Le paquet installe le programme, l'icone, l'entree de menu et le carnet
- d'accueil. Les carnets de l'utilisateur restent dans Documents/NoteCraft.
+ d'accueil. Les carnets de l'utilisateur restent dans Documents/ErgoNote.
 EOF
     chmod 644 "$DEB_ROOT/DEBIAN/control"
 

@@ -80,7 +80,7 @@ pub enum Icon {
     DirRtl,
     /// A pilcrow with an arrow beside it pointing right: this paragraph reads left to
     /// right. Word, LibreOffice and the Office web apps all mark paragraph direction with
-    /// a pilcrow and an arrow, and a writer of Arabic looks for that shape, so NoteCraft
+    /// a pilcrow and an arrow, and a writer of Arabic looks for that shape, so ErgoNote
     /// draws one too. The lines-and-arrow pair above is the whole page; this pair is one
     /// paragraph.
     ParaLtr,
@@ -647,13 +647,13 @@ pub fn paint(painter: &Painter, rect: Rect, icon: Icon, color: Color32) {
 }
 
 /// Paint the vendored Fluent UI version of a ribbon icon without creating a
-/// widget or changing layout. Icons not yet migrated fall back to NoteCraft's
+/// widget or changing layout. Icons not yet migrated fall back to ErgoNote's
 /// native drawing, so the migration can happen incrementally.
 pub fn paint_ribbon(ui: &Ui, rect: Rect, icon: Icon, color: Color32) {
     if let Some((name, bytes)) = fluent_color_asset(icon) {
         // A colour icon keeps its own colours and is only faded when its control is disabled.
         let tint = if ui.is_enabled() { Color32::WHITE } else { Color32::from_white_alpha(90) };
-        egui::Image::from_bytes(format!("bytes://notecraft-fluent-color/{name}.svg"), bytes)
+        egui::Image::from_bytes(format!("bytes://ergonote-fluent-color/{name}.svg"), bytes)
             .fit_to_exact_size(rect.size())
             .tint(tint)
             .paint_at(ui, rect);
@@ -661,7 +661,7 @@ pub fn paint_ribbon(ui: &Ui, rect: Rect, icon: Icon, color: Color32) {
     }
     if let Some((name, bytes)) = ribbon_color_asset(icon) {
         let tint = if ui.is_enabled() { Color32::WHITE } else { Color32::from_white_alpha(90) };
-        egui::Image::from_bytes(format!("bytes://notecraft-ribbon-color/{name}.svg"), bytes)
+        egui::Image::from_bytes(format!("bytes://ergonote-ribbon-color/{name}.svg"), bytes)
             .fit_to_exact_size(rect.size())
             .tint(tint)
             .paint_at(ui, rect);
@@ -683,7 +683,7 @@ pub fn coloured_svg(name: &str, bytes: &[u8], colour: Color32) -> egui::Image<'s
     let hex = format!("#{:02x}{:02x}{:02x}", colour.r(), colour.g(), colour.b());
     let text = String::from_utf8_lossy(bytes).replace("#212121", &hex);
     // Keep the extension in the URI: egui uses it to choose the SVG loader for byte-backed images.
-    egui::Image::from_bytes(format!("bytes://notecraft-fluent/{name}-{}.svg", &hex[1..]), text.into_bytes())
+    egui::Image::from_bytes(format!("bytes://ergonote-fluent/{name}-{}.svg", &hex[1..]), text.into_bytes())
 }
 
 /// Custom colour ribbon illustrations for controls without a Fluent colour icon.

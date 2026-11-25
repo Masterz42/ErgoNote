@@ -7,7 +7,7 @@ updated: 2026-10-18T00:00:00Z
 tags: []
 ---
 
-Ziehen Sie eine Datei aus Ihrem Dateimanager auf diese Seite. NoteCraft fragt, was damit
+Ziehen Sie eine Datei aus Ihrem Dateimanager auf diese Seite. ErgoNote fragt, was damit
 geschehen soll:
 
 - **Bild einfügen**: Eine Kopie wandert in den Ordner `assets` dieser Seite, und die Seite zeigt sie.
@@ -34,11 +34,11 @@ jedes Betriebssystem sicher gemacht, zwei Dateien tragen nie denselben Namen, un
 
 Eine Tabelle, die aus einer anderen Notiz-App oder einer Tabellenkalkulation kopiert wurde,
 wird als Tabelle eingefügt. Zum Einfügen eines Bildes klicken Sie auf die Seite und drücken Sie
-**Strg+V**. NoteCraft speichert eine Kopie im Ordner `assets` der Seite und fügt sie in die Notiz ein.
+**Strg+V**. ErgoNote speichert eine Kopie im Ordner `assets` der Seite und fügt sie in die Notiz ein.
 
 ## Ausdrucke
 
-Manche Anwendungen können ein PDF oder ein Dokument als Bilder auf die Seite legen. NoteCraft
+Manche Anwendungen können ein PDF oder ein Dokument als Bilder auf die Seite legen. ErgoNote
 kann das noch nicht; ein angehängtes PDF bleibt eine Datei, und der Dialog sagt das.
 
 Weiter: [Zwei Seitenformate](../page-formats/).

@@ -1,12 +1,12 @@
 //! The pages changed lately, for History > Recent Edits (issue #279).
 //!
 //! A page's own `updated` stamp is what counts, the one every save writes into its file (a
-//! `notecraft:updated` meta in HTML, `updated:` in CMGFM front matter): a sync tool that copies
+//! `ergonote:updated` meta in HTML, `updated:` in CMGFM front matter): a sync tool that copies
 //! a folder sets every file's modified time to the moment of the copy, and would make every page
 //! look just edited. Only a page with no stamp at all falls back to its file's modified time.
 
 use crate::tree::{Node, page_file};
-use notecraft_model::{NodeKind, PageFormat};
+use ergonote_model::{NodeKind, PageFormat};
 use std::path::{Path, PathBuf};
 
 /// A page changed in the range asked for.
@@ -31,10 +31,10 @@ pub fn stamp(dir: &Path) -> Option<i64> {
     // The stamp is in the head: there is no need to read a large page to the end.
     let text = crate::vfs::read_to_string(&file).ok()?;
     let value = match format {
-        PageFormat::Html => notecraft_formats::html::meta(&text, "notecraft:updated"),
-        PageFormat::Cmgfm => notecraft_formats::frontmatter::value(&notecraft_formats::frontmatter::split_front(&text).0, "updated"),
+        PageFormat::Html => ergonote_formats::html::meta(&text, "ergonote:updated"),
+        PageFormat::Cmgfm => ergonote_formats::frontmatter::value(&ergonote_formats::frontmatter::split_front(&text).0, "updated"),
     }?;
-    notecraft_model::time::secs_from_iso(&value)
+    ergonote_model::time::secs_from_iso(&value)
 }
 
 fn file_time(dir: &Path) -> Option<i64> {
@@ -97,10 +97,10 @@ mod tests {
         let (format, file) = page_file(dir).expect("page");
         let text = std::fs::read_to_string(&file).expect("read");
         let out = match format {
-            PageFormat::Html => notecraft_formats::html::set_meta(&text, "notecraft:updated", iso),
+            PageFormat::Html => ergonote_formats::html::set_meta(&text, "ergonote:updated", iso),
             PageFormat::Cmgfm => {
-                let (front, rest) = notecraft_formats::frontmatter::split_front(&text);
-                format!("{}{rest}", notecraft_formats::frontmatter::set_value(&front, "updated", iso))
+                let (front, rest) = ergonote_formats::frontmatter::split_front(&text);
+                format!("{}{rest}", ergonote_formats::frontmatter::set_value(&front, "updated", iso))
             }
         };
         std::fs::write(&file, out).expect("write");
@@ -124,9 +124,9 @@ mod tests {
         assert_eq!(all.iter().map(|e| e.title.as_str()).collect::<Vec<_>>(), ["New", "Sub", "Old"]);
         assert!(all.iter().all(|e| e.stamped && e.notebook == "Work" && e.section == ["Plans"]), "{all:?}");
 
-        let since = notecraft_model::time::secs_from_iso("2026-11-05T00:00:00Z");
+        let since = ergonote_model::time::secs_from_iso("2026-11-05T00:00:00Z");
         assert_eq!(edited(&notebooks, since).iter().map(|e| e.title.as_str()).collect::<Vec<_>>(), ["New", "Sub"]);
-        assert_eq!(stamp(&old), notecraft_model::time::secs_from_iso("2026-11-01T09:00:00Z"));
+        assert_eq!(stamp(&old), ergonote_model::time::secs_from_iso("2026-11-01T09:00:00Z"));
     }
 
     #[test]
@@ -141,6 +141,6 @@ mod tests {
         let got = edited(&crate::tree::load_notebooks(t.path()), None);
         assert_eq!(got.len(), 1);
         assert!(!got[0].stamped);
-        assert!((got[0].at - notecraft_model::time::now_secs()).abs() < 600);
+        assert!((got[0].at - ergonote_model::time::now_secs()).abs() < 600);
     }
 }

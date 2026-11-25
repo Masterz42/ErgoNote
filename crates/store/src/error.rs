@@ -42,8 +42,8 @@ impl std::error::Error for StoreError {
     }
 }
 
-impl From<notecraft_model::FormatError> for StoreError {
-    fn from(e: notecraft_model::FormatError) -> Self {
+impl From<ergonote_model::FormatError> for StoreError {
+    fn from(e: ergonote_model::FormatError) -> Self {
         StoreError::Invalid(e.to_string())
     }
 }

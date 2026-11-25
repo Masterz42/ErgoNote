@@ -15,12 +15,12 @@ const METHOD_NOT_FOUND: i64 = -32601;
 const INVALID_PARAMS: i64 = -32602;
 const RESOURCE_NOT_FOUND: i64 = -32002;
 
-const SERVER_NAME: &str = "notecraft";
+const SERVER_NAME: &str = "ergonote";
 const SERVER_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 /// What the model is told once, at the start.
 const INSTRUCTIONS: &str = "\
-NoteCraft keeps notes as ordinary folders: a notebook holds section groups and sections, a \
+ErgoNote keeps notes as ordinary folders: a notebook holds section groups and sections, a \
 section holds pages, and a page is a folder with index.html or index.md and an assets folder \
 beside it. Paths in these tools are relative to the notebooks folder, lower case with slashes, \
 for example work/projects/kickoff.
@@ -117,8 +117,8 @@ fn request(backend: &mut dyn Backend, method: &str, params: &Value) -> Result<Va
 mod tests {
     use super::*;
     use crate::backend::Headless;
-    use notecraft_store::Settings;
-    use notecraft_store::testing::TempDir;
+    use ergonote_store::Settings;
+    use ergonote_store::testing::TempDir;
 
     fn backend(name: &str) -> (TempDir, Headless) {
         let t = TempDir::new(name);
@@ -146,7 +146,7 @@ mod tests {
         let (_t, mut b) = backend("mcp-server1");
         let r = ask(&mut b, &json!({"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {"protocolVersion": PROTOCOL_VERSION}}).to_string());
         assert_eq!(r.pointer("/result/protocolVersion").and_then(Value::as_str), Some(PROTOCOL_VERSION));
-        assert_eq!(r.pointer("/result/serverInfo/name").and_then(Value::as_str), Some("notecraft"));
+        assert_eq!(r.pointer("/result/serverInfo/name").and_then(Value::as_str), Some("ergonote"));
         assert!(r.pointer("/result/capabilities/tools").is_some());
         let instructions = r.pointer("/result/instructions").and_then(Value::as_str).unwrap_or_default();
         assert!(instructions.contains("no window is running"), "{instructions}");
@@ -242,18 +242,18 @@ mod tests {
             .and_then(Value::as_array)
             .map(|a| a.iter().filter_map(|r| r.get("uri").and_then(Value::as_str)).map(str::to_string).collect())
             .unwrap_or_default();
-        assert!(uris.contains(&"notecraft://tree".to_string()) && uris.contains(&"notecraft://commands".to_string()), "{uris:?}");
+        assert!(uris.contains(&"ergonote://tree".to_string()) && uris.contains(&"ergonote://commands".to_string()), "{uris:?}");
 
-        let read = ask(&mut b, &json!({"id": 3, "method": "resources/read", "params": {"uri": "notecraft://tree"}}).to_string());
+        let read = ask(&mut b, &json!({"id": 3, "method": "resources/read", "params": {"uri": "ergonote://tree"}}).to_string());
         assert!(read.pointer("/result/contents/0/text").and_then(Value::as_str).is_some_and(|t| t.contains("Work")));
 
         let page = ask(
             &mut b,
-            &json!({"id": 4, "method": "resources/read", "params": {"uri": "notecraft://page/work/new-section-1/untitled-page"}}).to_string(),
+            &json!({"id": 4, "method": "resources/read", "params": {"uri": "ergonote://page/work/new-section-1/untitled-page"}}).to_string(),
         );
         assert!(page.pointer("/result/contents/0/text").is_some(), "{page}");
 
-        let missing = ask(&mut b, &json!({"id": 5, "method": "resources/read", "params": {"uri": "notecraft://nope"}}).to_string());
+        let missing = ask(&mut b, &json!({"id": 5, "method": "resources/read", "params": {"uri": "ergonote://nope"}}).to_string());
         assert_eq!(missing.pointer("/error/code").and_then(Value::as_i64), Some(RESOURCE_NOT_FOUND));
 
         let templates = ask(&mut b, &json!({"id": 6, "method": "resources/templates/list"}).to_string());

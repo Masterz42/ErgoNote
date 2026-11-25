@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Applies .github/web-build/patches.yaml's rules to a NoteCraft checkout, to build the web target.
+"""Applies .github/web-build/patches.yaml's rules to a ErgoNote checkout, to build the web target.
 
 A from-scratch reimplementation of the rule format daijro/openplayground's scripts/build.mjs uses (not a
 copy of that script): each rule names one file, a regex (matched with MULTILINE, as build.mjs's 'm' flag),

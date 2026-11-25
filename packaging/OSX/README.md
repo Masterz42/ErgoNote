@@ -1,8 +1,8 @@
-# NoteCraft macOS packaging guide
+# ErgoNote macOS packaging guide
 
-This directory contains the NoteCraft macOS app, DMG and CLI archive scripts. The app bundle
+This directory contains the ErgoNote macOS app, DMG and CLI archive scripts. The app bundle
 includes both generated Welcome notebook formats as the source for the first-use setup. For 0.0.9
-the setup is verified on Windows only; the macOS check is deferred. It replaces only `welcome-to-notecraft`; sibling notebooks
+the setup is verified on Windows only; the macOS check is deferred. It replaces only `welcome-to-ergonote`; sibling notebooks
 remain unchanged. Packages remain test artifacts until a maintainer completes signing,
 notarization and clean-machine checks.
 
@@ -19,8 +19,8 @@ packaging/OSX/test-stale.sh aarch64
 bash packaging/OSX/test-provenance.sh
 ```
 
-The DMG contains `NoteCraft.app`, an Applications link and a read-me file at its root. Drag the
-app to Applications and open it. On first launch of each version, NoteCraft asks whether to add
+The DMG contains `ErgoNote.app`, an Applications link and a read-me file at its root. Drag the
+app to Applications and open it. On first launch of each version, ErgoNote asks whether to add
 the bundled Welcome notebook to the user's notebook folder.
 
 The default `--arch universal` builds both Apple targets and combines the GUI and CLI with
@@ -38,7 +38,7 @@ changes, same-version revision changes, dirty sources and mismatched universal s
 Normal builds support uncommitted work. The source snapshot includes staged/unstaged Git changes
 and the contents of untracked, non-ignored files. It is checked before and after the build and
 packaging; inputs must not change during the command. Dirty builds get a `-dirty` suffix in
-`NoteCraftBuildCommit` and cannot be reused with `--no-build`, even if unchanged. Submodules and
+`ErgoNoteBuildCommit` and cannot be reused with `--no-build`, even if unchanged. Submodules and
 Git entries hidden by assume-unchanged or skip-worktree are rejected. Build inputs must belong
 to the Git source tree; ignored output directories are not source inputs. Custom target and
 output directories should be ignored or outside the source tree.
@@ -60,7 +60,7 @@ signed ad-hoc by default for local testing. A downloaded ad-hoc package can be r
 Gatekeeper; do not change system security settings to test it.
 
 For a manual Finder check, use a disposable notebook directory containing a sentinel user notebook
-and an older `welcome-to-notecraft`. Open the DMG, drag `NoteCraft.app` into Applications, then
+and an older `welcome-to-ergonote`. Open the DMG, drag `ErgoNote.app` into Applications, then
 launch it. Choose Yes and confirm the Welcome notebook has both formats and the current content,
 the old Welcome files are gone, and the sentinel notebook is unchanged. Relaunch to confirm the
 same version does not ask again. Remove only the test app after the check; confirm app removal
@@ -84,7 +84,7 @@ That package uses the native Apple/Rust toolchain:
 1. Build `aarch64-apple-darwin` and `x86_64-apple-darwin` release binaries with Cargo.
 2. Set and document the minimum macOS deployment target.
 3. Combine each executable's architecture slices with `lipo`.
-4. Assemble a normal `NoteCraft.app` bundle with `Contents/MacOS`, `Contents/Resources`,
+4. Assemble a normal `ErgoNote.app` bundle with `Contents/MacOS`, `Contents/Resources`,
    `Info.plist`, the `.icns` icon, and required notices/licences.
 5. Sign the executable and app bundle with `codesign`, using a Developer ID Application
    identity, a secure timestamp, and the hardened runtime.
@@ -112,7 +112,7 @@ Prefer these components unless an approved design says otherwise:
 | CI host | Pinned GitHub-hosted macOS runners selected by the pull-request packaging workflow | Configured to build and verify review artifacts on Apple Silicon and Intel. |
 
 Homebrew may be documented for developer setup when an ArtCraft project already uses it, but it
-must not become a runtime dependency of the NoteCraft app or a hidden requirement of the release
+must not become a runtime dependency of the ErgoNote app or a hidden requirement of the release
 artifact. Prefer tools supplied by macOS/Xcode and Rustup for the packaging path.
 
 ## Version and identity rules
@@ -122,7 +122,7 @@ artifact. Prefer tools supplied by macOS/Xcode and Rustup for the packaging path
 - Keep `CFBundleShortVersionString` and the artifact filename tied to that source.
 - Use a monotonically increasing numeric `CFBundleVersion` for the bundle build number, such as
   the CI build number or a documented repository revision count.
-- Keep `com.alientechsoftware.notecraft` as the stable bundle identifier, matching the native
+- Keep `com.ergonote.app` as the stable bundle identifier, matching the native
   viewport app ID. Confirm it with the maintainer before the first signed release.
 - Keep the minimum macOS version explicit in the build environment, Rust target configuration,
   and `Info.plist`; test on that minimum before release.

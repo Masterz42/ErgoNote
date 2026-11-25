@@ -1,5 +1,5 @@
 //! A tiny reader and writer for the simple `key = "value"` text used by `_node.toml`
-//! and the settings file. It handles only the lines NoteCraft writes itself.
+//! and the settings file. It handles only the lines ErgoNote writes itself.
 
 use std::collections::HashMap;
 

@@ -1,11 +1,11 @@
 //! The clipboard on Android, under the name `arboard` that `clipboard.rs` reads.
 //!
 //! `arboard` has no Android backend: Android's clipboard is the Java `ClipboardManager`
-//! service, reached only through JNI, and NoteCraft has no unsafe code to make that call.
+//! service, reached only through JNI, and ErgoNote has no unsafe code to make that call.
 //! Until an Android shell brings the clipboard across, this stand-in answers every request
 //! with the same error, so `clipboard::open` fails and the window says copy and paste do not
 //! reach other apps, rather than letting each paste fail in silence. Copy and paste inside
-//! NoteCraft still work through egui's own in-app clipboard.
+//! ErgoNote still work through egui's own in-app clipboard.
 
 use std::borrow::Cow;
 use std::fmt;
@@ -16,7 +16,7 @@ pub enum Error {
     /// Never returned here; `clipboard.rs` retries on it on the desktop.
     #[allow(dead_code)]
     ClipboardOccupied,
-    /// The Android clipboard is not connected to NoteCraft yet.
+    /// The Android clipboard is not connected to ErgoNote yet.
     ClipboardNotSupported,
 }
 
@@ -24,7 +24,7 @@ impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Error::ClipboardOccupied => f.write_str("the clipboard is in use by another app"),
-            Error::ClipboardNotSupported => f.write_str("the Android clipboard is not connected to NoteCraft yet"),
+            Error::ClipboardNotSupported => f.write_str("the Android clipboard is not connected to ErgoNote yet"),
         }
     }
 }

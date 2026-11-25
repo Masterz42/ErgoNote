@@ -1,5 +1,5 @@
 #![deny(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::unimplemented, clippy::todo, clippy::unreachable)]
-//! NoteCraft page formats (layer L1).
+//! ErgoNote page formats (layer L1).
 //!
 //! Text handling for the two page formats, HTML and CommonMark + GFM, with no file
 //! system access: splitting front matter, reading and replacing the body of an HTML

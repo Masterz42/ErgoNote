@@ -1,9 +1,9 @@
 //! The page as a sheet of containers, the level between the page and its paragraphs.
 //!
-//! OneNote puts boxes on a page and the writer puts them where they like. NoteCraft keeps
+//! OneNote puts boxes on a page and the writer puts them where they like. ErgoNote keeps
 //! the blocks themselves in reading order in the page's own file, and the boxes are a layer
 //! over them: a place, a width, and how many blocks each one holds
-//! ([`notecraft_model::container`]). So a page is still the same document anywhere else,
+//! ([`ergonote_model::container`]). So a page is still the same document anywhere else,
 //! and the arrangement travels in the page's metadata.
 //!
 //! What this module does: draws each container where it belongs, lets one be moved by its
@@ -21,8 +21,8 @@ use crate::ribbon::Act;
 use crate::ribbon_icons::Mark;
 use crate::theme::Tokens;
 use egui::{Id, Key, Pos2, Rect, Sense, Ui, pos2, vec2};
-use notecraft_formats::markdown::Block;
-use notecraft_model::{Container, container};
+use ergonote_formats::markdown::Block;
+use ergonote_model::{Container, container};
 
 /// The height of the bar at the top of a container, which is what it is dragged by. Wide
 /// enough to hit without aiming: a thin strip is what makes dragging feel unreliable.
@@ -245,9 +245,9 @@ pub fn show(
     caret: &mut Option<Caret>,
     page_dir: &std::path::Path,
     t: &Tokens,
-    page: Option<notecraft_model::Dir>,
-    cols: &mut notecraft_model::tablecols::Widths,
-    justified: &mut notecraft_model::justify::Justified,
+    page: Option<ergonote_model::Dir>,
+    cols: &mut ergonote_model::tablecols::Widths,
+    justified: &mut ergonote_model::justify::Justified,
     across: &mut Option<pageedit::Across>,
     shown_title: &str,
     zoom: f32,
@@ -595,7 +595,7 @@ pub fn show(
                 j_rect.contains(p)
             })
         });
-        let lock_images = ui.data(|d| d.get_temp::<bool>(egui::Id::new("notecraft-lock-images")).unwrap_or(false));
+        let lock_images = ui.data(|d| d.get_temp::<bool>(egui::Id::new("ergonote-lock-images")).unwrap_or(false));
         let image_hit = (image_object && !lock_images && !pointer_in_other_text_box).then(|| {
             ui.interact(image_rect, ui.id().with(("image-object", range.start)), Sense::click_and_drag()).on_hover_cursor(egui::CursorIcon::Move)
         });
@@ -1026,10 +1026,10 @@ pub fn show(
             let whole = container::blocks_of(boxes, i);
             let range = if pageedit::is_title_echo(blocks, whole.start, shown_title) { whole.start + 1..whole.end } else { whole };
             let held = blocks.get(range).unwrap_or_default();
-            let markdown = notecraft_formats::render::blocks_to_markdown(held);
+            let markdown = ergonote_formats::render::blocks_to_markdown(held);
             pageedit::remember_copied(&markdown, held);
-            let html = notecraft_formats::render::blocks_to_html(held);
-            let text = notecraft_formats::render::blocks_to_text(held);
+            let html = ergonote_formats::render::blocks_to_html(held);
+            let text = ergonote_formats::render::blocks_to_text(held);
             out.copy = Some((html, text));
             if cut_key {
                 delete_at = Some(i);
@@ -1072,10 +1072,10 @@ pub fn show(
         menu_rect = Some(area.rect);
         if copy {
             let held = blocks.get(container::blocks_of(boxes, i)).unwrap_or_default();
-            let markdown = notecraft_formats::render::blocks_to_markdown(held);
+            let markdown = ergonote_formats::render::blocks_to_markdown(held);
             pageedit::remember_copied(&markdown, held);
-            let html = notecraft_formats::render::blocks_to_html(held);
-            let text = notecraft_formats::render::blocks_to_text(held);
+            let html = ergonote_formats::render::blocks_to_html(held);
+            let text = ergonote_formats::render::blocks_to_text(held);
             out.copy = Some((html, text));
         }
         let outside = ui.input(|i| i.pointer.any_click()) && !opened_now && !area.rect.contains(pointer.unwrap_or_default());
@@ -1662,11 +1662,11 @@ pub fn show_ink_view(
     boxes: &mut Vec<Container>,
     page_dir: &std::path::Path,
     t: &Tokens,
-    page: Option<notecraft_model::Dir>,
-    justified: &notecraft_model::justify::Justified,
+    page: Option<ergonote_model::Dir>,
+    justified: &ergonote_model::justify::Justified,
     // The page's table layout, so a table keeps its widths, borders, shading and alignment
     // while a pen is in hand (issue #263).
-    columns: &notecraft_model::tablecols::Widths,
+    columns: &ergonote_model::tablecols::Widths,
     shown_title: &str,
     zoom: f32,
 ) -> Moved {
@@ -2041,7 +2041,7 @@ fn start_a_box(blocks: &mut Vec<Block>, boxes: &mut Vec<Container>, caret: &mut 
 mod tests {
     #[test]
     fn image_detection_covers_standalone_and_inline_images() {
-        use notecraft_formats::markdown::{Block, Span};
+        use ergonote_formats::markdown::{Block, Span};
         assert!(block_has_image(&Block::Image { alt: "picture".into(), src: "assets/picture.png".into(), width: None, height: None }));
         assert!(block_has_image(&Block::Paragraph(vec![Span {
             image: Some("assets/picture.png".into()),
@@ -2181,7 +2181,7 @@ mod tests {
     /// that, one showing the heading and one not.
     #[test]
     fn a_copied_box_leaves_the_title_behind() {
-        use notecraft_formats::markdown::{self, Block};
+        use ergonote_formats::markdown::{self, Block};
         let blocks = markdown::parse(
             "# My page
 
@@ -2197,7 +2197,7 @@ more
         let whole = 0..blocks.len();
         let kept = if crate::pageedit::is_title_echo(&blocks, whole.start, "My page") { whole.start + 1..whole.end } else { whole };
         let held = blocks.get(kept).unwrap_or_default();
-        let markdown = notecraft_formats::render::blocks_to_markdown(held);
+        let markdown = ergonote_formats::render::blocks_to_markdown(held);
         assert!(
             !markdown.contains("My page"),
             "the title is not in what was copied:
@@ -2212,7 +2212,7 @@ more
 
     use super::*;
     use crate::theme::Theme;
-    use notecraft_formats::markdown;
+    use ergonote_formats::markdown;
 
     fn page(md: &str) -> Vec<Block> {
         markdown::parse(md)
@@ -2224,7 +2224,7 @@ more
         let mut boxes = vec![Container::new(0.0, 0.0, 300.0, 1), Container::new(0.0, 50.0, 300.0, 2), Container::new(0.0, 120.0, 300.0, 1)];
         assert!(remove_container(&mut blocks, &mut boxes, 1));
         assert_eq!(boxes.iter().map(|b| b.blocks).collect::<Vec<_>>(), vec![1, 1]);
-        let md = notecraft_formats::render::blocks_to_markdown(&blocks);
+        let md = ergonote_formats::render::blocks_to_markdown(&blocks);
         assert!(md.contains("one") && md.contains("four"), "the others stay: {md}");
         assert!(!md.contains("two") && !md.contains("three"), "its own blocks are gone: {md}");
         assert_eq!(boxes.iter().map(|b| b.blocks).sum::<usize>(), blocks.len(), "every block is still in a box");
@@ -2333,7 +2333,7 @@ more
                 &mut caret,
                 std::path::Path::new("."),
                 &t,
-                Some(notecraft_model::Dir::Ltr),
+                Some(ergonote_model::Dir::Ltr),
                 &mut Default::default(),
                 &mut Default::default(),
                 &mut None,
@@ -2364,7 +2364,7 @@ more
                 &mut caret,
                 std::path::Path::new("."),
                 &t,
-                Some(notecraft_model::Dir::Ltr),
+                Some(ergonote_model::Dir::Ltr),
                 &mut Default::default(),
                 &mut Default::default(),
                 &mut None,
@@ -2397,7 +2397,7 @@ more
                 &mut caret,
                 std::path::Path::new("."),
                 &t,
-                Some(notecraft_model::Dir::Ltr),
+                Some(ergonote_model::Dir::Ltr),
                 &mut Default::default(),
                 &mut Default::default(),
                 &mut None,
@@ -2482,7 +2482,7 @@ more
                         &mut caret,
                         std::path::Path::new("."),
                         &t,
-                        Some(notecraft_model::Dir::Ltr),
+                        Some(ergonote_model::Dir::Ltr),
                         &mut Default::default(),
                         &mut Default::default(),
                         &mut None,

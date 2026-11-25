@@ -12,7 +12,7 @@ tags: []
 
 El sol o la luna de arriba a la derecha abren el selector de temas: claro y oscuro, cada uno
 con siete acentos, 14 en total. Una muestra elige ese modo. El interruptor bajo las muestras
-hace que NoteCraft vuelva a seguir el ajuste claro u oscuro de tu sistema.
+hace que ErgoNote vuelva a seguir el ajuste claro u oscuro de tu sistema.
 
 Cada color de cada tema se comprueba contra su fondo con una prueba, así que ningún tema puede
 mostrarte un texto que no puedas leer.
@@ -35,7 +35,7 @@ líneas y el zoom se recuerdan.
 
 ## Abrir donde lo dejaste
 
-NoteCraft vuelve a abrir la página en la que cerraste, con las secciones de encima desplegadas.
+ErgoNote vuelve a abrir la página en la que cerraste, con las secciones de encima desplegadas.
 
 ## Ajustes en disco
 

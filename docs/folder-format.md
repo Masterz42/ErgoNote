@@ -1,7 +1,7 @@
-# NoteCraft folder format
+# ErgoNote folder format
 
-Status: draft 1, 2026-10-17. This is the contract between NoteCraft and the file system.
-The code in `crates/store` implements it and `notecraft-cli check` verifies it. If the
+Status: draft 1, 2026-10-17. This is the contract between ErgoNote and the file system.
+The code in `crates/store` implements it and `ergonote-cli check` verifies it. If the
 code and this document disagree, that is a bug in one of them: fix both in the same change.
 
 Last reviewed: 2026-10-17. Version of the format: `0` (unstable; anything can still change).
@@ -14,7 +14,7 @@ Last reviewed: 2026-10-17. Version of the format: `0` (unstable; anything can st
    files in the page's folder. Any editor, backup tool or sync tool can handle them.
 3. **No depth limit.** A page can hold sub-pages, which can hold sub-pages, to any depth.
    The `.one` format stops at three levels, because the limit is written into it
-   (`PageLevel` is 1 to 3 in MS-ONE). NoteCraft does not have it.
+   (`PageLevel` is 1 to 3 in MS-ONE). ErgoNote does not have it.
 4. **The folder is the unit.** Moving, copying, renaming or deleting a page folder moves,
    copies, renames or deletes the page with its sub-pages and attachments.
 5. **Cross-platform.** Names and paths follow the intersection of Windows, macOS and Linux
@@ -86,10 +86,10 @@ If a folder has both (a mistake, usually a merge), HTML wins and `check` reports
 <head>
 <meta charset="utf-8">
 <title>Project X</title>
-<meta name="notecraft:id" content="18df6ffd89c4bdc00001">
-<meta name="notecraft:order" content="10">
-<meta name="notecraft:created" content="2026-10-17T21:58:31Z">
-<meta name="notecraft:updated" content="2026-10-17T21:58:41Z">
+<meta name="ergonote:id" content="18df6ffd89c4bdc00001">
+<meta name="ergonote:order" content="10">
+<meta name="ergonote:created" content="2026-10-17T21:58:31Z">
+<meta name="ergonote:updated" content="2026-10-17T21:58:41Z">
 </head>
 <body>
 <h1>Project X</h1>
@@ -98,15 +98,15 @@ If a folder has both (a mistake, usually a merge), HTML wins and `check` reports
 </html>
 ```
 
-NoteCraft edits only what is inside `<body>`. The head is kept as it is, except that
-`notecraft:updated` is refreshed on save. Metadata in `<meta name="notecraft:...">`:
+ErgoNote edits only what is inside `<body>`. The head is kept as it is, except that
+`ergonote:updated` is refreshed on save. Metadata in `<meta name="ergonote:...">`:
 `id`, `order`, `created`, `updated`.
 
 Embedded things, in the body:
 
 - Equations: `<span class="math">$ E = mc^2 $</span>` (TeX between dollar signs).
 - Diagrams: `<pre class="diagram">graph TD; A--&gt;B;</pre>` (Mermaid source). A page from another tool may write
-  `<pre class="mermaid">` or `<div class="mermaid">`; all three are read as a diagram, and NoteCraft writes
+  `<pre class="mermaid">` or `<div class="mermaid">`; all three are read as a diagram, and ErgoNote writes
   `class="diagram"` when it saves the page.
 - To-do lines: a paragraph that starts with `&#9744;` (open) or `&#9745;` (done).
 - Attachments: relative links such as `<img src="assets/diagram.png">`.
@@ -197,7 +197,7 @@ Agenda
 | `class="nc-box"` | Marks the element as a box. |
 | `data-x`, `data-y` | Points from the left and top of the page. Whole numbers. |
 | `data-width` | How wide the box is, in points. Never less than 120. |
-| `style` (HTML only) | For a browser, so the page opens looking like the window. NoteCraft reads the `data-` attributes and ignores `style`. |
+| `style` (HTML only) | For a browser, so the page opens looking like the window. ErgoNote reads the `data-` attributes and ignores `style`. |
 
 Rules:
 
@@ -210,7 +210,7 @@ Rules:
 - A box with nothing in it is written as an empty element and kept.
 - A line in Markdown that looks like a box inside a fenced code block is only code.
 - An older page kept its boxes on one line instead: `containers: x,y,width,blocks; ...` in the
-  Markdown front matter, or `<meta name="notecraft:containers" content="...">` in the HTML head.
+  Markdown front matter, or `<meta name="ergonote:containers" content="...">` in the HTML head.
   That is still read when the text has no boxes, and it is taken out the next time the page is
   saved with its boxes in the text.
 
@@ -234,7 +234,7 @@ created = "2026-10-17T20:09:00Z"
 | `color` | Optional. The colour of this notebook cover or section tab, the way notebook apps colour them: `purple`, `blue`, `teal`, `green`, `yellow`, `orange`, `red`, `magenta` or `gray`. A name, not a hex value, so it stays readable in every theme. An unknown name is ignored. |
 
 The file is read with a small reader that understands `key = "value"` and `key = number`
-lines, `#` comments and blank lines. It is not a full TOML parser; NoteCraft writes only
+lines, `#` comments and blank lines. It is not a full TOML parser; ErgoNote writes only
 this simple form.
 
 ## 5. Attachments
@@ -253,17 +253,17 @@ file. A page links to an attachment by a relative path (`assets/name.ext`).
 ## 5a. Links between pages
 
 A page links to another by a relative path (`../other-page/`), which is what a page read
-anywhere else understands. It may also link with NoteCraft's own scheme:
+anywhere else understands. It may also link with ErgoNote's own scheme:
 
 ```text
-notecraft:/Notebook/Section/page-folder?id=18e782e8a2aa30300003
+ergonote:/Notebook/Section/page-folder?id=18e782e8a2aa30300003
 ```
 
 The path is from the notebooks folder down, with forward slashes and the folder names as
 they are on disk. It is what Copy link to page puts on the clipboard, because a relative
 link depends on the page it is pasted into and that is not known when the link is copied.
 
-The `id` is the page's own `notecraft:id`. The path says where the page was when the link
+The `id` is the page's own `ergonote:id`. The path says where the page was when the link
 was copied; the id says which page it is. When the path no longer leads to that page (Make
 Subpage moved it, or another page now has its folder), the page with that id is looked for
 in the open notebooks instead. A link without an id, as ones copied before it was added, is
@@ -293,14 +293,14 @@ as aliases for `cmgfm`.
 
 | What | Where |
 |---|---|
-| Global settings (`default_format`, `theme_mode`, `theme_accent`) | `NOTECRAFT_SETTINGS`, else `%APPDATA%\NoteCraft\settings.toml`, else `$XDG_CONFIG_HOME/notecraft/settings.toml`, else `$HOME/.config/notecraft/settings.toml` |
-| The notebooks folder | `--notebooks`, else `NOTECRAFT_NOTEBOOKS`, else `Documents/NoteCraft` in the home folder |
+| Global settings (`default_format`, `theme_mode`, `theme_accent`) | `ERGONOTE_SETTINGS`, else `%APPDATA%\ErgoNote\settings.toml`, else `$XDG_CONFIG_HOME/ergonote/settings.toml`, else `$HOME/.config/ergonote/settings.toml` |
+| The notebooks folder | `--notebooks`, else `ERGONOTE_NOTEBOOKS`, else `Documents/ErgoNote` in the home folder |
 
 Settings never live inside a notebook, so a shared notebook carries no personal settings.
 
 ## 8. Names and sync rules
 
-Checked by `notecraft-cli check` and enforced when nodes are created. The OneDrive limits
+Checked by `ergonote-cli check` and enforced when nodes are created. The OneDrive limits
 come from secondary sources (a Microsoft support article mirrored by university IT sites)
 and are not verified for every sync tool.
 
@@ -318,7 +318,7 @@ and are not verified for every sync tool.
   `index-LAPTOP.html` or `index (1).md`) are reported by `check`. The naming patterns come
   from secondary sources.
 - Unicode normalization: macOS stores some names in decomposed form. Folder names made by
-  NoteCraft are lower-case letters and digits from the title; no normalization is applied
+  ErgoNote are lower-case letters and digits from the title; no normalization is applied
   yet, which is an open risk (see `docs/gaps.md`).
 
 ## 9. Writing pages safely
@@ -326,17 +326,17 @@ and are not verified for every sync tool.
 - A page is written to a temporary file next to it and renamed over the original, so a
   crash cannot leave half a page.
 - Pages over 50 MB are refused.
-- Page versions are kept in the page's hidden `.notecraft/versions` folder. At most 50
+- Page versions are kept in the page's hidden `.ergonote/versions` folder. At most 50
   snapshots and 128 MB are retained; snapshots contain the page's main file, not its assets.
 - Recycled pages, sections and groups are moved into the notebook's hidden
-  `.notecraft/recycle-bin` folder. Restore returns an item to its original path and refuses
+  `.ergonote/recycle-bin` folder. Restore returns an item to its original path and refuses
   to overwrite a new item there. Emptying an entry permanently deletes it. Deleting an
   entire notebook is not supported yet.
 - A page kept as a template (Insert > Page Templates) is a copy of the page's folder, without
-  its subpages and its hidden `.notecraft` folder, in `.notecraft/templates/<name>/` in the
+  its subpages and its hidden `.ergonote` folder, in `.ergonote/templates/<name>/` in the
   notebooks folder. A page made from it is a copy of that folder with new ids, put last in
   the section, with no title yet. Built-in templates are not stored there.
-- Deletes are confined to NoteCraft nodes inside a notebook.
+- Deletes are confined to ErgoNote nodes inside a notebook.
 
 ## 10. What this format does not define yet
 
@@ -351,7 +351,7 @@ and are not verified for every sync tool.
 
 ## 11. Checks
 
-`notecraft-cli check NOTEBOOK` reports: both `index.md` and `index.html` in a folder, a
+`ergonote-cli check NOTEBOOK` reports: both `index.md` and `index.html` in a folder, a
 missing or duplicate `id`, a folder name that breaks the rules above, a path over 400
 characters from the notebook's parent, files that look like conflict copies, and names that
 differ only by case. It exits with status 1 if there is any problem.

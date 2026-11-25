@@ -31,7 +31,7 @@ pub struct Saver {
 
 impl Default for Saver {
     fn default() -> Self {
-        Self::with_writer(|dir, body| notecraft_store::page::save_body(dir, body).map_err(|e| e.to_string()))
+        Self::with_writer(|dir, body| ergonote_store::page::save_body(dir, body).map_err(|e| e.to_string()))
     }
 }
 
@@ -42,7 +42,7 @@ impl Saver {
         let (jobs, inbox) = mpsc::channel::<(PathBuf, String)>();
         let (outbox, done) = mpsc::channel::<Saved>();
         let worker = std::thread::Builder::new()
-            .name("notecraft-saver".into())
+            .name("ergonote-saver".into())
             .spawn(move || {
                 while let Ok(first) = inbox.recv() {
                     // Everything asked for meanwhile: of each page, only the newest text is written.

@@ -4,18 +4,18 @@ title: Bienvenue
 
 # Bienvenue
 
-![Le koala de NoteCraft, en train d'écrire](assets/banner-fr.png)
+![Le koala de ErgoNote, en train d'écrire](assets/banner-fr.png)
 
 *Des notes en fichiers simples, dans des dossiers simples.*
 
-NoteCraft garde les notes comme vous gardez vos fichiers : un carnet est un dossier, une
+ErgoNote garde les notes comme vous gardez vos fichiers : un carnet est un dossier, une
 section est un dossier, une page est un dossier avec un fichier et ses images dedans. Rien
 n'est enfermé dans une base de données, donc n'importe quel dossier que votre outil de
 synchronisation surveille déjà devient un carnet synchronisé, et une sauvegarde est une copie.
 
 ## Ce que vous pouvez faire ici
 
-Chaque page de cette section montre une partie de NoteCraft, sur la page elle-même :
+Chaque page de cette section montre une partie de ErgoNote, sur la page elle-même :
 
 - [Écrire une page](../write-a-page/) : titres, listes, gras, liens, équations, touches.
 - [Étiqueter une ligne](../tag-a-line/) : cases à cocher et autres marques.

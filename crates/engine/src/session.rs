@@ -1,7 +1,7 @@
 use crate::commands::{self, Output, Params};
 use crate::error::EngineError;
-use notecraft_store::tree::{self, Node};
-use notecraft_store::{Settings, StoreError};
+use ergonote_store::tree::{self, Node};
+use ergonote_store::{Settings, StoreError};
 use std::panic::{AssertUnwindSafe, catch_unwind};
 use std::path::{Path, PathBuf};
 
@@ -29,10 +29,10 @@ impl Session {
     pub fn new(root: &Path, settings: Settings) -> Result<Session, EngineError> {
         // The person's own tags are part of how every page is read (issue #259).
         if let Some(tags) = settings.custom_tags() {
-            notecraft_model::tag::set_custom(&tags);
+            ergonote_model::tag::set_custom(&tags);
         }
-        notecraft_store::vfs::create_dir_all(root).map_err(|e| StoreError::io("create", root, e))?;
-        let root = notecraft_store::vfs::canonicalize(root).map_err(|e| StoreError::io("open", root, e))?;
+        ergonote_store::vfs::create_dir_all(root).map_err(|e| StoreError::io("create", root, e))?;
+        let root = ergonote_store::vfs::canonicalize(root).map_err(|e| StoreError::io("open", root, e))?;
         let extra =
             settings.get(OPEN_KEY).map(|v| v.split(SEP).map(str::trim).filter(|p| !p.is_empty()).map(PathBuf::from).collect()).unwrap_or_default();
         let closed =
@@ -53,14 +53,14 @@ impl Session {
 
     pub fn refresh(&mut self) {
         self.tree = tree::load_notebooks(&self.root);
-        self.closed.retain(|p| notecraft_store::vfs::is_dir(p));
+        self.closed.retain(|p| ergonote_store::vfs::is_dir(p));
         self.tree.retain(|n| !self.closed.contains(&n.path));
         // The notebooks opened from elsewhere, in the order they were opened, after the
         // ones in the notebooks folder. A folder that has gone is quietly left out.
-        self.extra.retain(|p| notecraft_store::vfs::is_dir(p));
+        self.extra.retain(|p| ergonote_store::vfs::is_dir(p));
         for path in &self.extra {
             if let Some(node) = tree::load_tree(path)
-                && node.info.kind == notecraft_store::NodeKind::Notebook
+                && node.info.kind == ergonote_store::NodeKind::Notebook
                 && !self.tree.iter().any(|n| n.path == node.path)
             {
                 self.tree.push(node);
@@ -76,13 +76,13 @@ impl Session {
     /// Opens a notebook that lives outside the notebooks folder, keeping everything that is
     /// already open. Opening one that is already there changes nothing.
     pub fn open_notebook(&mut self, path: &Path) -> Result<PathBuf, EngineError> {
-        let path = notecraft_store::vfs::canonicalize(path).map_err(|_| StoreError::NotFound(path.display().to_string()))?;
+        let path = ergonote_store::vfs::canonicalize(path).map_err(|_| StoreError::NotFound(path.display().to_string()))?;
         if tree::read_node(&path).is_none() {
             let title = tree::folder_name(&path);
-            notecraft_store::ops::initialize_notebook(&path, &title, None, &self.settings)?;
+            ergonote_store::ops::initialize_notebook(&path, &title, None, &self.settings)?;
         }
         let info = tree::read_node(&path).ok_or_else(|| EngineError::BadParam(format!("{} is not a notebook", path.display())))?;
-        if info.kind != notecraft_store::NodeKind::Notebook {
+        if info.kind != ergonote_store::NodeKind::Notebook {
             return Err(EngineError::BadParam(format!("{} is a {}, not a notebook", path.display(), info.kind.label().to_lowercase())));
         }
         if !path.starts_with(&self.root) && !self.extra.contains(&path) {
@@ -97,9 +97,9 @@ impl Session {
 
     /// Puts a notebook away again. Nothing is deleted.
     pub fn close_notebook(&mut self, path: &Path) -> bool {
-        let canon = notecraft_store::vfs::canonicalize(path).unwrap_or_else(|_| path.to_path_buf());
+        let canon = ergonote_store::vfs::canonicalize(path).unwrap_or_else(|_| path.to_path_buf());
         if canon.starts_with(&self.root) {
-            if self.closed.contains(&canon) || !tree::read_node(&canon).is_some_and(|n| n.kind == notecraft_store::NodeKind::Notebook) {
+            if self.closed.contains(&canon) || !tree::read_node(&canon).is_some_and(|n| n.kind == ergonote_store::NodeKind::Notebook) {
                 return false;
             }
             self.closed.push(canon);
@@ -134,8 +134,8 @@ impl Session {
     pub fn page_to_show(&mut self, path: &str) -> Result<PathBuf, EngineError> {
         let p = Path::new(path);
         let joined = if p.is_absolute() { p.to_path_buf() } else { self.root.join(p) };
-        let canon = notecraft_store::vfs::canonicalize(&joined).map_err(|_| StoreError::NotFound(path.to_string()))?;
-        let notebook = canon.ancestors().find(|a| tree::read_node(a).is_some_and(|n| n.kind == notecraft_store::NodeKind::Notebook));
+        let canon = ergonote_store::vfs::canonicalize(&joined).map_err(|_| StoreError::NotFound(path.to_string()))?;
+        let notebook = canon.ancestors().find(|a| tree::read_node(a).is_some_and(|n| n.kind == ergonote_store::NodeKind::Notebook));
         if let Some(notebook) = notebook.map(Path::to_path_buf) {
             let known = notebook.starts_with(&self.root) || self.extra.contains(&notebook);
             if !known || self.closed.contains(&notebook) {
@@ -152,7 +152,7 @@ impl Session {
     pub fn resolve(&self, path: &str) -> Result<PathBuf, EngineError> {
         let p = Path::new(path);
         let joined = if p.is_absolute() { p.to_path_buf() } else { self.root.join(p) };
-        let canon = notecraft_store::vfs::canonicalize(&joined).map_err(|_| StoreError::NotFound(path.to_string()))?;
+        let canon = ergonote_store::vfs::canonicalize(&joined).map_err(|_| StoreError::NotFound(path.to_string()))?;
         // Inside the notebooks folder, or inside a notebook opened from somewhere else.
         if !canon.starts_with(&self.root) && !self.extra.iter().any(|n| canon.starts_with(n)) {
             return Err(EngineError::BadParam("that path is outside the notebooks folder".into()));
@@ -174,7 +174,7 @@ impl Session {
     /// Returns the relative link, `assets/<name>`.
     pub fn attach_bytes(&mut self, page: &str, name: &str, bytes: &[u8]) -> Result<String, EngineError> {
         let dir = self.resolve(page)?;
-        guarded(|| notecraft_store::assets::attach_bytes(&dir, name, bytes).map_err(EngineError::from))?
+        guarded(|| ergonote_store::assets::attach_bytes(&dir, name, bytes).map_err(EngineError::from))?
     }
 }
 
@@ -192,7 +192,7 @@ pub(crate) fn guarded<T>(f: impl FnOnce() -> T) -> Result<T, EngineError> {
 
 /// The node itself if it is a page, else the first page below it in tree order.
 fn first_page(n: &Node) -> Option<PathBuf> {
-    if n.info.kind == notecraft_store::NodeKind::Page {
+    if n.info.kind == ergonote_store::NodeKind::Page {
         return Some(n.path.clone());
     }
     n.children.iter().find_map(first_page)

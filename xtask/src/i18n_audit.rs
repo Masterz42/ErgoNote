@@ -497,7 +497,7 @@ fn validate_catalogs(catalogs: &Catalogs) -> Vec<String> {
 
 fn collect_rust_files(root: &Path) -> Result<Vec<PathBuf>, String> {
     let mut files = Vec::new();
-    for relative in ["crates/ui-egui/src", "apps/notecraft/src"] {
+    for relative in ["crates/ui-egui/src", "apps/ergonote/src"] {
         let directory = root.join(relative);
         if directory.is_dir() {
             super::files_under(root, &directory, &mut files)?;

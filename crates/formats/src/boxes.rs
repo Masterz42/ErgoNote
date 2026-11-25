@@ -1,6 +1,6 @@
 //! Boxes in the page's own text: each container is an element in the body.
 //!
-//! A page is a sheet of boxes ([`notecraft_model::Container`]): a place, a width, and the blocks
+//! A page is a sheet of boxes ([`ergonote_model::Container`]): a place, a width, and the blocks
 //! each one holds. The blocks stay in reading order, and the boxes are written around them as
 //! elements, so the page's text says what the window shows, and any other program that opens
 //! the file can see the structure:
@@ -20,7 +20,7 @@
 //! ```
 //!
 //! This is how OneNote's own HTML export lays a page out too: one positioned `div` per outline.
-//! The `data-` attributes are what NoteCraft reads; the `style` is for a browser, so a page opens
+//! The `data-` attributes are what ErgoNote reads; the `style` is for a browser, so a page opens
 //! looking like the window. In Markdown the blank lines after the opening tag and before the
 //! closing one keep the inside ordinary Markdown.
 //!
@@ -29,7 +29,7 @@
 
 use crate::markdown::{self, Block, Span};
 use crate::{html, render};
-use notecraft_model::{Container, PageFormat};
+use ergonote_model::{Container, PageFormat};
 
 /// The class a box's element carries.
 pub const CLASS: &str = "nc-box";
@@ -444,7 +444,7 @@ mod tests {
         let html = "<div class=\"nc-box\" data-x=\"abc\" data-width=\"5\"><p>x</p></div>";
         let boxes = read(PageFormat::Html, html).1.unwrap_or_default();
         assert_eq!((boxes[0].x, boxes[0].y), (0.0, 0.0), "garbage is zero");
-        assert_eq!(boxes[0].width, notecraft_model::container::MIN_WIDTH, "a box cannot be narrower than the floor");
+        assert_eq!(boxes[0].width, ergonote_model::container::MIN_WIDTH, "a box cannot be narrower than the floor");
     }
 
     #[test]

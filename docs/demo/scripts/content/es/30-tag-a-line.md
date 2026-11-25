@@ -26,7 +26,7 @@ Una línea de tarea es un elemento de lista de tareas, que cualquier lector de M
 
 #remember La referencia de la reserva está en el archivo adjunto.
 
-NoteCraft dibuja la marca en lugar de la palabra, pero la palabra es lo que hay en el archivo,
+ErgoNote dibuja la marca en lugar de la palabra, pero la palabra es lo que hay en el archivo,
 así que tus notas siguen legibles en cualquier editor y se pueden buscar desde la terminal. Una
 palabra que solo parece una etiqueta, como #ideas sin espacio detrás, se deja en paz.
 

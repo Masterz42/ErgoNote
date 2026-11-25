@@ -1,17 +1,17 @@
 [package]
-name = "notecraft-engine"
+name = "ergonote-engine"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 publish.workspace = true
-description = "NoteCraft engine: the session and the command registry. Every user-visible action is a command"
+description = "ErgoNote engine: the session and the command registry. Every user-visible action is a command"
 
 [lints]
 workspace = true
 
 [dependencies]
-notecraft-model = { workspace = true }
-notecraft-formats = { workspace = true }
-notecraft-store = { workspace = true }
+ergonote-model = { workspace = true }
+ergonote-formats = { workspace = true }
+ergonote-store = { workspace = true }
 serde_json = { workspace = true }

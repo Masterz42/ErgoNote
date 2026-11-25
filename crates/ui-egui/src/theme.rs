@@ -61,7 +61,7 @@ impl ModePref {
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum Accent {
-    /// The NoteCraft light blue on the soft blue surfaces (owner decision, 2026-11-20):
+    /// The ErgoNote light blue on the soft blue surfaces (owner decision, 2026-11-20):
     /// the old default purple was too close to OneNote.
     Default,
     Red,
@@ -250,34 +250,34 @@ pub fn mix(a: Color32, b: Color32, t: f32) -> Color32 {
 }
 
 /// Foreground ink colour for rich text runs (`<span style="color: ...">`).
-pub fn text_swatch_color(color: notecraft_model::NodeColor, dark: bool) -> Color32 {
+pub fn text_swatch_color(color: ergonote_model::NodeColor, dark: bool) -> Color32 {
     let (r, g, b) = color.rgb(dark);
     Color32::from_rgb(r, g, b)
 }
 
 /// Readable highlighter background colour for rich text runs (`<span style="background-color: ...">`).
-pub fn highlight_bg(color: notecraft_model::NodeColor, dark: bool) -> Color32 {
+pub fn highlight_bg(color: ergonote_model::NodeColor, dark: bool) -> Color32 {
     if dark {
         let (r, g, b) = color.rgb(false);
         Color32::from_rgba_unmultiplied(r, g, b, 115)
     } else {
         let (r, g, b) = match color {
-            notecraft_model::NodeColor::Red => (0xFF, 0xC8, 0xC8),
-            notecraft_model::NodeColor::Coral => (0xFF, 0xD2, 0xCD),
-            notecraft_model::NodeColor::Orange => (0xFF, 0xD8, 0xA8),
-            notecraft_model::NodeColor::Amber => (0xFE, 0xE6, 0x99),
-            notecraft_model::NodeColor::Yellow => (0xFF, 0xF3, 0x7A),
-            notecraft_model::NodeColor::Lime => (0xDC, 0xFA, 0xA8),
-            notecraft_model::NodeColor::Green => (0xB7, 0xF5, 0xC4),
-            notecraft_model::NodeColor::Teal => (0xB8, 0xF0, 0xEE),
-            notecraft_model::NodeColor::Cyan => (0xB9, 0xF2, 0xFB),
-            notecraft_model::NodeColor::Blue => (0xBA, 0xE2, 0xFF),
-            notecraft_model::NodeColor::Navy => (0xC7, 0xD4, 0xFF),
-            notecraft_model::NodeColor::Purple => (0xE2, 0xCC, 0xFF),
-            notecraft_model::NodeColor::Lavender => (0xEB, 0xE2, 0xFF),
-            notecraft_model::NodeColor::Magenta => (0xFF, 0xC6, 0xE4),
-            notecraft_model::NodeColor::Pink => (0xFF, 0xD1, 0xE8),
-            notecraft_model::NodeColor::Gray => (0xE5, 0xE7, 0xEB),
+            ergonote_model::NodeColor::Red => (0xFF, 0xC8, 0xC8),
+            ergonote_model::NodeColor::Coral => (0xFF, 0xD2, 0xCD),
+            ergonote_model::NodeColor::Orange => (0xFF, 0xD8, 0xA8),
+            ergonote_model::NodeColor::Amber => (0xFE, 0xE6, 0x99),
+            ergonote_model::NodeColor::Yellow => (0xFF, 0xF3, 0x7A),
+            ergonote_model::NodeColor::Lime => (0xDC, 0xFA, 0xA8),
+            ergonote_model::NodeColor::Green => (0xB7, 0xF5, 0xC4),
+            ergonote_model::NodeColor::Teal => (0xB8, 0xF0, 0xEE),
+            ergonote_model::NodeColor::Cyan => (0xB9, 0xF2, 0xFB),
+            ergonote_model::NodeColor::Blue => (0xBA, 0xE2, 0xFF),
+            ergonote_model::NodeColor::Navy => (0xC7, 0xD4, 0xFF),
+            ergonote_model::NodeColor::Purple => (0xE2, 0xCC, 0xFF),
+            ergonote_model::NodeColor::Lavender => (0xEB, 0xE2, 0xFF),
+            ergonote_model::NodeColor::Magenta => (0xFF, 0xC6, 0xE4),
+            ergonote_model::NodeColor::Pink => (0xFF, 0xD1, 0xE8),
+            ergonote_model::NodeColor::Gray => (0xE5, 0xE7, 0xEB),
         };
         Color32::from_rgb(r, g, b)
     }
@@ -324,7 +324,7 @@ pub fn readable_on(fg: Color32, bg: Color32, min: f32, dark: bool) -> Color32 {
 /// faint and stronger lines as the theme's, `(rule, strong)`, leaning towards the colour
 /// instead of the accent, so they stay quiet behind the words in every theme. `None` is the
 /// theme's own lines.
-pub fn rule_lines_in(t: &Tokens, colour: Option<notecraft_model::NodeColor>) -> (Color32, Color32) {
+pub fn rule_lines_in(t: &Tokens, colour: Option<ergonote_model::NodeColor>) -> (Color32, Color32) {
     let Some(colour) = colour else { return (t.rule_line, t.rule_line_strong) };
     let (r, g, b) = colour.rgb(t.editor.r() < 128);
     let towards = Color32::from_rgb(r, g, b);
@@ -578,7 +578,7 @@ mod tests {
         for theme in Theme::all() {
             let t = theme.tokens();
             assert_eq!(rule_lines_in(&t, None), (t.rule_line, t.rule_line_strong));
-            for c in notecraft_model::NodeColor::ALL {
+            for c in ergonote_model::NodeColor::ALL {
                 let (line, strong) = rule_lines_in(&t, Some(c));
                 let name = format!("{} {c:?}", theme.label());
                 for (what, got, min) in [("line", line, 1.2), ("strong line", strong, 1.7)] {

@@ -1,11 +1,11 @@
-# Deploy website/ (notecraft.cloud) to Azure Static Web Apps.
+# Deploy website/ (ergonote.cloud) to Azure Static Web Apps.
 #
 # The demo (website/demo/, gitignored — see .gitignore) is built FROM SOURCE in this workflow, by this
 # repo, with no external build service. Earlier versions of this file fetched a pre-built wasm from
 # daijro/openplayground's own pipeline instead; that worked but meant every deploy depended on their build
 # having already caught up to the pushed commit (it visibly hadn't, the first few times this ran). Fully
 # self-sufficient now: the "Build the demo" step below applies .github/web-build/web.diff (new files:
-# apps/notecraft-web, crates/model/src/playground.rs, crates/ui-egui/src/playground_clipboard.rs) and
+# apps/ergonote-web, crates/model/src/playground.rs, crates/ui-egui/src/playground_clipboard.rs) and
 # .github/web-build/patches.yaml (43 small source edits) to THIS checkout, then builds with trunk + wasm-opt
 # itself. That recipe is adapted from daijro/openplayground's patches/onenote.yaml (SPDX MIT OR Apache-2.0,
 # same as this repo) — see the website's footer for the credit, and .github/web-build/patches.yaml's own
@@ -38,7 +38,7 @@ on:
         type: string
         default: ""
       artifact-name:
-        description: When set, also upload the built web app as notecraft-web-<version>.zip under this artifact name.
+        description: When set, also upload the built web app as ergonote-web-<version>.zip under this artifact name.
         required: false
         type: string
         default: ""
@@ -98,12 +98,12 @@ jobs:
           python3 .github/web-build/apply-web-diff.py . .github/web-build/web.diff
           python3 .github/web-build/apply-web-patches.py . .github/web-build/patches.yaml
           # The tab-close policy is platform-neutral and tested with real files on the host.
-          cargo test -p notecraft-web
+          cargo test -p ergonote-web
           # Wasm SIMD: off by default for this target: egui's CPU rendering is noticeably faster with it
           # (this is the same rustflag daijro/openplayground's build.mjs sets), every current browser has it.
           mkdir -p .cargo
           printf '[target.wasm32-unknown-unknown]\nrustflags = ["-Ctarget-feature=+simd128"]\n' >> .cargo/config.toml
-          cd apps/notecraft-web
+          cd apps/ergonote-web
           trunk build --release --dist "$GITHUB_WORKSPACE/website/demo" --public-url ./
           cd "$GITHUB_WORKSPACE"
           for f in website/demo/*.wasm; do
@@ -119,39 +119,39 @@ jobs:
 
       - name: Build and test both User Assistance notebook formats
         env:
-          NOTECRAFT_VERSION: ${{ steps.version.outputs.value }}
+          ERGONOTE_VERSION: ${{ steps.version.outputs.value }}
         run: |
           python3 .github/web-build/test_bundle_demo.py
           python3 .github/web-build/bundle_demo.py \
             docs/demo/DemoNotebook website/demo/welcome-notebook.zip \
-            --version "$NOTECRAFT_VERSION"
+            --version "$ERGONOTE_VERSION"
 
       - name: Verify built demo embeds the workspace version
         env:
-          NOTECRAFT_VERSION: ${{ steps.version.outputs.value }}
+          ERGONOTE_VERSION: ${{ steps.version.outputs.value }}
         run: |
           python3 - <<'PY'
           import os
           from pathlib import Path
           import sys
 
-          version = os.environ["NOTECRAFT_VERSION"].encode()
+          version = os.environ["ERGONOTE_VERSION"].encode()
           wasm_files = list(Path("website/demo").glob("*.wasm"))
           if not wasm_files:
               sys.exit("No WebAssembly file was produced")
           if not any(version in wasm.read_bytes() for wasm in wasm_files):
               sys.exit(f"Built web demo does not embed workspace version {version.decode()}")
-          print(f"Built demo embeds NoteCraft {version.decode()}")
+          print(f"Built demo embeds ErgoNote {version.decode()}")
           PY
 
       - name: Zip the web app for the release
         if: inputs.artifact-name != ''
         env:
-          NOTECRAFT_VERSION: ${{ steps.version.outputs.value }}
+          ERGONOTE_VERSION: ${{ steps.version.outputs.value }}
         run: |
           set -eu
           mkdir -p "$RUNNER_TEMP/web"
-          (cd website/demo && zip -qr "$RUNNER_TEMP/web/notecraft-web-$NOTECRAFT_VERSION.zip" .)
+          (cd website/demo && zip -qr "$RUNNER_TEMP/web/ergonote-web-$ERGONOTE_VERSION.zip" .)
           ls -l "$RUNNER_TEMP/web"
 
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
@@ -174,7 +174,7 @@ jobs:
       - name: Verify deployed production demo version
         if: inputs.deploy
         env:
-          NOTECRAFT_VERSION: ${{ steps.version.outputs.value }}
+          ERGONOTE_VERSION: ${{ steps.version.outputs.value }}
           VERIFY_QUERY: ${{ github.sha }}
         run: |
           python3 - <<'PY'
@@ -188,8 +188,8 @@ jobs:
           from urllib.parse import urljoin
           from urllib.request import urlopen
 
-          base = "https://notecraft.cloud/demo/"
-          version = os.environ["NOTECRAFT_VERSION"].encode()
+          base = "https://ergonote.cloud/demo/"
+          version = os.environ["ERGONOTE_VERSION"].encode()
           query = "?release-check=" + os.environ["VERIFY_QUERY"]
           last_error = "no attempt made"
           for attempt in range(1, 13):
@@ -203,7 +203,7 @@ jobs:
                   with urlopen(wasm_url, timeout=60) as response:
                       wasm = response.read()
                   if version not in wasm:
-                      last_error = f"live WASM does not contain NoteCraft {version.decode()}"
+                      last_error = f"live WASM does not contain ErgoNote {version.decode()}"
                       raise RuntimeError(last_error)
                   with urlopen(base + "welcome-notebook.zip" + query, timeout=60) as response:
                       archive_bytes = response.read()
@@ -211,9 +211,9 @@ jobs:
                       html = notebook.read("html/00-start/welcome/index.html").decode("utf-8")
                       cmgfm = notebook.read("cmgfm/00-start/welcome/index.md").decode("utf-8")
                       names = notebook.namelist()
-                  title = f"Welcome to NoteCraft (Ver {version.decode()})"
+                  title = f"Welcome to ErgoNote (Ver {version.decode()})"
                   if title not in html or title not in cmgfm:
-                      last_error = f"live Welcome notebook formats do not match NoteCraft {version.decode()}"
+                      last_error = f"live Welcome notebook formats do not match ErgoNote {version.decode()}"
                       raise RuntimeError(last_error)
                   if not all(name in names for name in (
                       "html/_node.toml", "cmgfm/_node.toml",
@@ -221,7 +221,7 @@ jobs:
                   )):
                       last_error = "live Welcome notebook must contain both generated formats"
                       raise RuntimeError(last_error)
-                  print(f"Live demo at {wasm_url} and both Welcome notebook formats embed NoteCraft {version.decode()}")
+                  print(f"Live demo at {wasm_url} and both Welcome notebook formats embed ErgoNote {version.decode()}")
                   sys.exit(0)
               except (URLError, TimeoutError, RuntimeError, zipfile.BadZipFile, KeyError, UnicodeDecodeError) as error:
                   last_error = str(error)

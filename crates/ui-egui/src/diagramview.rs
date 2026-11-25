@@ -1,6 +1,6 @@
 //! Shows a Mermaid diagram in the window.
 //!
-//! The drawing is made by `notecraft-diagram` as an SVG picture, in the page's colours, and
+//! The drawing is made by `ergonote-diagram` as an SVG picture, in the page's colours, and
 //! shown through egui's SVG loader. Native builds draw on a thread of their own. A browser's
 //! single-threaded WebAssembly build draws smaller, bounded diagrams in the current frame. The
 //! result is kept by source and colours, so an unchanged diagram is not drawn again, and a theme
@@ -13,7 +13,7 @@ use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 use egui::{Color32, Ui, vec2};
-use notecraft_diagram::{Palette, draw};
+use ergonote_diagram::{Palette, draw};
 // std's own Instant panics on wasm32-unknown-unknown, which has no clock; web_time is the
 // same type everywhere else and performance.now()/Date.now() there.
 #[cfg(any(not(target_arch = "wasm32"), test))]
@@ -75,14 +75,14 @@ fn key_of(source: &str, palette: &Palette) -> u64 {
 }
 
 fn cache(ctx: &egui::Context) -> Cache {
-    let id = egui::Id::new("notecraft-diagram-cache");
+    let id = egui::Id::new("ergonote-diagram-cache");
     ctx.data_mut(|d| d.get_temp_mut_or_insert_with::<Cache>(id, || Arc::new(Mutex::new(HashMap::new()))).clone())
 }
 
 fn render_slot(source: &str, palette: &Palette) -> Slot {
     match draw(source, palette) {
         Ok(svg) => {
-            let (w, h) = notecraft_diagram::size(&svg).unwrap_or((1.0, 1.0));
+            let (w, h) = ergonote_diagram::size(&svg).unwrap_or((1.0, 1.0));
             Slot::Ready(Arc::from(svg.into_bytes()), w, h)
         }
         Err(why) => Slot::Failed(why),
@@ -187,7 +187,7 @@ pub fn show_zoomed(ui: &mut Ui, source: &str, t: &Tokens, zoom: f32) -> Shown {
                 // graphics card can hold (a window that asks for that panics). The size is given
                 // outright, so the loader never works one out for itself.
                 let (ppp, side) = (ui.ctx().pixels_per_point(), ui.ctx().input(|i| i.max_texture_side) as f32);
-                let scale = notecraft_diagram::fit(w * zoom, h * zoom, ui.available_width(), side, ppp);
+                let scale = ergonote_diagram::fit(w * zoom, h * zoom, ui.available_width(), side, ppp);
                 ui.add(egui::Image::from_bytes(uri, egui::load::Bytes::Shared(bytes)).fit_to_exact_size(vec2(w * zoom * scale, h * zoom * scale)));
             }
         }

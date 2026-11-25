@@ -16,6 +16,7 @@ pub(crate) enum BridgeEvent {
     FilePicked(Option<PathBuf>),
     VoiceDictated(String),
     ReleaseJson(String),
+    TtsDone,
     ImeParagraph { sync_gen: i64, text: String, sel_start_utf16: usize, sel_end_utf16: usize },
     ImeDelta { delete_before: usize, insert: String },
     ImeEnter,
@@ -87,6 +88,27 @@ pub(crate) fn check_for_updates(app: &AndroidApp) {
     });
 }
 
+pub(crate) fn speak_tts(app: &AndroidApp, text: &str, locale: &str, rate: f32) {
+    with_activity(app, "speakTts", |env, activity| {
+        let jtext = JString::from_str(env, text)?;
+        let jlocale = JString::from_str(env, locale)?;
+        env.call_method(
+            activity,
+            jni_str!("speakTts"),
+            jni_sig!("(Ljava/lang/String;Ljava/lang/String;F)V"),
+            &[JValue::Object(&jtext), JValue::Object(&jlocale), JValue::Float(rate)],
+        )?;
+        Ok(())
+    });
+}
+
+pub(crate) fn stop_tts(app: &AndroidApp) {
+    with_activity(app, "stopTts", |env, activity| {
+        env.call_method(activity, jni_str!("stopTts"), jni_sig!("()V"), &[])?;
+        Ok(())
+    });
+}
+
 pub(crate) fn sync_ime_state(
     app: &AndroidApp,
     sync_gen: i64,
@@ -118,7 +140,7 @@ pub(crate) fn sync_ime_state(
 }
 
 #[unsafe(no_mangle)]
-pub extern "system" fn Java_com_alientechsoftware_notecraft_ErgoNoteActivity_nativeOnFilePicked<'caller>(
+pub extern "system" fn Java_com_ergonote_app_ErgoNoteActivity_nativeOnFilePicked<'caller>(
     mut unowned_env: EnvUnowned<'caller>,
     _class: JClass<'caller>,
     path: JString<'caller>,
@@ -133,7 +155,7 @@ pub extern "system" fn Java_com_alientechsoftware_notecraft_ErgoNoteActivity_nat
 }
 
 #[unsafe(no_mangle)]
-pub extern "system" fn Java_com_alientechsoftware_notecraft_ErgoNoteActivity_nativeOnFilePickCancelled<'caller>(
+pub extern "system" fn Java_com_ergonote_app_ErgoNoteActivity_nativeOnFilePickCancelled<'caller>(
     mut unowned_env: EnvUnowned<'caller>,
     _class: JClass<'caller>,
 ) {
@@ -146,7 +168,7 @@ pub extern "system" fn Java_com_alientechsoftware_notecraft_ErgoNoteActivity_nat
 }
 
 #[unsafe(no_mangle)]
-pub extern "system" fn Java_com_alientechsoftware_notecraft_ErgoNoteActivity_nativeOnVoiceDictated<'caller>(
+pub extern "system" fn Java_com_ergonote_app_ErgoNoteActivity_nativeOnVoiceDictated<'caller>(
     mut unowned_env: EnvUnowned<'caller>,
     _class: JClass<'caller>,
     text: JString<'caller>,
@@ -161,7 +183,7 @@ pub extern "system" fn Java_com_alientechsoftware_notecraft_ErgoNoteActivity_nat
 }
 
 #[unsafe(no_mangle)]
-pub extern "system" fn Java_com_alientechsoftware_notecraft_ErgoNoteActivity_nativeOnReleaseJson<'caller>(
+pub extern "system" fn Java_com_ergonote_app_ErgoNoteActivity_nativeOnReleaseJson<'caller>(
     mut unowned_env: EnvUnowned<'caller>,
     _class: JClass<'caller>,
     json: JString<'caller>,
@@ -176,7 +198,7 @@ pub extern "system" fn Java_com_alientechsoftware_notecraft_ErgoNoteActivity_nat
 }
 
 #[unsafe(no_mangle)]
-pub extern "system" fn Java_com_alientechsoftware_notecraft_ErgoNoteActivity_nativeOnImeParagraph<'caller>(
+pub extern "system" fn Java_com_ergonote_app_ErgoNoteActivity_nativeOnImeParagraph<'caller>(
     mut unowned_env: EnvUnowned<'caller>,
     _class: JClass<'caller>,
     sync_gen: jlong,
@@ -199,7 +221,7 @@ pub extern "system" fn Java_com_alientechsoftware_notecraft_ErgoNoteActivity_nat
 }
 
 #[unsafe(no_mangle)]
-pub extern "system" fn Java_com_alientechsoftware_notecraft_ErgoNoteActivity_nativeOnImeDelta<'caller>(
+pub extern "system" fn Java_com_ergonote_app_ErgoNoteActivity_nativeOnImeDelta<'caller>(
     mut unowned_env: EnvUnowned<'caller>,
     _class: JClass<'caller>,
     delete_before: jint,
@@ -215,7 +237,7 @@ pub extern "system" fn Java_com_alientechsoftware_notecraft_ErgoNoteActivity_nat
 }
 
 #[unsafe(no_mangle)]
-pub extern "system" fn Java_com_alientechsoftware_notecraft_ErgoNoteActivity_nativeOnImeKey<'caller>(
+pub extern "system" fn Java_com_ergonote_app_ErgoNoteActivity_nativeOnImeKey<'caller>(
     mut unowned_env: EnvUnowned<'caller>,
     _class: JClass<'caller>,
     key_kind: jint,
@@ -227,6 +249,19 @@ pub extern "system" fn Java_com_alientechsoftware_notecraft_ErgoNoteActivity_nat
                 2 => push_event(BridgeEvent::ImeBackspace),
                 other => log::debug!("unknown IME key kind: {other}"),
             }
+            Ok(())
+        })
+        .resolve::<LogErrorAndDefault>();
+}
+
+#[unsafe(no_mangle)]
+pub extern "system" fn Java_com_ergonote_app_ErgoNoteActivity_nativeOnTtsDone<'caller>(
+    mut unowned_env: EnvUnowned<'caller>,
+    _class: JClass<'caller>,
+) {
+    unowned_env
+        .with_env(|_env| -> jni::errors::Result<()> {
+            push_event(BridgeEvent::TtsDone);
             Ok(())
         })
         .resolve::<LogErrorAndDefault>();

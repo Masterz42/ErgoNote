@@ -10,7 +10,7 @@ impl TempDir {
     pub fn new(label: &str) -> TempDir {
         static COUNTER: AtomicU32 = AtomicU32::new(0);
         let n = COUNTER.fetch_add(1, Ordering::Relaxed);
-        let path = std::env::temp_dir().join(format!("notecraft-test-{label}-{}-{n}", std::process::id()));
+        let path = std::env::temp_dir().join(format!("ergonote-test-{label}-{}-{n}", std::process::id()));
         let _ = std::fs::remove_dir_all(&path);
         let _ = std::fs::create_dir_all(&path);
         TempDir(path)

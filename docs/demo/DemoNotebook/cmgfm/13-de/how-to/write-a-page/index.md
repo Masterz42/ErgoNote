@@ -42,7 +42,7 @@ $$
 \int_0^1 x^2 \, dx = \tfrac{1}{3}
 $$
 
-NoteCraft zeichnet Brüche, Wurzeln, Summen, Integrale, Klammern und griechische Buchstaben
+ErgoNote zeichnet Brüche, Wurzeln, Summen, Integrale, Klammern und griechische Buchstaben
 selbst. Was es nicht kennt, bleibt als Text sichtbar, statt zu verschwinden.
 
 ## Das Menüband

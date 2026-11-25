@@ -1,11 +1,11 @@
-NoteCraft for macOS
+ErgoNote for macOS
 
 Install the app
-1. Drag NoteCraft.app to Applications.
-2. Open NoteCraft from Applications.
-3. On the first launch after installation, NoteCraft opens a short setup: a welcome page, the local
+1. Drag ErgoNote.app to Applications.
+2. Open ErgoNote from Applications.
+3. On the first launch after installation, ErgoNote opens a short setup: a welcome page, the local
 logging level, your page format, and whether to add the Welcome notebook in that format. Choosing Yes
-creates `welcome-to-notecraft` in your notebooks folder when you press Finish, then opens it. Changes
+creates `welcome-to-ergonote` in your notebooks folder when you press Finish, then opens it. Changes
 in an existing Welcome notebook will be lost. Other notebooks are unchanged. Choosing No creates
 nothing. The setup does not appear again unless you reset the preferences.
 

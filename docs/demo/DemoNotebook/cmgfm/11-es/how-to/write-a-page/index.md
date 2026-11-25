@@ -42,7 +42,7 @@ $$
 \int_0^1 x^2 \, dx = \tfrac{1}{3}
 $$
 
-NoteCraft dibuja por sí mismo fracciones, raíces, sumas, integrales, paréntesis y letras
+ErgoNote dibuja por sí mismo fracciones, raíces, sumas, integrales, paréntesis y letras
 griegas. Lo que no conoce queda visible como texto en vez de desaparecer.
 
 ## La cinta

@@ -25,6 +25,6 @@ A setting changes new pages only. The pages you already have keep their format, 
 
 ## Look at this page's source
 
-Click the `< >` button beside the page. The head of the file carries the page's identity and dates as `<meta name="notecraft:...">` tags; a Markdown page carries the same in its front matter. NoteCraft edits only what is inside `<body>`.
+Click the `< >` button beside the page. The head of the file carries the page's identity and dates as `<meta name="ergonote:...">` tags; a Markdown page carries the same in its front matter. ErgoNote edits only what is inside `<body>`.
 
 Next: [Sync and backup](../sync-and-backup/).

@@ -1,4 +1,4 @@
-//! The NoteCraft window: top bar, notebook tree, page editor with live preview.
+//! The ErgoNote window: top bar, notebook tree, page editor with live preview.
 //!
 //! Every action goes through `Session::run`, so the window, the command line and any
 //! later control channel share one code path.
@@ -19,10 +19,10 @@ use crate::ribbon;
 use crate::snippets;
 use crate::theme::{Accent, Mode, ModePref, Theme, Tokens};
 use egui::{Align2, Color32, Context, Id, Key, Modifiers, Sense, Ui, vec2};
-use notecraft_engine::{EngineError, Output, Params, Session};
-use notecraft_model::{NodeColor, NodeKind, PageFormat};
-use notecraft_store::search::Hit;
-use notecraft_store::tree::Node;
+use ergonote_engine::{EngineError, Output, Params, Session};
+use ergonote_model::{NodeColor, NodeKind, PageFormat};
+use ergonote_store::search::Hit;
+use ergonote_store::tree::Node;
 use serde_json::{Value, json};
 use std::collections::{HashSet, VecDeque};
 use std::path::{Path, PathBuf};
@@ -216,16 +216,16 @@ fn missing_attachment_icon(page: &Path, src: &str) -> Option<String> {
     // details when the attachment they belong to is present.
     if let Some((source, extension)) = name.rsplit_once('.')
         && matches!(extension.to_ascii_lowercase().as_str(), "png" | "svg")
-        && notecraft_store::vfs::is_file(&page.join("assets").join(source))
+        && ergonote_store::vfs::is_file(&page.join("assets").join(source))
     {
         return None;
     }
-    if notecraft_store::assets::media_kind(src) != notecraft_store::assets::MediaKind::Other {
+    if ergonote_store::assets::media_kind(src) != ergonote_store::assets::MediaKind::Other {
         return None;
     }
     // A missing attachment is not a missing-icon case. Do not warn about an icon
     // when the original file itself is no longer present.
-    if !notecraft_store::vfs::is_file(&page.join("assets").join(name)) {
+    if !ergonote_store::vfs::is_file(&page.join("assets").join(name)) {
         return None;
     }
     (!attachment_icon_healthy(page, name)).then(|| name.to_string())
@@ -243,19 +243,19 @@ fn attachment_icon_exists(page: &Path, name: &str) -> bool {
     {
         // Native Shell icons are PNG, but the deterministic SVG fallback is valid
         // when Shell extraction is unavailable on this Windows installation.
-        notecraft_store::vfs::is_file(&page.join("assets").join(format!("{name}.png")))
-            || notecraft_store::vfs::is_file(&page.join("assets").join(format!("{name}.svg")))
+        ergonote_store::vfs::is_file(&page.join("assets").join(format!("{name}.png")))
+            || ergonote_store::vfs::is_file(&page.join("assets").join(format!("{name}.svg")))
     }
     #[cfg(not(target_os = "windows"))]
     {
-        notecraft_store::vfs::is_file(&page.join("assets").join(format!("{name}.svg")))
-            || notecraft_store::vfs::is_file(&page.join("assets").join(format!("{name}.png")))
+        ergonote_store::vfs::is_file(&page.join("assets").join(format!("{name}.svg")))
+            || ergonote_store::vfs::is_file(&page.join("assets").join(format!("{name}.png")))
     }
 }
 
 fn attachment_icon_link(page: &Path, name: &str) -> String {
     let dir = page.join("assets");
-    if notecraft_store::vfs::is_file(&dir.join(format!("{name}.png"))) { format!("assets/{name}.png") } else { format!("assets/{name}.svg") }
+    if ergonote_store::vfs::is_file(&dir.join(format!("{name}.png"))) { format!("assets/{name}.png") } else { format!("assets/{name}.svg") }
 }
 
 fn replace_attachment_icon(format: PageFormat, snippet: &str, name: &str, icon_link: &str) -> String {
@@ -296,7 +296,7 @@ mod attachment_reference_tests {
     #[cfg(not(target_os = "windows"))]
     #[test]
     fn a_windows_png_sidecar_is_a_valid_icon_on_posix() {
-        let t = notecraft_store::testing::TempDir::new("attachment-icon");
+        let t = ergonote_store::testing::TempDir::new("attachment-icon");
         let page = t.path().join("page");
         std::fs::create_dir_all(page.join("assets")).expect("assets");
         std::fs::write(page.join("assets/brief.docx"), b"attachment").expect("attachment");
@@ -330,7 +330,7 @@ fn first_unreferenced_attachment(attachments: &[(String, u64)], source: &str) ->
 
 #[allow(dead_code)]
 fn prepare_unreferenced_attachment(page: &Path, name: &str) -> bool {
-    match notecraft_store::assets::ensure_icon(page, name) {
+    match ergonote_store::assets::ensure_icon(page, name) {
         Ok(()) => {
             log::debug!("generated icon before detached attachment warning: page={:?} attachment={name:?}", page);
             true
@@ -350,7 +350,7 @@ fn first_legacy_attachment_in_source(source: &str) -> Option<String> {
         let name = &rest[..end];
         if !name.is_empty()
             && !name.ends_with(".svg")
-            && notecraft_store::assets::media_kind(&format!("assets/{name}")) == notecraft_store::assets::MediaKind::Other
+            && ergonote_store::assets::media_kind(&format!("assets/{name}")) == ergonote_store::assets::MediaKind::Other
             && (source.contains(&format!("<a href=\"assets/{name}\">")) || source.contains(&format!("[{name}](assets/{name})")))
         {
             return Some(name.to_string());
@@ -361,7 +361,7 @@ fn first_legacy_attachment_in_source(source: &str) -> Option<String> {
 }
 
 fn shown(p: &Path) -> String {
-    notecraft_store::tree::display_path(p)
+    ergonote_store::tree::display_path(p)
 }
 
 /// The widest empty stretch Collect All leaves between things on a page, in page points.
@@ -478,7 +478,7 @@ impl RecentRange {
 fn notebook_for(path: &Path) -> Option<PathBuf> {
     let mut current = path;
     loop {
-        if notecraft_store::tree::read_node(current).is_some_and(|node| node.kind == NodeKind::Notebook) {
+        if ergonote_store::tree::read_node(current).is_some_and(|node| node.kind == NodeKind::Notebook) {
             return Some(current.to_path_buf());
         }
         current = current.parent()?;
@@ -536,13 +536,13 @@ struct TagsPane {
     scope: TagScope,
     /// Only the To Do items not yet ticked.
     unchecked: bool,
-    found: Vec<notecraft_store::tags::Tagged>,
+    found: Vec<ergonote_store::tags::Tagged>,
 }
 
 /// The Page Templates pane (issue #173): every template, by category, each one a new page in
 /// the section; and a way to keep the open page as a template of its own.
 struct TemplatesPane {
-    templates: Vec<notecraft_store::page_templates::Template>,
+    templates: Vec<ergonote_store::page_templates::Template>,
     /// What the open page will be called as a template.
     name: String,
 }
@@ -551,7 +551,7 @@ struct TemplatesPane {
 fn section_for(path: &Path) -> Option<PathBuf> {
     let mut current = path.parent()?;
     loop {
-        match notecraft_store::tree::read_node(current).map(|node| node.kind) {
+        match ergonote_store::tree::read_node(current).map(|node| node.kind) {
             Some(NodeKind::Section) => return Some(current.to_path_buf()),
             Some(NodeKind::Page) => {}
             _ => return None,
@@ -564,7 +564,7 @@ fn section_for(path: &Path) -> Option<PathBuf> {
 /// selection it was picked up from is not painted with itself), and whether it keeps painting.
 #[derive(Clone, Debug)]
 struct FormatPaint {
-    style: notecraft_formats::Span,
+    style: ergonote_formats::Span,
     from: (usize, (usize, usize)),
     sticky: bool,
 }
@@ -593,7 +593,7 @@ struct PendingFormat {
     underline_color: Option<String>,
     text_color: Option<String>,
     highlight_color: Option<String>,
-    script: Option<notecraft_formats::markdown::Script>,
+    script: Option<ergonote_formats::markdown::Script>,
 }
 
 struct Editor {
@@ -610,7 +610,7 @@ struct Editor {
     /// The text an autosave is writing in the background, until it is written.
     saving: Option<String>,
     dirty_since: Option<Instant>,
-    blocks: Vec<notecraft_formats::Block>,
+    blocks: Vec<ergonote_formats::Block>,
     last_saved: Option<String>,
     attachments: Vec<(String, u64)>,
     /// Where the caret is in the page, and the text of that block while it is written in.
@@ -623,25 +623,25 @@ struct Editor {
     writable: bool,
     /// Which way the whole page reads, if the writer said so. A line with no letters of its
     /// own follows it.
-    page_dir: Option<notecraft_model::Dir>,
+    page_dir: Option<ergonote_model::Dir>,
     /// The boxes the page's blocks are arranged in, as the page's own file keeps them.
-    boxes: Vec<notecraft_model::Container>,
+    boxes: Vec<ergonote_model::Container>,
     /// How wide the columns of this page's tables are drawn, from the same place.
-    columns: notecraft_model::tablecols::Widths,
+    columns: ergonote_model::tablecols::Widths,
     /// Which paragraphs of this page are stretched to fill the column, from the same place.
-    /// The words themselves are never touched; see `notecraft_model::justify`.
-    justified: notecraft_model::justify::Justified,
+    /// The words themselves are never touched; see `ergonote_model::justify`.
+    justified: ergonote_model::justify::Justified,
     /// A selection dragged across more than one block. A caret belongs to one block, so a
     /// selection that leaves it is kept here; `None` is the ordinary case.
     across: Option<pageedit::Across>,
     /// The paper this page is drawn on and the colour behind it, as the page's own file
     /// keeps them. `None` means the page says nothing and the window's own choice stands.
     paper: Option<ribbon::RuleLines>,
-    colour: Option<notecraft_model::NodeColor>,
+    colour: Option<ergonote_model::NodeColor>,
     /// The colour of this page's rule and grid lines, when it was given one (issue #288).
-    rule_colour: Option<notecraft_model::NodeColor>,
+    rule_colour: Option<ergonote_model::NodeColor>,
     /// The sheet the page is written for; `None` is Auto (issue #269).
-    paper_size: Option<notecraft_model::paper::Paper>,
+    paper_size: Option<ergonote_model::paper::Paper>,
     /// What the page looked like before each change, so a change can be taken back.
     history: crate::history::History,
     /// The ink files in the page's folder. The folder is what decides: the page's own
@@ -672,7 +672,7 @@ impl Editor {
         if count == 0 || self.boxes.is_empty() || counted + count != self.blocks.len() {
             return;
         }
-        let owner = if at == 0 { Some(0) } else { notecraft_model::container::place(&self.boxes, at - 1).map(|(i, _)| i) };
+        let owner = if at == 0 { Some(0) } else { ergonote_model::container::place(&self.boxes, at - 1).map(|(i, _)| i) };
         if let Some(i) = owner {
             self.boxes[i].blocks += count;
         }
@@ -684,14 +684,14 @@ impl Editor {
         if counted != self.blocks.len() + 1 {
             return;
         }
-        if let Some((i, _)) = notecraft_model::container::place(&self.boxes, at) {
+        if let Some((i, _)) = ergonote_model::container::place(&self.boxes, at) {
             self.boxes[i].blocks -= 1;
         }
     }
 
     /// [`Editor::count_inserted_in_boxes`], and justified paragraphs and table widths after the
     /// new blocks move down with their blocks. Returns whether the widths and the justified
-    /// paragraphs changed, for [`NoteCraftApp::save_block_marks`].
+    /// paragraphs changed, for [`ErgoNoteApp::save_block_marks`].
     fn blocks_inserted(&mut self, at: usize, count: usize) -> (bool, bool) {
         self.count_inserted_in_boxes(at, count);
         let (mut cols, mut justified) = (false, false);
@@ -710,20 +710,20 @@ impl Editor {
         if !self.arranged || self.boxes.len() < 2 || self.boxes.iter().map(|c| c.blocks).sum::<usize>() != self.blocks.len() {
             return self.body.clone();
         }
-        let last = (0..self.boxes.len()).max_by_key(|i| notecraft_model::container::blocks_of(&self.boxes, *i).end).unwrap_or(0);
-        let range = notecraft_model::container::blocks_of(&self.boxes, last);
-        let blank = |b: &notecraft_formats::Block| crate::preview::is_blank(b) && !matches!(b, notecraft_formats::Block::Item { task: Some(_), .. });
+        let last = (0..self.boxes.len()).max_by_key(|i| ergonote_model::container::blocks_of(&self.boxes, *i).end).unwrap_or(0);
+        let range = ergonote_model::container::blocks_of(&self.boxes, last);
+        let blank = |b: &ergonote_formats::Block| crate::preview::is_blank(b) && !matches!(b, ergonote_formats::Block::Item { task: Some(_), .. });
         if range.end != self.blocks.len() || range.is_empty() || !self.blocks[range.clone()].iter().all(blank) {
             return self.body.clone();
         }
         let mut boxes = self.boxes.clone();
         boxes.remove(last);
-        notecraft_formats::boxes::write(self.format, &self.blocks[..range.start], Some(&boxes))
+        ergonote_formats::boxes::write(self.format, &self.blocks[..range.start], Some(&boxes))
     }
 
     fn rebuild_body(&mut self) {
         let arrangement = (self.arranged && !self.boxes.is_empty()).then_some(self.boxes.as_slice());
-        self.body = notecraft_formats::boxes::write(self.format, &self.blocks, arrangement);
+        self.body = ergonote_formats::boxes::write(self.format, &self.blocks, arrangement);
     }
 
     fn apply_pending_format(&mut self, before: Option<&pageedit::Caret>) -> Option<ImeRewrite> {
@@ -762,12 +762,12 @@ impl Editor {
         let wrap_start = at + lead_chars;
         let wrap_end = wrap_start + core_chars;
 
-        let mut marker = "NoteCraftPendingTextMarker".to_string();
+        let mut marker = "ErgoNotePendingTextMarker".to_string();
         while pending.family.as_ref().is_some_and(|family| family.contains(&marker)) {
             marker.push('X');
         }
         let pending_snapshot = pending.clone();
-        let span = notecraft_formats::markdown::Span {
+        let span = ergonote_formats::markdown::Span {
             text: marker.clone(),
             font_size: pending.size,
             font_family: pending.family,
@@ -781,7 +781,7 @@ impl Editor {
             script: pending.script,
             ..Default::default()
         };
-        let template = notecraft_formats::render::spans_to_markdown(&[span]);
+        let template = ergonote_formats::render::spans_to_markdown(&[span]);
         let Some((open, close)) = template.split_once(&marker) else {
             log::error!("Could not serialize pending formatting");
             return None;
@@ -905,7 +905,7 @@ fn spacing_points(text: &str) -> Result<Option<u16>, ()> {
     if text.is_empty() {
         return Ok(None);
     }
-    text.parse::<u16>().ok().filter(|v| *v <= notecraft_model::justify::MAX_POINTS).map(Some).ok_or(())
+    text.parse::<u16>().ok().filter(|v| *v <= ergonote_model::justify::MAX_POINTS).map(Some).ok_or(())
 }
 
 fn table_size(rows: &str, columns: &str) -> Option<(usize, usize)> {
@@ -1151,17 +1151,17 @@ enum Dialog {
         /// Only the notebook the open page is in, rather than every open notebook.
         this_notebook: bool,
         filter: String,
-        items: Vec<notecraft_store::recent::Edited>,
+        items: Vec<ergonote_store::recent::Edited>,
     },
     PageVersions {
         page: PathBuf,
-        versions: Vec<notecraft_store::page::Version>,
+        versions: Vec<ergonote_store::page::Version>,
         /// A saved version opened for reading, before any Restore (issue #278).
         preview: Option<Box<crate::versions::Preview>>,
     },
     RecycleBin {
         notebook: PathBuf,
-        items: Vec<notecraft_store::recycle::Recycled>,
+        items: Vec<ergonote_store::recycle::Recycled>,
     },
     PurgeRecycleItem {
         notebook: PathBuf,
@@ -1304,7 +1304,7 @@ fn utf16_to_char(text: &str, utf16_idx: usize) -> usize {
     chars
 }
 
-pub struct NoteCraftApp {
+pub struct ErgoNoteApp {
     session: Session,
     /// Writes autosaves off the window's thread (see [`crate::saver`]).
     saver: crate::saver::Saver,
@@ -1445,7 +1445,7 @@ pub struct NoteCraftApp {
     pointer: ribbon::Pointer,
     /// The tools on the rack, as the owner has arranged them, and which is in hand. Both
     /// are remembered between runs.
-    rack: Vec<notecraft_ink::rack::Nib>,
+    rack: Vec<ergonote_ink::rack::Nib>,
     nib: usize,
     /// How readily the pen answers pressure, 0 to 100. 50 leaves the readings as the pen
     /// gave them; above that a light hand lays down more ink.
@@ -1489,7 +1489,7 @@ pub struct NoteCraftApp {
     copy_choice: backstage::CopyChoice,
     /// Which pages the user has read, kept beside their settings (issue #291). Loaded the
     /// first time it is needed.
-    read_state: Option<notecraft_store::read_state::ReadState>,
+    read_state: Option<ergonote_store::read_state::ReadState>,
     /// The pages that are unread now, and when that was last worked out.
     unread: std::collections::HashSet<PathBuf>,
     unread_checked: Option<Instant>,
@@ -1535,10 +1535,10 @@ pub struct NoteCraftApp {
     android_update_check_requested: bool,
 }
 
-impl NoteCraftApp {
+impl ErgoNoteApp {
     /// Replaces the clipboard the app uses. Made at startup by the caller, so the app never
     /// reaches a platform's clipboard by itself.
-    pub fn with_clipboard(mut self, board: Box<dyn crate::clipboard::Board>) -> NoteCraftApp {
+    pub fn with_clipboard(mut self, board: Box<dyn crate::clipboard::Board>) -> ErgoNoteApp {
         self.clipboard = board;
         self
     }
@@ -1549,7 +1549,7 @@ impl NoteCraftApp {
         self.keyboard_paste_requested = true;
     }
 
-    pub fn new(session: Session) -> NoteCraftApp {
+    pub fn new(session: Session) -> ErgoNoteApp {
         // The installed fonts are read in the background, so the window opens at once.
         #[cfg(any(target_os = "linux", target_os = "windows", target_os = "macos"))]
         crate::fonts::start_catalog();
@@ -1576,7 +1576,7 @@ impl NoteCraftApp {
         let session_reading_ruler = session.settings.get("reading_ruler").map(|v| v.trim() == "true").unwrap_or(false);
         let session_word_prediction = session.settings.get("word_prediction").map(|v| v.trim() != "false").unwrap_or(true);
         // The pen rack as the owner last arranged it, and which tool was in hand.
-        let rack = notecraft_ink::rack::parse(&session.settings.get(RACK_KEY).unwrap_or_default());
+        let rack = ergonote_ink::rack::parse(&session.settings.get(RACK_KEY).unwrap_or_default());
         let nib = session.settings.get(NIB_KEY).and_then(|v| v.trim().parse::<usize>().ok()).unwrap_or(0).min(rack.len() - 1);
         let sensitivity = session.settings.get(SENSITIVITY_KEY).and_then(|v| v.trim().parse::<u8>().ok()).unwrap_or(DEFAULT_SENSITIVITY).min(100);
         let qat = quickaccess::Config::load(|k| session.settings.get(k));
@@ -1594,7 +1594,7 @@ impl NoteCraftApp {
         let wizard_level = session.settings.get("telemetry_level").unwrap_or_else(|| "debug".to_string());
         let spell_lang = crate::spellcheck::SpellLang::detect_from_os(&ui_language);
         let update_dismissed_version = session.settings.get("update_dismissed_version").map(|s| s.trim().to_owned()).filter(|s| !s.is_empty());
-        NoteCraftApp {
+        ErgoNoteApp {
             session,
             saver: crate::saver::Saver::default(),
             nav: NavHistory::default(),
@@ -1944,8 +1944,7 @@ impl NoteCraftApp {
         }
         let ed = self.editor.as_ref()?;
         let c = ed.caret.as_ref()?;
-        if c.cell.is_some() || matches!(ed.blocks.get(c.block), Some(notecraft_formats::Block::Code { .. } | notecraft_formats::Block::MathBlock(_)))
-        {
+        if c.cell.is_some() || matches!(ed.blocks.get(c.block), Some(ergonote_formats::Block::Code { .. } | ergonote_formats::Block::MathBlock(_))) {
             return None;
         }
         let (primary_char, secondary_char) = c.selection;
@@ -2836,7 +2835,7 @@ impl NoteCraftApp {
     /// Opens Move or Copy for a page, section or section group (issue #167).
     pub fn open_move_or_copy(&mut self, path: &Path) {
         let Some(info) =
-            notecraft_store::tree::read_node(path).filter(|n| matches!(n.kind, NodeKind::Page | NodeKind::Section | NodeKind::SectionGroup))
+            ergonote_store::tree::read_node(path).filter(|n| matches!(n.kind, NodeKind::Page | NodeKind::Section | NodeKind::SectionGroup))
         else {
             return;
         };
@@ -2904,17 +2903,17 @@ impl NoteCraftApp {
     }
 
     /// The user's read state, loaded from beside their settings the first time (issue #291).
-    fn read_state(&mut self) -> &mut notecraft_store::read_state::ReadState {
+    fn read_state(&mut self) -> &mut ergonote_store::read_state::ReadState {
         let file = self.session.settings.path().parent().unwrap_or(Path::new(".")).join("read-state.tsv");
-        self.read_state.get_or_insert_with(|| notecraft_store::read_state::ReadState::load(&file))
+        self.read_state.get_or_insert_with(|| ergonote_store::read_state::ReadState::load(&file))
     }
 
     /// Records the page at `dir` as read as it stands. `opened` is true when the user opened
     /// it, which also clears a mark they put on it by hand; leaving or saving a page keeps
     /// that mark.
     fn note_read(&mut self, dir: &Path, opened: bool) {
-        let Some(id) = notecraft_store::tree::read_node(dir).filter(|n| n.kind == NodeKind::Page).map(|n| n.id) else { return };
-        let stamp = notecraft_store::read_state::page_stamp(dir);
+        let Some(id) = ergonote_store::tree::read_node(dir).filter(|n| n.kind == NodeKind::Page).map(|n| n.id) else { return };
+        let stamp = ergonote_store::read_state::page_stamp(dir);
         let state = self.read_state();
         if !opened && state.is_marked_unread(&id) {
             return;
@@ -2958,7 +2957,7 @@ impl NoteCraftApp {
             if here.as_deref() == Some(dir.as_path()) && !state.is_marked_unread(&id) {
                 continue;
             }
-            if state.is_unread(&id, notecraft_store::read_state::page_stamp(&dir).as_deref()) {
+            if state.is_unread(&id, ergonote_store::read_state::page_stamp(&dir).as_deref()) {
                 unread.insert(dir);
             }
         }
@@ -2993,7 +2992,7 @@ impl NoteCraftApp {
             self.say(crate::tl_id!("ui.open_a_page_first"));
             return;
         };
-        let Some(id) = notecraft_store::tree::read_node(&dir).map(|n| n.id) else { return };
+        let Some(id) = ergonote_store::tree::read_node(&dir).map(|n| n.id) else { return };
         if self.read_state().is_marked_unread(&id) {
             self.note_read(&dir, true);
             self.say(crate::tl_id!("ui.marked_as_read"));
@@ -3009,10 +3008,10 @@ impl NoteCraftApp {
     }
     /// Every notebook that is open: those in the notebooks folder and those opened from
     /// elsewhere.
-    fn open_notebooks(&self) -> Vec<notecraft_store::tree::Node> {
-        let mut notebooks = notecraft_store::tree::load_notebooks(self.session.root());
+    fn open_notebooks(&self) -> Vec<ergonote_store::tree::Node> {
+        let mut notebooks = ergonote_store::tree::load_notebooks(self.session.root());
         for dir in self.session.opened_elsewhere() {
-            if let Some(nb) = notecraft_store::tree::load_tree(dir)
+            if let Some(nb) = ergonote_store::tree::load_tree(dir)
                 && !notebooks.iter().any(|n| n.path == nb.path)
             {
                 notebooks.push(nb);
@@ -3022,12 +3021,12 @@ impl NoteCraftApp {
     }
 
     /// The pages changed in `range`, in every open notebook or the open page's own.
-    fn recent_edits(&self, range: RecentRange, this_notebook: bool) -> Vec<notecraft_store::recent::Edited> {
+    fn recent_edits(&self, range: RecentRange, this_notebook: bool) -> Vec<ergonote_store::recent::Edited> {
         let mut notebooks = self.open_notebooks();
         if this_notebook && let Some(here) = self.editor.as_ref().and_then(|e| notebook_for(&e.dir)) {
             notebooks.retain(|n| n.path == here);
         }
-        notecraft_store::recent::edited(&notebooks, range.since(notecraft_model::time::now_secs(), notecraft_model::time::local_offset()))
+        ergonote_store::recent::edited(&notebooks, range.since(ergonote_model::time::now_secs(), ergonote_model::time::local_offset()))
     }
 
     fn show_recent_edits(&mut self, range: RecentRange, this_notebook: bool) {
@@ -3049,29 +3048,29 @@ impl NoteCraftApp {
     fn can_move_page(path: &Path, up: bool) -> bool {
         let Some(parent) = path.parent() else { return false };
         let siblings: Vec<_> =
-            notecraft_store::tree::child_dirs(parent).into_iter().filter(|sibling| notecraft_store::tree::read_node(sibling).is_some()).collect();
+            ergonote_store::tree::child_dirs(parent).into_iter().filter(|sibling| ergonote_store::tree::read_node(sibling).is_some()).collect();
         let Some(index) = siblings.iter().position(|sibling| sibling == path) else { return false };
         let adjacent = if up { index.checked_sub(1) } else { index.checked_add(1).filter(|next| *next < siblings.len()) };
         adjacent
             .and_then(|adjacent| siblings.get(adjacent))
-            .and_then(|sibling| notecraft_store::tree::read_node(sibling))
+            .and_then(|sibling| ergonote_store::tree::read_node(sibling))
             .is_some_and(|info| info.kind == NodeKind::Page)
     }
 
     fn can_make_subpage(path: &Path) -> bool {
         let Some(parent) = path.parent() else { return false };
         let siblings: Vec<_> =
-            notecraft_store::tree::child_dirs(parent).into_iter().filter(|sibling| notecraft_store::tree::read_node(sibling).is_some()).collect();
+            ergonote_store::tree::child_dirs(parent).into_iter().filter(|sibling| ergonote_store::tree::read_node(sibling).is_some()).collect();
         let Some(index) = siblings.iter().position(|sibling| sibling == path) else { return false };
         index
             .checked_sub(1)
             .and_then(|previous| siblings.get(previous))
-            .and_then(|previous| notecraft_store::tree::read_node(previous))
+            .and_then(|previous| ergonote_store::tree::read_node(previous))
             .is_some_and(|info| info.kind == NodeKind::Page)
     }
 
     fn can_promote_subpage(path: &Path) -> bool {
-        path.parent().and_then(notecraft_store::tree::read_node).is_some_and(|info| info.kind == NodeKind::Page)
+        path.parent().and_then(ergonote_store::tree::read_node).is_some_and(|info| info.kind == NodeKind::Page)
     }
 
     fn hierarchy_keys(&mut self, ctx: &Context) {
@@ -3082,7 +3081,7 @@ impl NoteCraftApp {
         if typing_elsewhere || self.dialog.is_some() || self.backstage.is_some() {
             return;
         }
-        let Some(page) = self.selected.clone().filter(|path| notecraft_store::tree::read_node(path).is_some_and(|info| info.kind == NodeKind::Page))
+        let Some(page) = self.selected.clone().filter(|path| ergonote_store::tree::read_node(path).is_some_and(|info| info.kind == NodeKind::Page))
         else {
             return;
         };
@@ -3143,8 +3142,8 @@ impl NoteCraftApp {
         }
         self.code = crate::codeview::State::default();
         if let Some(Output::Page(page)) = self.run("page.load", &params(&[("path", &path_str(dir))])) {
-            let (blocks, in_the_text) = notecraft_formats::boxes::read(page.format, &page.body);
-            let audit = notecraft_formats::boxes::span_audit(&page.body, &blocks);
+            let (blocks, in_the_text) = ergonote_formats::boxes::read(page.format, &page.body);
+            let audit = ergonote_formats::boxes::span_audit(&page.body, &blocks);
             log::debug!("page read span audit: page={:?} raw_span_tags={} styled_spans={}", dir, audit.raw_tags, audit.styled);
             // What the editor will show and edit: any block whose edit text still carries markup
             // is logged, with its index and the text, so a raw tag on screen is traceable.
@@ -3156,7 +3155,7 @@ impl NoteCraftApp {
                     log::debug!("inline edit markers in caret text: page={:?} block={index} shown={shown:?}", dir);
                 }
             }
-            let older = notecraft_store::page::containers(dir).unwrap_or_default();
+            let older = ergonote_store::page::containers(dir).unwrap_or_default();
             let arranged = in_the_text.is_some() || !older.is_empty();
             let mut boxes = in_the_text.unwrap_or(older);
             log::debug!(
@@ -3171,7 +3170,7 @@ impl NoteCraftApp {
             // page whose last box was deliberately deleted remains boxless so
             // its open paper can create a new box on the next click.
             if blocks.is_empty() && !arranged && boxes.is_empty() {
-                boxes.push(notecraft_model::Container::new(0.0, 0.0, 360.0, 0));
+                boxes.push(ergonote_model::Container::new(0.0, 0.0, 360.0, 0));
                 log::debug!(
                     "default page block created: page={:?} block_count={} container=(x=0,y=0,width=360,blocks=0) empty_block_min_height=22",
                     dir,
@@ -3182,10 +3181,10 @@ impl NoteCraftApp {
             // this far and no further.
             let first = (page.body.clone(), blocks.clone(), boxes.clone());
             // The paper this page is drawn on and the colour behind it are the page's own.
-            let appearance = notecraft_store::page::appearance(dir)
-                .map(|(p, c)| (p.and_then(|p| ribbon::RuleLines::parse(&p)), c.and_then(|c| notecraft_model::NodeColor::parse(&c))))
+            let appearance = ergonote_store::page::appearance(dir)
+                .map(|(p, c)| (p.and_then(|p| ribbon::RuleLines::parse(&p)), c.and_then(|c| ergonote_model::NodeColor::parse(&c))))
                 .unwrap_or((None, None));
-            let attachments = notecraft_store::assets::list(dir);
+            let attachments = ergonote_store::assets::list(dir);
             let page_body = page.body.clone();
             let writable = pageedit::round_trips(page.format, &page.body);
             // A page with no title of its own starts with a blank title area, not with
@@ -3215,14 +3214,14 @@ impl NoteCraftApp {
                 arranged,
                 content_bottom: None,
                 shown_widths: Vec::new(),
-                columns: notecraft_store::page::table_columns(dir).unwrap_or_default(),
-                justified: notecraft_store::page::justified(dir).unwrap_or_default(),
+                columns: ergonote_store::page::table_columns(dir).unwrap_or_default(),
+                justified: ergonote_store::page::justified(dir).unwrap_or_default(),
                 across: None,
-                ink_files: notecraft_store::page::ink_files(dir),
+                ink_files: ergonote_store::page::ink_files(dir),
                 paper: appearance.0,
                 colour: appearance.1,
-                rule_colour: notecraft_store::page::rule_colour(dir).ok().flatten().and_then(|c| notecraft_model::NodeColor::parse(&c)),
-                paper_size: notecraft_store::page::paper_size(dir).ok().flatten(),
+                rule_colour: ergonote_store::page::rule_colour(dir).ok().flatten().and_then(|c| ergonote_model::NodeColor::parse(&c)),
+                paper_size: ergonote_store::page::paper_size(dir).ok().flatten(),
                 history: crate::history::History::new(crate::history::Step::new(first.0, first.1, first.2, None, crate::history::Kind::Edit)),
                 origin: egui::Pos2::ZERO,
                 origin_in_canvas: None,
@@ -3259,7 +3258,7 @@ impl NoteCraftApp {
     /// picture. Their strokes are moved onto the page's own ink and the picture is taken
     /// out of the words; the old file is left in the folder untouched.
     fn absorb_old_sheets(&mut self, dir: &Path) {
-        use notecraft_formats::markdown::Block;
+        use ergonote_formats::markdown::Block;
         let olds: Vec<String> = self
             .editor
             .as_ref()
@@ -3456,7 +3455,7 @@ impl NoteCraftApp {
     /// The page text changed: remember to save it, and read the blocks from it again.
     fn mark_dirty(ed: &mut Editor) {
         ed.dirty_since = Some(Instant::now());
-        let (blocks, in_the_text) = notecraft_formats::boxes::read(ed.format, &ed.body);
+        let (blocks, in_the_text) = ergonote_formats::boxes::read(ed.format, &ed.body);
         ed.blocks = blocks;
         ed.arranged = in_the_text.is_some();
         ed.boxes = in_the_text.unwrap_or_default();
@@ -3480,12 +3479,12 @@ impl NoteCraftApp {
         let Some(ed) = self.editor.as_mut() else { return };
         Self::remember_step(ed);
         let Some((index, at)) =
-            ed.caret.as_ref().and_then(|c| notecraft_model::container::place(&ed.boxes, c.block).map(|(index, _)| (index, c.block + 1)))
+            ed.caret.as_ref().and_then(|c| ergonote_model::container::place(&ed.boxes, c.block).map(|(index, _)| (index, c.block + 1)))
         else {
             self.insert_in_own_container(text);
             return;
         };
-        let (added, _) = notecraft_formats::boxes::read(ed.format, text);
+        let (added, _) = ergonote_formats::boxes::read(ed.format, text);
         if added.is_empty() {
             return;
         }
@@ -3506,8 +3505,8 @@ impl NoteCraftApp {
         Self::mark_dirty_from_blocks(ed);
         Self::remember_edit(ed);
         let path = path_str(&ed.dir);
-        let cols = cols_moved.then(|| notecraft_model::tablecols::write(&ed.columns));
-        let justified = justified_moved.then(|| notecraft_model::justify::write(&ed.justified));
+        let cols = cols_moved.then(|| ergonote_model::tablecols::write(&ed.columns));
+        let justified = justified_moved.then(|| ergonote_model::justify::write(&ed.justified));
         if let Some(line) = cols {
             self.run("page.columns", &params(&[("path", &path), ("widths", &line)]));
         }
@@ -3521,7 +3520,7 @@ impl NoteCraftApp {
     fn insert_in_own_container(&mut self, text: &str) {
         let Some(ed) = self.editor.as_mut() else { return };
         let below = ed.content_bottom;
-        let (added, _) = notecraft_formats::boxes::read(ed.format, text);
+        let (added, _) = ergonote_formats::boxes::read(ed.format, text);
         if added.is_empty() {
             return;
         }
@@ -3529,7 +3528,7 @@ impl NoteCraftApp {
         let before = ed.blocks.len();
         ed.blocks.extend(added.iter().cloned());
         let below = below.unwrap_or_else(|| ed.boxes.iter().map(|c| c.y + 60.0).fold(0.0, f32::max));
-        ed.boxes = notecraft_model::container::append(&ed.boxes, before, added.len(), width, below, 12.0);
+        ed.boxes = ergonote_model::container::append(&ed.boxes, before, added.len(), width, below, 12.0);
         ed.arranged = true;
         ed.rebuild_body();
         Self::mark_dirty_from_blocks(ed);
@@ -3553,7 +3552,7 @@ impl NoteCraftApp {
     /// (issue #72).
     fn insert_snippet_blocks(&mut self, text: &str) {
         let Some(ed) = self.editor.as_mut() else { return };
-        let (added, _) = notecraft_formats::boxes::read(ed.format, text);
+        let (added, _) = ergonote_formats::boxes::read(ed.format, text);
         if added.is_empty() {
             return;
         }
@@ -3628,7 +3627,7 @@ impl NoteCraftApp {
             FileChoice::Printout => self.insert_printout(dir, file, format),
         }
         if let Some(ed) = self.editor.as_mut() {
-            ed.attachments = notecraft_store::assets::list(&ed.dir);
+            ed.attachments = ergonote_store::assets::list(&ed.dir);
         }
     }
 
@@ -3696,7 +3695,7 @@ impl NoteCraftApp {
                 }
             }
             Act::Select(p) => {
-                let is_page = notecraft_store::tree::read_node(&p).map(|i| i.kind == NodeKind::Page).unwrap_or(false);
+                let is_page = ergonote_store::tree::read_node(&p).map(|i| i.kind == NodeKind::Page).unwrap_or(false);
                 if is_page {
                     self.open_page(&p);
                 } else {
@@ -3759,9 +3758,9 @@ impl NoteCraftApp {
             }
             Act::RenumberAndAddPage(section, before) => {
                 // Where the page before the line sits among the pages now, before renumbering.
-                let position = notecraft_store::tree::child_dirs(&section)
+                let position = ergonote_store::tree::child_dirs(&section)
                     .into_iter()
-                    .filter_map(|c| notecraft_store::tree::read_node(&c))
+                    .filter_map(|c| ergonote_store::tree::read_node(&c))
                     .filter(|n| n.kind == NodeKind::Page)
                     .position(|n| n.order == before);
                 let path = path_str(&section);
@@ -3883,7 +3882,7 @@ impl NoteCraftApp {
         let label_width = label.map(|l| text_width(ui, l, 10.5) + ROW_LABEL_GAP);
         // A page with no name of its own shows the catalog's own wording ("Page sans titre"),
         // not the English fallback the store keeps for code (seen on 2026-11-19).
-        let row_title: &str = if node.info.kind == NodeKind::Page && node.info.title == notecraft_store::tree::UNTITLED_PAGE {
+        let row_title: &str = if node.info.kind == NodeKind::Page && node.info.title == ergonote_store::tree::UNTITLED_PAGE {
             crate::tl_id!("ui.untitled_page")
         } else {
             &node.info.title
@@ -4293,7 +4292,7 @@ impl NoteCraftApp {
         }
         // The choice between the system's title bar and this one, kept in the settings.
         handle.context_menu(|ui| {
-            let label = if self.frameless { crate::tl_id!("ui.use_the_system_title_bar") } else { crate::tl_id!("ui.use_notecraft_s_own_title_bar") };
+            let label = if self.frameless { crate::tl_id!("ui.use_the_system_title_bar") } else { crate::tl_id!("ui.use_ergonote_s_own_title_bar") };
             if ui.button(label).clicked() {
                 self.frameless = !self.frameless;
                 ctx.send_viewport_cmd(egui::ViewportCommand::Decorations(!self.frameless));
@@ -4303,7 +4302,7 @@ impl NoteCraftApp {
         });
         let mut left = ui.new_child(egui::UiBuilder::new().max_rect(row).layout(egui::Layout::left_to_right(egui::Align::Center)));
         left.add_space(8.0);
-        left.add(egui::Image::from_bytes("bytes://notecraft-logo", crate::LOGO_PNG).fit_to_exact_size(vec2(22.0, 22.0)));
+        left.add(egui::Image::from_bytes("bytes://ergonote-logo", crate::LOGO_PNG).fit_to_exact_size(vec2(22.0, 22.0)));
         left.add_space(6.0);
         if self.qat.hidden || !self.qat.below {
             self.quick_access(&mut left, on);
@@ -4711,7 +4710,7 @@ impl NoteCraftApp {
                         .and_then(|r| r.filter_map(Result::ok).find(|e| e.file_type().map(|t| t.is_dir()).unwrap_or(false)))
                         && let Some(destination) = rfd::FileDialog::new()
                             .set_title(crate::tl_id!("ui.export_telemetry_zip"))
-                            .set_file_name(format!("notecraft-{}-telemetry.zip", session.file_name().to_string_lossy()))
+                            .set_file_name(format!("ergonote-{}-telemetry.zip", session.file_name().to_string_lossy()))
                             .save_file()
                     {
                         let _ = crate::telemetry_export::export(&session.path(), &destination);
@@ -4723,7 +4722,7 @@ impl NoteCraftApp {
                     }
                 }
                 backstage::Act::SaveCopy { node, folder } => {
-                    copy.result = Some(notecraft_store::ops::save_copy(&node, &folder).map_err(|e| e.to_string()));
+                    copy.result = Some(ergonote_store::ops::save_copy(&node, &folder).map_err(|e| e.to_string()));
                     if let Some(Ok(at)) = &copy.result {
                         self.say(crate::i18n::format_message_id("ui.saved_a_copy_in_path", &[("path", &self.shown(at))]));
                     }
@@ -4779,7 +4778,7 @@ impl NoteCraftApp {
         let safe_title: String = raw_title.chars().map(|c| if c.is_alphanumeric() || c == '-' || c == '_' { c } else { '-' }).collect();
         let safe_title = if safe_title.trim_matches('-').is_empty() { "Cours".to_string() } else { safe_title.trim_matches('-').to_string() };
         let arrangement = (ed.arranged && !ed.boxes.is_empty()).then_some(ed.boxes.as_slice());
-        let html_body = notecraft_formats::boxes::write(notecraft_model::PageFormat::Html, &ed.blocks, arrangement)
+        let html_body = ergonote_formats::boxes::write(ergonote_model::PageFormat::Html, &ed.blocks, arrangement)
             .replace("<p><img src=\"ink.svg\" alt=\"Ink\"></p>", "")
             .replace("<img src=\"ink.svg\" alt=\"Ink\">", "");
         let ink_overlay = if page_dir.join("ink.svg").is_file() {
@@ -4808,8 +4807,8 @@ impl NoteCraftApp {
             th, td {{ border: 1px solid #666; padding: 4px 8px; }}\n\
             img {{ display: block; max-width: 100%; }}\n\
             </style>\n</head>\n<body>\n<h1 class=\"page-title\">{title}</h1>\n<div class=\"nc-canvas\">\n{body}\n{ink}\n</div>\n</body>\n</html>\n",
-            base = notecraft_formats::html::escape(&base_href),
-            title = notecraft_formats::html::escape(&raw_title),
+            base = ergonote_formats::html::escape(&base_href),
+            title = ergonote_formats::html::escape(&raw_title),
             body = html_body,
             ink = ink_overlay
         );
@@ -4961,7 +4960,7 @@ impl NoteCraftApp {
 
     fn handle_share_copy_text(&mut self) {
         if let Some(ed) = self.editor.as_ref() {
-            let text = notecraft_formats::render::blocks_to_markdown(&ed.blocks);
+            let text = ergonote_formats::render::blocks_to_markdown(&ed.blocks);
             self.pending_copy = Some(text);
             self.backstage = None;
             self.say("Tout le texte de la page a été copié dans le presse-papiers.".to_string());
@@ -5141,7 +5140,7 @@ impl NoteCraftApp {
             if !seen.insert(path.clone()) {
                 continue;
             }
-            if let Some(notebook) = notecraft_store::tree::load_tree(&path)
+            if let Some(notebook) = ergonote_store::tree::load_tree(&path)
                 && notebook.info.kind == NodeKind::Notebook
             {
                 recent.push(notebook);
@@ -5210,9 +5209,9 @@ impl NoteCraftApp {
     /// Handles the folder returned by the native chooser, using the same notebook operations
     /// for a notebook itself, a parent containing notebooks, and an empty folder.
     fn open_notebooks_from_folder(&mut self, picked: PathBuf) {
-        let is_notebook = notecraft_store::tree::read_node(&picked).is_some_and(|i| i.kind == NodeKind::Notebook);
+        let is_notebook = ergonote_store::tree::read_node(&picked).is_some_and(|i| i.kind == NodeKind::Notebook);
         let wanted: Vec<std::path::PathBuf> =
-            if is_notebook { vec![picked.clone()] } else { notecraft_store::tree::load_notebooks(&picked).into_iter().map(|n| n.path).collect() };
+            if is_notebook { vec![picked.clone()] } else { ergonote_store::tree::load_notebooks(&picked).into_iter().map(|n| n.path).collect() };
         if wanted.is_empty() {
             self.open_notebook_from_path(&picked);
             return;
@@ -5239,7 +5238,7 @@ impl NoteCraftApp {
 
     fn import_notebook_folder(&mut self) {
         let mut dialog = rfd::FileDialog::new().set_title(crate::tl_id!("ui.choose_a_onenote_notebook_folder"));
-        if let Some(backup) = notecraft_import::discover::default_source() {
+        if let Some(backup) = ergonote_import::discover::default_source() {
             dialog = dialog.set_directory(backup);
         }
         let Some(source) = dialog.pick_folder() else { return };
@@ -5248,7 +5247,7 @@ impl NoteCraftApp {
 
     fn import_file(&mut self) {
         let mut dialog = rfd::FileDialog::new().set_title(crate::tl_id!("ui.choose_a_file_to_import"));
-        if let Some(backup) = notecraft_import::discover::default_source() {
+        if let Some(backup) = ergonote_import::discover::default_source() {
             dialog = dialog.set_directory(backup);
         }
         let Some(source) = dialog.pick_file() else { return };
@@ -5260,11 +5259,11 @@ impl NoteCraftApp {
             .session
             .settings
             .get("page_format")
-            .and_then(|v| notecraft_model::PageFormat::parse(&v).ok())
-            .unwrap_or(notecraft_model::PageFormat::Html);
+            .and_then(|v| ergonote_model::PageFormat::parse(&v).ok())
+            .unwrap_or(ergonote_model::PageFormat::Html);
         let bridge_format = match format {
-            notecraft_model::PageFormat::Html => notecraft_import::officeimo::Format::Html,
-            notecraft_model::PageFormat::Cmgfm => notecraft_import::officeimo::Format::Cmgfm,
+            ergonote_model::PageFormat::Html => ergonote_import::officeimo::Format::Html,
+            ergonote_model::PageFormat::Cmgfm => ergonote_import::officeimo::Format::Cmgfm,
         };
         // All source types produce a new notebook under this parent. Progress reports the
         // actual chosen path, so the view never guesses names or collision suffixes.
@@ -5278,16 +5277,16 @@ impl NoteCraftApp {
         std::thread::spawn(move || {
             let mut progress = |event| {
                 let message = match event {
-                    notecraft_import::officeimo::Progress::Found { total } => ImportMessage::Found(total),
-                    notecraft_import::officeimo::Progress::Destination { path } => ImportMessage::Destination(path),
-                    notecraft_import::officeimo::Progress::Section { index, total, label } => {
+                    ergonote_import::officeimo::Progress::Found { total } => ImportMessage::Found(total),
+                    ergonote_import::officeimo::Progress::Destination { path } => ImportMessage::Destination(path),
+                    ergonote_import::officeimo::Progress::Section { index, total, label } => {
                         ImportMessage::Section { index, total, label: label.to_string() }
                     }
                 };
                 let _ = tx.send(message);
             };
             let result =
-                notecraft_import::officeimo::run_with_progress(&source_for_worker, &output_for_worker, bridge_format, &worker_cancel, &mut progress);
+                ergonote_import::officeimo::run_with_progress(&source_for_worker, &output_for_worker, bridge_format, &worker_cancel, &mut progress);
             let _ = tx.send(ImportMessage::Finished(result));
         });
         self.import_job = Some(ImportJob {
@@ -5402,22 +5401,22 @@ impl NoteCraftApp {
     /// Follows a link written in the open page. Another page of the notebooks opens in the
     /// window; a notebook, section group or section opens on its first page; a file opens in
     /// the program the system has for it; a web address opens in the browser. A relative
-    /// path can never reach outside the notebooks folder (`notecraft_store::links`).
+    /// path can never reach outside the notebooks folder (`ergonote_store::links`).
     /// Puts a link to a page on the clipboard, as OneNote's Copy Link to Page does.
     ///
     /// The link names the page from the notebooks folder down
-    /// (`notecraft:/book/section/page`), not relative to anything, because what a relative
+    /// (`ergonote:/book/section/page`), not relative to anything, because what a relative
     /// link would be relative to is the page it is pasted into, and nobody knows that when
     /// the link is copied. Pasted into a page it reads as an ordinary link and opens the
     /// page it names.
     pub fn copy_link_to(&mut self, dir: &Path) {
         let mut roots = vec![self.session.root().to_path_buf()];
         roots.extend(self.session.opened_elsewhere().iter().cloned());
-        let Some(uri) = notecraft_store::links::page_uri(&roots, dir) else {
+        let Some(uri) = ergonote_store::links::page_uri(&roots, dir) else {
             self.complain(crate::tl_id!("ui.that_page_is_not_in_a_notebook_that_is_open"));
             return;
         };
-        let title = notecraft_store::tree::read_node(dir).map(|n| n.title).unwrap_or_else(|| "Page".to_string());
+        let title = ergonote_store::tree::read_node(dir).map(|n| n.title).unwrap_or_else(|| "Page".to_string());
         // Plain text keeps the title and address readable; the matching HTML flavor is an
         // anchor for clients that accept rich content.
         self.pending_copy = Some(format!("{title} ({uri})"));
@@ -5426,7 +5425,7 @@ impl NoteCraftApp {
     }
 
     pub fn follow_link(&mut self, ctx: &Context, href: &str) {
-        use notecraft_store::links::{Link, resolve_in};
+        use ergonote_store::links::{Link, resolve_in};
         let Some(page) = self.editor.as_ref().map(|e| e.dir.clone()) else { return };
         // Every folder a notebook is open from, not just the notebooks folder: a notebook
         // opened from elsewhere is as much inside as one that lives there, and judging it
@@ -5439,7 +5438,7 @@ impl NoteCraftApp {
                 self.say(crate::i18n::format_message_id("ui.opened_url_in_the_browser", &[("url", &url)]));
             }
             Link::Node(dir) => {
-                if notecraft_store::tree::read_node(&dir).is_some_and(|n| n.kind == NodeKind::Page) {
+                if ergonote_store::tree::read_node(&dir).is_some_and(|n| n.kind == NodeKind::Page) {
                     self.open_path(&path_str(&dir));
                 } else {
                     self.open.insert(dir.clone());
@@ -5595,10 +5594,10 @@ impl NoteCraftApp {
     }
 
     fn font_selection(&self, ctx: &Context) -> pageedit::FontSelection {
-        use notecraft_formats::Block;
+        use ergonote_formats::Block;
         let Some(ed) = self.editor.as_ref() else { return pageedit::FontSelection::default() };
         if let Some(index) = crate::containers::selected(ctx, &ed.dir) {
-            let range = notecraft_model::container::blocks_of(&ed.boxes, index);
+            let range = ergonote_model::container::blocks_of(&ed.boxes, index);
             let Some(blocks) = ed.blocks.get(range) else { return pageedit::FontSelection::default() };
             let spans = blocks.iter().flat_map(|block| match block {
                 Block::Heading { spans, .. } | Block::Paragraph(spans) | Block::Quote(spans) | Block::Item { spans, .. } => spans.as_slice(),
@@ -5644,8 +5643,8 @@ impl NoteCraftApp {
             m.italic |= pending.italic;
             m.strike |= pending.strike;
             m.underline |= pending.underline;
-            m.subscript |= pending.script == Some(notecraft_formats::markdown::Script::Subscript);
-            m.superscript |= pending.script == Some(notecraft_formats::markdown::Script::Superscript);
+            m.subscript |= pending.script == Some(ergonote_formats::markdown::Script::Subscript);
+            m.superscript |= pending.script == Some(ergonote_formats::markdown::Script::Superscript);
             m.highlight |= pending.highlight_color.is_some();
         }
         result
@@ -5654,7 +5653,7 @@ impl NoteCraftApp {
     /// What a ribbon button does while a container is selected: selecting a box selects everything in
     /// it, so Cut, Copy, the marks and the styles take all of it. True when the act was one of those.
     fn act_on_box(&mut self, ctx: &Context, at: usize, act: &ribbon::Act) -> bool {
-        use notecraft_formats::markdown::Block;
+        use ergonote_formats::markdown::Block;
         let wanted = matches!(
             act,
             ribbon::Act::Clipboard(_)
@@ -5673,7 +5672,7 @@ impl NoteCraftApp {
                 | ribbon::Act::Align(_)
         );
         let Some(ed) = self.editor.as_mut().filter(|_| wanted) else { return false };
-        let range = notecraft_model::container::blocks_of(&ed.boxes, at);
+        let range = ergonote_model::container::blocks_of(&ed.boxes, at);
         if range.end > ed.blocks.len() || range.is_empty() {
             return false;
         }
@@ -5690,7 +5689,7 @@ impl NoteCraftApp {
             | ribbon::Act::HighlightColor(_) => {
                 let format = match act {
                     ribbon::Act::FontSize(size) if ribbon::FONT_SIZES.contains(size) => pageedit::InlineFormat::Size(*size),
-                    ribbon::Act::FontFamily(family) if notecraft_formats::markdown::valid_font_family(family) => {
+                    ribbon::Act::FontFamily(family) if ergonote_formats::markdown::valid_font_family(family) => {
                         pageedit::InlineFormat::Family(family.clone())
                     }
                     ribbon::Act::UnderlineColor(color) => pageedit::InlineFormat::UnderlineColor(color.map(|c| c.id().to_string())),
@@ -5767,7 +5766,7 @@ impl NoteCraftApp {
                 // All of them have the tag already: the same button takes it off every one.
                 let has = |b: &Block| pageedit::tag_of(b).0 == Some(*tag);
                 // A to-do line carries no other tag, so it is left out of every tag but its own.
-                let can = |b: &Block| words(b) && (*tag == notecraft_model::Tag::ToDo || !matches!(b, Block::Item { task: Some(_), .. }));
+                let can = |b: &Block| words(b) && (*tag == ergonote_model::Tag::ToDo || !matches!(b, Block::Item { task: Some(_), .. }));
                 let all = range.clone().filter_map(|i| ed.blocks.get(i)).filter(|b| can(b)).all(has);
                 for i in range {
                     if ed.blocks.get(i).is_some_and(|b| can(b) && (all || !has(b))) {
@@ -5860,7 +5859,7 @@ impl NoteCraftApp {
                     // What was written before is kept as it stood, so Undo takes back only the space.
                     Self::remember_step(ed);
                     let at = ed.caret.as_ref().map(|c| c.block + 1).unwrap_or(ed.blocks.len()).min(ed.blocks.len());
-                    ed.blocks.insert(at, notecraft_formats::Block::Paragraph(Vec::new()));
+                    ed.blocks.insert(at, ergonote_formats::Block::Paragraph(Vec::new()));
                     let marks = ed.blocks_inserted(at, 1);
                     ed.rebuild_body();
                     ed.caret = Some(pageedit::Caret {
@@ -5880,11 +5879,11 @@ impl NoteCraftApp {
                 "link" => self.open_link_dialog(),
                 "equation" => self.insert_in_page("$E = mc^2$"),
                 "date" | "time" | "datetime" => {
-                    let now = notecraft_model::time::iso_now();
+                    let now = ergonote_model::time::iso_now();
                     let stamp = match what {
-                        "time" => notecraft_model::time::clock_from_iso(&now),
-                        "datetime" => notecraft_model::time::long_from_iso(&now),
-                        _ => notecraft_model::time::date_from_iso(&now),
+                        "time" => ergonote_model::time::clock_from_iso(&now),
+                        "datetime" => ergonote_model::time::long_from_iso(&now),
+                        _ => ergonote_model::time::date_from_iso(&now),
                     };
                     self.insert_in_page(&stamp.unwrap_or(now));
                 }
@@ -6083,7 +6082,7 @@ impl NoteCraftApp {
                 self.refresh_tags();
             }
             ribbon::Act::CustomizeTags => {
-                self.custom_tags = Some(crate::customtags::Dialog::new(notecraft_model::tag::custom()));
+                self.custom_tags = Some(crate::customtags::Dialog::new(ergonote_model::tag::custom()));
             }
             ribbon::Act::CollectAll => {
                 if self.editor.as_ref().is_none_or(|ed| !ed.writable) {
@@ -6131,7 +6130,7 @@ impl NoteCraftApp {
                 };
                 ed.rule_colour = c;
                 let path = path_str(&ed.dir);
-                self.run("page.paper", &params(&[("path", &path), ("rules", c.map(notecraft_model::NodeColor::id).unwrap_or("none"))]));
+                self.run("page.paper", &params(&[("path", &path), ("rules", c.map(ergonote_model::NodeColor::id).unwrap_or("none"))]));
                 self.say(match c {
                     Some(c) => crate::i18n::format_message_id("ui.the_lines_are_colour", &[("colour", &crate::tl!(c.label()).to_lowercase())]),
                     None => crate::tl_id!("ui.the_lines_are_the_theme_s_own_colour").to_string(),
@@ -6147,7 +6146,7 @@ impl NoteCraftApp {
                     None => crate::tl_id!("ui.the_page_is_the_theme_s_own_colour").to_string(),
                 });
             }
-            ribbon::Act::PaperSize(paper) => self.set_paper_size(paper.as_deref().and_then(notecraft_model::paper::Paper::parse)),
+            ribbon::Act::PaperSize(paper) => self.set_paper_size(paper.as_deref().and_then(ergonote_model::paper::Paper::parse)),
             ribbon::Act::Undo => self.undo(),
             ribbon::Act::Redo => self.step_back(false),
             ribbon::Act::ToGridCraft => self.hand_table_to_gridcraft(),
@@ -6182,7 +6181,7 @@ impl NoteCraftApp {
                 self.fit_page_width = false;
             }
             ribbon::Act::ToggleDysMode => {
-                self.set_paper_size(Some(notecraft_model::paper::Paper::new(notecraft_model::paper::Size::A4)));
+                self.set_paper_size(Some(ergonote_model::paper::Paper::new(ergonote_model::paper::Size::A4)));
                 let current = self.editor.as_ref().and_then(|e| e.colour);
                 let next = match current {
                     None => Some(NodeColor::Yellow),
@@ -6238,8 +6237,8 @@ impl NoteCraftApp {
         let starter = crate::tl_id!("ui.student_textbox_label").replace('\n', " ");
         let starter_len = starter.chars().count();
         let block_idx = ed.blocks.len();
-        ed.blocks.push(notecraft_formats::Block::Paragraph(vec![notecraft_formats::Span { text: starter.clone(), ..Default::default() }]));
-        ed.boxes.push(notecraft_model::Container { x: x.max(0.0), y: y.max(0.0), width: 260.0, blocks: 1 });
+        ed.blocks.push(ergonote_formats::Block::Paragraph(vec![ergonote_formats::Span { text: starter.clone(), ..Default::default() }]));
+        ed.boxes.push(ergonote_model::Container { x: x.max(0.0), y: y.max(0.0), width: 260.0, blocks: 1 });
         ed.caret = Some(pageedit::Caret {
             block: block_idx,
             text: starter,
@@ -6324,10 +6323,10 @@ impl NoteCraftApp {
         Self::remember_step(ed);
         let spans = match ed.blocks.get_mut(block) {
             Some(
-                notecraft_formats::Block::Heading { spans, .. }
-                | notecraft_formats::Block::Paragraph(spans)
-                | notecraft_formats::Block::Quote(spans)
-                | notecraft_formats::Block::Item { spans, .. },
+                ergonote_formats::Block::Heading { spans, .. }
+                | ergonote_formats::Block::Paragraph(spans)
+                | ergonote_formats::Block::Quote(spans)
+                | ergonote_formats::Block::Item { spans, .. },
             ) => spans,
             _ => {
                 self.status = crate::tl_id!("ui.inline_mark_whole_line").into();
@@ -6389,7 +6388,7 @@ impl NoteCraftApp {
         };
         let snippet = snippets::attachment(format, &link, &name);
         let Some(ed) = self.editor.as_mut() else { return };
-        let (added, _) = notecraft_formats::boxes::read(ed.format, &snippet);
+        let (added, _) = ergonote_formats::boxes::read(ed.format, &snippet);
         if added.is_empty() {
             return;
         }
@@ -6397,12 +6396,12 @@ impl NoteCraftApp {
         let before = ed.blocks.len();
         let photo_blocks = added.len();
         ed.blocks.extend(added);
-        ed.boxes = notecraft_model::container::append(&ed.boxes, before, photo_blocks, 360.0, below, 12.0);
+        ed.boxes = ergonote_model::container::append(&ed.boxes, before, photo_blocks, 360.0, below, 12.0);
         // Place a companion text container right beside the board photo (x = 380.0, same y) so the student can type immediately.
         let note_block = ed.blocks.len();
-        ed.blocks.push(notecraft_formats::Block::Paragraph(Vec::new()));
+        ed.blocks.push(ergonote_formats::Block::Paragraph(Vec::new()));
         let photo_y = ed.boxes.last().map_or(below, |c| c.y);
-        ed.boxes.push(notecraft_model::Container { x: 380.0, y: photo_y, width: 340.0, blocks: 1 });
+        ed.boxes.push(ergonote_model::Container { x: 380.0, y: photo_y, width: 340.0, blocks: 1 });
         ed.caret = Some(pageedit::Caret {
             block: note_block,
             text: String::new(),
@@ -6417,7 +6416,7 @@ impl NoteCraftApp {
         ed.rebuild_body();
         Self::mark_dirty_from_blocks(ed);
         Self::remember_step(ed);
-        ed.attachments = notecraft_store::assets::list(&ed.dir);
+        ed.attachments = ergonote_store::assets::list(&ed.dir);
         self.say(crate::i18n::format_message_id("ui.name_is_now_a_file_in_this_page_s_folder", &[("name", &name)]));
     }
 
@@ -6472,10 +6471,10 @@ impl NoteCraftApp {
 
     /// Adds, removes, moves or changes a tool on the rack, and remembers the result. The
     /// rules about what may not happen - the last tool cannot be taken off, a tool cannot
-    /// be moved off either end - live in `notecraft_ink::rack`, so they hold wherever the
+    /// be moved off either end - live in `ergonote_ink::rack`, so they hold wherever the
     /// rack is edited from.
     fn edit_rack(&mut self, edit: ribbon::RackEdit) {
-        use notecraft_ink::rack;
+        use ergonote_ink::rack;
         match edit {
             ribbon::RackEdit::Add(tool) => {
                 if self.rack.len() >= rack::MAX_NIBS {
@@ -6538,7 +6537,7 @@ impl NoteCraftApp {
         }
         // Browsers, Word and other editors offer a formatted clipboard flavour as well
         // as plain text. Parse it through the same HTML-to-block path as an HTML page, so
-        // links, emphasis, lists and tables survive a paste into NoteCraft.
+        // links, emphasis, lists and tables survive a paste into ErgoNote.
         if let Some(html) = self.clipboard.html() {
             let new = pageedit::pasted_blocks(pageedit::pasted(&html));
             if self.paste_blocks(new) {
@@ -6560,14 +6559,14 @@ impl NoteCraftApp {
 
     /// Pastes `new` blocks at the caret, or after the last block. False, with nothing done,
     /// when there is nothing to paste or the page cannot be written.
-    fn paste_blocks(&mut self, new: Vec<notecraft_formats::Block>) -> bool {
+    fn paste_blocks(&mut self, new: Vec<ergonote_formats::Block>) -> bool {
         let Some(ed) = self.editor.as_mut().filter(|ed| ed.writable) else { return false };
         if new.is_empty() {
             return false;
         }
         let at = ed.caret.as_ref().map_or(ed.blocks.len().saturating_sub(1), |c| c.block);
         if ed.blocks.is_empty() {
-            ed.blocks.push(notecraft_formats::markdown::Block::Paragraph(Vec::new()));
+            ed.blocks.push(ergonote_formats::markdown::Block::Paragraph(Vec::new()));
         }
         let before = ed.blocks.len();
         pageedit::paste_at(&mut ed.blocks, &mut ed.caret, at, new);
@@ -6584,8 +6583,8 @@ impl NoteCraftApp {
     fn save_block_marks(&mut self, (cols, justified): (bool, bool)) {
         let Some(ed) = self.editor.as_ref() else { return };
         let path = path_str(&ed.dir);
-        let cols = cols.then(|| notecraft_model::tablecols::write(&ed.columns));
-        let justified = justified.then(|| notecraft_model::justify::write(&ed.justified));
+        let cols = cols.then(|| ergonote_model::tablecols::write(&ed.columns));
+        let justified = justified.then(|| ergonote_model::justify::write(&ed.justified));
         if let Some(line) = cols {
             self.run("page.columns", &params(&[("path", &path), ("widths", &line)]));
         }
@@ -6598,19 +6597,19 @@ impl NoteCraftApp {
         let name = crate::clipboard::picture_name();
         let (w, h) = (picture.width, picture.height);
         log::debug!("clipboard image paste received: width={w} height={h} bytes={}", picture.png.len());
-        match notecraft_store::assets::attach_bytes(dir, &name, &picture.png) {
+        match ergonote_store::assets::attach_bytes(dir, &name, &picture.png) {
             Ok(link) => {
                 log::debug!("clipboard image paste attached: name={name:?} link={link:?}");
                 if let Some(ed) = self.editor.as_mut() {
                     let at = ed.caret.as_ref().map_or(ed.blocks.len(), |c| c.block + 1).min(ed.blocks.len());
                     ed.blocks.insert(
                         at,
-                        notecraft_formats::markdown::Block::Image { alt: "Pasted picture".to_string(), src: link, width: None, height: None },
+                        ergonote_formats::markdown::Block::Image { alt: "Pasted picture".to_string(), src: link, width: None, height: None },
                     );
                     let marks = ed.blocks_inserted(at, 1);
                     ed.rebuild_body();
                     Self::mark_dirty_from_blocks(ed);
-                    ed.attachments = notecraft_store::assets::list(dir);
+                    ed.attachments = ergonote_store::assets::list(dir);
                     self.save_block_marks(marks);
                 }
                 self.say(crate::i18n::format_message_id(
@@ -6629,7 +6628,7 @@ impl NoteCraftApp {
     fn sync_ink_reference(&mut self) {
         let Some(ed) = self.editor.as_mut() else { return };
         // The folder is asked again: the pen has just written or deleted a file.
-        ed.ink_files = notecraft_store::page::ink_files(&ed.dir);
+        ed.ink_files = ergonote_store::page::ink_files(&ed.dir);
         if Self::name_ink(ed) {
             Self::mark_dirty_from_blocks(ed);
         }
@@ -6645,7 +6644,7 @@ impl NoteCraftApp {
     ///
     /// Returns true when the page's text had to be changed.
     fn name_ink(ed: &mut Editor) -> bool {
-        use notecraft_formats::markdown::Block;
+        use ergonote_formats::markdown::Block;
         let files = ed.ink_files.clone();
         let mut changed = false;
         // A line that names an ink file that is no longer in the folder goes.
@@ -6684,7 +6683,7 @@ impl NoteCraftApp {
     /// Writes the rack and which tool is in hand into the settings, so the next run opens
     /// with the pens the owner arranged.
     fn remember_rack(&mut self) {
-        let line = notecraft_ink::rack::write(&self.rack);
+        let line = ergonote_ink::rack::write(&self.rack);
         let _ = self.session.settings.set(RACK_KEY, &line);
         let _ = self.session.settings.set(NIB_KEY, &self.nib.to_string());
     }
@@ -6692,7 +6691,7 @@ impl NoteCraftApp {
     /// The pen as the page's ink layer wants it: what it is, and what the pointer is for.
     fn pen(&self) -> crate::inkpad::Pen {
         let nib =
-            self.rack.get(self.nib).or_else(|| self.rack.first()).copied().unwrap_or_else(|| notecraft_ink::rack::new_nib(notecraft_ink::Tool::Pen));
+            self.rack.get(self.nib).or_else(|| self.rack.first()).copied().unwrap_or_else(|| ergonote_ink::rack::new_nib(ergonote_ink::Tool::Pen));
         crate::inkpad::Pen {
             pointer: self.pointer,
             tool: nib.tool,
@@ -6716,9 +6715,9 @@ impl NoteCraftApp {
     fn gain(&self) -> f32 {
         let share = f32::from(self.sensitivity.min(100)) / 50.0;
         if share <= 1.0 {
-            notecraft_ink::MIN_GAIN + (1.0 - notecraft_ink::MIN_GAIN) * share
+            ergonote_ink::MIN_GAIN + (1.0 - ergonote_ink::MIN_GAIN) * share
         } else {
-            1.0 + (notecraft_ink::MAX_GAIN - 1.0) * (share - 1.0)
+            1.0 + (ergonote_ink::MAX_GAIN - 1.0) * (share - 1.0)
         }
     }
 
@@ -6768,7 +6767,7 @@ impl NoteCraftApp {
             return pageedit::block_kind(block);
         }
         // A selected box has everything in it selected: its style is the one they all share.
-        let range = crate::containers::selected(ctx, &ed.dir).map(|i| notecraft_model::container::blocks_of(&ed.boxes, i)).unwrap_or_default();
+        let range = crate::containers::selected(ctx, &ed.dir).map(|i| ergonote_model::container::blocks_of(&ed.boxes, i)).unwrap_or_default();
         let mut kinds = range.filter_map(|i| ed.blocks.get(i)).map(pageedit::block_kind);
         match kinds.next() {
             Some(first) if kinds.all(|k| k == first) => first,
@@ -6780,7 +6779,7 @@ impl NoteCraftApp {
         self.editor
             .as_ref()
             .and_then(|e| e.caret.as_ref().map(|c| (e, c)))
-            .is_some_and(|(e, c)| c.cell.is_some() && matches!(e.blocks.get(c.block), Some(notecraft_formats::markdown::Block::Table { .. })))
+            .is_some_and(|(e, c)| c.cell.is_some() && matches!(e.blocks.get(c.block), Some(ergonote_formats::markdown::Block::Table { .. })))
     }
 
     /// Whether the table the caret is in is drawn with lines round its cells. A table has
@@ -6798,7 +6797,7 @@ impl NoteCraftApp {
         let ed = self.editor.as_ref()?;
         let c = ed.caret.as_ref()?;
         let here = c.cell?;
-        if !matches!(ed.blocks.get(c.block), Some(notecraft_formats::markdown::Block::Table { .. })) {
+        if !matches!(ed.blocks.get(c.block), Some(ergonote_formats::markdown::Block::Table { .. })) {
             return None;
         }
         let cells = match pageedit::cell_range(c) {
@@ -6810,8 +6809,8 @@ impl NoteCraftApp {
 
     /// How the cells Table > Align would act on are aligned now, when they all agree. A cell
     /// given no alignment of its own reads as aligned left, which is how it is drawn.
-    fn caret_cells_align(&self) -> Option<notecraft_model::tablecols::Align> {
-        use notecraft_model::tablecols::Align;
+    fn caret_cells_align(&self) -> Option<ergonote_model::tablecols::Align> {
+        use ergonote_model::tablecols::Align;
         let ed = self.editor.as_ref()?;
         let (at, cells) = self.caret_cells()?;
         let mut aligns = cells.iter().map(|cell| ed.columns.align(at, *cell).unwrap_or(Align::Left));
@@ -6820,7 +6819,7 @@ impl NoteCraftApp {
     }
 
     /// The colour behind the cells Table > Shading would act on, when they all agree.
-    fn caret_cells_shade(&self) -> Option<Option<notecraft_model::NodeColor>> {
+    fn caret_cells_shade(&self) -> Option<Option<ergonote_model::NodeColor>> {
         let ed = self.editor.as_ref()?;
         let (at, cells) = self.caret_cells()?;
         let mut shades = cells.iter().map(|cell| ed.columns.shade(at, *cell));
@@ -6831,7 +6830,7 @@ impl NoteCraftApp {
     /// Table > Shading: a colour behind the caret's cell, or behind every picked cell, and no
     /// other; No Colour takes it away. Kept with the page beside the cells' alignment, and
     /// noted on the page's history step as the borders and the alignment are (issue #169).
-    fn shade_table_cells(&mut self, shade: Option<notecraft_model::NodeColor>) {
+    fn shade_table_cells(&mut self, shade: Option<ergonote_model::NodeColor>) {
         let Some((at, cells)) = self.caret_cells() else {
             self.say(crate::tl_id!("ui.click_in_the_table_first"));
             return;
@@ -6847,7 +6846,7 @@ impl NoteCraftApp {
     /// Table > Align Left, Center or Align Right: the words in the caret's cell, or in every
     /// cell picked, and nothing else; the columns keep their widths and the table its place.
     /// Kept with the page, like the widths and the borders, and one step of Undo (issue #170).
-    fn align_table_cells(&mut self, align: notecraft_model::tablecols::Align) {
+    fn align_table_cells(&mut self, align: ergonote_model::tablecols::Align) {
         let Some((at, cells)) = self.caret_cells() else {
             self.say(crate::tl_id!("ui.click_in_the_table_first"));
             return;
@@ -6857,7 +6856,7 @@ impl NoteCraftApp {
             return;
         }
         // Left is how a cell is drawn when it was given nothing, so it is kept as nothing.
-        let keep = (align != notecraft_model::tablecols::Align::Left).then_some(align);
+        let keep = (align != ergonote_model::tablecols::Align::Left).then_some(align);
         if !ed.columns.set_align(at, &cells, keep) {
             return;
         }
@@ -6877,7 +6876,7 @@ impl NoteCraftApp {
             self.say(crate::tl_id!("ui.click_in_the_table_first"));
             return;
         };
-        if !matches!(ed.blocks.get(at), Some(notecraft_formats::markdown::Block::Table { .. })) || !ed.columns.set_borders(at, !on) {
+        if !matches!(ed.blocks.get(at), Some(ergonote_formats::markdown::Block::Table { .. })) || !ed.columns.set_borders(at, !on) {
             return;
         }
         // Noted on the step the page is at, which is how a dragged column is noted too: an
@@ -6901,7 +6900,7 @@ impl NoteCraftApp {
         }
         // The page file may be the one an autosave is still writing.
         self.take_saves(true);
-        if let Err(e) = notecraft_store::page::write_atomic(&path, text) {
+        if let Err(e) = ergonote_store::page::write_atomic(&path, text) {
             self.complain(&crate::i18n::format_message_id("ui.cannot_write_name_error", &[("name", name), ("error", &e.to_string())]));
             return;
         }
@@ -6911,9 +6910,9 @@ impl NoteCraftApp {
             // the page is read again when the view closes.
             if let Some(ed) = self.editor.as_mut() {
                 ed.dirty_since = None;
-                ed.body = notecraft_store::page::load_page(&dir).map(|p| p.body).unwrap_or_else(|_| ed.body.clone());
-                let (blocks, _) = notecraft_formats::boxes::read(ed.format, &ed.body);
-                let audit = notecraft_formats::boxes::span_audit(&ed.body, &blocks);
+                ed.body = ergonote_store::page::load_page(&dir).map(|p| p.body).unwrap_or_else(|_| ed.body.clone());
+                let (blocks, _) = ergonote_formats::boxes::read(ed.format, &ed.body);
+                let audit = ergonote_formats::boxes::span_audit(&ed.body, &blocks);
                 log::debug!("code view commit span audit: page={:?} raw_span_tags={} styled_spans={}", dir, audit.raw_tags, audit.styled);
             }
             self.code.page_edited = true;
@@ -6921,7 +6920,7 @@ impl NoteCraftApp {
         }
         // A drawing that was typed in is read again, so what the pen does next is done to
         // the file as it now stands rather than to the one the window remembered.
-        if notecraft_ink::svg::is_ink(text) {
+        if ergonote_ink::svg::is_ink(text) {
             self.pad = Some(crate::inkpad::Pad::of_page(&dir));
         }
         self.sync_ink_reference();
@@ -6935,7 +6934,7 @@ impl NoteCraftApp {
 
     /// Gives the open page its own paper, its own colour, or both, and writes them into
     /// the page's file. `None` for either leaves that one as it is.
-    fn set_page_appearance(&mut self, paper: Option<ribbon::RuleLines>, colour: Option<Option<notecraft_model::NodeColor>>) {
+    fn set_page_appearance(&mut self, paper: Option<ribbon::RuleLines>, colour: Option<Option<ergonote_model::NodeColor>>) {
         let Some(ed) = self.editor.as_mut() else {
             self.say("Open a page first");
             return;
@@ -6950,14 +6949,14 @@ impl NoteCraftApp {
         let pairs: Vec<(&str, &str)> = vec![
             ("path", path.as_str()),
             ("paper", paper.map(ribbon::RuleLines::id).unwrap_or("none")),
-            ("color", colour.map(notecraft_model::NodeColor::id).unwrap_or("none")),
+            ("color", colour.map(ergonote_model::NodeColor::id).unwrap_or("none")),
         ];
         self.run("page.paper", &params(&pairs));
     }
 
     /// Gives the open page its sheet, or takes it back to Auto, and writes it into the page's
     /// file (issue #269). The words are not touched: only how the page is laid out to show it.
-    fn set_paper_size(&mut self, paper: Option<notecraft_model::paper::Paper>) {
+    fn set_paper_size(&mut self, paper: Option<ergonote_model::paper::Paper>) {
         let Some(ed) = self.editor.as_mut() else {
             self.say(crate::tl_id!("ui.open_a_page_first"));
             return;
@@ -6968,7 +6967,7 @@ impl NoteCraftApp {
         let was_size = ed.paper_size.map(|p| (std::mem::discriminant(&p.size), p.landscape));
         ed.paper_size = paper;
         let path = path_str(&ed.dir);
-        let line = paper.map_or_else(|| "auto".to_string(), notecraft_model::paper::Paper::write);
+        let line = paper.map_or_else(|| "auto".to_string(), ergonote_model::paper::Paper::write);
         self.run("page.paper_size", &params(&[("path", &path), ("size", &line)]));
         // Said when the sheet or its turn changes, not at every step of a dragged margin.
         let now_size = paper.map(|p| (std::mem::discriminant(&p.size), p.landscape));
@@ -7014,7 +7013,7 @@ impl NoteCraftApp {
                         ed.pending_format = None;
                         ed.dirty_since = Some(Instant::now());
                         // The restored text says whether the page was arranged.
-                        ed.arranged = notecraft_formats::boxes::has_boxes(ed.format, &ed.body);
+                        ed.arranged = ergonote_formats::boxes::has_boxes(ed.format, &ed.body);
                         // The table widths as they were then, written back when they differ.
                         if let Some(columns) = step.columns
                             && columns != ed.columns
@@ -7106,7 +7105,7 @@ impl NoteCraftApp {
             self.say(crate::tl_id!("ui.click_in_the_table_first"));
             return;
         };
-        if !matches!(ed.blocks.get(at), Some(notecraft_formats::markdown::Block::Table { .. })) {
+        if !matches!(ed.blocks.get(at), Some(ergonote_formats::markdown::Block::Table { .. })) {
             self.say(crate::tl_id!("ui.click_in_a_table_first"));
             return;
         }
@@ -7199,7 +7198,7 @@ impl NoteCraftApp {
             ),
             _ => ("| Grandeur A | Valeur 1 | Valeur 2 | Valeur 3 |\n| --- | --- | --- | --- |\n| Grandeur B (× …) |  |  |  |\n", (1, 0)),
         };
-        let Some(table_block) = notecraft_formats::markdown::parse(md).into_iter().next() else {
+        let Some(table_block) = ergonote_formats::markdown::parse(md).into_iter().next() else {
             return;
         };
         let at = ed.caret.as_ref().map(|c| c.block + 1).unwrap_or(ed.blocks.len()).min(ed.blocks.len());
@@ -7312,7 +7311,7 @@ impl NoteCraftApp {
     /// one before when it was last); a page left with nothing gets an empty line to type on.
     /// Table widths, cell marks and justified paragraphs after it move up with their blocks.
     fn request_delete_table(&mut self, block: Option<usize>) {
-        use notecraft_formats::markdown::Block;
+        use ergonote_formats::markdown::Block;
         let Some(ed) = self.editor.as_ref() else { return };
         let at = block.or_else(|| ed.caret.as_ref().filter(|c| c.cell.is_some()).map(|c| c.block));
         let Some(at) = at.filter(|&at| matches!(ed.blocks.get(at), Some(Block::Table { .. }))) else {
@@ -7323,7 +7322,7 @@ impl NoteCraftApp {
     }
 
     fn delete_table(&mut self) {
-        use notecraft_formats::markdown::Block;
+        use ergonote_formats::markdown::Block;
         let Some(ed) = self.editor.as_ref() else { return };
         let at = ed.caret.as_ref().filter(|c| c.cell.is_some()).map(|c| c.block);
         let Some(at) = at.filter(|&at| matches!(ed.blocks.get(at), Some(Block::Table { .. }))) else {
@@ -7334,7 +7333,7 @@ impl NoteCraftApp {
     }
 
     fn delete_table_at(&mut self, at: usize) {
-        use notecraft_formats::markdown::Block;
+        use ergonote_formats::markdown::Block;
         let Some(ed) = self.editor.as_mut() else { return };
         if !matches!(ed.blocks.get(at), Some(Block::Table { .. })) {
             self.say(crate::tl_id!("ui.put_the_caret_in_a_table_first"));
@@ -7425,7 +7424,7 @@ impl NoteCraftApp {
     }
 
     /// The open page's blocks, as the editor holds them.
-    pub fn editor_blocks(&self) -> Vec<notecraft_formats::Block> {
+    pub fn editor_blocks(&self) -> Vec<ergonote_formats::Block> {
         self.editor.as_ref().map(|e| e.blocks.clone()).unwrap_or_default()
     }
 
@@ -7458,7 +7457,7 @@ impl NoteCraftApp {
         };
         let saved = pad.save_plain().and_then(|path| {
             if let Some(downloads) = self.file_downloads.as_mut() {
-                let bytes = notecraft_store::vfs::read(&path)?;
+                let bytes = ergonote_store::vfs::read(&path)?;
                 let name = path.file_name().map(|name| name.to_string_lossy().into_owned()).unwrap_or_else(|| "ink-picture.svg".to_owned());
                 downloads.push(FileDownload { name, mime: "image/svg+xml", bytes });
             }
@@ -7483,7 +7482,7 @@ impl NoteCraftApp {
     /// original file stays, so Undo puts the page back on it. A picture given a size of its own
     /// keeps it, with width and height swapped by a quarter turn.
     fn turn_picture(&mut self, src: &str, how: crate::turn::Turn) {
-        use notecraft_formats::markdown::Block;
+        use ergonote_formats::markdown::Block;
         let Some(ed) = self.editor.as_ref() else {
             self.say(crate::tl_id!("ui.open_a_page_first"));
             return;
@@ -7508,7 +7507,7 @@ impl NoteCraftApp {
                 return;
             }
         };
-        let link = match notecraft_store::assets::attach_bytes(&dir, &crate::turn::turned_name(src, how, ext), &turned) {
+        let link = match ergonote_store::assets::attach_bytes(&dir, &crate::turn::turned_name(src, how, ext), &turned) {
             Ok(link) => link,
             Err(e) => {
                 self.complain(&crate::i18n::format_message_id("ui.cannot_save_the_pasted_picture_error", &[("error", &e.to_string())]));
@@ -7539,7 +7538,7 @@ impl NoteCraftApp {
         }
         if !found {
             // Nothing pointed at it after all: the copy is not left lying in the folder.
-            let _ = notecraft_store::assets::remove(&dir, link.trim_start_matches("assets/"));
+            let _ = ergonote_store::assets::remove(&dir, link.trim_start_matches("assets/"));
             return;
         }
         if let Some(caret) = ed.caret.as_mut()
@@ -7551,7 +7550,7 @@ impl NoteCraftApp {
         ed.rebuild_body();
         Self::mark_dirty_from_blocks(ed);
         Self::remember_edit(ed);
-        ed.attachments = notecraft_store::assets::list(&dir);
+        ed.attachments = ergonote_store::assets::list(&dir);
         let inked = self.pad.as_ref().is_some_and(|p| !p.is_empty());
         self.say(match (how.swaps_sides(), inked) {
             (true, false) => crate::tl_id!("ui.rotated_the_picture"),
@@ -7562,9 +7561,9 @@ impl NoteCraftApp {
         });
     }
 
-    fn is_user_image_block(block: &notecraft_formats::markdown::Block) -> Option<&str> {
+    fn is_user_image_block(block: &ergonote_formats::markdown::Block) -> Option<&str> {
         match block {
-            notecraft_formats::markdown::Block::Image { src, alt, .. }
+            ergonote_formats::markdown::Block::Image { src, alt, .. }
                 if !crate::inkpad::is_ink_line(src, alt) && !crate::inkpad::is_page_ink(src) =>
             {
                 Some(src.as_str())
@@ -7589,13 +7588,13 @@ impl NoteCraftApp {
     }
 
     fn replace_picture_asset(&mut self, block_idx: usize, src: &str, edited: &[u8], tag: &str, ext: &str, crop_ratios: Option<(f32, f32)>) -> bool {
-        use notecraft_formats::markdown::Block;
+        use ergonote_formats::markdown::Block;
         let Some(dir) = self.editor.as_ref().filter(|e| e.writable).map(|e| e.dir.clone()) else {
             self.say(crate::tl_id!("ui.open_a_page_first"));
             return false;
         };
         let filename = crate::turn::edited_name(src, tag, ext);
-        let link = match notecraft_store::assets::attach_bytes(&dir, &filename, edited) {
+        let link = match ergonote_store::assets::attach_bytes(&dir, &filename, edited) {
             Ok(link) => link,
             Err(e) => {
                 self.complain(&crate::i18n::format_message_id("ui.cannot_save_the_pasted_picture_error", &[("error", &e.to_string())]));
@@ -7618,13 +7617,13 @@ impl NoteCraftApp {
             changed = true;
         }
         if !changed {
-            let _ = notecraft_store::assets::remove(&dir, link.trim_start_matches("assets/"));
+            let _ = ergonote_store::assets::remove(&dir, link.trim_start_matches("assets/"));
             return false;
         }
         ed.rebuild_body();
         Self::mark_dirty_from_blocks(ed);
         Self::remember_edit(ed);
-        ed.attachments = notecraft_store::assets::list(&dir);
+        ed.attachments = ergonote_store::assets::list(&dir);
         true
     }
 
@@ -7765,8 +7764,8 @@ impl NoteCraftApp {
     }
 
     fn reconstruct_page_from_ocr(&mut self, block_idx: usize, doc: &crate::ocr::OcrDocument, keep_image_bg: bool) {
-        use notecraft_formats::markdown::{Block, Span};
-        use notecraft_model::container;
+        use ergonote_formats::markdown::{Block, Span};
+        use ergonote_model::container;
         if doc.blocks.is_empty() {
             self.say("Aucune zone de texte à recréer.");
             return;
@@ -7799,17 +7798,17 @@ impl NoteCraftApp {
             let regions: Vec<(f32, f32, f32, f32)> = doc.blocks.iter().map(|b| (b.x, b.y, b.width, b.height)).collect();
             if let Ok((_, _, orig_bytes)) = crate::imagemenu::validate_and_read_image(&dir, &orig_src)
                 && let Ok(cleaned) = crate::turn::erase_text_regions(&orig_bytes, &regions)
-                && let Ok(bg_link) = notecraft_store::assets::attach_bytes(&dir, &crate::turn::edited_name(&orig_src, "bg", "png"), &cleaned)
+                && let Ok(bg_link) = ergonote_store::assets::attach_bytes(&dir, &crate::turn::edited_name(&orig_src, "bg", "png"), &cleaned)
             {
                 if let Some(Block::Image { src, width, height, .. }) = ed.blocks.get_mut(block_idx) {
                     *src = bg_link;
                     *width = Some(target_w);
                     *height = Some(target_h);
                 }
-                ed.attachments = notecraft_store::assets::list(&dir);
+                ed.attachments = ergonote_store::assets::list(&dir);
             }
             if ed.boxes.is_empty() && !ed.blocks.is_empty() {
-                ed.boxes.push(notecraft_model::Container::new(0.0, 0.0, target_w, ed.blocks.len()));
+                ed.boxes.push(ergonote_model::Container::new(0.0, 0.0, target_w, ed.blocks.len()));
             }
         } else if !keep_image_bg && block_idx < ed.blocks.len() && Self::is_user_image_block(&ed.blocks[block_idx]).is_some() {
             ed.blocks.remove(block_idx);
@@ -7823,7 +7822,7 @@ impl NoteCraftApp {
                 }
             }
         } else if ed.boxes.is_empty() && !ed.blocks.is_empty() {
-            ed.boxes.push(notecraft_model::Container::new(0.0, 0.0, target_w, ed.blocks.len()));
+            ed.boxes.push(ergonote_model::Container::new(0.0, 0.0, target_w, ed.blocks.len()));
         }
 
         let bold_leadin_spans = |text: &str| -> Vec<Span> {
@@ -7898,11 +7897,11 @@ impl NoteCraftApp {
                     }
                 }
                 placed_rects.push((box_x, box_y, box_w, est_h));
-                ed.boxes.push(notecraft_model::Container::new(box_x, box_y, box_w, count));
+                ed.boxes.push(ergonote_model::Container::new(box_x, box_y, box_w, count));
             }
         }
         if single_container && total_single_count > 0 {
-            ed.boxes.push(notecraft_model::Container::new(origin_x.max(0.0), origin_y.max(0.0), target_w, total_single_count));
+            ed.boxes.push(ergonote_model::Container::new(origin_x.max(0.0), origin_y.max(0.0), target_w, total_single_count));
         }
 
         ed.arranged = true;
@@ -7938,7 +7937,7 @@ impl NoteCraftApp {
     }
 
     fn insert_ocr_text_below(&mut self, block_idx: usize, text: &str) {
-        use notecraft_formats::markdown::{Block, Span};
+        use ergonote_formats::markdown::{Block, Span};
         let Some(ed) = self.editor.as_mut() else { return };
         let lines: Vec<Block> = text
             .lines()
@@ -7976,7 +7975,7 @@ impl NoteCraftApp {
     }
 
     fn delete_selected_picture(&mut self) {
-        use notecraft_formats::markdown::Block;
+        use ergonote_formats::markdown::Block;
         let Some((at, _src)) = self.active_image_target() else {
             self.say("Aucune image sélectionnée sur cette page.");
             return;
@@ -8149,7 +8148,7 @@ impl NoteCraftApp {
         text: &str,
         lo: usize,
         mark: &str,
-        span: &notecraft_formats::markdown::Span,
+        span: &ergonote_formats::markdown::Span,
     ) -> Option<(usize, (bool, bool, bool, bool))> {
         let active = match mark {
             "bold" => span.bold,
@@ -8227,14 +8226,14 @@ impl NoteCraftApp {
             && matches!(
                 ed.blocks.get(caret.block),
                 Some(
-                    notecraft_formats::Block::Heading { .. }
-                        | notecraft_formats::Block::Paragraph(_)
-                        | notecraft_formats::Block::Quote(_)
-                        | notecraft_formats::Block::Item { .. }
+                    ergonote_formats::Block::Heading { .. }
+                        | ergonote_formats::Block::Paragraph(_)
+                        | ergonote_formats::Block::Quote(_)
+                        | ergonote_formats::Block::Item { .. }
                 )
             )
         {
-            let mut marker = "NoteCraftCaretProbe".to_string();
+            let mut marker = "ErgoNoteCaretProbe".to_string();
             while caret.text.contains(&marker) {
                 marker.push('X');
             }
@@ -8298,11 +8297,11 @@ impl NoteCraftApp {
                 "strike" => pending.strike = !pending.strike,
                 "underline" => pending.underline = !pending.underline,
                 "subscript" => {
-                    let script = notecraft_formats::markdown::Script::Subscript;
+                    let script = ergonote_formats::markdown::Script::Subscript;
                     pending.script = (pending.script != Some(script)).then_some(script);
                 }
                 "superscript" => {
-                    let script = notecraft_formats::markdown::Script::Superscript;
+                    let script = ergonote_formats::markdown::Script::Superscript;
                     pending.script = (pending.script != Some(script)).then_some(script);
                 }
                 _ => {}
@@ -8392,7 +8391,7 @@ impl NoteCraftApp {
         if let Some((i, colour)) = crate::inkpad::take_eyedropped(ctx)
             && let Some(nib) = self.rack.get(i).copied()
         {
-            self.edit_rack(ribbon::RackEdit::Set(i, notecraft_ink::rack::Nib::new(nib.tool, colour, nib.tenths)));
+            self.edit_rack(ribbon::RackEdit::Set(i, ergonote_ink::rack::Nib::new(nib.tool, colour, nib.tenths)));
             self.say(crate::i18n::format_message_id("ui.the_pen_takes_colour", &[("colour", &colour.hex())]));
             return;
         }
@@ -8462,12 +8461,12 @@ impl NoteCraftApp {
         let Some(caret) = ed.caret.as_ref() else { return };
         let valid_target = match ed.blocks.get(caret.block) {
             Some(
-                notecraft_formats::Block::Heading { .. }
-                | notecraft_formats::Block::Paragraph(_)
-                | notecraft_formats::Block::Quote(_)
-                | notecraft_formats::Block::Item { .. },
+                ergonote_formats::Block::Heading { .. }
+                | ergonote_formats::Block::Paragraph(_)
+                | ergonote_formats::Block::Quote(_)
+                | ergonote_formats::Block::Item { .. },
             ) => caret.cell.is_none(),
-            Some(notecraft_formats::Block::Table { .. }) => caret.cell.is_some() && caret.span.is_none(),
+            Some(ergonote_formats::Block::Table { .. }) => caret.cell.is_some() && caret.span.is_none(),
             _ => false,
         };
         if !ed.writable || ed.across.is_some() || !valid_target {
@@ -8528,10 +8527,10 @@ impl NoteCraftApp {
                     && let Some(block) = ed.blocks.get(at)
                     && matches!(
                         block,
-                        notecraft_formats::Block::Heading { .. }
-                            | notecraft_formats::Block::Paragraph(_)
-                            | notecraft_formats::Block::Quote(_)
-                            | notecraft_formats::Block::Item { .. }
+                        ergonote_formats::Block::Heading { .. }
+                            | ergonote_formats::Block::Paragraph(_)
+                            | ergonote_formats::Block::Quote(_)
+                            | ergonote_formats::Block::Item { .. }
                     )
                     && let Some(caret) = ed.caret.as_mut()
                 {
@@ -8566,7 +8565,7 @@ impl NoteCraftApp {
     }
 
     fn apply_font_family(&mut self, family: &str) {
-        if !notecraft_formats::markdown::valid_font_family(family) {
+        if !ergonote_formats::markdown::valid_font_family(family) {
             log::warn!("ribbon requested an invalid font family");
             return;
         }
@@ -8590,10 +8589,10 @@ impl NoteCraftApp {
             && matches!(
                 ed.blocks.get(caret.block),
                 Some(
-                    notecraft_formats::Block::Heading { .. }
-                        | notecraft_formats::Block::Paragraph(_)
-                        | notecraft_formats::Block::Quote(_)
-                        | notecraft_formats::Block::Item { .. }
+                    ergonote_formats::Block::Heading { .. }
+                        | ergonote_formats::Block::Paragraph(_)
+                        | ergonote_formats::Block::Quote(_)
+                        | ergonote_formats::Block::Item { .. }
                 )
             )
         {
@@ -8623,10 +8622,10 @@ impl NoteCraftApp {
         Self::remember_step(ed);
         let spans = match ed.blocks.get_mut(block) {
             Some(
-                notecraft_formats::Block::Heading { spans, .. }
-                | notecraft_formats::Block::Paragraph(spans)
-                | notecraft_formats::Block::Quote(spans)
-                | notecraft_formats::Block::Item { spans, .. },
+                ergonote_formats::Block::Heading { spans, .. }
+                | ergonote_formats::Block::Paragraph(spans)
+                | ergonote_formats::Block::Quote(spans)
+                | ergonote_formats::Block::Item { spans, .. },
             ) => spans,
             _ => {
                 self.status = crate::tl_id!("ui.inline_mark_whole_line").into();
@@ -8674,10 +8673,10 @@ impl NoteCraftApp {
                 || !matches!(
                     ed.blocks.get(caret.block),
                     Some(
-                        notecraft_formats::Block::Heading { .. }
-                            | notecraft_formats::Block::Paragraph(_)
-                            | notecraft_formats::Block::Quote(_)
-                            | notecraft_formats::Block::Item { .. }
+                        ergonote_formats::Block::Heading { .. }
+                            | ergonote_formats::Block::Paragraph(_)
+                            | ergonote_formats::Block::Quote(_)
+                            | ergonote_formats::Block::Item { .. }
                     )
                 )
             {
@@ -8711,10 +8710,10 @@ impl NoteCraftApp {
         let (lo, hi) = (caret.selection.0.min(caret.selection.1), caret.selection.0.max(caret.selection.1));
         let spans = match ed.blocks.get_mut(caret.block) {
             Some(
-                notecraft_formats::Block::Heading { spans, .. }
-                | notecraft_formats::Block::Paragraph(spans)
-                | notecraft_formats::Block::Quote(spans)
-                | notecraft_formats::Block::Item { spans, .. },
+                ergonote_formats::Block::Heading { spans, .. }
+                | ergonote_formats::Block::Paragraph(spans)
+                | ergonote_formats::Block::Quote(spans)
+                | ergonote_formats::Block::Item { spans, .. },
             ) if lo == 0 && hi == len => Some(spans),
             _ => None,
         };
@@ -8749,7 +8748,7 @@ impl NoteCraftApp {
     /// The keys Windows users expect for paragraph direction. Alt+Shift remains available
     /// to Windows for switching the active input language.
     fn direction_keys(&mut self, ctx: &Context) {
-        use notecraft_model::Dir;
+        use ergonote_model::Dir;
         let ctrl_shift = Modifiers { ctrl: true, shift: true, command: true, ..Modifiers::NONE };
         let pressed = |m: Modifiers, k: Key| ctx.input_mut(|i| i.consume_key(m, k));
         if pressed(ctrl_shift, Key::R) {
@@ -8762,16 +8761,16 @@ impl NoteCraftApp {
         // gives to Center, is Search here as it is in OneNote, so Center is on the menu only.
         if self.editor.as_ref().is_some_and(|e| e.caret.is_some() || e.across.is_some()) {
             if pressed(Modifiers::COMMAND, Key::L) {
-                self.apply_align(notecraft_model::justify::Align::Left);
+                self.apply_align(ergonote_model::justify::Align::Left);
             }
             if pressed(Modifiers::COMMAND, Key::R) {
-                self.apply_align(notecraft_model::justify::Align::Right);
+                self.apply_align(ergonote_model::justify::Align::Right);
             }
         }
     }
 
     /// Which way the line the caret is in reads. `None` lets its own words decide.
-    fn apply_direction(&mut self, dir: Option<notecraft_model::Dir>) {
+    fn apply_direction(&mut self, dir: Option<ergonote_model::Dir>) {
         let Some(ed) = self.editor.as_mut() else { return };
         let Some(at) = ed.caret.as_ref().map(|c| c.block) else {
             self.status = crate::tl_id!("ui.click_in_the_page_first_then_use_the_ribbon").into();
@@ -8803,7 +8802,7 @@ impl NoteCraftApp {
     /// and the width of its table columns, so it goes into the page's file and not into the
     /// window. The words are not touched: the stretching happens when the paragraph is
     /// drawn, so the file another program reads is the sentences the writer typed.
-    fn apply_justify(&mut self, strength: notecraft_model::justify::Strength) {
+    fn apply_justify(&mut self, strength: ergonote_model::justify::Strength) {
         let Some(ed) = self.editor.as_ref() else {
             self.say(crate::tl_id!("ui.open_a_page_first"));
             return;
@@ -8813,7 +8812,7 @@ impl NoteCraftApp {
             self.status_is_error = false;
             return;
         };
-        if !matches!(ed.blocks.get(at), Some(notecraft_formats::Block::Paragraph(_))) {
+        if !matches!(ed.blocks.get(at), Some(ergonote_formats::Block::Paragraph(_))) {
             self.say(crate::tl_id!("ui.justification_goes_on_a_paragraph_of_text"));
             return;
         }
@@ -8827,8 +8826,8 @@ impl NoteCraftApp {
 
     /// The alignment of the paragraph or heading the caret is in, or that every paragraph and
     /// heading in a multi-block selection shares.
-    fn caret_align(&self) -> Option<notecraft_model::justify::Align> {
-        use notecraft_formats::Block;
+    fn caret_align(&self) -> Option<ergonote_model::justify::Align> {
+        use ergonote_formats::Block;
         let ed = self.editor.as_ref()?;
         let blocks: Vec<usize> = match (ed.across.filter(|a| !a.inside_one_block()), ed.caret.as_ref()) {
             (Some(across), _) => across.blocks().collect(),
@@ -8842,7 +8841,7 @@ impl NoteCraftApp {
     }
 
     /// Sets the paragraphs the caret or the selection is in against `align` (issue #258).
-    fn apply_align(&mut self, align: notecraft_model::justify::Align) {
+    fn apply_align(&mut self, align: ergonote_model::justify::Align) {
         let Some(ed) = self.editor.as_ref() else {
             self.say(crate::tl_id!("ui.open_a_page_first"));
             return;
@@ -8862,8 +8861,8 @@ impl NoteCraftApp {
     /// Aligns the paragraphs and headings among `blocks`, or, when every one of them already
     /// has that alignment, gives them back the alignment their words have. One undo step, and
     /// written into the page's own file with the rest of its paragraph layout.
-    fn align_blocks(&mut self, blocks: &[usize], align: notecraft_model::justify::Align) {
-        use notecraft_formats::Block;
+    fn align_blocks(&mut self, blocks: &[usize], align: ergonote_model::justify::Align) {
+        use ergonote_formats::Block;
         let Some(ed) = self.editor.as_mut() else { return };
         let text: Vec<usize> =
             blocks.iter().copied().filter(|i| matches!(ed.blocks.get(*i), Some(Block::Paragraph(_) | Block::Heading { .. }))).collect();
@@ -8874,7 +8873,7 @@ impl NoteCraftApp {
         let all = text.iter().all(|i| ed.justified.align_of(*i) == Some(align));
         let mut marked = ed.justified.clone();
         for i in &text {
-            marked.set_mark(*i, (!all).then_some(notecraft_model::justify::Mark::Align(align)));
+            marked.set_mark(*i, (!all).then_some(ergonote_model::justify::Mark::Align(align)));
         }
         if marked == ed.justified {
             return;
@@ -8896,16 +8895,16 @@ impl NoteCraftApp {
         self.save_block_marks((false, true));
         self.say(match (all, align) {
             (true, _) => crate::tl_id!("ui.the_paragraph_follows_its_words_again"),
-            (false, notecraft_model::justify::Align::Left) => crate::tl_id!("ui.aligned_left"),
-            (false, notecraft_model::justify::Align::Center) => crate::tl_id!("ui.centred"),
-            (false, notecraft_model::justify::Align::Right) => crate::tl_id!("ui.aligned_right"),
+            (false, ergonote_model::justify::Align::Left) => crate::tl_id!("ui.aligned_left"),
+            (false, ergonote_model::justify::Align::Center) => crate::tl_id!("ui.centred"),
+            (false, ergonote_model::justify::Align::Right) => crate::tl_id!("ui.aligned_right"),
         });
     }
 
     /// Opens the Paragraph Spacing dialog for the paragraphs the caret or the selection is in,
     /// showing the value they share, or leaving a field empty where they differ (issue #275).
     fn open_paragraph_spacing(&mut self) {
-        use notecraft_formats::Block;
+        use ergonote_formats::Block;
         let Some(ed) = self.editor.as_ref() else {
             self.say(crate::tl_id!("ui.open_a_page_first"));
             return;
@@ -8927,8 +8926,8 @@ impl NoteCraftApp {
             self.say(crate::tl_id!("ui.spacing_goes_on_text"));
             return;
         }
-        let each: Vec<notecraft_model::justify::Spacing> = text.iter().map(|i| ed.justified.spacing_of(*i).unwrap_or_default()).collect();
-        let shared = |part: fn(&notecraft_model::justify::Spacing) -> u16| -> String {
+        let each: Vec<ergonote_model::justify::Spacing> = text.iter().map(|i| ed.justified.spacing_of(*i).unwrap_or_default()).collect();
+        let shared = |part: fn(&ergonote_model::justify::Spacing) -> u16| -> String {
             let first = each.first().map(part).unwrap_or(0);
             if each.iter().map(part).all(|v| v == first) { first.to_string() } else { String::new() }
         };
@@ -8945,7 +8944,7 @@ impl NoteCraftApp {
     /// a part left as `None` keeps what each already has. One undo step, written into the page's own
     /// file with the rest of its paragraph layout (issue #275).
     fn apply_spacing(&mut self, blocks: &[usize], change: [Option<u16>; 3]) {
-        use notecraft_model::justify::Spacing;
+        use ergonote_model::justify::Spacing;
         let Some(ed) = self.editor.as_mut() else { return };
         let mut marked = ed.justified.clone();
         for i in blocks {
@@ -8986,26 +8985,26 @@ impl NoteCraftApp {
     }
 
     /// Writes which paragraphs are justified into the page's own file, and says what `want` now is.
-    fn write_justified(&mut self, marked: notecraft_model::justify::Justified, want: Option<notecraft_model::justify::Strength>) {
+    fn write_justified(&mut self, marked: ergonote_model::justify::Justified, want: Option<ergonote_model::justify::Strength>) {
         let Some(ed) = self.editor.as_ref() else { return };
         let path = path_str(&ed.dir);
-        let line = notecraft_model::justify::write(&marked);
+        let line = ergonote_model::justify::write(&marked);
         self.save_now();
         if self.run("page.justify", &params(&[("path", &path), ("blocks", &line)])).is_some() {
             if let Some(ed) = self.editor.as_mut() {
                 ed.justified = marked;
             }
             self.say(match want {
-                Some(notecraft_model::justify::Strength::Low) => crate::tl_id!("ui.this_paragraph_fills_the_column_stretched_lightly"),
-                Some(notecraft_model::justify::Strength::Medium) => crate::tl_id!("ui.this_paragraph_fills_the_column"),
-                Some(notecraft_model::justify::Strength::High) => crate::tl_id!("ui.this_paragraph_fills_the_column_stretched_hard"),
+                Some(ergonote_model::justify::Strength::Low) => crate::tl_id!("ui.this_paragraph_fills_the_column_stretched_lightly"),
+                Some(ergonote_model::justify::Strength::Medium) => crate::tl_id!("ui.this_paragraph_fills_the_column"),
+                Some(ergonote_model::justify::Strength::High) => crate::tl_id!("ui.this_paragraph_fills_the_column_stretched_hard"),
                 None => crate::tl_id!("ui.this_paragraph_is_ragged_again"),
             });
         }
     }
 
     /// Which way the whole page reads. It is written into the page's own file.
-    fn apply_page_direction(&mut self, dir: Option<notecraft_model::Dir>) {
+    fn apply_page_direction(&mut self, dir: Option<ergonote_model::Dir>) {
         let Some(ed) = self.editor.as_ref() else {
             self.say(crate::tl_id!("ui.open_a_page_first"));
             return;
@@ -9026,7 +9025,7 @@ impl NoteCraftApp {
     }
 
     /// Which way the selection, or what is typed next, reads: an isolated run.
-    fn apply_embedding(&mut self, dir: notecraft_model::Dir) {
+    fn apply_embedding(&mut self, dir: ergonote_model::Dir) {
         let Some(ed) = self.editor.as_mut() else { return };
         let Some(caret) = ed.caret.as_mut() else {
             self.status = crate::tl_id!("ui.click_in_the_page_first_then_use_the_ribbon").into();
@@ -9051,7 +9050,7 @@ impl NoteCraftApp {
 
     /// Makes the block the caret is in a heading, a list item, a quote or ordinary text.
     fn apply_block_kind(&mut self, kind: &str) {
-        use notecraft_formats::markdown::Block;
+        use ergonote_formats::markdown::Block;
         let Some(ed) = self.editor.as_mut() else { return };
         if !ed.writable {
             self.status = crate::tl_id!("ui.click_in_the_page_first_then_use_the_ribbon").into();
@@ -9094,7 +9093,7 @@ impl NoteCraftApp {
     }
 
     /// Puts a tag on the line the caret is in, or takes it off again.
-    fn apply_tag(&mut self, tag: notecraft_model::Tag) {
+    fn apply_tag(&mut self, tag: ergonote_model::Tag) {
         let Some(ed) = self.editor.as_mut() else { return };
         let Some(at) = ed.caret.as_ref().map(|c| c.block) else {
             self.status = crate::tl_id!("ui.click_in_the_page_first_then_use_the_ribbon").into();
@@ -9121,7 +9120,7 @@ impl NoteCraftApp {
     ///
     /// egui's own text box answers these for a paragraph it is drawing, and it is left to
     /// do so. Nothing answered them anywhere else, and that is a lot of places: not in a
-    /// right-to-left paragraph, which NoteCraft draws itself; not for a selection that
+    /// right-to-left paragraph, which ErgoNote draws itself; not for a selection that
     /// spans paragraphs, which no text box owns; and not when a box is picked or nothing
     /// has the keyboard at all. So Ctrl+C did nothing in Arabic, Ctrl+A selected nothing,
     /// and a box that had been copied could not be pasted into an empty one. The owner
@@ -9187,7 +9186,7 @@ impl NoteCraftApp {
         }
     }
 
-    /// True when the words the caret is in are drawn by NoteCraft rather than by an egui
+    /// True when the words the caret is in are drawn by ErgoNote rather than by an egui
     /// text box, so the keys above are ours to answer.
     fn words_are_ours(&self) -> bool {
         let Some(ed) = self.editor.as_ref() else { return false };
@@ -9201,7 +9200,7 @@ impl NoteCraftApp {
         pageedit::needs_our_caret(&caret.text)
             && !matches!(
                 ed.blocks.get(caret.block),
-                Some(notecraft_formats::markdown::Block::Code { .. }) | Some(notecraft_formats::markdown::Block::MathBlock(_))
+                Some(ergonote_formats::markdown::Block::Code { .. }) | Some(ergonote_formats::markdown::Block::MathBlock(_))
             )
     }
 
@@ -9267,8 +9266,8 @@ impl NoteCraftApp {
                 return;
             }
             let Some(copied) = pageedit::copied_span(&ed.blocks, open) else { return };
-            self.pending_copy = Some(notecraft_formats::render::blocks_to_text(&copied));
-            self.pending_copy_html = Some(notecraft_formats::render::blocks_to_html(&copied));
+            self.pending_copy = Some(ergonote_formats::render::blocks_to_text(&copied));
+            self.pending_copy_html = Some(ergonote_formats::render::blocks_to_html(&copied));
             if which == "cut" {
                 let (block, at) = pageedit::delete_span(&mut ed.blocks, open);
                 let text = ed.blocks.get(block).map(pageedit::caret_text).unwrap_or_default();
@@ -9294,8 +9293,8 @@ impl NoteCraftApp {
             return;
         }
         let Some(copied) = ed.blocks.get(caret.block).and_then(|block| caret.copied_blocks(block)) else { return };
-        self.pending_copy = Some(notecraft_formats::render::blocks_to_text(&copied));
-        self.pending_copy_html = Some(notecraft_formats::render::blocks_to_html(&copied));
+        self.pending_copy = Some(ergonote_formats::render::blocks_to_text(&copied));
+        self.pending_copy_html = Some(ergonote_formats::render::blocks_to_html(&copied));
         if which == "cut" {
             let (text, at) = pageedit::insert_at_caret(&caret.text, caret.selection, "");
             caret.text = text;
@@ -9609,7 +9608,7 @@ impl NoteCraftApp {
     /// The Tags Summary pane, on the right of the page as OneNote has it.
     /// Reads the templates again: the built-in ones and those kept in the notebooks folder.
     fn refresh_templates(&mut self) {
-        let found = notecraft_store::page_templates::list(self.session.root());
+        let found = ergonote_store::page_templates::list(self.session.root());
         if let Some(pane) = self.templates_pane.as_mut() {
             pane.templates = found;
         }
@@ -9649,9 +9648,9 @@ impl NoteCraftApp {
             if self.editor.is_none() {
                 ui.vertical_centered(|ui| {
                     ui.add_space(ui.available_height() * 0.22);
-                    ui.add(egui::Image::from_bytes("bytes://notecraft-logo", crate::LOGO_PNG).fit_to_exact_size(vec2(128.0, 128.0)));
+                    ui.add(egui::Image::from_bytes("bytes://ergonote-logo", crate::LOGO_PNG).fit_to_exact_size(vec2(128.0, 128.0)));
                     ui.add_space(8.0);
-                    ui.heading(crate::tl_id!("ui.notecraft"));
+                    ui.heading(crate::tl_id!("ui.ergonote"));
                     ui.label(crate::tl_id!("ui.notes_as_plain_folders_open_a_page_or_create_a_notebook_to_start"));
                     ui.add_space(4.0);
                     let folder = self.shown(self.session.root());
@@ -10031,7 +10030,7 @@ impl NoteCraftApp {
                                     if let Some(b) = ed.boxes.get_mut(i)
                                         && *d != egui::Vec2::ZERO
                                     {
-                                        *b = notecraft_model::container::Container::new(b.x + d.x, b.y + d.y, b.width, b.blocks);
+                                        *b = ergonote_model::container::Container::new(b.x + d.x, b.y + d.y, b.width, b.blocks);
                                         moved.boxes = true;
                                     }
                                 }
@@ -10064,7 +10063,7 @@ impl NoteCraftApp {
                                     let by = if by < 0.0 && highest.is_finite() { by.max(-highest) } else { by };
                                     for i in &below {
                                         if let Some(b) = ed.boxes.get_mut(*i) {
-                                            *b = notecraft_model::container::Container::new(b.x, b.y + by, b.width, b.blocks);
+                                            *b = ergonote_model::container::Container::new(b.x, b.y + by, b.width, b.blocks);
                                         }
                                     }
                                     if !below.is_empty() && by != 0.0 {
@@ -10110,7 +10109,7 @@ impl NoteCraftApp {
                                 if let Some((dx, dy)) = pad.take_shift() {
                                     for i in crate::containers::selected_boxes(ui.ctx(), &ed.dir) {
                                         if let Some(c) = ed.boxes.get_mut(i) {
-                                            *c = notecraft_model::container::Container::new(c.x + dx, c.y + dy, c.width, c.blocks);
+                                            *c = ergonote_model::container::Container::new(c.x + dx, c.y + dy, c.width, c.blocks);
                                             moved.boxes = true;
                                         }
                                     }
@@ -10173,7 +10172,7 @@ impl NoteCraftApp {
                                 let in_table = ed
                                     .caret
                                     .as_ref()
-                                    .is_some_and(|c| c.cell.is_some() && matches!(ed.blocks.get(c.block), Some(notecraft_formats::markdown::Block::Table { .. })));
+                                    .is_some_and(|c| c.cell.is_some() && matches!(ed.blocks.get(c.block), Some(ergonote_formats::markdown::Block::Table { .. })));
                                 crate::pagemenu::show(ui, body, in_table, &mut page_acts, &tokens);
                                 self.selected_image_block =
                                     crate::containers::selected_object(ui.ctx(), &ed.dir).and_then(|(i, kind)| (kind == "image").then_some(i));
@@ -10212,7 +10211,7 @@ impl NoteCraftApp {
                             }
                             ui.add_space(14.0);
                             ui.label(
-                                egui::RichText::new(crate::tl_id!("ui.this_page_holds_markup_notecraft_does_not_edit_yet_s_bc3b3b6a92"))
+                                egui::RichText::new(crate::tl_id!("ui.this_page_holds_markup_ergonote_does_not_edit_yet_s_bc3b3b6a92"))
                                     .small()
                                     .color(tokens.muted),
                             );
@@ -10337,12 +10336,12 @@ impl NoteCraftApp {
             // so they go into the page's own file beside them.
             if cols_moved {
                 let path = path_str(&ed.dir);
-                let line = notecraft_model::tablecols::write(&ed.columns);
+                let line = ergonote_model::tablecols::write(&ed.columns);
                 save_cols = Some((path, line));
             }
             if justified_moved {
                 let path = path_str(&ed.dir);
-                let line = notecraft_model::justify::write(&ed.justified);
+                let line = ergonote_model::justify::write(&ed.justified);
                 save_justified = Some((path, line));
             }
         }
@@ -10458,7 +10457,7 @@ impl NoteCraftApp {
         {
             if let Some(ed) = self.editor.as_mut() {
                 ed.titled = !t.is_empty();
-                ed.title = if t.is_empty() { notecraft_store::tree::UNTITLED_PAGE.to_string() } else { t };
+                ed.title = if t.is_empty() { ergonote_store::tree::UNTITLED_PAGE.to_string() } else { t };
             }
             self.say(crate::tl_id!("ui.title_saved"));
         }
@@ -10470,7 +10469,7 @@ impl NoteCraftApp {
         } else {
             saved_at
                 .map(|time| {
-                    let shown = notecraft_model::time::clock_from_iso(time).unwrap_or_else(|| time.to_owned());
+                    let shown = ergonote_model::time::clock_from_iso(time).unwrap_or_else(|| time.to_owned());
                     crate::i18n::format_message_id("ui.saved_time", &[("time", &shown)])
                 })
                 .unwrap_or_else(|| crate::tl_id!("ui.saved").into())
@@ -10732,8 +10731,8 @@ impl NoteCraftApp {
             _ => None,
         };
         ctx.data_mut(|d| {
-            d.insert_temp(Id::new("notecraft-lock-images"), self.lock_images);
-            d.insert_temp(Id::new("notecraft-dys-spaced"), self.dys_spaced);
+            d.insert_temp(Id::new("ergonote-lock-images"), self.lock_images);
+            d.insert_temp(Id::new("ergonote-dys-spaced"), self.dys_spaced);
             d.insert_temp(pageedit::spell_lang_id(), self.spell_lang);
             d.insert_temp(pageedit::word_prediction_enabled_id(), self.word_prediction_enabled);
             d.remove::<(usize, egui::Rect)>(pageedit::caret_screen_pos_id());
@@ -10926,8 +10925,8 @@ impl NoteCraftApp {
     }
 }
 
-fn table_from_gridcraft_csv(text: &str) -> Option<(notecraft_formats::markdown::Block, usize, usize)> {
-    let table = notecraft_formats::csv::to_table(text)?;
+fn table_from_gridcraft_csv(text: &str) -> Option<(ergonote_formats::markdown::Block, usize, usize)> {
+    let table = ergonote_formats::csv::to_table(text)?;
     let (rows, columns) = pageedit::table_size(&table).unwrap_or((0, 0));
     Some((table, rows, columns))
 }
@@ -10949,7 +10948,7 @@ fn transcribe_audio_file_cmd(wav: &str, locale: &str, lang_code: &str) -> Result
             if !stdout.is_empty() {
                 return Ok(stdout);
             }
-            let txt_path = "/tmp/notecraft_dictation.txt";
+            let txt_path = "/tmp/ergonote_dictation.txt";
             if let Ok(txt) = std::fs::read_to_string(txt_path)
                 && !txt.trim().is_empty()
             {
@@ -10999,7 +10998,7 @@ fn open_url_in_system(url: &str) -> std::io::Result<()> {
 
 /// Cross-platform pure-Rust ZIP backup of the entire notebooks root directory.
 fn write_notebooks_zip(root: &Path, dest: &Path) -> Result<usize, String> {
-    let file = notecraft_store::vfs::File::create(dest).map_err(|e| e.to_string())?;
+    let file = ergonote_store::vfs::File::create(dest).map_err(|e| e.to_string())?;
     write_notebooks_zip_to_writer(root, file)
 }
 
@@ -11010,7 +11009,7 @@ fn write_notebooks_zip_to_writer<W: std::io::Write + std::io::Seek>(root: &Path,
     let mut count = 0usize;
     let mut stack = vec![root.to_path_buf()];
     while let Some(dir) = stack.pop() {
-        let entries = notecraft_store::vfs::read_dir(&dir).map_err(|e| e.to_string())?;
+        let entries = ergonote_store::vfs::read_dir(&dir).map_err(|e| e.to_string())?;
         for entry in entries.flatten() {
             let path = entry.path();
             let name = entry.file_name();
@@ -11018,13 +11017,13 @@ fn write_notebooks_zip_to_writer<W: std::io::Write + std::io::Seek>(root: &Path,
             if name_str == "_impression.html" || name_str.ends_with(".tmp") {
                 continue;
             }
-            if notecraft_store::vfs::is_dir(&path) {
+            if ergonote_store::vfs::is_dir(&path) {
                 stack.push(path);
-            } else if notecraft_store::vfs::is_file(&path) {
+            } else if ergonote_store::vfs::is_file(&path) {
                 let rel = path.strip_prefix(root).map_err(|e| e.to_string())?;
                 let zip_name = rel.to_string_lossy().replace('\\', "/");
                 writer.start_file(&zip_name, options).map_err(|e| e.to_string())?;
-                let bytes = notecraft_store::vfs::read(&path).map_err(|e| e.to_string())?;
+                let bytes = ergonote_store::vfs::read(&path).map_err(|e| e.to_string())?;
                 writer.write_all(&bytes).map_err(|e| e.to_string())?;
                 count += 1;
             }
@@ -11036,9 +11035,9 @@ fn write_notebooks_zip_to_writer<W: std::io::Write + std::io::Seek>(root: &Path,
 
 /// Cross-platform pure-Rust ZIP extraction into the notebooks root directory.
 fn extract_notebooks_zip(src: &Path, dest_root: &Path) -> Result<usize, String> {
-    let file = notecraft_store::vfs::File::open(src).map_err(|e| e.to_string())?;
+    let file = ergonote_store::vfs::File::open(src).map_err(|e| e.to_string())?;
     let mut archive = zip::ZipArchive::new(file).map_err(|e| e.to_string())?;
-    notecraft_store::vfs::create_dir_all(dest_root).map_err(|e| e.to_string())?;
+    ergonote_store::vfs::create_dir_all(dest_root).map_err(|e| e.to_string())?;
     let mut count = 0usize;
     for i in 0..archive.len() {
         let mut entry = archive.by_index(i).map_err(|e| e.to_string())?;
@@ -11047,12 +11046,12 @@ fn extract_notebooks_zip(src: &Path, dest_root: &Path) -> Result<usize, String> 
         };
         let out_path = dest_root.join(rel);
         if entry.is_dir() {
-            notecraft_store::vfs::create_dir_all(&out_path).map_err(|e| e.to_string())?;
+            ergonote_store::vfs::create_dir_all(&out_path).map_err(|e| e.to_string())?;
         } else {
             if let Some(parent) = out_path.parent() {
-                notecraft_store::vfs::create_dir_all(parent).map_err(|e| e.to_string())?;
+                ergonote_store::vfs::create_dir_all(parent).map_err(|e| e.to_string())?;
             }
-            let mut out_file = notecraft_store::vfs::File::create(&out_path).map_err(|e| e.to_string())?;
+            let mut out_file = ergonote_store::vfs::File::create(&out_path).map_err(|e| e.to_string())?;
             std::io::copy(&mut entry, &mut out_file).map_err(|e| e.to_string())?;
             count += 1;
         }

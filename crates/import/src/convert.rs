@@ -1,11 +1,11 @@
-//! One OneNote page into NoteCraft blocks.
+//! One OneNote page into ErgoNote blocks.
 //!
 //! The reader gives a page as lines of runs, pictures, files and tables. This turns them into
 //! the block model both page formats are written from, and hands every picture and file to
 //! the caller to store beside the page. Nothing here touches the file system.
 
-use notecraft_formats::markdown::{Block, Span};
-use notecraft_onenote::{Content, List, Page, Run, Store};
+use ergonote_formats::markdown::{Block, Span};
+use ergonote_onenote::{Content, List, Page, Run, Store};
 
 /// What the conversion could not carry over, counted for the report.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
@@ -442,7 +442,7 @@ mod tests {
     }
 
     fn empty_store() -> Store {
-        let data = notecraft_onenote::testing::OneNote::new().finish();
-        notecraft_onenote::read(&data).expect("an empty section reads")
+        let data = ergonote_onenote::testing::OneNote::new().finish();
+        ergonote_onenote::read(&data).expect("an empty section reads")
     }
 }

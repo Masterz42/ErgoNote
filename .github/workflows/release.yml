@@ -60,7 +60,7 @@ jobs:
             echo "version=$v"
             echo "prerelease=$pre"
           } >>"$GITHUB_OUTPUT"
-          echo "### NoteCraft v$v (\`${GITHUB_SHA::9}\`)" >>"$GITHUB_STEP_SUMMARY"
+          echo "### ErgoNote v$v (\`${GITHUB_SHA::9}\`)" >>"$GITHUB_STEP_SUMMARY"
 
       - name: Verify the selected Packaging run matches this source
         env:
@@ -91,7 +91,7 @@ jobs:
           PY
 
       - name: Download artifacts from the selected Packaging run
-        run: gh run download "${{ inputs.packaging_run_id }}" --repo "$GITHUB_REPOSITORY" --dir dist --pattern 'notecraft-*'
+        run: gh run download "${{ inputs.packaging_run_id }}" --repo "$GITHUB_REPOSITORY" --dir dist --pattern 'ergonote-*'
       - name: Confirm packaging artifacts exist
         run: |
           test -n "$(find dist -type f -print -quit)"
@@ -101,22 +101,22 @@ jobs:
         shell: bash
         run: |
           tag="v${{ steps.v.outputs.version }}"
-          flags=(--draft --target "$GITHUB_SHA" --title "NoteCraft $tag" --generate-notes)
+          flags=(--draft --target "$GITHUB_SHA" --title "ErgoNote $tag" --generate-notes)
           if [ "${{ steps.v.outputs.prerelease }}" = "true" ]; then flags+=(--prerelease); fi
-          notes="**Alpha.** NoteCraft is not a finished product. It has had little use, and the folder format can still change. Keep a backup of any notebook you care about.
+          notes="**Alpha.** ErgoNote is not a finished product. It has had little use, and the folder format can still change. Keep a backup of any notebook you care about.
 
           These files are **not signed**: Windows SmartScreen may show \"Windows protected your PC\".
           Choose More info, then Run anyway. Check a download against \`SHA256SUMS.txt\`, or with
           \`gh attestation verify <file> --repo ${GITHUB_REPOSITORY}\`.
 
-          Your notebooks are plain folders under Documents\NoteCraft, and neither the installer nor
-          an uninstall touches them. The app writes \`notecraft.log\` in \`%APPDATA%\NoteCraft\`: attach it
+          Your notebooks are plain folders under Documents\ErgoNote, and neither the installer nor
+          an uninstall touches them. The app writes \`ergonote.log\` in \`%APPDATA%\ErgoNote\`: attach it
           to a bug report at https://github.com/${GITHUB_REPOSITORY}/issues. What is missing is listed in
           docs/gaps.md.
 
           The Android APK is for 64-bit ARM phones and tablets with Android 8 or later. The Packaging
           run's summary says whether it was signed with the release key; one signed with a key made
           for that build cannot update an earlier APK in place. Its notebooks live in the app's own
-          storage (Android/data/com.alientechsoftware.notecraft/files/NoteCraft)."
+          storage (Android/data/com.ergonote.app/files/ErgoNote)."
           mapfile -t artifacts < <(find dist -type f -print)
           gh release create "$tag" "${artifacts[@]}" "${flags[@]}" --notes "$notes"

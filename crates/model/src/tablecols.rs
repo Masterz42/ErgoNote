@@ -7,7 +7,7 @@
 //! arranged in are kept: in the page's own metadata, as a line that names each table by its
 //! position among the page's blocks.
 //!
-//! A page whose blocks are rearranged outside NoteCraft may find a width against the wrong
+//! A page whose blocks are rearranged outside ErgoNote may find a width against the wrong
 //! table. The worst that does is draw a table in the wrong widths, which a drag puts right;
 //! nothing a page says is lost, which is why this layer is allowed to be a guess.
 
@@ -316,7 +316,7 @@ impl Widths {
 /// The cells of a table given something of their own follow as a part of their own,
 /// `block@row.column=a,row.column=a`. `a` is an alignment, `l`, `c` or `r` (issue #170), then a
 /// shading, `~` and a colour's name (issue #169): `1.2=c~yellow`, or `1.2=~yellow` for a cell
-/// with only a colour. The part has no `:` in it, so a NoteCraft from before it skips it and
+/// with only a colour. The part has no `:` in it, so a ErgoNote from before it skips it and
 /// keeps the widths.
 ///
 /// Anything that does not read as that is dropped, because layout is a convenience and a
@@ -562,7 +562,7 @@ mod tests {
 
     #[test]
     fn an_older_reader_keeps_the_widths_of_an_aligned_table() {
-        // What a NoteCraft from before alignment does with the line: a part without a `:` is
+        // What a ErgoNote from before alignment does with the line: a part without a `:` is
         // skipped, so the widths and the borders are read as they were.
         let line = "3:120,200!; 3@1.1=r";
         let older: Vec<&str> = line.split(';').map(str::trim).filter(|p| p.contains(':')).collect();

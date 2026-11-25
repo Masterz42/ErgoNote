@@ -25,7 +25,7 @@ tags: []
 
 ## 看看这一页的源码
 
-点击页面旁边的 `< >` 按钮。文件头部用 `<meta name="notecraft:...">` 标签保存页面的标识和日期；Markdown 页面把同样的信息放在前置元数据里。NoteCraft 只编辑 `<body>` 里面的内容。
+点击页面旁边的 `< >` 按钮。文件头部用 `<meta name="ergonote:...">` 标签保存页面的标识和日期；Markdown 页面把同样的信息放在前置元数据里。ErgoNote 只编辑 `<body>` 里面的内容。
 
 下一页：[同步与备份](../sync-and-backup/)。
 

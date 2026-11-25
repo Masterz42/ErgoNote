@@ -3,21 +3,21 @@
 <plist version="1.0">
 <dict>
   <key>CFBundleDevelopmentRegion</key><string>en</string>
-  <key>CFBundleDisplayName</key><string>NoteCraft</string>
-  <key>CFBundleName</key><string>NoteCraft</string>
-  <key>CFBundleExecutable</key><string>notecraft</string>
-  <key>CFBundleIdentifier</key><string>com.alientechsoftware.notecraft</string>
-  <key>CFBundleIconFile</key><string>notecraft.icns</string>
+  <key>CFBundleDisplayName</key><string>ErgoNote</string>
+  <key>CFBundleName</key><string>ErgoNote</string>
+  <key>CFBundleExecutable</key><string>ergonote</string>
+  <key>CFBundleIdentifier</key><string>com.ergonote.app</string>
+  <key>CFBundleIconFile</key><string>ergonote.icns</string>
   <key>CFBundleInfoDictionaryVersion</key><string>6.0</string>
   <key>CFBundlePackageType</key><string>APPL</string>
   <key>CFBundleShortVersionString</key><string>@VERSION@</string>
   <key>CFBundleVersion</key><string>@BUILD@</string>
-  <key>NoteCraftVersion</key><string>@FULL_VERSION@</string>
-  <key>NoteCraftBuildCommit</key><string>@BUILD_SHA@</string>
+  <key>ErgoNoteVersion</key><string>@FULL_VERSION@</string>
+  <key>ErgoNoteBuildCommit</key><string>@BUILD_SHA@</string>
   <key>LSApplicationCategoryType</key><string>public.app-category.productivity</string>
   <key>LSMinimumSystemVersion</key><string>11.0</string>
   <key>NSHighResolutionCapable</key><true/>
   <key>NSSupportsAutomaticGraphicsSwitching</key><true/>
-  <key>NSHumanReadableCopyright</key><string>NoteCraft contributors. MIT or Apache-2.0.</string>
+  <key>NSHumanReadableCopyright</key><string>ErgoNote contributors. MIT or Apache-2.0.</string>
 </dict>
 </plist>

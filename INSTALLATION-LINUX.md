@@ -52,12 +52,12 @@ Autoriser le lancement (Cinnamon et GNOME demandent cette confirmation une fois)
 | Element | Emplacement |
 |---|---|
 | Programme (installation utilisateur) | `~/.local/bin/ergonote` |
-| Entree de menu | `~/.local/share/applications/com.alientechsoftware.notecraft.desktop` |
-| Icones | `~/.local/share/icons/hicolor/*/apps/com.alientechsoftware.notecraft.png` |
-| Carnet d'accueil | `~/.local/share/notecraft/demo/welcome-to-notecraft` |
-| Vos carnets | `~/Documents/NoteCraft` (ou le dossier deja memorise) |
+| Entree de menu | `~/.local/share/applications/com.ergonote.app.desktop` |
+| Icones | `~/.local/share/icons/hicolor/*/apps/com.ergonote.app.png` |
+| Carnet d'accueil | `~/.local/share/ergonote/demo/welcome-to-ergonote` |
+| Vos carnets | `~/Documents/ErgoNote` (ou le dossier deja memorise) |
 
-Une mise a jour ne supprime jamais `~/Documents/NoteCraft`.
+Une mise a jour ne supprime jamais `~/Documents/ErgoNote`.
 
 ## Desinstaller
 
@@ -65,8 +65,8 @@ Installation utilisateur :
 
 ```bash
 rm -f ~/.local/bin/ergonote
-rm -f ~/.local/share/applications/com.alientechsoftware.notecraft.desktop
-rm -rf ~/.local/share/notecraft/demo/welcome-to-notecraft
+rm -f ~/.local/share/applications/com.ergonote.app.desktop
+rm -rf ~/.local/share/ergonote/demo/welcome-to-ergonote
 rm -f ~/Bureau/ErgoNote.desktop
 ```
 

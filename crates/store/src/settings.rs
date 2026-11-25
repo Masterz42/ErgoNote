@@ -2,7 +2,7 @@
 //! notebook, so notebooks carry no personal settings.
 
 use crate::error::{Result, StoreError};
-use notecraft_model::{PageFormat, kv};
+use ergonote_model::{PageFormat, kv};
 use std::path::{Path, PathBuf};
 
 /// Where the format for a new page came from.
@@ -29,9 +29,9 @@ impl FormatSource {
     }
 }
 
-/// The default notebooks folder: `NOTECRAFT_NOTEBOOKS`, else `Documents/NoteCraft` in the home folder.
+/// The default notebooks folder: `ERGONOTE_NOTEBOOKS`, else `Documents/ErgoNote` in the home folder.
 pub fn default_notebooks_dir() -> PathBuf {
-    if let Some(p) = std::env::var_os("NOTECRAFT_NOTEBOOKS") {
+    if let Some(p) = std::env::var_os("ERGONOTE_NOTEBOOKS") {
         return PathBuf::from(p);
     }
     let home = std::env::var_os("USERPROFILE").or_else(|| std::env::var_os("HOME")).map(PathBuf::from).unwrap_or_else(|| PathBuf::from("."));
@@ -40,7 +40,7 @@ pub fn default_notebooks_dir() -> PathBuf {
 
 /// The per-user notebook folder, kept separate so every platform can test the same contract.
 pub fn default_notebooks_dir_for_home(home: impl AsRef<Path>) -> PathBuf {
-    home.as_ref().join("Documents").join("NoteCraft")
+    home.as_ref().join("Documents").join("ErgoNote")
 }
 
 /// The notebook root the app should use when no explicit command-line root is supplied.
@@ -62,15 +62,15 @@ pub struct Settings {
 }
 
 impl Settings {
-    /// Settings stored in `path` (used by tests and by `NOTECRAFT_SETTINGS`).
+    /// Settings stored in `path` (used by tests and by `ERGONOTE_SETTINGS`).
     pub fn at(path: impl Into<PathBuf>) -> Settings {
         Settings { path: path.into() }
     }
 
-    /// The usual place: `NOTECRAFT_SETTINGS`, else `%APPDATA%\NoteCraft\settings.toml`,
-    /// else `$XDG_CONFIG_HOME/notecraft/settings.toml`, else `$HOME/.config/notecraft/settings.toml`.
+    /// The usual place: `ERGONOTE_SETTINGS`, else `%APPDATA%\ErgoNote\settings.toml`,
+    /// else `$XDG_CONFIG_HOME/ergonote/settings.toml`, else `$HOME/.config/ergonote/settings.toml`.
     pub fn default_location() -> Settings {
-        if let Some(p) = std::env::var_os("NOTECRAFT_SETTINGS") {
+        if let Some(p) = std::env::var_os("ERGONOTE_SETTINGS") {
             return Settings::at(p);
         }
         // Development mode: prefer local folder next to executable/cwd
@@ -86,13 +86,13 @@ impl Settings {
         }
         // Production: use platform-specific locations
         let path = if let Some(appdata) = std::env::var_os("APPDATA") {
-            PathBuf::from(appdata).join("NoteCraft").join("settings.toml")
+            PathBuf::from(appdata).join("ErgoNote").join("settings.toml")
         } else if let Some(xdg) = std::env::var_os("XDG_CONFIG_HOME") {
-            PathBuf::from(xdg).join("notecraft").join("settings.toml")
+            PathBuf::from(xdg).join("ergonote").join("settings.toml")
         } else if let Some(home) = std::env::var_os("HOME") {
-            PathBuf::from(home).join(".config").join("notecraft").join("settings.toml")
+            PathBuf::from(home).join(".config").join("ergonote").join("settings.toml")
         } else {
-            PathBuf::from("notecraft-settings.toml")
+            PathBuf::from("ergonote-settings.toml")
         };
         Settings::at(path)
     }
@@ -142,14 +142,14 @@ impl Settings {
 
     /// The tags the person defined (issue #259), in their order. `None` when none were ever
     /// saved, so a caller can tell "never set" from "all removed".
-    pub fn custom_tags(&self) -> Option<Vec<notecraft_model::CustomTag>> {
-        self.get("custom_tags").map(|v| notecraft_model::CustomTag::decode_list(&v))
+    pub fn custom_tags(&self) -> Option<Vec<ergonote_model::CustomTag>> {
+        self.get("custom_tags").map(|v| ergonote_model::CustomTag::decode_list(&v))
     }
 
     /// Saves the person's tags and makes them the ones every page is read with.
-    pub fn set_custom_tags(&self, list: &[notecraft_model::CustomTag]) -> Result<()> {
-        notecraft_model::tag::set_custom(list);
-        self.set("custom_tags", &notecraft_model::CustomTag::encode_list(list))
+    pub fn set_custom_tags(&self, list: &[ergonote_model::CustomTag]) -> Result<()> {
+        ergonote_model::tag::set_custom(list);
+        self.set("custom_tags", &ergonote_model::CustomTag::encode_list(list))
     }
 
     /// The format used for new pages when nothing nearer says otherwise.
@@ -175,8 +175,8 @@ mod tests {
 
     #[test]
     fn notebooks_default_is_under_the_current_users_documents_folder() {
-        assert_eq!(default_notebooks_dir_for_home(r"C:\Users\Ada"), PathBuf::from(r"C:\Users\Ada").join("Documents").join("NoteCraft"));
-        assert_eq!(default_notebooks_dir_for_home("/home/ada"), PathBuf::from("/home/ada/Documents/NoteCraft"));
+        assert_eq!(default_notebooks_dir_for_home(r"C:\Users\Ada"), PathBuf::from(r"C:\Users\Ada").join("Documents").join("ErgoNote"));
+        assert_eq!(default_notebooks_dir_for_home("/home/ada"), PathBuf::from("/home/ada/Documents/ErgoNote"));
     }
 
     #[test]

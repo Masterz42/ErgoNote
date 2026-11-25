@@ -4,9 +4,9 @@
 @plural	{n} notebook|{n} notebooks	{n} cuaderno|{n} cuadernos
 @plural	{n} stroke|{n} strokes	{n} trazo|{n} trazos
 @id	language.name	Español
-@id	product.about	NoteCraft es un proyecto escrito íntegramente en Rust y desarrollado de forma abierta a partir de código propio, escrito de manera independiente, y documentación pública. Su objetivo es combinar la organización familiar de OneNote con archivos locales y portátiles que puedes inspeccionar, respaldar y sincronizar con los servicios y herramientas que elijas.
-@id	product.long_description	NoteCraft es una recreación independiente y de código abierto de la experiencia de cuadernos de OneNote, desarrollada mediante un proceso de sala limpia. Guarda cuadernos, secciones, páginas, imágenes y archivos adjuntos como carpetas y archivos normales en tu dispositivo. Elige cómo sincronizarlos y hacer copias de seguridad con herramientas en las que ya confías, sin necesitar un servidor ni una cuenta de NoteCraft.
-@id	product.short_description	NoteCraft es una recreación independiente y de código abierto de la experiencia de cuadernos de OneNote, desarrollada mediante un método de ingeniería de sala limpia y centrada en archivos locales. Mantén tus notas en tu dispositivo y sincronízalas o haz copias de seguridad con las herramientas que elijas.
+@id	product.about	ErgoNote es un proyecto escrito íntegramente en Rust y desarrollado de forma abierta a partir de código propio, escrito de manera independiente, y documentación pública. Su objetivo es combinar la organización familiar de OneNote con archivos locales y portátiles que puedes inspeccionar, respaldar y sincronizar con los servicios y herramientas que elijas.
+@id	product.long_description	ErgoNote es una recreación independiente y de código abierto de la experiencia de cuadernos de OneNote, desarrollada mediante un proceso de sala limpia. Guarda cuadernos, secciones, páginas, imágenes y archivos adjuntos como carpetas y archivos normales en tu dispositivo. Elige cómo sincronizarlos y hacer copias de seguridad con herramientas en las que ya confías, sin necesitar un servidor ni una cuenta de ErgoNote.
+@id	product.short_description	ErgoNote es una recreación independiente y de código abierto de la experiencia de cuadernos de OneNote, desarrollada mediante un método de ingeniería de sala limpia y centrada en archivos locales. Mantén tus notas en tu dispositivo y sincronízalas o haz copias de seguridad con las herramientas que elijas.
 @id	product.tagline	Una recreación independiente de OneNote: archivos locales y sincronización a tu manera.
 @id	ui.a_bullet_list	Una lista con viñetas
 @id	ui.a_column_left_of_the_caret_s	Una columna a la izquierda del cursor
@@ -29,8 +29,8 @@
 @id	ui.a_table_pick_its_size	Una tabla: elige su tamaño
 @id	ui.a_tag_goes_on_a_line_of_text	Una etiqueta va en una línea de texto
 @id	ui.a_to_do_box_on_this_line_ctrl_1	Una casilla de verificación en esta línea (Ctrl+1)
-@id	ui.a_tour_of_notecraft_shown_on_its_own_pages_it_is_add_96221451f0	Un recorrido por NoteCraft, mostrado en sus propias páginas. Se añade a la carpeta de cuadernos vacíos al primer inicio; esto lo añade de nuevo o lo abre si aún está aquí.
-@id	ui.about_notecraft	Acerca de NoteCraft
+@id	ui.a_tour_of_ergonote_shown_on_its_own_pages_it_is_add_96221451f0	Un recorrido por ErgoNote, mostrado en sus propias páginas. Se añade a la carpeta de cuadernos vacíos al primer inicio; esto lo añade de nuevo o lo abre si aún está aquí.
+@id	ui.about_ergonote	Acerca de ErgoNote
 @id	ui.accent_accent	Acento: {accent}
 @id	ui.accept	Aceptar
 @id	ui.add	Añadir
@@ -55,7 +55,7 @@
 @id	ui.all_of_them_live_in_folder	Todos están en {folder}
 @id	ui.always_on_top	Siempre visible
 @id	ui.an_equation_written_in_tex_pick_one_to_start_from	Una ecuación escrita en TeX: elige una para empezar
-@id	ui.app_preferences_reset_restart_notecraft_to_apply_every_default	Preferencias de la aplicación restablecidas. Reinicia NoteCraft para aplicar los valores predeterminados.
+@id	ui.app_preferences_reset_restart_ergonote_to_apply_every_default	Preferencias de la aplicación restablecidas. Reinicia ErgoNote para aplicar los valores predeterminados.
 @id	ui.appearance	Apariencia
 @id	ui.append_link	Añadir enlace
 @id	ui.application_preferences	Preferencias de la aplicación
@@ -104,7 +104,7 @@
 @id	ui.choose_a_section_to_see_its_pages	Elige una sección para ver sus páginas.
 @id	ui.choose_a_symbol_to_insert_at_the_caret	Elige un símbolo para insertar en el cursor
 @id	ui.choose_how_to_insert_a_picture	Elegir cómo insertar una imagen
-@id	ui.choose_what_notecraft_records_locally_nothing_is_upl_fc372d68e8	Elige qué registra NoteCraft localmente. Nada se sube automáticamente.
+@id	ui.choose_what_ergonote_records_locally_nothing_is_upl_fc372d68e8	Elige qué registra ErgoNote localmente. Nada se sube automáticamente.
 @id	ui.chosen_for_this_page	chosen for this page
 @id	ui.circle	Circle
 @id	ui.clear_all_local_telemetry_sessions_and_exported_tele_e4f5e2340d	¿Borrar todas las sesiones de telemetría local y los archivos ZIP de telemetría exportada?
@@ -315,14 +315,14 @@
 @id	ui.interface_size	Tamaño de la interfaz
 @id	ui.interface_size_hint	Agranda o reduce la cinta, los menús y la página en esta pantalla.
 @id	ui.interface_size_percent	{percent} %
-@id	ui.issues_the_roadmap_and_the_documentation_are_all_the_2beb6e100f	Los problemas, la hoja de ruta y la documentación están todos ahí. Nada en NoteCraft se comunica con ello ni con ningún otro servicio por sí mismo.
+@id	ui.issues_the_roadmap_and_the_documentation_are_all_the_2beb6e100f	Los problemas, la hoja de ruta y la documentación están todos ahí. Nada en ErgoNote se comunica con ello ni con ningún otro servicio por sí mismo.
 @id	ui.it_is_listed_so_the_page_s_folder_is_not_a_secret	Está listado para que la carpeta de la página no sea un secreto.
 @id	ui.italic	Cursiva
 @id	ui.italic_ctrl_i	Cursiva (Ctrl+I)
 @id	ui.json	JSON
 @id	ui.justification_goes_on_a_paragraph_of_text	La justificación se aplica a un párrafo de texto
 @id	ui.keep_this_window_above_the_others	Mantener esta ventana por encima de las demás
-@id	ui.kept_the_original_drawing_file_path	El archivo de dibujo de esta página tenía trazos que NoteCraft no puede editar. El archivo original se conserva como {path}.
+@id	ui.kept_the_original_drawing_file_path	El archivo de dibujo de esta página tenía trazos que ErgoNote no puede editar. El archivo original se conserva como {path}.
 @id	ui.label	label
 @id	ui.label_not_built	{label} (no compilado)
 @id	ui.label_not_built_yet	{label}: aún no compilado
@@ -351,7 +351,7 @@
 @id	ui.local_diagnostics	Diagnósticos locales
 @id	ui.local_diagnostics_and_usage	Diagnósticos y uso local
 @id	ui.logging_folder_folder	Carpeta de registros: {folder}
-@id	ui.logs_and_telemetry_stay_on_this_device_notecraft_doe_87b8387dee	Los registros y la telemetría permanecen en este dispositivo. NoteCraft no los envía automáticamente.
+@id	ui.logs_and_telemetry_stay_on_this_device_ergonote_doe_87b8387dee	Los registros y la telemetría permanecen en este dispositivo. ErgoNote no los envía automáticamente.
 @id	ui.magenta	Magenta
 @id	ui.make_subpage	Convertir en subpágina
 @id	ui.make_the_page_larger	Aumentar el tamaño de la página
@@ -422,7 +422,7 @@
 @id	ui.no_notebooks_yet_use_new_notebook	Aún no hay cuadernos. Usa "Nuevo cuaderno".
 @id	ui.no_pages_in_this_section_yet	Aún no hay páginas en esta sección.
 @id	ui.no_pages_match	Ninguna página coincide.
-@id	ui.no_saved_versions_yet_notecraft_keeps_a_copy_when_th_aa2e25acad	Aún no hay versiones guardadas. NoteCraft guarda una copia cuando cambia la página.
+@id	ui.no_saved_versions_yet_ergonote_keeps_a_copy_when_th_aa2e25acad	Aún no hay versiones guardadas. ErgoNote guarda una copia cuando cambia la página.
 @id	ui.none	Ninguno
 @id	ui.normal_view	Vista \nnormal
 @id	ui.not_built	No disponible
@@ -443,11 +443,11 @@
 @id	ui.notebooks_folder_folder	Carpeta de cuadernos: {folder}
 @id	ui.notebooks_items_folder	{notebooks} · {items} | {folder}
 @id	ui.notebooks_you_open_will_appear_here	Los cuadernos que abras aparecerán aquí.
-@id	ui.notecraft	NoteCraft
-@id	ui.notecraft_found_an_attachment_that_is_not_referenced_8c0eb51257	NoteCraft ha encontrado un archivo adjunto que no está referenciado por esta página:
-@id	ui.notecraft_found_an_attachment_without_its_generated_icon_name	NoteCraft ha encontrado un archivo adjunto sin su icono generado:
-@id	ui.notecraft_ruled	Cuadriculado NoteCraft
-@id	ui.notecraft_squares	Cuadrícula NoteCraft
+@id	ui.ergonote	ErgoNote
+@id	ui.ergonote_found_an_attachment_that_is_not_referenced_8c0eb51257	ErgoNote ha encontrado un archivo adjunto que no está referenciado por esta página:
+@id	ui.ergonote_found_an_attachment_without_its_generated_icon_name	ErgoNote ha encontrado un archivo adjunto sin su icono generado:
+@id	ui.ergonote_ruled	Cuadriculado ErgoNote
+@id	ui.ergonote_squares	Cuadrícula ErgoNote
 @id	ui.notes_as_plain_folders_open_a_page_or_create_a_notebook_to_start	Notas como carpetas planas. Abre una página o crea un cuaderno para empezar.
 @id	ui.nothing_at_path_the_link_points_to_a_page_or_file_th_18d71ccd21	Nada en {path}: el enlace apunta a una página o archivo que no existe
 @id	ui.nothing_here_can_show_this_kind_of_file	Nada aquí puede mostrar este tipo de archivo.
@@ -463,7 +463,7 @@
 @id	ui.officeimo_import_worker_stopped_unexpectedly	El trabajador de importación de OfficeIMO se detuvo inesperadamente
 @id	ui.ok	Aceptar
 @id	ui.one_tree_of_notebooks	Un árbol de cuadernos
-@id	ui.onedrive_and_sharepoint_not_built_point_notecraft_at_584930dc1b	OneDrive y SharePoint: no compilados. Señala NoteCraft a una carpeta que tu herramienta de sincronización ya vigila y es lo mismo.
+@id	ui.onedrive_and_sharepoint_not_built_point_ergonote_at_584930dc1b	OneDrive y SharePoint: no compilados. Señala ErgoNote a una carpeta que tu herramienta de sincronización ya vigila y es lo mismo.
 @id	ui.onenote_import	Importación de OneNote
 @id	ui.online_notebooks_onedrive_sharepoint_are_not_built_a_860f0281c0	Los cuadernos en línea (OneDrive, SharePoint) no están compilados. Un cuaderno en una carpeta que tu herramienta de sincronización vigila se sincroniza por ella.
 @id	ui.only_a_list_item_can_be_indented	Solo un elemento de lista puede estar sangrado
@@ -539,8 +539,8 @@
 @id	ui.previous	Anterior
 @id	ui.previous_match_shift_enter	Coincidencia anterior (Shift+Enter)
 @id	ui.printout_is_available_for_pdf_and_office_documents	La impresión está disponible para documentos PDF y Office.
-@id	ui.privacy_is_our_top_priority_all_logs_and_telemetry_s_d87cae4eac	La privacidad es nuestra máxima prioridad. Todos los registros y datos de telemetría permanecen en este dispositivo. NoteCraft nunca los envía automáticamente.
-@id	ui.privacy_is_our_top_priority_logs_and_telemetry_stay_17a34813d0	La privacidad es nuestra máxima prioridad. Los registros y la telemetría permanecen en este dispositivo. NoteCraft no los envía a nosotros.
+@id	ui.privacy_is_our_top_priority_all_logs_and_telemetry_s_d87cae4eac	La privacidad es nuestra máxima prioridad. Todos los registros y datos de telemetría permanecen en este dispositivo. ErgoNote nunca los envía automáticamente.
+@id	ui.privacy_is_our_top_priority_logs_and_telemetry_stay_17a34813d0	La privacidad es nuestra máxima prioridad. Los registros y la telemetría permanecen en este dispositivo. ErgoNote no los envía a nosotros.
 @id	ui.promote_subpage	Promover subpágina
 @id	ui.purple	Púrpura
 @id	ui.put_a_sheet_to_draw_on_into_the_page	Colocar una hoja para dibujar en la página
@@ -575,9 +575,9 @@
 @id	ui.replay	Reproducir
 @id	ui.reset_app_preferences	Restablecer preferencias de la aplicación
 @id	ui.reset_app_preferences_2	Restablecer preferencias de la aplicación…
-@id	ui.reset_notecraft_s_saved_preferences_to_their_built_in_defaults	¿Restablecer las preferencias guardadas de NoteCraft a sus valores predeterminados?
+@id	ui.reset_ergonote_s_saved_preferences_to_their_built_in_defaults	¿Restablecer las preferencias guardadas de ErgoNote a sus valores predeterminados?
 @id	ui.reset_preferences	Restablecer preferencias
-@id	ui.reset_themes_layout_ribbon_choices_and_other_saved_n_61cc3d1cfb	Restablecer temas, diseño, opciones de cinta y otras preferencias guardadas de NoteCraft a sus valores predeterminados.
+@id	ui.reset_themes_layout_ribbon_choices_and_other_saved_n_61cc3d1cfb	Restablecer temas, diseño, opciones de cinta y otras preferencias guardadas de ErgoNote a sus valores predeterminados.
 @id	ui.restore	Restaurar
 @id	ui.restore_pages_sections_and_groups_removed_from_this_notebook	Restaurar páginas, secciones y grupos eliminados de este cuaderno
 @id	ui.restored_the_saved_page_version	Versión de página guardada restaurada
@@ -658,7 +658,7 @@
 @id	ui.text_74	{} {}
 @id	ui.text_inspection_is_shown_below	La inspección de texto se muestra a continuación.
 @id	ui.text_run_direction	Dirección de lectura del texto
-@id	ui.thank_you_for_trying_notecraft	¡Gracias por probar NoteCraft!
+@id	ui.thank_you_for_trying_ergonote	¡Gracias por probar ErgoNote!
 @id	ui.that_file_has_nothing_in_it_to_put_back	Ese archivo no contiene nada para restaurar
 @id	ui.that_file_is_not_in_this_page_s_folder	Ese archivo no está en la carpeta de esta página
 @id	ui.that_is_not_something_a_page_can_hold	Eso no es algo que una página pueda contener
@@ -671,7 +671,7 @@
 @id	ui.the_file_could_not_be_opened_error	No se pudo abrir el archivo: {error}
 @id	ui.the_file_is_gone	El archivo ha desaparecido
 @id	ui.the_file_is_removed_from_disk_undo_does_not_bring_a_file_back	El archivo se ha eliminado del disco. Deshacer no restaura un archivo.
-@id	ui.the_file_is_safe_notecraft_can_append_a_link_to_it_a_c31b3d9716	El archivo está seguro. NoteCraft puede añadir un enlace al final de la página.
+@id	ui.the_file_is_safe_ergonote_can_append_a_link_to_it_a_c31b3d9716	El archivo está seguro. ErgoNote puede añadir un enlace al final de la página.
 @id	ui.the_file_was_not_attached_the_attach_command_returne_beaffe0fd0	El archivo no se adjuntó: el comando de adjuntar devolvió un resultado inesperado.
 @id	ui.the_folder_could_not_be_opened_error	No se pudo abrir la carpeta: {error}
 @id	ui.the_format_is_set_when_the_page_is_created	El formato se establece cuando se crea la página
@@ -679,7 +679,7 @@
 @id	ui.the_last_tool_stays_on_the_rack	La última herramienta permanece en el soporte
 @id	ui.the_notebook_could_not_be_deleted_error	No se pudo eliminar el cuaderno: {error}
 @id	ui.the_notebook_or_section_setting	the notebook or section setting
-@id	ui.the_original_file_is_still_safe_notecraft_can_regene_f10ded524a	El archivo original sigue estando seguro. NoteCraft puede regenerar el icono junto a él.
+@id	ui.the_original_file_is_still_safe_ergonote_can_regene_f10ded524a	El archivo original sigue estando seguro. ErgoNote puede regenerar el icono junto a él.
 @id	ui.the_page_beside_the_notebooks	La página junto a los cuadernos
 @id	ui.the_page_is_colour	La página es de color {colour}
 @id	ui.the_page_is_the_theme_s_own_colour	La página es del color propio del tema
@@ -709,7 +709,7 @@
 @id	ui.this_file_will_be_opened_by_its_associated_application	Este archivo se abrirá con su aplicación asociada.
 @id	ui.this_notebook_s_recycle_bin_is_empty	La papelera de este cuaderno está vacía.
 @id	ui.this_page	Esta p?gina
-@id	ui.this_page_holds_markup_notecraft_does_not_edit_yet_s_bc3b3b6a92	Esta página contiene anotaciones que NoteCraft aún no edita, por lo que se muestra tal como las lee.
+@id	ui.this_page_holds_markup_ergonote_does_not_edit_yet_s_bc3b3b6a92	Esta página contiene anotaciones que ErgoNote aún no edita, por lo que se muestra tal como las lee.
 @id	ui.this_page_reads_left_to_right	Esta página se lee de izquierda a derecha
 @id	ui.this_page_reads_right_to_left	Esta página se lee de derecha a izquierda
 @id	ui.this_paragraph_decides_from_its_own_first_letter	Este párrafo decide su dirección a partir de su primera letra
@@ -750,7 +750,7 @@
 @id	ui.undo_stroke	Deshacer \ntrazo
 @id	ui.unread	No le?dos
 @id	ui.updated_the_welcome_notebook	Se ha actualizado el cuaderno de bienvenida
-@id	ui.use_notecraft_s_own_title_bar	Usar la barra de título propia de NoteCraft
+@id	ui.use_ergonote_s_own_title_bar	Usar la barra de título propia de ErgoNote
 @id	ui.use_the_system_title_bar	Usar la barra de título del sistema
 @id	ui.version_version_alpha	Versión {version} (alfa)
 @id	ui.very_large	Muy grande
@@ -759,7 +759,7 @@
 @id	ui.views	Vistas
 @id	ui.warn	warn
 @id	ui.web_site_to_visit	Sitio web para visitar
-@id	ui.welcome_to_notecraft	Bienvenido a NoteCraft
+@id	ui.welcome_to_ergonote	Bienvenido a ErgoNote
 @id	ui.what_should_happen_to_this_file	¿Qué debe ocurrir con este archivo?
 @id	ui.what_to_add	Qué añadir
 @id	ui.wide	Ancho
@@ -779,7 +779,7 @@
 @id	ui.zoom_out	Alejar
 @id	ui.zoom_to_100	Zoom al 100 %
 @id	ui.welcome_format_title	Elige un formato de página
-@id	ui.welcome_format_body	NoteCraft guarda cada página como HTML (recomendado) o como Markdown CommonMark + GFM. Las páginas nuevas usan el formato que elijas aquí. Podrás cambiarlo más tarde.
+@id	ui.welcome_format_body	ErgoNote guarda cada página como HTML (recomendado) o como Markdown CommonMark + GFM. Las páginas nuevas usan el formato que elijas aquí. Podrás cambiarlo más tarde.
 @id	ui.welcome_format_next	Siguiente
 @id	ui.welcome_notebook_prompt_format	Formato: {format}.
 @id	ui.welcome_notebook_prompt_title	¿Añadir el cuaderno de bienvenida?
@@ -791,4 +791,4 @@
 @id	ui.welcome_wizard_back	Atrás
 @id	ui.welcome_wizard_finish	Terminar
 @id	ui.welcome_wizard_done_title	Gracias
-@id	ui.welcome_wizard_done_body	NoteCraft está listo para usar. Tus opciones están guardadas. Esta configuración solo volverá a aparecer si restableces las preferencias.
+@id	ui.welcome_wizard_done_body	ErgoNote está listo para usar. Tus opciones están guardadas. Esta configuración solo volverá a aparecer si restableces las preferencias.

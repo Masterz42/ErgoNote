@@ -1,31 +1,31 @@
-diff --git a/apps/notecraft-web/Cargo.toml b/apps/notecraft-web/Cargo.toml
+diff --git a/apps/ergonote-web/Cargo.toml b/apps/ergonote-web/Cargo.toml
 new file mode 100644
 index 0000000..d9828a4
 --- /dev/null
-+++ b/apps/notecraft-web/Cargo.toml
++++ b/apps/ergonote-web/Cargo.toml
 @@ -0,0 +1,28 @@
-+# NoteCraft in the browser, for Playground (patches/onenote.yaml in github.com/daijro/openplayground).
++# ErgoNote in the browser, for Playground (patches/onenote.yaml in github.com/daijro/openplayground).
 +# The window is crates/ui-egui; crates/model/src/playground.rs gives the library its files and clock on wasm.
-+# Build with: trunk build --release   (from apps/notecraft-web)
++# Build with: trunk build --release   (from apps/ergonote-web)
 +[package]
-+name = "notecraft-web"
++name = "ergonote-web"
 +version.workspace = true
 +edition.workspace = true
 +rust-version.workspace = true
 +license.workspace = true
 +publish.workspace = true
-+description = "NoteCraft in the browser"
++description = "ErgoNote in the browser"
 +
 +[[bin]]
-+name = "notecraft-web"
++name = "ergonote-web"
 +path = "src/main.rs"
 +
 +[target.'cfg(target_arch = "wasm32")'.dependencies]
-+notecraft-engine = { workspace = true }
-+notecraft-formats = { workspace = true }
-+notecraft-model = { workspace = true }
-+notecraft-store = { workspace = true }
-+notecraft-ui-egui = { workspace = true }
++ergonote-engine = { workspace = true }
++ergonote-formats = { workspace = true }
++ergonote-model = { workspace = true }
++ergonote-store = { workspace = true }
++ergonote-ui-egui = { workspace = true }
 +eframe = { workspace = true }
 +egui = { workspace = true }
 +zip = { workspace = true }
@@ -33,66 +33,66 @@ index 0000000..d9828a4
 +wasm-bindgen-futures = "0.4"
 +js-sys = "0.3"
 +web-sys = { version = "0.3", features = ["Window", "Document", "Element", "Node", "HtmlElement", "HtmlAnchorElement", "HtmlCanvasElement", "Blob", "BlobPropertyBag", "Url", "Location", "Storage", "BeforeUnloadEvent", "console"] }
-diff --git a/apps/notecraft-web/Trunk.toml b/apps/notecraft-web/Trunk.toml
+diff --git a/apps/ergonote-web/Trunk.toml b/apps/ergonote-web/Trunk.toml
 new file mode 100644
 index 0000000..0b57fe8
 --- /dev/null
-+++ b/apps/notecraft-web/Trunk.toml
++++ b/apps/ergonote-web/Trunk.toml
 @@ -0,0 +1,4 @@
 +[build]
 +target = "index.html"
 +public_url = "./"
 +filehash = true
-diff --git a/apps/notecraft-web/index.html b/apps/notecraft-web/index.html
+diff --git a/apps/ergonote-web/index.html b/apps/ergonote-web/index.html
 new file mode 100644
 index 0000000..a88777c
 --- /dev/null
-+++ b/apps/notecraft-web/index.html
++++ b/apps/ergonote-web/index.html
 @@ -0,0 +1,26 @@
 +<!DOCTYPE html>
 +<html lang="en">
 +<head>
 +  <meta charset="utf-8">
 +  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-+  <title>NoteCraft</title>
-+  <link data-trunk rel="icon" href="../../assets/brand/notecraft-64.png" />
-+  <link data-trunk rel="rust" data-bin="notecraft-web" data-wasm-opt="0" data-cargo-profile="playground-web" />
++  <title>ErgoNote</title>
++  <link data-trunk rel="icon" href="../../assets/brand/ergonote-64.png" />
++  <link data-trunk rel="rust" data-bin="ergonote-web" data-wasm-opt="0" data-cargo-profile="playground-web" />
 +  <!-- The CJK face, loaded when a page needs it (src/main.rs), with its licence -->
 +  <link data-trunk rel="copy-file" href="../../assets/fonts/NotoSansCJKsc-Regular.otf" />
 +  <link data-trunk rel="copy-file" href="../../assets/fonts/OFL-NotoSansCJKsc.txt" />
 +  <style>
 +    html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #f3f1f8; }
-+    #notecraft_canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
-+    #notecraft_loading { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
++    #ergonote_canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
++    #ergonote_loading { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
 +      color: #555; font: 14px system-ui, sans-serif; pointer-events: none; }
-+    .notecraft_sr_only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-+    @media (prefers-color-scheme: dark) { html, body { background: #1d1b22; } #notecraft_loading { color: #bbb; } }
++    .ergonote_sr_only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
++    @media (prefers-color-scheme: dark) { html, body { background: #1d1b22; } #ergonote_loading { color: #bbb; } }
 +  </style>
 +</head>
 +<body>
-+  <canvas id="notecraft_canvas" aria-describedby="notecraft_storage_notice"></canvas>
-+  <p id="notecraft_storage_notice" class="notecraft_sr_only" role="status" aria-live="polite"></p>
-+  <div id="notecraft_loading">Loading NoteCraft&hellip;</div>
++  <canvas id="ergonote_canvas" aria-describedby="ergonote_storage_notice"></canvas>
++  <p id="ergonote_storage_notice" class="ergonote_sr_only" role="status" aria-live="polite"></p>
++  <div id="ergonote_loading">Loading ErgoNote&hellip;</div>
 +</body>
 +</html>
-diff --git a/apps/notecraft-web/src/main.rs b/apps/notecraft-web/src/main.rs
+diff --git a/apps/ergonote-web/src/main.rs b/apps/ergonote-web/src/main.rs
 new file mode 100644
 index 0000000..f4394fb
 --- /dev/null
-+++ b/apps/notecraft-web/src/main.rs
++++ b/apps/ergonote-web/src/main.rs
 @@ -0,0 +1,547 @@
 +// SPDX-License-Identifier: MIT OR Apache-2.0
-+//! NoteCraft in the browser, for Playground (patches/onenote.yaml in github.com/daijro/openplayground): the desktop
++//! ErgoNote in the browser, for Playground (patches/onenote.yaml in github.com/daijro/openplayground): the desktop
 +//! window (crates/ui-egui) on the page's canvas.
 +//!
-+//! The notebooks folder is `/NoteCraft`, in memory (crates/model/src/playground.rs). Playground's Files keep it as the
-+//! same plain folders at `browser:/NoteCraft/â€¦`: it is read from there at start, and every file NoteCraft writes or
++//! The notebooks folder is `/ErgoNote`, in memory (crates/model/src/playground.rs). Playground's Files keep it as the
++//! same plain folders at `browser:/ErgoNote/â€¦`: it is read from there at start, and every file ErgoNote writes or
 +//! removes is written or removed there after the frame (through the page's `globalThis.playgroundFiles`). The standalone
 +//! site keeps personal settings in that browser's local storage; an invitation session stays transient. The first
 +//! start loads the official Welcome notebook as a separate notebook. A page opened from a Playground invitation (`?pg-session=<room>`) keeps its
 +//! notebooks in the tab only, so joining someone's session never touches this browser's own notebooks.
 +//! Also: pictures in pages load from the in-memory folder, files dropped on the page can be inserted, and "Open in
-+//! NoteCraft" on a page file opens it (one of these notebooks') or copies it into a Quick Notes notebook. The CJK face
++//! ErgoNote" on a page file opens it (one of these notebooks') or copies it into a Quick Notes notebook. The CJK face
 +//! (16 MB) is a file next to the page, fetched the first time a page or a title needs it, and a pen's pressure
 +//! (pointer events, which eframe passes on without it) reaches the window as the touch force its ink reads.
 +
@@ -104,23 +104,23 @@ index 0000000..f4394fb
 +mod web {
 +    use super::session_storage::SessionChanges;
 +    use eframe::egui;
-+    use notecraft_engine::{Output, Params, Session};
-+    use notecraft_model::playground::std::fs;
-+    use notecraft_store::Settings;
-+    use notecraft_ui_egui::NoteCraftApp;
++    use ergonote_engine::{Output, Params, Session};
++    use ergonote_model::playground::std::fs;
++    use ergonote_store::Settings;
++    use ergonote_ui_egui::ErgoNoteApp;
 +    use std::cell::RefCell;
 +    use std::io::{Cursor, Read as _};
 +    use std::path::Path;
 +    use wasm_bindgen::{JsCast as _, JsValue, closure::Closure};
 +
-+    /// The notebooks folder, in memory and in Files (`browser:/NoteCraft`).
-+    pub const ROOT: &str = "/NoteCraft";
++    /// The notebooks folder, in memory and in Files (`browser:/ErgoNote`).
++    pub const ROOT: &str = "/ErgoNote";
 +    /// The settings (theme, the page open last), personal: a dot folder is not a notebook.
-+    const SETTINGS: &str = "/NoteCraft/.notecraft/settings.toml";
-+    const SETTINGS_KEY: &str = "notecraft.settings.v1";
++    const SETTINGS: &str = "/ErgoNote/.ergonote/settings.toml";
++    const SETTINGS_KEY: &str = "ergonote.settings.v1";
 +
 +    thread_local! {
-+        /// Files Playground handed in ("Open in NoteCraft"), for the next frame.
++        /// Files Playground handed in ("Open in ErgoNote"), for the next frame.
 +        static OPENED: RefCell<Vec<JsValue>> = const { RefCell::new(Vec::new()) };
 +        static CTX: std::cell::OnceCell<egui::Context> = const { std::cell::OnceCell::new() };
 +        static CJK: RefCell<Face> = const { RefCell::new(Face::Wanted) };
@@ -162,7 +162,7 @@ index 0000000..f4394fb
 +
 +    /// Replaces only the managed browser Welcome notebook; sibling notebooks stay untouched.
 +    async fn ensure_welcome_notebook() -> Result<Option<String>, String> {
-+        let notebook = Path::new(ROOT).join("welcome-to-notecraft");
++        let notebook = Path::new(ROOT).join("welcome-to-ergonote");
 +        let bytes = fetch("./welcome-notebook.zip").await.ok_or_else(|| "The release Welcome notebook could not be downloaded".to_string())?;
 +        let mut archive = zip::ZipArchive::new(Cursor::new(bytes)).map_err(|e| format!("The release Welcome notebook archive is invalid: {e}"))?;
 +        if archive.len() > 1000 {
@@ -215,7 +215,7 @@ index 0000000..f4394fb
 +    /// Installs one edition ("html" or "cmgfm") of the Welcome notebook at the notebook root, replacing the managed
 +    /// copy. Finish calls this through the same hook the desktop app uses, so the chosen format is what gets installed.
 +    fn install_edition(format: &str) -> Result<std::path::PathBuf, String> {
-+        let notebook = Path::new(ROOT).join("welcome-to-notecraft");
++        let notebook = Path::new(ROOT).join("welcome-to-ergonote");
 +        let files = WELCOME.with_borrow(|w| w.clone());
 +        if files.is_empty() {
 +            return Err("the Welcome notebook has not been loaded yet".into());
@@ -297,12 +297,12 @@ index 0000000..f4394fb
 +        !paths.is_empty()
 +    }
 +
-+    /// Picture links in pages (`file:///NoteCraft/â€¦/assets/x.png`), read from the in-memory folder.
++    /// Picture links in pages (`file:///ErgoNote/â€¦/assets/x.png`), read from the in-memory folder.
 +    struct Files;
 +
 +    impl egui::load::BytesLoader for Files {
 +        fn id(&self) -> &str {
-+            "notecraft::web::Files"
++            "ergonote::web::Files"
 +        }
 +        fn load(&self, _: &egui::Context, uri: &str) -> egui::load::BytesLoadResult {
 +            let path = uri.strip_prefix("file://").ok_or(egui::load::LoadError::NotSupported)?.replace("%20", " ");
@@ -323,7 +323,7 @@ index 0000000..f4394fb
 +    }
 +
 +    /// Deliver an explicit export through the browser, outside the virtual filesystem.
-+    fn download_picture(file: &notecraft_ui_egui::app::FileDownload) -> Result<(), JsValue> {
++    fn download_picture(file: &ergonote_ui_egui::app::FileDownload) -> Result<(), JsValue> {
 +        let window = web_sys::window().ok_or_else(|| JsValue::from_str("Browser window is unavailable"))?;
 +        let document = window.document().ok_or_else(|| JsValue::from_str("Browser document is unavailable"))?;
 +        let body = document.body().ok_or_else(|| JsValue::from_str("Browser document body is unavailable"))?;
@@ -358,7 +358,7 @@ index 0000000..f4394fb
 +    }
 +
 +    pub struct Web {
-+        pub app: NoteCraftApp,
++        pub app: ErgoNoteApp,
 +        /// The in-memory folder is kept in Files.
 +        persist: bool,
 +        /// Standalone site preferences use browser-local storage; invitation sessions stay transient.
@@ -383,8 +383,8 @@ index 0000000..f4394fb
 +            if window.add_event_listener_with_callback("beforeunload", warning.as_ref().unchecked_ref()).is_err() {
 +                self.app.alert(
 +                    "session-storage-guard",
-+                    notecraft_ui_egui::i18n::t_id("ui.kept_in_this_tab"),
-+                    notecraft_ui_egui::i18n::t_id("ui.session_storage_guard_failed"),
++                    ergonote_ui_egui::i18n::t_id("ui.kept_in_this_tab"),
++                    ergonote_ui_egui::i18n::t_id("ui.session_storage_guard_failed"),
 +                );
 +            }
 +            self.unload_warning = Some(warning);
@@ -403,9 +403,9 @@ index 0000000..f4394fb
 +            let text = String::from_utf8_lossy(&js_sys::Uint8Array::new(&get(file, "bytes")).to_vec()).into_owned();
 +            let (stem, ext) = name.rsplit_once('.').unwrap_or((&name, ""));
 +            let (format, body) = if ext.eq_ignore_ascii_case("md") {
-+                ("cmgfm", notecraft_formats::frontmatter::split_front(&text).1)
++                ("cmgfm", ergonote_formats::frontmatter::split_front(&text).1)
 +            } else {
-+                ("html", notecraft_formats::html::inner(&text))
++                ("html", ergonote_formats::html::inner(&text))
 +            };
 +            let s = self.app.session_mut();
 +            let path = |o: Output| if let Output::Path(p) = o { Some(p.to_string_lossy().into_owned()) } else { None };
@@ -416,7 +416,7 @@ index 0000000..f4394fb
 +                .tree()
 +                .iter()
 +                .find(|n| n.path.to_string_lossy() == notebook)
-+                .and_then(|n| n.children.iter().find(|c| c.info.kind == notecraft_model::NodeKind::Section));
++                .and_then(|n| n.children.iter().find(|c| c.info.kind == ergonote_model::NodeKind::Section));
 +            let section = section.map(|c| c.path.to_string_lossy().into_owned());
 +            let section = section.or_else(|| {
 +                s.run("node.create", &params(&[("parent", &notebook), ("kind", "section"), ("title", "Opened files")])).ok().and_then(path)
@@ -436,7 +436,7 @@ index 0000000..f4394fb
 +        fn faces(&mut self) {
 +            let ready = CJK.with_borrow_mut(|face| match face {
 +                Face::Wanted => {
-+                    fn titles(n: &notecraft_store::tree::Node) -> bool {
++                    fn titles(n: &ergonote_store::tree::Node) -> bool {
 +                        cjk(&n.info.title) || n.children.iter().any(titles)
 +                    }
 +                    if self.app.body().is_some_and(cjk) || self.app.session().tree().iter().any(titles) {
@@ -457,7 +457,7 @@ index 0000000..f4394fb
 +            });
 +            if let (Some(bytes), Some(ctx)) = (ready, CTX.with(|c| c.get().cloned())) {
 +                use egui::epaint::text::{FontInsert, FontPriority, InsertFontFamily};
-+                notecraft_ui_egui::fonts::install_once(&ctx);
++                ergonote_ui_egui::fonts::install_once(&ctx);
 +                let families = [egui::FontFamily::Proportional, egui::FontFamily::Monospace];
 +                let families = families.map(|family| InsertFontFamily { family, priority: FontPriority::Lowest }).to_vec();
 +                ctx.add_font(FontInsert::new(CJK_NAME, egui::FontData::from_owned(bytes), families));
@@ -480,7 +480,7 @@ index 0000000..f4394fb
 +                            if let Ok(contents) = String::from_utf8(bytes)
 +                                && storage.set_item(SETTINGS_KEY, &contents).is_err()
 +                            {
-+                                web_sys::console::error_1(&"Could not save NoteCraft settings in this browser".into());
++                                web_sys::console::error_1(&"Could not save ErgoNote settings in this browser".into());
 +                            }
 +                        }
 +                    }
@@ -546,8 +546,8 @@ index 0000000..f4394fb
 +            for file in self.app.take_file_downloads() {
 +                if let Err(error) = download_picture(&file) {
 +                    let error = error.as_string().unwrap_or_else(|| format!("{error:?}"));
-+                    let message = notecraft_ui_egui::i18n::format_message_id("ui.cannot_write_the_picture_error", &[("error", &error)]);
-+                    self.app.alert("picture-download", notecraft_ui_egui::i18n::t_id("ui.save_picture_2"), &message);
++                    let message = ergonote_ui_egui::i18n::format_message_id("ui.cannot_write_the_picture_error", &[("error", &error)]);
++                    self.app.alert("picture-download", ergonote_ui_egui::i18n::t_id("ui.save_picture_2"), &message);
 +                    ui.ctx().request_repaint();
 +                }
 +            }
@@ -576,13 +576,13 @@ index 0000000..f4394fb
 +            }
 +            let welcome_page = if !invited() { Some(ensure_welcome_notebook().await) } else { None };
 +            let document = web_sys::window().and_then(|w| w.document()).expect("no document");
-+            if !persist && let Some(notice) = document.get_element_by_id("notecraft_storage_notice") {
-+                notice.set_text_content(Some(notecraft_ui_egui::i18n::t_id("ui.session_only_storage_notice")));
++            if !persist && let Some(notice) = document.get_element_by_id("ergonote_storage_notice") {
++                notice.set_text_content(Some(ergonote_ui_egui::i18n::t_id("ui.session_only_storage_notice")));
 +            }
 +            let canvas = document
-+                .get_element_by_id("notecraft_canvas")
++                .get_element_by_id("ergonote_canvas")
 +                .and_then(|c| c.dyn_into::<web_sys::HtmlCanvasElement>().ok())
-+                .expect("no #notecraft_canvas");
++                .expect("no #ergonote_canvas");
 +            listen_to_the_pen(&canvas);
 +            let started = eframe::WebRunner::new()
 +                .start(
@@ -594,7 +594,7 @@ index 0000000..f4394fb
 +                        let session = Session::new(Path::new(ROOT), Settings::at(SETTINGS)).map_err(|e| e.to_string())?;
 +                        // The web demo has no first-use wizard: mark it seen, so it never opens here.
 +                        session.settings.set("privacy_welcome_seen", "true").map_err(|e| e.to_string())?;
-+                        let mut app = NoteCraftApp::new(session).with_welcome_notebook_setup(|_root, format| install_edition(format));
++                        let mut app = ErgoNoteApp::new(session).with_welcome_notebook_setup(|_root, format| install_edition(format));
 +                        if !persist {
 +                            app = app.with_session_only_storage();
 +                        }
@@ -614,10 +614,10 @@ index 0000000..f4394fb
 +                    }),
 +                )
 +                .await;
-+            if let Some(loading) = document.get_element_by_id("notecraft_loading") {
++            if let Some(loading) = document.get_element_by_id("ergonote_loading") {
 +                match started {
 +                    Ok(()) => loading.remove(),
-+                    Err(e) => loading.set_text_content(Some(&format!("NoteCraft could not start: {e:?}"))),
++                    Err(e) => loading.set_text_content(Some(&format!("ErgoNote could not start: {e:?}"))),
 +                }
 +            }
 +        });
@@ -635,9 +635,9 @@ index 0000000..295f3b0
 +++ b/crates/model/src/playground.rs
 @@ -0,0 +1,277 @@
 +// SPDX-License-Identifier: MIT OR Apache-2.0
-+//! NoteCraft's browser build in Playground (patches/onenote.yaml in github.com/daijro/openplayground).
++//! ErgoNote's browser build in Playground (patches/onenote.yaml in github.com/daijro/openplayground).
 +//! wasm32-unknown-unknown has no files and no clock, so the modules that use them take `std` from here instead (one
-+//! `#[cfg(target_arch = "wasm32")] use notecraft_model::playground::std;` line each): the same std, except
++//! `#[cfg(target_arch = "wasm32")] use ergonote_model::playground::std;` line each): the same std, except
 +//!   fs    an in-memory file system holding the notebooks folder; every change is noted (see [`std::fs::changes`]) so
 +//!         the page can keep browser storage in step with it;
 +//!   time  web-time's Instant and SystemTime, which work in the browser.
@@ -921,7 +921,7 @@ index 0000000..f851b31
 +++ b/crates/ui-egui/src/playground_clipboard.rs
 @@ -0,0 +1,129 @@
 +// SPDX-License-Identifier: MIT OR Apache-2.0
-+//! NoteCraft's browser build in Playground (patches/onenote.yaml in github.com/daijro/openplayground): the `arboard`
++//! ErgoNote's browser build in Playground (patches/onenote.yaml in github.com/daijro/openplayground): the `arboard`
 +//! that crates/ui-egui/src/clipboard.rs reads (`mod arboard` there on wasm), answered from the browser's clipboard.
 +//! arboard itself has no browser clipboard, so the web build leaves it out.
 +//!

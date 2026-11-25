@@ -5,7 +5,7 @@
 //! applies the Unicode bidirectional algorithm (`crates/ui-egui/tests/arabic_layout.rs`
 //! measures it, and epaint's own source says "TODO: heed bidi characters").
 //!
-//! So the work is split. [`notecraft_text`] (parley) says what the runs of the line are, in
+//! So the work is split. [`ergonote_text`] (parley) says what the runs of the line are, in
 //! what order they are drawn, and where the caret goes. egui still shapes, measures and
 //! draws each run, which is the part it does well. Nothing here draws a glyph itself.
 //!
@@ -17,13 +17,13 @@
 use crate::theme::Tokens;
 use egui::text::{LayoutJob, TextFormat};
 use egui::{Align, Align2, Color32, Pos2, Rect, Ui, Vec2, pos2, vec2};
-use notecraft_model::justify::Strength;
+use ergonote_model::justify::Strength;
 use std::borrow::Cow;
 use std::cell::RefCell;
 
 thread_local! {
     /// One text engine per thread: it holds the font collection, which is not cheap to build.
-    static TEXT: RefCell<notecraft_text::Text> = RefCell::new(notecraft_text::Text::new());
+    static TEXT: RefCell<ergonote_text::Text> = RefCell::new(ergonote_text::Text::new());
 }
 
 /// True when this painter should draw `text` rather than egui.
@@ -37,11 +37,11 @@ thread_local! {
 ///    edge the line hangs from, not the order of the words in it.
 /// 3. The paragraph's base direction is right to left, from its own mark or from the page,
 ///    so the line hangs from the right edge even if its words are Latin.
-pub fn paints(text: &str, page: Option<notecraft_model::Dir>) -> bool {
+pub fn paints(text: &str, page: Option<ergonote_model::Dir>) -> bool {
     if text.trim().is_empty() {
         return false;
     }
-    is_mixed(text) || notecraft_model::direction(text).is_rtl() || notecraft_model::direction_in(text, page).is_rtl()
+    is_mixed(text) || ergonote_model::direction(text).is_rtl() || ergonote_model::direction_in(text, page).is_rtl()
 }
 
 /// True when a line has strong characters of both directions in it, which is the only case
@@ -50,7 +50,7 @@ pub fn is_mixed(text: &str) -> bool {
     let mut other = false;
     let mut rtl = false;
     for c in text.chars() {
-        if notecraft_model::direction(c.encode_utf8(&mut [0u8; 4])) == notecraft_model::Dir::Rtl {
+        if ergonote_model::direction(c.encode_utf8(&mut [0u8; 4])) == ergonote_model::Dir::Rtl {
             rtl = true;
         } else if c.is_alphabetic() || c.is_ascii_digit() {
             // Western digits are the catch: they are not a direction of their own, but
@@ -89,7 +89,7 @@ pub struct Drawn {
 ///
 /// `page` is the page's direction, which decides the line's own when it has no mark (see
 /// [`based`]).
-pub fn runs(ui: &Ui, text: &str, pieces: &[Piece], size: f32, max_width: f32, page: Option<notecraft_model::Dir>) -> (Vec<Drawn>, Vec2) {
+pub fn runs(ui: &Ui, text: &str, pieces: &[Piece], size: f32, max_width: f32, page: Option<ergonote_model::Dir>) -> (Vec<Drawn>, Vec2) {
     let Some(split) = split(text, size, max_width, page) else { return (Vec::new(), Vec2::ZERO) };
     let space = space_width(ui, size);
     let mut out: Vec<Drawn> = Vec::new();
@@ -193,7 +193,7 @@ fn space_width(ui: &Ui, size: f32) -> f32 {
 
 /// What parley says about a line: its runs, in drawing order.
 struct Split {
-    lines: Vec<notecraft_text::Line>,
+    lines: Vec<ergonote_text::Line>,
 }
 
 /// The line as parley is given it, and how many bytes were put in front of it for that.
@@ -204,14 +204,14 @@ struct Split {
 /// item `TODO: راجع هذه الصفحة` on a page set right to left was hung from the right edge
 /// and still laid out left to right inside it, so `TODO:` landed at the far end of the line
 /// instead of at its start. A direction mark in front settles it the way
-/// `notecraft_model::direction_in` says, which is what a paragraph's own mark already does.
+/// `ergonote_model::direction_in` says, which is what a paragraph's own mark already does.
 /// Every byte parley hands back is moved back past the mark, so no caller ever sees it.
-fn based(text: &str, page: Option<notecraft_model::Dir>) -> (Cow<'_, str>, usize) {
-    let want = notecraft_model::direction_in(text, page);
-    if want == notecraft_model::direction(text) {
+fn based(text: &str, page: Option<ergonote_model::Dir>) -> (Cow<'_, str>, usize) {
+    let want = ergonote_model::direction_in(text, page);
+    if want == ergonote_model::direction(text) {
         return (Cow::Borrowed(text), 0);
     }
-    let mark = if want.is_rtl() { notecraft_model::text::RLM } else { notecraft_model::text::LRM };
+    let mark = if want.is_rtl() { ergonote_model::text::RLM } else { ergonote_model::text::LRM };
     (Cow::Owned(format!("{mark}{text}")), mark.len_utf8())
 }
 
@@ -220,12 +220,12 @@ fn unmarked(range: std::ops::Range<usize>, shift: usize) -> std::ops::Range<usiz
     range.start.saturating_sub(shift)..range.end.saturating_sub(shift)
 }
 
-fn split(text: &str, size: f32, max_width: f32, page: Option<notecraft_model::Dir>) -> Option<Split> {
+fn split(text: &str, size: f32, max_width: f32, page: Option<ergonote_model::Dir>) -> Option<Split> {
     let (laid, shift) = based(text, page);
     TEXT.with(|t| {
         let mut engine = t.try_borrow_mut().ok()?;
         let layout = engine.layout(&laid, size, Some(max_width));
-        let mut lines = notecraft_text::lines(&layout);
+        let mut lines = ergonote_text::lines(&layout);
         for line in &mut lines {
             line.text = unmarked(line.text.clone(), shift);
             for run in &mut line.runs {
@@ -269,7 +269,7 @@ pub fn paint_with(painter: &egui::Painter, origin: Pos2, drawn: &[Drawn]) {
 /// line is measured and then anchored the same way, so a label that needs none of this is
 /// drawn exactly as it was before. A line too long for the painter's clip is cut by it, as
 /// it was before.
-pub fn line_at(ui: &Ui, painter: &egui::Painter, at: Pos2, align: Align2, text: &str, size: f32, color: Color32, page: Option<notecraft_model::Dir>) {
+pub fn line_at(ui: &Ui, painter: &egui::Painter, at: Pos2, align: Align2, text: &str, size: f32, color: Color32, page: Option<ergonote_model::Dir>) {
     let font = egui::FontId::proportional(size);
     if !paints(text, page) {
         painter.text(at, align, text, font, color);
@@ -320,10 +320,10 @@ pub fn show(
     pieces: &[Piece],
     size: f32,
     max_width: f32,
-    page: Option<notecraft_model::Dir>,
+    page: Option<ergonote_model::Dir>,
     justify: Option<Strength>,
     // The edge the paragraph was set against, if it was given one (issue #258).
-    align: Option<notecraft_model::justify::Align>,
+    align: Option<ergonote_model::justify::Align>,
     selected: Option<Selected>,
 ) -> Rect {
     // A justified paragraph is drawn from its stretched words, but it is still the words
@@ -351,10 +351,10 @@ pub fn show(
     // aligned otherwise, and a centred one sits in the middle of it.
     let spare = (rect.width() - used.x).max(0.0);
     let shift = match align {
-        Some(notecraft_model::justify::Align::Left) => 0.0,
-        Some(notecraft_model::justify::Align::Center) => spare / 2.0,
-        Some(notecraft_model::justify::Align::Right) => spare,
-        None if notecraft_model::direction_in(text, page).is_rtl() => spare,
+        Some(ergonote_model::justify::Align::Left) => 0.0,
+        Some(ergonote_model::justify::Align::Center) => spare / 2.0,
+        Some(ergonote_model::justify::Align::Right) => spare,
+        None if ergonote_model::direction_in(text, page).is_rtl() => spare,
         None => 0.0,
     };
     let origin = rect.min + vec2(shift, 0.0);
@@ -393,7 +393,7 @@ fn moved_to(text: &str, stretched: &str, at: usize) -> usize {
 /// A justified paragraph, ready to draw: its words with tatweels put into the joins, so
 /// every line but the last reaches the column.
 ///
-/// This is where `notecraft_text::kashida` meets the page. Only the drawing is stretched -
+/// This is where `ergonote_text::kashida` meets the page. Only the drawing is stretched -
 /// the page file keeps the words as they were typed - so this runs on the way to the
 /// painter, every time the paragraph is drawn, which is why the answer is remembered
 /// below.
@@ -496,7 +496,7 @@ fn stretch_line(ui: &Ui, core: &str, size: f32, max_width: f32, strength: Streng
         }
         runs(ui, s, &pieces, size, f32::INFINITY, None).1.x
     };
-    notecraft_text::kashida::justify(core, max_width, strength, &mut width)
+    ergonote_text::kashida::justify(core, max_width, strength, &mut width)
 }
 
 /// The same pieces against the stretched text: every range moved past the tatweels that
@@ -554,7 +554,7 @@ fn run_of(drawn: &[Drawn], at: usize) -> Option<&Drawn> {
 }
 
 /// Where the caret belongs on a line, in the drawn runs' own space.
-pub fn caret(ui: &Ui, text: &str, pieces: &[Piece], at: usize, size: f32, max_width: f32, page: Option<notecraft_model::Dir>) -> Option<Rect> {
+pub fn caret(ui: &Ui, text: &str, pieces: &[Piece], at: usize, size: f32, max_width: f32, page: Option<ergonote_model::Dir>) -> Option<Rect> {
     let (drawn, _) = runs(ui, text, pieces, size, max_width, page);
     caret_in(text, &drawn, at, size)
 }
@@ -575,7 +575,7 @@ pub fn selection(
     to: usize,
     size: f32,
     max_width: f32,
-    page: Option<notecraft_model::Dir>,
+    page: Option<ergonote_model::Dir>,
 ) -> Vec<Rect> {
     let (drawn, _) = runs(ui, text, pieces, size, max_width, page);
     selection_in(text, &drawn, from, to, size, space_width(ui, size))
@@ -632,7 +632,7 @@ fn joined(mut rects: Vec<Rect>, space: f32) -> Vec<Rect> {
 /// caret between them is in a place the eye cannot see, and the next Backspace takes the
 /// vowel off a letter that looks untouched.
 ///
-/// The ranges here are the ones NoteCraft's own scripts need. A general answer is Unicode's
+/// The ranges here are the ones ErgoNote's own scripts need. A general answer is Unicode's
 /// grapheme breaking, which wants a crate of its own; until that is weighed, this covers
 /// Arabic, Hebrew and the Latin combining accents, and anything else steps as it did.
 fn is_mark(c: char) -> bool {
@@ -676,13 +676,13 @@ fn inside_a_letter(text: &str, at: usize) -> bool {
 ///
 /// A stop is a boundary between letters: the insides of a letter are left out, so a step
 /// never lands between a letter and the mark that hangs on it.
-pub fn step(text: &str, at: usize, right: bool, size: f32, max_width: f32, page: Option<notecraft_model::Dir>) -> usize {
+pub fn step(text: &str, at: usize, right: bool, size: f32, max_width: f32, page: Option<ergonote_model::Dir>) -> usize {
     let (laid, shift) = based(text, page);
     TEXT.with(|t| {
         let Ok(mut engine) = t.try_borrow_mut() else { return at };
         let layout = engine.layout(&laid, size, Some(max_width));
         let place = |b: usize| {
-            let r = notecraft_text::caret_rect(&layout, notecraft_text::Caret::at(b + shift), 1.0);
+            let r = ergonote_text::caret_rect(&layout, ergonote_text::Caret::at(b + shift), 1.0);
             (r.x0, r.y0)
         };
         let (here_x, here_y) = place(at);
@@ -716,8 +716,8 @@ pub fn step(text: &str, at: usize, right: bool, size: f32, max_width: f32, page:
         // where the next line begins. The marks are stepped past the same way as before.
         let mut now = at;
         for _ in 0..8 {
-            let caret = notecraft_text::Caret::at(now + shift);
-            let moved = if right { notecraft_text::step_right(&layout, caret) } else { notecraft_text::step_left(&layout, caret) };
+            let caret = ergonote_text::Caret::at(now + shift);
+            let moved = if right { ergonote_text::step_right(&layout, caret) } else { ergonote_text::step_left(&layout, caret) };
             let next = moved.index().saturating_sub(shift);
             if next == now {
                 return now;
@@ -740,22 +740,22 @@ fn stops(text: &str) -> Vec<usize> {
 }
 
 /// The word under a point: what a double click takes.
-pub fn word_at(text: &str, at: Vec2, size: f32, max_width: f32, page: Option<notecraft_model::Dir>) -> std::ops::Range<usize> {
+pub fn word_at(text: &str, at: Vec2, size: f32, max_width: f32, page: Option<ergonote_model::Dir>) -> std::ops::Range<usize> {
     let (laid, shift) = based(text, page);
     TEXT.with(|t| {
         let Ok(mut engine) = t.try_borrow_mut() else { return 0..0 };
         let layout = engine.layout(&laid, size, Some(max_width));
-        unmarked(notecraft_text::word_at(&layout, at.x, at.y), shift)
+        unmarked(ergonote_text::word_at(&layout, at.x, at.y), shift)
     })
 }
 
 /// The byte a click at `x`, `y` (from the top left of the line) lands on.
-pub fn hit(text: &str, at: Vec2, size: f32, max_width: f32, page: Option<notecraft_model::Dir>) -> usize {
+pub fn hit(text: &str, at: Vec2, size: f32, max_width: f32, page: Option<ergonote_model::Dir>) -> usize {
     let (laid, shift) = based(text, page);
     TEXT.with(|t| {
         let Ok(mut engine) = t.try_borrow_mut() else { return 0 };
         let layout = engine.layout(&laid, size, Some(max_width));
-        let index = notecraft_text::caret_at(&layout, at.x, at.y).index().saturating_sub(shift);
+        let index = ergonote_text::caret_at(&layout, at.x, at.y).index().saturating_sub(shift);
         // A click near a letter that carries a haraka can land between the two; the caret
         // belongs before the letter, not inside it.
         let mut now = index;
@@ -886,17 +886,17 @@ mod tests {
             assert!(ltr.first().is_some_and(|d| d.at.x.abs() < 1.0), "a left-to-right line starts at the left");
         });
         frame.textures_delta.clear();
-        assert!(paints("שלום עולם", Some(notecraft_model::Dir::Ltr)), "Hebrew words are ordered here whatever the page says");
+        assert!(paints("שלום עולם", Some(ergonote_model::Dir::Ltr)), "Hebrew words are ordered here whatever the page says");
         assert!(paints("שלום עולם", None), "and on a page that says nothing");
-        assert!(paints("123", Some(notecraft_model::Dir::Rtl)), "a line with no letters follows the page");
-        assert!(!paints("123", Some(notecraft_model::Dir::Ltr)));
+        assert!(paints("123", Some(ergonote_model::Dir::Rtl)), "a line with no letters follows the page");
+        assert!(!paints("123", Some(ergonote_model::Dir::Ltr)));
         // A page that was given a direction gives it to its paragraphs, so English on a
         // right-to-left page hangs from the right edge and is drawn here rather than by
         // egui. Until the page direction was fixed this line said the opposite, because
         // the words beat the page and the page setting did nothing.
-        assert!(paints("Hello world", Some(notecraft_model::Dir::Rtl)), "a left-to-right line follows the page it is on");
+        assert!(paints("Hello world", Some(ergonote_model::Dir::Rtl)), "a left-to-right line follows the page it is on");
         assert!(!paints("Hello world", None), "and on a page that says nothing it is egui's, as it always was");
-        assert!(!paints("Hello world", Some(notecraft_model::Dir::Ltr)));
+        assert!(!paints("Hello world", Some(ergonote_model::Dir::Ltr)));
     }
 
     #[test]

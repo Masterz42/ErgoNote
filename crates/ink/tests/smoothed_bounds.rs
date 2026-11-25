@@ -1,4 +1,4 @@
-use notecraft_ink::{Dab, Drawing, Rgb, Stroke, Tool, pick, shape, svg};
+use ergonote_ink::{Dab, Drawing, Rgb, Stroke, Tool, pick, shape, svg};
 
 fn curved(tool: Tool, turn: usize, reverse: bool) -> Stroke {
     let mut stroke = Stroke::new(tool, Rgb::BLACK, 4.0);

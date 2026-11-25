@@ -1754,6 +1754,229 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "00d174d5400e5e8fd687ad1049e2f578285fa914201b1af7e8b112a4546bd826"
 
 [[package]]
+name = "ergonote"
+version = "2026.11.25"
+dependencies = [
+ "eframe",
+ "egui",
+ "ergonote-engine",
+ "ergonote-model",
+ "ergonote-setup",
+ "ergonote-store",
+ "ergonote-ui-egui",
+ "image",
+ "log",
+ "raw-window-handle",
+ "rfd",
+ "serde_json",
+ "time",
+ "web-time",
+ "winresource",
+]
+
+[[package]]
+name = "ergonote-android"
+version = "2026.11.25"
+dependencies = [
+ "android_logger",
+ "eframe",
+ "egui",
+ "ergonote-engine",
+ "ergonote-model",
+ "ergonote-setup",
+ "ergonote-store",
+ "ergonote-ui-egui",
+ "jni",
+ "log",
+ "time",
+ "winit",
+ "zip 4.6.1",
+]
+
+[[package]]
+name = "ergonote-cli"
+version = "2026.11.25"
+dependencies = [
+ "ergonote-engine",
+ "ergonote-import",
+ "ergonote-mcp",
+ "ergonote-store",
+ "serde_json",
+ "winresource",
+]
+
+[[package]]
+name = "ergonote-demo"
+version = "2026.11.25"
+dependencies = [
+ "ergonote-formats",
+ "ergonote-ink",
+ "ergonote-model",
+ "ergonote-store",
+]
+
+[[package]]
+name = "ergonote-diagram"
+version = "2026.11.25"
+dependencies = [
+ "mermaid-rs-renderer",
+]
+
+[[package]]
+name = "ergonote-engine"
+version = "2026.11.25"
+dependencies = [
+ "ergonote-formats",
+ "ergonote-model",
+ "ergonote-store",
+ "serde_json",
+]
+
+[[package]]
+name = "ergonote-formats"
+version = "2026.11.25"
+dependencies = [
+ "ergonote-model",
+]
+
+[[package]]
+name = "ergonote-import"
+version = "2026.11.25"
+dependencies = [
+ "cab",
+ "ergonote-formats",
+ "ergonote-model",
+ "ergonote-onenote",
+ "ergonote-store",
+]
+
+[[package]]
+name = "ergonote-ink"
+version = "2026.11.25"
+
+[[package]]
+name = "ergonote-input-language"
+version = "2026.11.25"
+dependencies = [
+ "windows-sys 0.61.2",
+]
+
+[[package]]
+name = "ergonote-math"
+version = "2026.11.25"
+dependencies = [
+ "ratex-font",
+ "ratex-layout",
+ "ratex-parser",
+ "ratex-types",
+]
+
+[[package]]
+name = "ergonote-mcp"
+version = "2026.11.25"
+dependencies = [
+ "ergonote-engine",
+ "ergonote-store",
+ "serde_json",
+]
+
+[[package]]
+name = "ergonote-model"
+version = "2026.11.25"
+dependencies = [
+ "web-time",
+]
+
+[[package]]
+name = "ergonote-onenote"
+version = "2026.11.25"
+
+[[package]]
+name = "ergonote-setup"
+version = "2026.11.25"
+dependencies = [
+ "ergonote-store",
+ "rfd",
+]
+
+[[package]]
+name = "ergonote-store"
+version = "2026.11.25"
+dependencies = [
+ "ergonote-formats",
+ "ergonote-ink",
+ "ergonote-model",
+ "log",
+]
+
+[[package]]
+name = "ergonote-text"
+version = "2026.11.25"
+dependencies = [
+ "ergonote-model",
+ "parley",
+]
+
+[[package]]
+name = "ergonote-ui-egui"
+version = "2026.11.25"
+dependencies = [
+ "arboard",
+ "craft-i18n",
+ "egui",
+ "egui-wgpu",
+ "egui_extras",
+ "egui_kittest",
+ "ergonote-diagram",
+ "ergonote-engine",
+ "ergonote-formats",
+ "ergonote-import",
+ "ergonote-ink",
+ "ergonote-input-language",
+ "ergonote-math",
+ "ergonote-model",
+ "ergonote-store",
+ "ergonote-text",
+ "fontdb",
+ "hayro",
+ "image",
+ "jxl-oxide",
+ "kurbo 0.12.0",
+ "log",
+ "oar-ocr",
+ "ocrs",
+ "ort",
+ "rfd",
+ "rten",
+ "semver",
+ "serde_json",
+ "sha2",
+ "spellbook",
+ "ureq",
+ "web-time",
+ "zip 4.6.1",
+]
+
+[[package]]
+name = "ergonote-web"
+version = "2026.11.25"
+dependencies = [
+ "eframe",
+ "egui",
+ "ergonote-engine",
+ "ergonote-model",
+ "ergonote-store",
+ "ergonote-ui-egui",
+ "getrandom 0.2.17",
+ "getrandom 0.3.4",
+ "js-sys",
+ "log",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "web-sys",
+]
+
+[[package]]
 name = "errno"
 version = "0.3.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3777,229 +4000,6 @@ name = "noop_proc_macro"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0676bb32a98c1a483ce53e500a81ad9c3d5b3f7c920c28c24e9cb0980d0b5bc8"
-
-[[package]]
-name = "notecraft"
-version = "2026.11.25"
-dependencies = [
- "eframe",
- "egui",
- "image",
- "log",
- "notecraft-engine",
- "notecraft-model",
- "notecraft-setup",
- "notecraft-store",
- "notecraft-ui-egui",
- "raw-window-handle",
- "rfd",
- "serde_json",
- "time",
- "web-time",
- "winresource",
-]
-
-[[package]]
-name = "notecraft-android"
-version = "2026.11.25"
-dependencies = [
- "android_logger",
- "eframe",
- "egui",
- "jni",
- "log",
- "notecraft-engine",
- "notecraft-model",
- "notecraft-setup",
- "notecraft-store",
- "notecraft-ui-egui",
- "time",
- "winit",
- "zip 4.6.1",
-]
-
-[[package]]
-name = "notecraft-cli"
-version = "2026.11.25"
-dependencies = [
- "notecraft-engine",
- "notecraft-import",
- "notecraft-mcp",
- "notecraft-store",
- "serde_json",
- "winresource",
-]
-
-[[package]]
-name = "notecraft-demo"
-version = "2026.11.25"
-dependencies = [
- "notecraft-formats",
- "notecraft-ink",
- "notecraft-model",
- "notecraft-store",
-]
-
-[[package]]
-name = "notecraft-diagram"
-version = "2026.11.25"
-dependencies = [
- "mermaid-rs-renderer",
-]
-
-[[package]]
-name = "notecraft-engine"
-version = "2026.11.25"
-dependencies = [
- "notecraft-formats",
- "notecraft-model",
- "notecraft-store",
- "serde_json",
-]
-
-[[package]]
-name = "notecraft-formats"
-version = "2026.11.25"
-dependencies = [
- "notecraft-model",
-]
-
-[[package]]
-name = "notecraft-import"
-version = "2026.11.25"
-dependencies = [
- "cab",
- "notecraft-formats",
- "notecraft-model",
- "notecraft-onenote",
- "notecraft-store",
-]
-
-[[package]]
-name = "notecraft-ink"
-version = "2026.11.25"
-
-[[package]]
-name = "notecraft-input-language"
-version = "2026.11.25"
-dependencies = [
- "windows-sys 0.61.2",
-]
-
-[[package]]
-name = "notecraft-math"
-version = "2026.11.25"
-dependencies = [
- "ratex-font",
- "ratex-layout",
- "ratex-parser",
- "ratex-types",
-]
-
-[[package]]
-name = "notecraft-mcp"
-version = "2026.11.25"
-dependencies = [
- "notecraft-engine",
- "notecraft-store",
- "serde_json",
-]
-
-[[package]]
-name = "notecraft-model"
-version = "2026.11.25"
-dependencies = [
- "web-time",
-]
-
-[[package]]
-name = "notecraft-onenote"
-version = "2026.11.25"
-
-[[package]]
-name = "notecraft-setup"
-version = "2026.11.25"
-dependencies = [
- "notecraft-store",
- "rfd",
-]
-
-[[package]]
-name = "notecraft-store"
-version = "2026.11.25"
-dependencies = [
- "log",
- "notecraft-formats",
- "notecraft-ink",
- "notecraft-model",
-]
-
-[[package]]
-name = "notecraft-text"
-version = "2026.11.25"
-dependencies = [
- "notecraft-model",
- "parley",
-]
-
-[[package]]
-name = "notecraft-ui-egui"
-version = "2026.11.25"
-dependencies = [
- "arboard",
- "craft-i18n",
- "egui",
- "egui-wgpu",
- "egui_extras",
- "egui_kittest",
- "fontdb",
- "hayro",
- "image",
- "jxl-oxide",
- "kurbo 0.12.0",
- "log",
- "notecraft-diagram",
- "notecraft-engine",
- "notecraft-formats",
- "notecraft-import",
- "notecraft-ink",
- "notecraft-input-language",
- "notecraft-math",
- "notecraft-model",
- "notecraft-store",
- "notecraft-text",
- "oar-ocr",
- "ocrs",
- "ort",
- "rfd",
- "rten",
- "semver",
- "serde_json",
- "sha2",
- "spellbook",
- "ureq",
- "web-time",
- "zip 4.6.1",
-]
-
-[[package]]
-name = "notecraft-web"
-version = "2026.11.25"
-dependencies = [
- "eframe",
- "egui",
- "getrandom 0.2.17",
- "getrandom 0.3.4",
- "js-sys",
- "log",
- "notecraft-engine",
- "notecraft-model",
- "notecraft-store",
- "notecraft-ui-egui",
- "wasm-bindgen",
- "wasm-bindgen-futures",
- "web-sys",
-]
 
 [[package]]
 name = "num"

@@ -1,8 +1,8 @@
 # Commands
 
 Generated from the command registry. Do not edit by hand: run
-`UPDATE_DOCS=1 cargo test -p notecraft-engine commands_doc` to refresh it.
-Every front end (window, `notecraft-cli run`, the control channel) uses these ids.
+`UPDATE_DOCS=1 cargo test -p ergonote-engine commands_doc` to refresh it.
+Every front end (window, `ergonote-cli run`, the control channel) uses these ids.
 
 ## `notebook.create`
 

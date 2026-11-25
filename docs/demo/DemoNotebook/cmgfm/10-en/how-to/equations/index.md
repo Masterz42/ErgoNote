@@ -7,7 +7,7 @@ updated: 2026-10-18T00:00:00Z
 tags: []
 ---
 
-NoteCraft draws TeX maths itself, in real maths fonts. Every formula on this page is plain text: press the `< >` button to see its TeX.
+ErgoNote draws TeX maths itself, in real maths fonts. Every formula on this page is plain text: press the `< >` button to see its TeX.
 
 ## In a line, or on its own
 
@@ -63,6 +63,6 @@ $$
 
 Insert, then Equation, opens a list of equations to start from. Pick one and its TeX goes in at the caret.
 
-If a formula is wrong, NoteCraft shows its text instead of hiding it.
+If a formula is wrong, ErgoNote shows its text instead of hiding it.
 
 Next: [Tag a line](../tag-a-line/).

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build a NoteCraft.app, a separate notebook setup app, DMG and CLI archive on macOS.
+# Build a ErgoNote.app, a separate notebook setup app, DMG and CLI archive on macOS.
 # Default: universal. Options: --arch aarch64|x86_64|universal, --out DIR, --no-build.
 # CARGO_TARGET_DIR and DIST may override the build and distribution directories.
 set -euo pipefail
@@ -31,14 +31,14 @@ done
 if [[ "$BUILD" = 1 ]]; then
   command -v rustup >/dev/null || { echo "missing tool: rustup" >&2; exit 1; }
 fi
-VERSION="$(cd "$ROOT" && cargo metadata --no-deps --locked --format-version 1 | jq -er '[.packages[] | select(.name == "notecraft" or .name == "notecraft-cli") | .version] | if length == 2 and (unique | length) == 1 then .[0] else error("GUI and CLI Cargo versions differ or are missing") end')"
+VERSION="$(cd "$ROOT" && cargo metadata --no-deps --locked --format-version 1 | jq -er '[.packages[] | select(.name == "ergonote" or .name == "ergonote-cli") | .version] | if length == 2 and (unique | length) == 1 then .[0] else error("GUI and CLI Cargo versions differ or are missing") end')"
 [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]] || { echo "invalid Cargo version: $VERSION" >&2; exit 1; }
 TARGET_ROOT="${CARGO_TARGET_DIR:-$ROOT/target}"
 mkdir -p "$TARGET_ROOT/packaging" "$OUT"
 TARGET_ROOT="$(cd "$TARGET_ROOT" && pwd)"
 OUT="$(cd "$OUT" && pwd)"
-DMG="$OUT/NoteCraft-$VERSION-macos-$ARCH.dmg"
-CLI_ZIP="$OUT/NoteCraft-cli-$VERSION-macos-$ARCH.zip"
+DMG="$OUT/ErgoNote-$VERSION-macos-$ARCH.dmg"
+CLI_ZIP="$OUT/ErgoNote-cli-$VERSION-macos-$ARCH.zip"
 export MACOSX_DEPLOYMENT_TARGET=11.0
 
 sha256() { shasum -a 256 "$1" | awk '{print $1}'; }
@@ -54,17 +54,17 @@ native_target() {
 
 source "$ROOT/packaging/OSX/provenance.sh"
 build_source="$(source_provenance "$ROOT")"
-echo "==> NoteCraft $VERSION ($ARCH)"
+echo "==> ErgoNote $VERSION ($ARCH)"
 if [[ "$BUILD" = 1 ]]; then
   rustup target add "${targets[@]}"
   for target in "${targets[@]}"; do
-    (cd "$ROOT" && CARGO_TARGET_DIR="$TARGET_ROOT" cargo build --locked --release --target "$target" -p notecraft -p notecraft-cli)
+    (cd "$ROOT" && CARGO_TARGET_DIR="$TARGET_ROOT" cargo build --locked --release --target "$target" -p ergonote -p ergonote-cli)
   done
 fi
 # Both slices must be built from the same inputs, including local uncommitted work.
 check_source_provenance "$build_source" "$(source_provenance "$ROOT")" 0
 
-WORK="$(mktemp -d "$TARGET_ROOT/packaging/notecraft-osx.XXXXXX")"
+WORK="$(mktemp -d "$TARGET_ROOT/packaging/ergonote-osx.XXXXXX")"
 RECORD_TMP=""
 cleanup() {
   local status=$?
@@ -77,16 +77,16 @@ trap cleanup EXIT
 trap 'exit 129' HUP
 trap 'exit 130' INT
 trap 'exit 143' TERM
-APP="$WORK/NoteCraft.app"
+APP="$WORK/ErgoNote.app"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources/licenses"
 mkdir -p "$APP/Contents/Resources/demo"
-ditto "$ROOT/docs/demo/DemoNotebook" "$APP/Contents/Resources/demo/welcome-to-notecraft"
+ditto "$ROOT/docs/demo/DemoNotebook" "$APP/Contents/Resources/demo/welcome-to-ergonote"
 for entry in html/_node.toml html/00-start/welcome/index.html cmgfm/_node.toml cmgfm/00-start/welcome/index.md; do
-  [[ -s "$APP/Contents/Resources/demo/welcome-to-notecraft/$entry" ]] || { echo "demo resource is missing $entry" >&2; exit 1; }
+  [[ -s "$APP/Contents/Resources/demo/welcome-to-ergonote/$entry" ]] || { echo "demo resource is missing $entry" >&2; exit 1; }
 done
 for format in html cmgfm; do
   languages=0
-  for folder in "$APP/Contents/Resources/demo/welcome-to-notecraft/$format"/*; do
+  for folder in "$APP/Contents/Resources/demo/welcome-to-ergonote/$format"/*; do
     [[ -d "$folder" ]] || continue
     name="${folder##*/}"
     if [[ "$name" =~ ^(1[0-9]|2[0-9])-[a-z]{2}$ ]]; then languages=$((languages + 1)); fi
@@ -97,9 +97,9 @@ done
 # --no-build accepts only binaries recorded by a successful package build. The record
 # binds both executable hashes to the Cargo version and source identity, including foreign slices.
 for target in "${targets[@]}"; do
-  gui="$TARGET_ROOT/$target/release/notecraft"
-  cli="$TARGET_ROOT/$target/release/notecraft-cli"
-  record="$TARGET_ROOT/$target/release/.notecraft-osx-provenance"
+  gui="$TARGET_ROOT/$target/release/ergonote"
+  cli="$TARGET_ROOT/$target/release/ergonote-cli"
+  record="$TARGET_ROOT/$target/release/.ergonote-osx-provenance"
   [[ -x "$gui" && -x "$cli" ]] || { echo "missing executable for $target" >&2; exit 1; }
   expected_arch="${target%%-*}"
   [[ "$expected_arch" = aarch64 ]] && expected_arch=arm64
@@ -115,18 +115,18 @@ for target in "${targets[@]}"; do
     check_source_provenance "$(tail -n +5 "$record")" "$build_source" 1
   else
     if native_target "$target"; then
-      check_version "$gui" notecraft
-      check_version "$cli" notecraft-cli
+      check_version "$gui" ergonote
+      check_version "$cli" ergonote-cli
     fi
     [[ ! -L "$record" && ( ! -e "$record" || -f "$record" ) ]] || { echo "unsafe provenance path: $record" >&2; exit 1; }
-    RECORD_TMP="$(mktemp "$TARGET_ROOT/$target/release/.notecraft-osx-provenance.XXXXXX")"
+    RECORD_TMP="$(mktemp "$TARGET_ROOT/$target/release/.ergonote-osx-provenance.XXXXXX")"
     printf '%s\n%s\n' "$expected_record" "$build_source" > "$RECORD_TMP"
     mv -f "$RECORD_TMP" "$record"
     RECORD_TMP=""
   fi
 done
 
-for binary in notecraft notecraft-cli; do
+for binary in ergonote ergonote-cli; do
   slices=()
   for target in "${targets[@]}"; do
     candidate="$TARGET_ROOT/$target/release/$binary"
@@ -150,14 +150,14 @@ sed -e "s|@VERSION@|${VERSION%%[-+]*}|g" -e "s|@FULL_VERSION@|$VERSION|g" \
   "$ROOT/packaging/OSX/Info.plist.in" > "$APP/Contents/Info.plist"
 plutil -lint "$APP/Contents/Info.plist"
 # Build the .icns from the checked-in PNG family; this keeps the source asset portable.
-ICONSET="$WORK/notecraft.iconset"
+ICONSET="$WORK/ergonote.iconset"
 mkdir -p "$ICONSET"
 for spec in "16:32" "32:64" "128:256" "256:512" "512:1024"; do
   size="${spec%%:*}"; source_size="${spec##*:}"
-  sips -z "$size" "$size" "$ROOT/assets/brand/notecraft-512.png" --out "$ICONSET/icon_${size}x${size}.png" >/dev/null
-  sips -z "$source_size" "$source_size" "$ROOT/assets/brand/notecraft-512.png" --out "$ICONSET/icon_${size}x${size}@2x.png" >/dev/null
+  sips -z "$size" "$size" "$ROOT/assets/brand/ergonote-512.png" --out "$ICONSET/icon_${size}x${size}.png" >/dev/null
+  sips -z "$source_size" "$source_size" "$ROOT/assets/brand/ergonote-512.png" --out "$ICONSET/icon_${size}x${size}@2x.png" >/dev/null
 done
-iconutil --convert icns "$ICONSET" --output "$APP/Contents/Resources/notecraft.icns"
+iconutil --convert icns "$ICONSET" --output "$APP/Contents/Resources/ergonote.icns"
 
 for file in LICENSE-MIT LICENSE-APACHE NOTICE; do
   install -m 644 "$ROOT/$file" "$APP/Contents/Resources/licenses/$file"
@@ -177,44 +177,44 @@ sign() {
     codesign --force --timestamp=none --sign - "$1"
   fi
 }
-sign "$APP/Contents/MacOS/notecraft-cli"
+sign "$APP/Contents/MacOS/ergonote-cli"
 sign "$APP"
 codesign --verify --strict --deep --verbose=2 "$APP"
-codesign --verify --strict --verbose=2 "$APP/Contents/MacOS/notecraft-cli"
+codesign --verify --strict --verbose=2 "$APP/Contents/MacOS/ergonote-cli"
 if [[ "$ARCH" = universal || ( "$ARCH" = aarch64 && "$(uname -m)" = arm64 ) || \
       ( "$ARCH" = x86_64 && "$(uname -m)" = x86_64 ) ]]; then
-  check_version "$APP/Contents/MacOS/notecraft" notecraft
-  check_version "$APP/Contents/MacOS/notecraft-cli" notecraft-cli
+  check_version "$APP/Contents/MacOS/ergonote" ergonote
+  check_version "$APP/Contents/MacOS/ergonote-cli" ergonote-cli
 else
   echo "==> skipping $ARCH execution on $(uname -m); verify on a native host"
 fi
 
 DMG_ROOT="$WORK/dmg"
 mkdir -p "$DMG_ROOT"
-ditto "$APP" "$DMG_ROOT/NoteCraft.app"
+ditto "$APP" "$DMG_ROOT/ErgoNote.app"
 install -m 644 "$ROOT/packaging/OSX/DMG Read Me.txt" "$DMG_ROOT/Read Me First.txt"
-app_hash="$(sha256 "$DMG_ROOT/NoteCraft.app/Contents/MacOS/notecraft")"
+app_hash="$(sha256 "$DMG_ROOT/ErgoNote.app/Contents/MacOS/ergonote")"
 printf '%s\n%s\n%s\n%s\n' "$VERSION" "$ARCH" "$app_hash" "$build_source" > "$DMG_ROOT/BuildProvenance.txt"
 ln -s /Applications "$DMG_ROOT/Applications"
-hdiutil create -volname "NoteCraft $VERSION" -srcfolder "$DMG_ROOT" -ov -format UDZO "$DMG"
+hdiutil create -volname "ErgoNote $VERSION" -srcfolder "$DMG_ROOT" -ov -format UDZO "$DMG"
 sign "$DMG"
 codesign --verify --strict --verbose=2 "$DMG"
 
-CLI_DIR="$WORK/NoteCraft-cli-$VERSION-macos-$ARCH"
+CLI_DIR="$WORK/ErgoNote-cli-$VERSION-macos-$ARCH"
 mkdir -p "$CLI_DIR/licenses"
-install -m 755 "$APP/Contents/MacOS/notecraft-cli" "$CLI_DIR/notecraft-cli"
+install -m 755 "$APP/Contents/MacOS/ergonote-cli" "$CLI_DIR/ergonote-cli"
 for file in LICENSE-MIT LICENSE-APACHE NOTICE; do
   install -m 644 "$ROOT/$file" "$CLI_DIR/licenses/$file"
 done
 install -m 644 "$ROOT/ATTRIBUTION.md" "$CLI_DIR/ATTRIBUTION.md"
 ditto "$ROOT/licenses" "$CLI_DIR/licenses"
-sign "$CLI_DIR/notecraft-cli"
-cli_hash="$(sha256 "$CLI_DIR/notecraft-cli")"
+sign "$CLI_DIR/ergonote-cli"
+cli_hash="$(sha256 "$CLI_DIR/ergonote-cli")"
 printf '%s\n%s\n%s\n%s\n' "$VERSION" "$ARCH" "$cli_hash" "$build_source" > "$CLI_DIR/BuildProvenance.txt"
-codesign --verify --strict --verbose=2 "$CLI_DIR/notecraft-cli"
+codesign --verify --strict --verbose=2 "$CLI_DIR/ergonote-cli"
 if [[ "$ARCH" = universal || ( "$ARCH" = aarch64 && "$(uname -m)" = arm64 ) || \
       ( "$ARCH" = x86_64 && "$(uname -m)" = x86_64 ) ]]; then
-  check_version "$CLI_DIR/notecraft-cli" notecraft-cli
+  check_version "$CLI_DIR/ergonote-cli" ergonote-cli
 fi
 ditto -c -k --keepParent "$CLI_DIR" "$CLI_ZIP"
 check_source_provenance "$build_source" "$(source_provenance "$ROOT")" 0

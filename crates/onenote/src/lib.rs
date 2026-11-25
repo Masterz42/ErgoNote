@@ -1,5 +1,5 @@
 #![deny(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::unimplemented, clippy::todo, clippy::unreachable)]
-//! NoteCraft OneNote reader (layer L1): reads `.one` sections and optional `.onetoc2`
+//! ErgoNote OneNote reader (layer L1): reads `.one` sections and optional `.onetoc2`
 //! color metadata into plain models.
 //!
 //! Format behavior follows Microsoft's published [MS-ONESTORE] and [MS-ONE] specifications.

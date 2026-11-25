@@ -2,7 +2,7 @@
 //! OneNote keeps them beside its title, and a small menu to choose which are shown, to put the
 //! strip under the ribbon, or to hide it.
 //!
-//! Only what NoteCraft can do is offered. OneNote's menu also lists Print, Print Preview,
+//! Only what ErgoNote can do is offered. OneNote's menu also lists Print, Print Preview,
 //! Touch/Mouse Mode and More Commands; none of those exist here, so they are not listed.
 //!
 //! This module draws the strip and says which command was pressed; the window carries it out.

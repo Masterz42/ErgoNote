@@ -1,9 +1,9 @@
-//! The native activity: Android's entry point into NoteCraft.
+//! The native activity: Android's entry point into ErgoNote.
 
 use crate::{insets, storage, welcome};
-use notecraft_engine::Session;
-use notecraft_store::Settings;
-use notecraft_ui_egui::NoteCraftApp;
+use ergonote_engine::Session;
+use ergonote_store::Settings;
+use ergonote_ui_egui::ErgoNoteApp;
 use std::ffi::CString;
 use std::path::PathBuf;
 use std::time::Duration;
@@ -15,15 +15,15 @@ use winit::platform::android::activity::AndroidApp;
 use winit::window::WindowId;
 
 /// Android's loader calls this, by name, on the activity's own thread once the APK's
-/// `libnotecraft_android.so` is loaded. The name must not be mangled; that attribute is the
-/// only unsafe code in NoteCraft (see android/Cargo.toml).
+/// `libergonote_android.so` is loaded. The name must not be mangled; that attribute is the
+/// only unsafe code in ErgoNote (see android/Cargo.toml).
 #[allow(unsafe_code)]
 #[unsafe(no_mangle)]
 fn android_main(app: AndroidApp) {
-    android_logger::init_once(android_logger::Config::default().with_max_level(log::LevelFilter::Info).with_tag("NoteCraft"));
-    std::panic::set_hook(Box::new(|info| log::error!("NoteCraft stopped: {info}")));
+    android_logger::init_once(android_logger::Config::default().with_max_level(log::LevelFilter::Info).with_tag("ErgoNote"));
+    std::panic::set_hook(Box::new(|info| log::error!("ErgoNote stopped: {info}")));
     if let Err(error) = run(app) {
-        log::error!("NoteCraft could not start: {error}");
+        log::error!("ErgoNote could not start: {error}");
     }
     // winit 0.30 enforces a single EventLoop per Linux process (process-global AtomicBool).
     // Once android_main returns, Android keeps this process alive in cache unless it exits,
@@ -38,11 +38,11 @@ fn android_main(app: AndroidApp) {
 
 fn run(app: AndroidApp) -> Result<(), String> {
     if let Ok(offset) = time::UtcOffset::current_local_offset() {
-        notecraft_model::time::set_local_offset(offset.whole_seconds());
+        ergonote_model::time::set_local_offset(offset.whole_seconds());
     }
     let layout = storage::layout(app.internal_data_path().as_deref(), app.external_data_path().as_deref())
         .ok_or("Android reported no internal storage for the app")?;
-    log::info!("start: NoteCraft {} notebooks={} settings={}", env!("CARGO_PKG_VERSION"), layout.notebooks.display(), layout.settings.display());
+    log::info!("start: ErgoNote {} notebooks={} settings={}", env!("CARGO_PKG_VERSION"), layout.notebooks.display(), layout.settings.display());
     let mut alerts: Vec<(&str, String)> = Vec::new();
 
     // The bundled Welcome notebook: unpacked into app storage once per version. A failure is
@@ -52,12 +52,9 @@ fn run(app: AndroidApp) -> Result<(), String> {
         Some(asset) => match welcome::refresh(asset, &payload, env!("CARGO_PKG_VERSION")) {
             Ok(true) => log::info!("Welcome notebook payload unpacked to {}", payload.display()),
             Ok(false) => log::info!("Welcome notebook payload is current"),
-            Err(error) => alerts.push(("welcome-payload", format!("The Welcome notebook bundled with NoteCraft could not be unpacked: {error}"))),
+            Err(error) => alerts.push(("welcome-payload", format!("The Welcome notebook bundled with ErgoNote could not be unpacked: {error}"))),
         },
-        None => alerts.push((
-            "welcome-payload",
-            format!("This build of NoteCraft has no {} asset, so the Welcome notebook cannot be installed.", welcome::ASSET),
-        )),
+        None => {}
     }
 
     std::fs::create_dir_all(&layout.notebooks).map_err(|e| format!("cannot create {}: {e}", layout.notebooks.display()))?;
@@ -68,17 +65,17 @@ fn run(app: AndroidApp) -> Result<(), String> {
     if settings.get("privacy_welcome_seen").is_none() {
         let _ = settings.set("privacy_welcome_seen", "true");
     }
-    let root = notecraft_store::settings::configured_notebooks_dir(&settings).filter(|p| p.is_dir()).unwrap_or_else(|| layout.notebooks.clone());
+    let root = ergonote_store::settings::configured_notebooks_dir(&settings).filter(|p| p.is_dir()).unwrap_or_else(|| layout.notebooks.clone());
     let mut session = Session::new(&root, settings).map_err(|e| format!("cannot open the notebooks folder {}: {e}", root.display()))?;
-    let initial_page = if session.tree().is_empty() { notecraft_engine::sample::create_school_binder(&mut session).ok() } else { None };
+    let initial_page = if session.tree().is_empty() { ergonote_engine::sample::create_school_binder(&mut session).ok() } else { None };
 
     // arboard has no Android backend, so this says the clipboard is not connected and the
-    // window shows that once; copy and paste inside NoteCraft still work.
-    let clipboard: Box<dyn notecraft_ui_egui::clipboard::Board> = match notecraft_ui_egui::clipboard::open() {
+    // window shows that once; copy and paste inside ErgoNote still work.
+    let clipboard: Box<dyn ergonote_ui_egui::clipboard::Board> = match ergonote_ui_egui::clipboard::open() {
         Ok(board) => board,
         Err(error) => {
             log::info!("clipboard: {error}");
-            Box::new(notecraft_ui_egui::clipboard::Unavailable)
+            Box::new(ergonote_ui_egui::clipboard::Unavailable)
         }
     };
 
@@ -88,23 +85,23 @@ fn run(app: AndroidApp) -> Result<(), String> {
     let event_loop = builder.build().map_err(|e| format!("the window failed: {e}"))?;
     let options = eframe::NativeOptions::default();
     let inner = eframe::create_native(
-        "NoteCraft",
+        "ErgoNote",
         options,
         Box::new(move |cc| {
             crate::bridge::set_repaint_ctx(cc.egui_ctx.clone());
             let setup_payload: PathBuf = payload.clone();
             let url_window = window.clone();
             let check_window = window.clone();
-            let mut app = NoteCraftApp::new(session)
+            let mut app = ErgoNoteApp::new(session)
                 .with_simple_mobile(false)
                 .with_url_opener(move |url| crate::bridge::open_external_url(&url_window, url))
                 .with_welcome_notebook_setup(move |notebooks_root, format| {
-                    notecraft_setup::install_edition(&setup_payload, notebooks_root, format).map_err(|error| error.to_string())
+                    ergonote_setup::install_edition(&setup_payload, notebooks_root, format).map_err(|error| error.to_string())
                 })
                 .with_clipboard(clipboard);
             crate::bridge::check_for_updates(&check_window);
             for (key, message) in alerts.drain(..) {
-                app.alert(key, "NoteCraft", &message);
+                app.alert(key, "ErgoNote", &message);
             }
             app.expand_all();
             if let Some(p) = initial_page.as_ref() {
@@ -184,7 +181,7 @@ impl ApplicationHandler<eframe::UserEvent> for AndroidHandler<'_> {
 
 /// The egui app inside Android's window.
 struct Shell {
-    app: NoteCraftApp,
+    app: ErgoNoteApp,
     /// Whether the activity had the input focus last frame.
     focused: bool,
     /// The activity, asked each frame where the system bars are.
@@ -194,7 +191,7 @@ struct Shell {
     /// Last `(visible, paragraph_mode, block, text, sel_start_utf16, sel_end_utf16)` sent to Java.
     last_ime_synced: (bool, bool, Option<usize>, String, usize, usize),
     /// Active pending-format rewrite so follow-up keystrokes from the prior generation get wrapped.
-    pending_ime_rewrite: Option<(i64, notecraft_ui_egui::ImeRewrite)>,
+    pending_ime_rewrite: Option<(i64, ergonote_ui_egui::ImeRewrite)>,
 }
 
 impl Shell {
@@ -264,6 +261,7 @@ impl eframe::App for Shell {
                 crate::bridge::BridgeEvent::FilePicked(path) => self.app.complete_android_pick(path),
                 crate::bridge::BridgeEvent::VoiceDictated(text) => self.app.finish_android_dictation(text),
                 crate::bridge::BridgeEvent::ReleaseJson(json) => self.app.apply_release_json(&json, "android"),
+                crate::bridge::BridgeEvent::TtsDone => self.app.mark_tts_done(),
                 crate::bridge::BridgeEvent::ImeParagraph { sync_gen, text, sel_start_utf16, sel_end_utf16 } => {
                     self.handle_ime_paragraph(ctx, sync_gen, text, sel_start_utf16, sel_end_utf16);
                 }
@@ -316,6 +314,15 @@ impl eframe::App for Shell {
         if self.app.take_android_update_check_request() {
             crate::bridge::check_for_updates(&self.window);
         }
+        if let Some(text) = self.app.take_speech_request() {
+            let (locale, rate) = self.app.speech_locale_and_rate();
+            crate::bridge::speak_tts(&self.window, &text, locale, rate);
+        }
+        if let Some(cmd) = self.app.take_speech_cmd()
+            && matches!(cmd, "stop" | "pause")
+        {
+            crate::bridge::stop_tts(&self.window);
+        }
         // Prevent egui-winit from calling winit's decorView soft-input toggle, which fights our
         // ImeProxyView in ErgoNoteActivity.
         let egui_wants_ime = ctx.output(|o| o.ime.is_some());
@@ -324,7 +331,7 @@ impl eframe::App for Shell {
         let title_focused = ctx.memory(|m| m.has_focus(egui::Id::new("page-title-box")));
         let desired = if !title_focused && let Some((block, text, s, e)) = self.app.ime_paragraph_state() {
             (true, true, Some(block), text, s, e)
-        } else if egui_wants_ime {
+        } else if egui_wants_ime || (!title_focused && self.app.ime_table_cell_active()) {
             (true, false, None, String::new(), 0, 0)
         } else {
             (false, false, None, String::new(), 0, 0)

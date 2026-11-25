@@ -4,9 +4,9 @@
 @plural	{n} notebook|{n} notebooks	{n} מחברת|{n} מחברות|{n} מחברות
 @plural	{n} stroke|{n} strokes	{n} קו|{n} קווים|{n} קווים
 @id	language.name	עברית
-@id	product.about	NoteCraft הוא פרויקט Rust טהור, שמפותח בגלוי על בסיס קוד שנכתב באופן עצמאי ותיעוד ציבורי. מטרתו לשלב את הארגון המוכר של OneNote עם קבצים מקומיים וניידים שאפשר לעיין בהם, לגבות ולסנכרן באמצעות השירותים והכלים שתבחרו.
-@id	product.long_description	NoteCraft הוא מימוש מחדש בקוד פתוח ועצמאי של חוויית המחברות של OneNote, שנעשה בשיטת clean-room. מחברות, מקטעים, עמודים, תמונות וקבצים מצורפים נשמרים כתיקיות וקבצים רגילים במכשיר שלכם. בחרו בעצמכם איך לסנכרן ולגבות אותם בעזרת כלים שאתם כבר סומכים עליהם, בלי שרת או חשבון של NoteCraft.
-@id	product.short_description	NoteCraft הוא מימוש מחדש בקוד פתוח ועצמאי של חוויית המחברות של OneNote, שנעשה בשיטת clean-room ומתבסס על קבצים מקומיים. שמרו את ההערות במכשיר שלכם וסנכרנו או גבו אותן בכלים שתבחרו.
+@id	product.about	ErgoNote הוא פרויקט Rust טהור, שמפותח בגלוי על בסיס קוד שנכתב באופן עצמאי ותיעוד ציבורי. מטרתו לשלב את הארגון המוכר של OneNote עם קבצים מקומיים וניידים שאפשר לעיין בהם, לגבות ולסנכרן באמצעות השירותים והכלים שתבחרו.
+@id	product.long_description	ErgoNote הוא מימוש מחדש בקוד פתוח ועצמאי של חוויית המחברות של OneNote, שנעשה בשיטת clean-room. מחברות, מקטעים, עמודים, תמונות וקבצים מצורפים נשמרים כתיקיות וקבצים רגילים במכשיר שלכם. בחרו בעצמכם איך לסנכרן ולגבות אותם בעזרת כלים שאתם כבר סומכים עליהם, בלי שרת או חשבון של ErgoNote.
+@id	product.short_description	ErgoNote הוא מימוש מחדש בקוד פתוח ועצמאי של חוויית המחברות של OneNote, שנעשה בשיטת clean-room ומתבסס על קבצים מקומיים. שמרו את ההערות במכשיר שלכם וסנכרנו או גבו אותן בכלים שתבחרו.
 @id	product.tagline	מימוש עצמאי מחדש של חוויית OneNote: קבצים מקומיים וסנכרון לבחירתכם.
 @id	ui.a_bullet_list	רשימה עם נקודות
 @id	ui.a_column_left_of_the_caret_s	עמודה משמאל למיקום העכבר
@@ -29,8 +29,8 @@
 @id	ui.a_table_pick_its_size	טבלה: בחר את גודלה
 @id	ui.a_tag_goes_on_a_line_of_text	תגית מופיעה על שורה של טקסט
 @id	ui.a_to_do_box_on_this_line_ctrl_1	תיבת מטלה בשורה זו (Ctrl+1)
-@id	ui.a_tour_of_notecraft_shown_on_its_own_pages_it_is_add_96221451f0	סיור ב-NoteCraft, המוצג בדפים עצמאיים. הוא נוסף לתיקיית מחברות ריקה בהפעלה הראשונה; פעולה זו תוסיף אותו שוב או תפתח אותו אם הוא עדיין כאן.
-@id	ui.about_notecraft	אודות NoteCraft
+@id	ui.a_tour_of_ergonote_shown_on_its_own_pages_it_is_add_96221451f0	סיור ב-ErgoNote, המוצג בדפים עצמאיים. הוא נוסף לתיקיית מחברות ריקה בהפעלה הראשונה; פעולה זו תוסיף אותו שוב או תפתח אותו אם הוא עדיין כאן.
+@id	ui.about_ergonote	אודות ErgoNote
 @id	ui.accent_accent	גוון: {accent}
 @id	ui.accept	קבל
 @id	ui.add	הוסף
@@ -55,7 +55,7 @@
 @id	ui.all_of_them_live_in_folder	כולם חיים ב-{folder}
 @id	ui.always_on_top	תמיד בחזית
 @id	ui.an_equation_written_in_tex_pick_one_to_start_from	משוואה, כתובה ב-TeX: בחר אחת להתחיל ממנה
-@id	ui.app_preferences_reset_restart_notecraft_to_apply_every_default	הגדרות האפליקציה אופסו. הפעל מחדש את NoteCraft כדי להחיל את כל ברירת המחדל.
+@id	ui.app_preferences_reset_restart_ergonote_to_apply_every_default	הגדרות האפליקציה אופסו. הפעל מחדש את ErgoNote כדי להחיל את כל ברירת המחדל.
 @id	ui.appearance	מראה
 @id	ui.append_link	צרף קישור
 @id	ui.application_preferences	הגדרות אפליקציה
@@ -104,7 +104,7 @@
 @id	ui.choose_a_section_to_see_its_pages	בחירת קטע כדי לראות את הדפים שלו.
 @id	ui.choose_a_symbol_to_insert_at_the_caret	בחירת סמל להכנסה בנקודת ההזנה
 @id	ui.choose_how_to_insert_a_picture	בחירת אופן הכנסת תמונה
-@id	ui.choose_what_notecraft_records_locally_nothing_is_upl_fc372d68e8	בחירת מה NoteCraft מקליט מקומית. אין העלאה אוטומטית.
+@id	ui.choose_what_ergonote_records_locally_nothing_is_upl_fc372d68e8	בחירת מה ErgoNote מקליט מקומית. אין העלאה אוטומטית.
 @id	ui.chosen_for_this_page	נבחר עבור דף זה
 @id	ui.circle	עיגול
 @id	ui.clear_all_local_telemetry_sessions_and_exported_tele_e4f5e2340d	לנקות את כל סשני הטלמטריה המקומיים ואת קובצי ה-ZIP של טלמטריה מיובאים?
@@ -315,14 +315,14 @@
 @id	ui.interface_size	גודל הממשק
 @id	ui.interface_size_hint	מגדיל או מקטין את הרצועה, התפריטים והדף במסך זה.
 @id	ui.interface_size_percent	{percent}%
-@id	ui.issues_the_roadmap_and_the_documentation_are_all_the_2beb6e100f	בעיות, מסלול העבודה והתיעוד נמצאים שם. NoteCraft אינו מתקשר איתו או עם כל שירות אחר באופן עצמאי.
+@id	ui.issues_the_roadmap_and_the_documentation_are_all_the_2beb6e100f	בעיות, מסלול העבודה והתיעוד נמצאים שם. ErgoNote אינו מתקשר איתו או עם כל שירות אחר באופן עצמאי.
 @id	ui.it_is_listed_so_the_page_s_folder_is_not_a_secret	הוא מופיע כדי שלתיקיית הדף לא תהיה סודיות.
 @id	ui.italic	נטוי
 @id	ui.italic_ctrl_i	נטוי (Ctrl+I)
 @id	ui.json	JSON
 @id	ui.justification_goes_on_a_paragraph_of_text	יישור מתייחס לפסקת טקסט
 @id	ui.keep_this_window_above_the_others	החזק חלון זה מעל האחרים
-@id	ui.kept_the_original_drawing_file_path	קובץ הציור של דף זה הכיל קווים ש-NoteCraft אינו יכול לערוך. הקובץ המקורי נשמר בשם {path}.
+@id	ui.kept_the_original_drawing_file_path	קובץ הציור של דף זה הכיל קווים ש-ErgoNote אינו יכול לערוך. הקובץ המקורי נשמר בשם {path}.
 @id	ui.label	תווית
 @id	ui.label_not_built	{label} (לא בנוי)
 @id	ui.label_not_built_yet	{label}: טרם נבנה
@@ -351,7 +351,7 @@
 @id	ui.local_diagnostics	אבחון מקומי
 @id	ui.local_diagnostics_and_usage	אבחון מקומי ושימוש
 @id	ui.logging_folder_folder	תיקיית יומן: {folder}
-@id	ui.logs_and_telemetry_stay_on_this_device_notecraft_doe_87b8387dee	יומנים וטלמטריה נשארים במכשיר זה. NoteCraft אינו שולח אותם אוטומטית.
+@id	ui.logs_and_telemetry_stay_on_this_device_ergonote_doe_87b8387dee	יומנים וטלמטריה נשארים במכשיר זה. ErgoNote אינו שולח אותם אוטומטית.
 @id	ui.magenta	מג'נטה
 @id	ui.make_subpage	הפוך לעמוד משנה
 @id	ui.make_the_page_larger	הגדלת הדף
@@ -422,7 +422,7 @@
 @id	ui.no_notebooks_yet_use_new_notebook	טרם נוצרו מחברות. השתמש ב-"מחברת חדשה".
 @id	ui.no_pages_in_this_section_yet	טרם נוצרו דפים בסעיף זה.
 @id	ui.no_pages_match	אין התאמות לדפים.
-@id	ui.no_saved_versions_yet_notecraft_keeps_a_copy_when_th_aa2e25acad	טרם נשמרו גרסאות. NoteCraft שומר עותק כאשר הדף משתנה.
+@id	ui.no_saved_versions_yet_ergonote_keeps_a_copy_when_th_aa2e25acad	טרם נשמרו גרסאות. ErgoNote שומר עותק כאשר הדף משתנה.
 @id	ui.none	ללא
 @id	ui.normal_view	תצוגה רגילה\n
 @id	ui.not_built	טרם נבנה
@@ -443,11 +443,11 @@
 @id	ui.notebooks_folder_folder	תיקיית מחברות: {folder}
 @id	ui.notebooks_items_folder	{notebooks} · {items} | {folder}
 @id	ui.notebooks_you_open_will_appear_here	המחברות שתפתח תופענה כאן.
-@id	ui.notecraft	NoteCraft
-@id	ui.notecraft_found_an_attachment_that_is_not_referenced_8c0eb51257	NoteCraft מצא קובץ מצורף שאינו מופיע בהפניה של הדף הזה:
-@id	ui.notecraft_found_an_attachment_without_its_generated_icon_name	NoteCraft מצא קובץ מצורף ללא התמונה שנוצרה עבורו:
-@id	ui.notecraft_ruled	משובץ NoteCraft
-@id	ui.notecraft_squares	ריבועי NoteCraft
+@id	ui.ergonote	ErgoNote
+@id	ui.ergonote_found_an_attachment_that_is_not_referenced_8c0eb51257	ErgoNote מצא קובץ מצורף שאינו מופיע בהפניה של הדף הזה:
+@id	ui.ergonote_found_an_attachment_without_its_generated_icon_name	ErgoNote מצא קובץ מצורף ללא התמונה שנוצרה עבורו:
+@id	ui.ergonote_ruled	משובץ ErgoNote
+@id	ui.ergonote_squares	ריבועי ErgoNote
 @id	ui.notes_as_plain_folders_open_a_page_or_create_a_notebook_to_start	הערות כתיקיות רגילות. פתח דף, או צור מחברת כדי להתחיל.
 @id	ui.nothing_at_path_the_link_points_to_a_page_or_file_th_18d71ccd21	אין כלל ב-{path}: הקישור מפנה לדף או קובץ שאינם קיימים
 @id	ui.nothing_here_can_show_this_kind_of_file	שום דבר כאן לא יכול להציג סוג קובע זה.
@@ -463,7 +463,7 @@
 @id	ui.officeimo_import_worker_stopped_unexpectedly	עובד הייבוא OfficeIMO הופסק באופן בלתי צפוי
 @id	ui.ok	אישור
 @id	ui.one_tree_of_notebooks	עץ מחברות אחד
-@id	ui.onedrive_and_sharepoint_not_built_point_notecraft_at_584930dc1b	OneDrive ו-SharePoint: טרם נבנו. הפנה את NoteCraft לתיקייה שכבר מופקחת על ידי כלי הסינכרון שלך והיא תהיה אותו הדבר.
+@id	ui.onedrive_and_sharepoint_not_built_point_ergonote_at_584930dc1b	OneDrive ו-SharePoint: טרם נבנו. הפנה את ErgoNote לתיקייה שכבר מופקחת על ידי כלי הסינכרון שלך והיא תהיה אותו הדבר.
 @id	ui.onenote_import	ייבוא OneNote
 @id	ui.online_notebooks_onedrive_sharepoint_are_not_built_a_860f0281c0	מחברות מקוונות (OneDrive, SharePoint) טרם נבנו. מחברת בתיקייה שכבר מופקחת על ידי כלי הסינכרון שלך מסונכרנת על ידו.
 @id	ui.only_a_list_item_can_be_indented	רק פריט רשימה ניתן להזחה
@@ -539,8 +539,8 @@
 @id	ui.previous	הקודם
 @id	ui.previous_match_shift_enter	התאמה קודמת (Shift+Enter)
 @id	ui.printout_is_available_for_pdf_and_office_documents	הדפסה זמינה למסמכי PDF ו-Office.
-@id	ui.privacy_is_our_top_priority_all_logs_and_telemetry_s_d87cae4eac	פרטיות היא בראש סדר העדיפויות שלנו. כל היומן והטלמטריה נשארים במכשיר זה. NoteCraft לעולם לא שולח אותם באופן אוטומטי.
-@id	ui.privacy_is_our_top_priority_logs_and_telemetry_stay_17a34813d0	פרטיות היא בראש סדר העדיפויות שלנו. היומן והטלמטריה נשארים במכשיר זה. NoteCraft אינו שולח אותם אלינו.
+@id	ui.privacy_is_our_top_priority_all_logs_and_telemetry_s_d87cae4eac	פרטיות היא בראש סדר העדיפויות שלנו. כל היומן והטלמטריה נשארים במכשיר זה. ErgoNote לעולם לא שולח אותם באופן אוטומטי.
+@id	ui.privacy_is_our_top_priority_logs_and_telemetry_stay_17a34813d0	פרטיות היא בראש סדר העדיפויות שלנו. היומן והטלמטריה נשארים במכשיר זה. ErgoNote אינו שולח אותם אלינו.
 @id	ui.promote_subpage	קדם עמוד משנה
 @id	ui.purple	סגול
 @id	ui.put_a_sheet_to_draw_on_into_the_page	הוסף דף ציור לדף
@@ -575,9 +575,9 @@
 @id	ui.replay	הפעל מחדש
 @id	ui.reset_app_preferences	אפס הגדרות אפליקציה
 @id	ui.reset_app_preferences_2	אפס הגדרות אפליקציה…
-@id	ui.reset_notecraft_s_saved_preferences_to_their_built_in_defaults	לאפס את ההגדרות השמורות של NoteCraft לברירות המחדל המובנות?
+@id	ui.reset_ergonote_s_saved_preferences_to_their_built_in_defaults	לאפס את ההגדרות השמורות של ErgoNote לברירות המחדל המובנות?
 @id	ui.reset_preferences	אפס הגדרות
-@id	ui.reset_themes_layout_ribbon_choices_and_other_saved_n_61cc3d1cfb	אפס ערכות נושא, פריסה, בחירות סרטון והגדרות אחרות שמורות של NoteCraft לברירות המחדל.
+@id	ui.reset_themes_layout_ribbon_choices_and_other_saved_n_61cc3d1cfb	אפס ערכות נושא, פריסה, בחירות סרטון והגדרות אחרות שמורות של ErgoNote לברירות המחדל.
 @id	ui.restore	שחזר
 @id	ui.restore_pages_sections_and_groups_removed_from_this_notebook	שחזר דפים, מקטעים וקבוצות שהוסרו ממחברת זו
 @id	ui.restored_the_saved_page_version	גרסת הדף השמורה שוחזרה
@@ -658,7 +658,7 @@
 @id	ui.text_74	{} {}
 @id	ui.text_inspection_is_shown_below	בדיקת הטקסט מוצגת להלן.
 @id	ui.text_run_direction	כיוון ריצת טקסט
-@id	ui.thank_you_for_trying_notecraft	תודה שניסית את NoteCraft!
+@id	ui.thank_you_for_trying_ergonote	תודה שניסית את ErgoNote!
 @id	ui.that_file_has_nothing_in_it_to_put_back	לקובץ זה אין תוכן לשחזור
 @id	ui.that_file_is_not_in_this_page_s_folder	הקובץ אינו נמצא בתיקייה של הדף הזה
 @id	ui.that_is_not_something_a_page_can_hold	זהו דבר שאינו יכול להיכלל בדף
@@ -671,7 +671,7 @@
 @id	ui.the_file_could_not_be_opened_error	לא ניתן לפתוח את הקובץ: {error}
 @id	ui.the_file_is_gone	הקובץ אינו קיים עוד
 @id	ui.the_file_is_removed_from_disk_undo_does_not_bring_a_file_back	הקובץ הוסר מהדיסק. פעולת ביטול לא תחזיר את הקובץ.
-@id	ui.the_file_is_safe_notecraft_can_append_a_link_to_it_a_c31b3d9716	הקובץ בטוח. NoteCraft יכול להוסיף קישור אליו בסוף הדף.
+@id	ui.the_file_is_safe_ergonote_can_append_a_link_to_it_a_c31b3d9716	הקובץ בטוח. ErgoNote יכול להוסיף קישור אליו בסוף הדף.
 @id	ui.the_file_was_not_attached_the_attach_command_returne_beaffe0fd0	הקובץ לא צורף: פקודת ההצמדה החזירה תוצאה בלתי צפויה.
 @id	ui.the_folder_could_not_be_opened_error	לא ניתן לפתוח את התיקייה: {error}
 @id	ui.the_format_is_set_when_the_page_is_created	הפורמט נקבע בעת יצירת הדף
@@ -679,7 +679,7 @@
 @id	ui.the_last_tool_stays_on_the_rack	הכלי האחרון נשאר על הסרגל
 @id	ui.the_notebook_could_not_be_deleted_error	לא ניתן למחוק את המחברת: {error}
 @id	ui.the_notebook_or_section_setting	ההגדרה של המחברת או החלק
-@id	ui.the_original_file_is_still_safe_notecraft_can_regene_f10ded524a	הקובץ המקורי עדיין בטוח. NoteCraft יכול לייצר מחדש את האייקון לצדו.
+@id	ui.the_original_file_is_still_safe_ergonote_can_regene_f10ded524a	הקובץ המקורי עדיין בטוח. ErgoNote יכול לייצר מחדש את האייקון לצדו.
 @id	ui.the_page_beside_the_notebooks	הדף הסמוך למחברות
 @id	ui.the_page_is_colour	הדף הוא {colour}
 @id	ui.the_page_is_the_theme_s_own_colour	צבע הדף תואם את צבע הערכת הנושא
@@ -709,7 +709,7 @@
 @id	ui.this_file_will_be_opened_by_its_associated_application	הקובץ ייפתח באמצעות היישום המשויך אליו.
 @id	ui.this_notebook_s_recycle_bin_is_empty	סל המחסלים של המחברת הזו ריק.
 @id	ui.this_page	דף זה
-@id	ui.this_page_holds_markup_notecraft_does_not_edit_yet_s_bc3b3b6a92	דף זה מכיל סימון ש-NoteCraft עדיין לא עורך, ולכן הוא מוצג כפי שהוא נקרא.
+@id	ui.this_page_holds_markup_ergonote_does_not_edit_yet_s_bc3b3b6a92	דף זה מכיל סימון ש-ErgoNote עדיין לא עורך, ולכן הוא מוצג כפי שהוא נקרא.
 @id	ui.this_page_reads_left_to_right	קריאת הדף משמאל לימין
 @id	ui.this_page_reads_right_to_left	קריאת הדף מימין לשמאל
 @id	ui.this_paragraph_decides_from_its_own_first_letter	הפסקה הזו קובעת כיוון לפי האות הראשונה שלה
@@ -750,7 +750,7 @@
 @id	ui.undo_stroke	קו \n
 @id	ui.unread	לא נקרא
 @id	ui.updated_the_welcome_notebook	עודכן מחברת הברכה
-@id	ui.use_notecraft_s_own_title_bar	השתמש בשורת הכותרת של NoteCraft
+@id	ui.use_ergonote_s_own_title_bar	השתמש בשורת הכותרת של ErgoNote
 @id	ui.use_the_system_title_bar	השתמש בשורת הכותרת של המערכת
 @id	ui.version_version_alpha	גרסה {version} (אלפא)
 @id	ui.very_large	גדול מאוד
@@ -759,7 +759,7 @@
 @id	ui.views	תצוגות
 @id	ui.warn	אזהרה
 @id	ui.web_site_to_visit	אתר לבקר בו
-@id	ui.welcome_to_notecraft	ברוכים הבאים ל-NoteCraft
+@id	ui.welcome_to_ergonote	ברוכים הבאים ל-ErgoNote
 @id	ui.what_should_happen_to_this_file	מה צריך לקרות עם הקובץ הזה?
 @id	ui.what_to_add	מה להוסיף
 @id	ui.wide	רחב
@@ -779,7 +779,7 @@
 @id	ui.zoom_out	הקטן תקריב
 @id	ui.zoom_to_100	תקריב ל-100%
 @id	ui.welcome_format_title	בחרו תבנית לדף
-@id	ui.welcome_format_body	NoteCraft שומר כל דף כ-HTML (מומלץ) או כ-Markdown מסוג CommonMark + GFM. דפים חדשים ייווצרו בתבנית שתבחרו כאן. אפשר לשנות אותה מאוחר יותר.
+@id	ui.welcome_format_body	ErgoNote שומר כל דף כ-HTML (מומלץ) או כ-Markdown מסוג CommonMark + GFM. דפים חדשים ייווצרו בתבנית שתבחרו כאן. אפשר לשנות אותה מאוחר יותר.
 @id	ui.welcome_format_next	הבא
 @id	ui.welcome_notebook_prompt_format	תבנית: {format}.
 @id	ui.welcome_notebook_prompt_title	להוסיף את מחברת הברוכים הבאים?
@@ -791,4 +791,4 @@
 @id	ui.welcome_wizard_back	הקודם
 @id	ui.welcome_wizard_finish	סיום
 @id	ui.welcome_wizard_done_title	תודה
-@id	ui.welcome_wizard_done_body	NoteCraft מוכן לשימוש. הבחירות שלכם נשמרו. ההגדרה הזו תופיע שוב רק אחרי איפוס ההעדפות.
+@id	ui.welcome_wizard_done_body	ErgoNote מוכן לשימוש. הבחירות שלכם נשמרו. ההגדרה הזו תופיע שוב רק אחרי איפוס ההעדפות.

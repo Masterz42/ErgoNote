@@ -9,12 +9,12 @@
 //! its position among the page's blocks.
 //!
 //! Nothing is written into the text itself. A justified Arabic paragraph is stretched by
-//! kashida when it is drawn (`notecraft_text::kashida`), and the tatweels live only in
+//! kashida when it is drawn (`ergonote_text::kashida`), and the tatweels live only in
 //! the drawing: the page file keeps the words the writer typed, so another program reading
 //! the Markdown sees plain sentences and a page saved and reopened comes back the same.
 //!
 //! The weakness is the one the table column widths have. A page whose blocks are rearranged
-//! outside NoteCraft may find a number against the wrong paragraph. The worst that does is
+//! outside ErgoNote may find a number against the wrong paragraph. The worst that does is
 //! justify a paragraph the writer did not ask for, which one click puts right; nothing a
 //! page says is lost.
 
@@ -26,11 +26,11 @@ const MAX_BLOCKS: usize = 500;
 ///
 /// Word has had these three since at least 2010, under the names Justify Low, Justify
 /// Medium and Justify High, and they decide how many kashidas a line may take. A writer of
-/// Arabic already knows them by those names, so NoteCraft uses the same three and the same
+/// Arabic already knows them by those names, so ErgoNote uses the same three and the same
 /// words; `docs/rtl-in-word-and-onenote.md` has the comparison.
 ///
 /// What each one allows is typography, not page data, so it is decided in
-/// `notecraft_text::kashida` and not here.
+/// `ergonote_text::kashida` and not here.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub enum Strength {
     /// The fewest kashidas: only the joins that take elongation best, and one apiece. A

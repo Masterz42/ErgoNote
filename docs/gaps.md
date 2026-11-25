@@ -28,9 +28,9 @@ built by the Packaging workflow. What it does not do yet, each said in the windo
 - **No file pickers.** Open a notebook folder, Import, Add file or picture, Print out and Export
   telemetry say "Android cannot show this file dialog yet". Android's pickers (the Storage Access
   Framework) need a Java shell, which the APK does not have.
-- **No system clipboard.** Copy and paste work inside NoteCraft (egui's own clipboard), not with
+- **No system clipboard.** Copy and paste work inside ErgoNote (egui's own clipboard), not with
   other apps. Android's clipboard is a Java service.
-- **Notebooks live in the app's own storage**, `Android/data/com.alientechsoftware.notecraft/files/NoteCraft`.
+- **Notebooks live in the app's own storage**, `Android/data/com.ergonote.app/files/ErgoNote`.
   Android removes that folder with the app; Android 10 and later ask whether to keep it. Folders
   elsewhere (synced Drive, OneDrive or Syncthing folders) cannot be opened yet.
 - **Typing is key by key.** The soft keyboard's keys reach the page, but composing (Chinese,
@@ -49,7 +49,7 @@ narrower than 600 points, on Android, a narrow desktop window or the browser bui
 - **Ctrl+A, Ctrl+C, Ctrl+X and Ctrl+V reach the words**, from 2026-10-19. None of them was
   bound anywhere in the window before that: a left-to-right paragraph is an egui text box
   and egui answered them by itself, so the gap only showed where egui was not drawing. That
-  is a lot of places. In a right-to-left paragraph, which NoteCraft draws itself, Ctrl+C did
+  is a lot of places. In a right-to-left paragraph, which ErgoNote draws itself, Ctrl+C did
   nothing and Ctrl+A selected nothing. A selection spanning paragraphs belongs to no text
   box, so neither did it. And nothing at all answered paste: boxes answer Ctrl+C and Ctrl+X
   in `containers.rs`, no key answered Ctrl+V, so a box that had been copied could not be
@@ -60,12 +60,12 @@ narrower than 600 points, on Android, a narrow desktop window or the browser bui
   the way OneNote does; here it takes the paragraph and stops.
 
 - **Import is not finished.** It is a requirement, and the scope is import only
-  (owner's decision, 2026-10-17). `notecraft-cli import onenote` turns a folder of `.one`
+  (owner's decision, 2026-10-17). `ergonote-cli import onenote` turns a folder of `.one`
   section files into notebooks, section groups, sections, pages and sub-pages, with pictures
   and attachments, in HTML or CommonMark + GFM. It was run on 443 real backup files (see
   `docs/research/onenote-file-format/real-files.md`). Notebook and section colors are read from
   `.onetoc2` when available and section colors from `.one` metadata; arbitrary source colors
-  map lossily to NoteCraft's named palette. A `.onepkg` package, given on its own or found in
+  map lossily to ErgoNote's named palette. A `.onepkg` package, given on its own or found in
   the folder, is unpacked (LZX or MSZIP cabinet) into a temporary folder named after it and
   imported as a notebook of that name; the window's Import File does the same through the
   OfficeIMO bridge. A package's names are checked so nothing is written outside that folder.
@@ -167,7 +167,7 @@ narrower than 600 points, on Android, a narrow desktop window or the browser bui
   moved nothing, and setting a page of Arabic to left to right moved nothing either. The
   order is now the paragraph's own mark, then the page, then the paragraph's first strong
   letter, which is what `dir` on a containing element does in a browser and what a section
-  direction does in Word. `notecraft_model::direction_in` is the rule and
+  direction does in Word. `ergonote_model::direction_in` is the rule and
   `crates/ui-egui/tests/rtl_quality.rs` measures it through the page painter. What is still
   missing: the window is not mirrored (the tree stays on the left whatever the page says),
   and the isolates the Run buttons write are kept in the file but not yet honoured when the
@@ -251,7 +251,7 @@ narrower than 600 points, on Android, a narrow desktop window or the browser bui
   `crates/ui-egui/tests/rtl_quality.rs` measures this and five other things a writer of
   Arabic would notice. **Not built:** a triple click that takes the line, and sorting names
   by Arabic collation rather than by code point.
-- **Each word of a right-to-left line is placed by NoteCraft.** egui lays the letters of an
+- **Each word of a right-to-left line is placed by ErgoNote.** egui lays the letters of an
   Arabic or Hebrew word out the right way, but puts the next word to the right of the one
   before it, so a line of them came out with its words backwards; the owner read one on
   2026-10-19 and said so. `bidi.rs` draws each word on its own and places them from the
@@ -262,7 +262,7 @@ narrower than 600 points, on Android, a narrow desktop window or the browser bui
   most visible instance left, because it is on screen all the time. Anywhere else that hands
   a whole string to `Painter::text` still has the fault; `line_at` is the fix, and
   `crates/ui-egui/tests/rtl_quality.rs` measures both halves of it.
-- **The caret in a right-to-left line is NoteCraft's own, and it is new.** egui cannot place
+- **The caret in a right-to-left line is ErgoNote's own, and it is new.** egui cannot place
   one there (`crates/ui-egui/tests/arabic_layout.rs` measures why: it counts glyphs where it
   means characters), so a line with Arabic in it is drawn by `crates/ui-egui/src/bidi.rs` and
   written in with a caret of ours: parley says which character a click landed on and which
@@ -293,10 +293,10 @@ narrower than 600 points, on Android, a narrow desktop window or the browser bui
   printout action reports an error rather than creating an incomplete page.
 - **The clipboard carries text, HTML and pictures, through one boundary.** A copied selection
   is one logical clipboard item: rich-text clients receive HTML with headings, marks, links,
-  lists and tables; plain-text clients receive readable text without Markdown syntax. NoteCraft
+  lists and tables; plain-text clients receive readable text without Markdown syntax. ErgoNote
   reads HTML before falling back to plain text, and a picture on the clipboard is pasted as a
   file beside the page. The shared `arboard` writer keeps clipboard ownership alive on X11 and
-  Wayland, and enables Wayland data-control. Not built yet: RTF output and paste, NoteCraft's own
+  Wayland, and enables Wayland data-control. Not built yet: RTF output and paste, ErgoNote's own
   page format on the clipboard, URL and other registered formats, copy-as-image for selected
   visual blocks, and paste of copied file lists. Those need the Windows clipboard API; see
   [ADR 0001](adr/0001-clipboard-boundary.md).
@@ -319,7 +319,7 @@ narrower than 600 points, on Android, a narrow desktop window or the browser bui
   direction > Paragraph Spacing Options (issue #275) gives a paragraph room before and after it and
   a least line height. The room before and after is left for every paragraph, but the least line
   height is applied through egui's text layout, and a paragraph that reads right to left or
-  mixes the two directions is laid out by NoteCraft's own painter (`bidi.rs`), whose lines and
+  mixes the two directions is laid out by ErgoNote's own painter (`bidi.rs`), whose lines and
   caret positions come from parley. That painter keeps its own line height, so there only the room
   before and after shows. A paragraph with inline maths is laid out the same way. Doing the
   line height there means giving `bidi::runs`, the caret and the hit tests the same floor.
@@ -329,9 +329,9 @@ narrower than 600 points, on Android, a narrow desktop window or the browser bui
 - **Table column widths and justification are still on a metadata line.** The boxes of a page are
   elements in its text, but the widths a table's columns were dragged to (and the alignment and
   shading its cells were given) are kept in the head
-  (`notecraft:columns`) or the front matter (`columns:`), and which paragraphs are justified in the
-  same way (`notecraft:justify`, `justify:`), so the same disconnect remains for both: another
-  program does not see them, and a page whose blocks are rearranged outside NoteCraft may find a
+  (`ergonote:columns`) or the front matter (`columns:`), and which paragraphs are justified in the
+  same way (`ergonote:justify`, `justify:`), so the same disconnect remains for both: another
+  program does not see them, and a page whose blocks are rearranged outside ErgoNote may find a
   number against the wrong block. The code view does show them, because it shows the page file's
   head. The reasoning, and what the alternatives cost, is in
   [page-model.md](dom_serialization/page-model.md) section 2.
@@ -346,7 +346,7 @@ narrower than 600 points, on Android, a narrow desktop window or the browser bui
   stretching is measured in the paragraph's own type, so a line with a run of code or maths in it
   may stop a little short of the column. A kashida also comes only in whole tatweels, because the
   bundled face has no `JSTF` table or elongation axis; `crates/text/src/kashida.rs` says so.
-- **A drawing in the code view** is drawn, not shown as a wall of numbers: NoteCraft's own
+- **A drawing in the code view** is drawn, not shown as a wall of numbers: ErgoNote's own
   painter draws the strokes to fit the room, says how many there are, and Show the code puts
   the SVG one click away.
 - **The code view** is the page's folder as it is: every file of the page down the left, the one
@@ -390,12 +390,12 @@ narrower than 600 points, on Android, a narrow desktop window or the browser bui
 - **Paper and page colour are the page's own.** Format Background on Draw or View gives
   the open page its rule lines or squares and a pale colour behind the words. View's
   Page colour opens the same colour palette directly, including No colour. Both choices are
-  written into that page's head (`notecraft:paper`, `notecraft:page-color`), so a page
+  written into that page's head (`ergonote:paper`, `ergonote:page-color`), so a page
   keeps them and another page is not touched. The window's own rule-lines setting stays as
   what a page with none of its own is drawn on. **Not built:** a rule line colour, and
   "always create pages with rule lines".
 - **Copy link to page** is on a page's menu in the tree, as it is in OneNote. The link
-  names the page from the notebooks folder down (`notecraft:/book/section/page`), because
+  names the page from the notebooks folder down (`ergonote:/book/section/page`), because
   a relative link would depend on the page it is pasted into, which nobody knows when the
   link is copied. It is copied as a Markdown link with the page's name, so pasting it into
   a page gives words to click, and clicking opens the page. A link of this kind cannot
@@ -407,7 +407,7 @@ narrower than 600 points, on Android, a narrow desktop window or the browser bui
   left exactly as it is, so the code view still shows it and another program still sees a
   page with a heading. Renaming moves both, as it did before.
 - **The demo notebook** ships pictures and handwriting: every language's welcome page opens with
-  the NoteCraft banner in that language, and the page about pictures and files carries a real
+  the ErgoNote banner in that language, and the page about pictures and files carries a real
   `ink.svg`, drawn by the demo builder with the same crate the pen uses. The banner's words are in
   the picture only where the script needs no shaping; Arabic, Persian, Urdu, Hindi and Hebrew get
   the wordmark, and every language carries the line as words under it, which reads correctly and
@@ -419,13 +419,13 @@ narrower than 600 points, on Android, a narrow desktop window or the browser bui
   page rubbed clean loses it. The folder is what decides: the page's own text names every
   ink file beside it and names none that is gone, checked when the page opens and after
   every change to it, so a drawing cannot be left unnamed by deleting the line that named
-  it. An SVG counts as ink because it carries NoteCraft's namespace, not because of its
+  it. An SVG counts as ink because it carries ErgoNote's namespace, not because of its
   name, so a picture of your own in the page's folder is never adopted as a drawing. The folder is what decides: the page's own text names every
   ink file beside it and names none that is gone, checked when the page opens and after
   every change to it, so a drawing cannot be left unnamed by deleting the line that named
-  it. An SVG counts as ink because it carries NoteCraft's namespace, not because of its
+  it. An SVG counts as ink because it carries ErgoNote's namespace, not because of its
   name, so a picture of your own in the page's folder is never adopted as a drawing. It is SVG that also carries the pen's own readings in our
-  namespace, so NoteCraft can change a stroke later while anything else sees the picture.
+  namespace, so ErgoNote can change a stroke later while anything else sees the picture.
   Built: the Draw tab; five nibs (pen, pencil, fountain pen, brush pen, highlighter); a
   rack the owner arranges, with Add, a right-click menu, a Modify Tool editor for colour
   and thickness, and the whole rack remembered between runs; a pressure sensitivity wedge;
@@ -453,7 +453,7 @@ narrower than 600 points, on Android, a narrow desktop window or the browser bui
   in the tool editor. Pressure is real and measured on Windows (hardest 0.930 over 1223
   readings, 2026-10-18); on macOS, Linux and Wayland winit drops the tablet fields, so a
   pen there draws at full pressure like a mouse, and tilt and the eraser end are on no
-  platform. `cargo run -p notecraft --example pen_check` shows what a pen reports.
+  platform. `cargo run -p ergonote --example pen_check` shows what a pen reports.
 - **Tables are edited cell by cell**: click a cell to write in it, Tab walks along the row
   and on to the next and grows a row off the end, Escape leaves. While the caret is in a
   table the ribbon offers a Table tab, as Office does for the thing in hand: rows and
@@ -465,7 +465,7 @@ narrower than 600 points, on Android, a narrow desktop window or the browser bui
   only that one; the page keeps the choice with the column widths (below). A column is a fixed width and
   stays that width when the box around it is resized, the way OneNote's does; a border
   dragged sideways changes the column to its left, and the page keeps the widths beside
-  the arrangement of its boxes (`notecraft:columns`), because neither CommonMark nor an
+  the arrangement of its boxes (`ergonote:columns`), because neither CommonMark nor an
   HTML table that must match it has anywhere to put them. The Insert
   tab's Table button opens OneNote's size picker, where the pointer runs over a grid and
   names the size it would make. The Alignment group lines up the words of the caret's cell,
@@ -484,7 +484,7 @@ narrower than 600 points, on Android, a narrow desktop window or the browser bui
   A row has no height of its own on purpose: OneNote sizes a row by the text in it and
   offers no handle for one, which Microsoft's own help for OneNote for the web says in so
   many words, so a row here grows and shrinks with its words too. Word's Table Properties
-  can set a height; if NoteCraft ever does, it should be Word's "at least" rule, where
+  can set a height; if ErgoNote ever does, it should be Word's "at least" rule, where
   content taller than the height still pushes the row down rather than being cut off.
 - **A spreadsheet goes to GridCraft**, the open spreadsheet from the same workshop, where
   OneNote converts a table to Excel. The Table tab writes the table out as a CSV file
@@ -516,7 +516,7 @@ narrower than 600 points, on Android, a narrow desktop window or the browser bui
   can put there.
 - **The Insert tab** carries OneNote's groups. Working: tables, a file attachment, a
   picture, a link, the three time stamps, an equation, a symbol picker, insert space, and
-  NoteCraft's own Mermaid diagram. File printout, screen clipping, online video,
+  ErgoNote's own Mermaid diagram. File printout, screen clipping, online video,
   transcription, recording and stickers remain unbuilt. Page Templates opens a pane
   of templates by category (Academic, Blank, Business, Planners and the user's own); a click
   adds a page to the open section from one, and the open page can be saved as a template.
@@ -545,12 +545,12 @@ narrower than 600 points, on Android, a narrow desktop window or the browser bui
 - **Crashes on one Windows PC are unexplained.** A release build was reported to crash several
   times on a Windows machine with AMD graphics. It was not reproduced: about fifteen runs under
   a debugger (empty folders, a restored session, real use) ended in clean exits, and no panic was
-  logged. One lead, assumed and not confirmed: NoteCraft takes the graphics library's default
+  logged. One lead, assumed and not confirmed: ErgoNote takes the graphics library's default
   backends (Vulkan, DirectX 12 and OpenGL), and WordCraft's README documents that also creating
   an OpenGL instance can crash AMD's driver before the window appears. WordCraft's answer is
-  DirectX 12 only by default; NoteCraft has not made that change. To rule it in or out, set
+  DirectX 12 only by default; ErgoNote has not made that change. To rule it in or out, set
   `WGPU_BACKEND` to `dx12` or `vulkan` before starting (the library reads it; checked in its
-  source, not tested here). `notecraft.log` in `%APPDATA%\NoteCraft` records a panic with its
+  source, not tested here). `ergonote.log` in `%APPDATA%\ErgoNote` records a panic with its
   backtrace and the last step reached; see [the README](../README.md#logs).
 - **The installer is built but not yet installed, upgraded or removed on a clean machine.** The
   MSI's contents and properties were checked by unpacking it. The Start menu shortcut, the

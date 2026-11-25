@@ -1,15 +1,15 @@
 [package]
-name = "notecraft-android"
+name = "ergonote-android"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 publish.workspace = true
-description = "NoteCraft for Android: the native activity that runs the egui app in an APK"
+description = "ErgoNote for Android: the native activity that runs the egui app in an APK"
 
 # The APK loads this library by name (android/AndroidManifest.xml, `android.app.lib_name`).
 [lib]
-name = "notecraft_android"
+name = "ergonote_android"
 crate-type = ["cdylib", "rlib"]
 
 # The workspace lints, except one: Android's loader starts the app through an exported
@@ -31,11 +31,11 @@ zip = { workspace = true }
 log = { workspace = true }
 
 [target.'cfg(target_os = "android")'.dependencies]
-notecraft-engine = { workspace = true }
-notecraft-model = { workspace = true }
-notecraft-store = { workspace = true }
-notecraft-ui-egui = { workspace = true }
-notecraft-setup = { path = "../apps/notecraft-setup" }
+ergonote-engine = { workspace = true }
+ergonote-model = { workspace = true }
+ergonote-store = { workspace = true }
+ergonote-ui-egui = { workspace = true }
+ergonote-setup = { path = "../apps/ergonote-setup" }
 egui = { workspace = true }
 # No accesskit: it needs GameActivity, and winit 0.30 drops GameActivity's text input. The
 # native activity delivers the soft keyboard's keys, which the page editor reads.
@@ -47,5 +47,5 @@ jni = "0.22"
 time = { workspace = true }
 
 [dev-dependencies]
-notecraft-store = { workspace = true }
-notecraft-setup = { path = "../apps/notecraft-setup" }
+ergonote-store = { workspace = true }
+ergonote-setup = { path = "../apps/ergonote-setup" }

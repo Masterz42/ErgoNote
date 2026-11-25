@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  NoteCraft for Android. The APK has no Java code: Android's own NativeActivity loads
-  libnotecraft_android.so (android/src) and calls its android_main. android/build.sh passes the
+  ErgoNote for Android. The APK has no Java code: Android's own NativeActivity loads
+  libergonote_android.so (android/src) and calls its android_main. android/build.sh passes the
   version name and code, and the SDK levels, to aapt2.
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.alientechsoftware.notecraft">
+    package="com.ergonote.app">
 
     <uses-permission android:name="android.permission.INTERNET" />
 
@@ -21,7 +21,7 @@
     <application
         android:label="ErgoNote"
         android:icon="@mipmap/ic_launcher"
-        android:theme="@style/NoteCraft"
+        android:theme="@style/ErgoNote"
         android:hasCode="true"
         android:debuggable="false"
         android:extractNativeLibs="true"
@@ -36,12 +36,12 @@
           activity and start the app again, losing the open page's place.
         -->
         <activity
-            android:name="com.alientechsoftware.notecraft.ErgoNoteActivity"
+            android:name="com.ergonote.app.ErgoNoteActivity"
             android:exported="true"
             android:launchMode="singleTask"
             android:windowSoftInputMode="adjustResize"
             android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboard|keyboardHidden|navigation|uiMode|density|fontScale|locale|layoutDirection">
-            <meta-data android:name="android.app.lib_name" android:value="notecraft_android" />
+            <meta-data android:name="android.app.lib_name" android:value="ergonote_android" />
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

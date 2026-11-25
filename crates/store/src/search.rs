@@ -2,8 +2,8 @@
 
 use crate::page::load_page;
 use crate::tree::{child_dirs, page_file, read_node};
-use notecraft_formats::{boxes, html, render};
-use notecraft_model::PageFormat;
+use ergonote_formats::{boxes, html, render};
+use ergonote_model::PageFormat;
 use std::path::{Path, PathBuf};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -108,7 +108,7 @@ mod tests {
     use crate::page::save_body;
     use crate::settings::Settings;
     use crate::testing::TempDir;
-    use notecraft_model::NodeKind;
+    use ergonote_model::NodeKind;
 
     fn fixture(t: &TempDir) -> PathBuf {
         let s = Settings::at(t.path().join("s.toml"));

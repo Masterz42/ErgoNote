@@ -8,7 +8,7 @@ title: À votre goût
 
 Le soleil ou la lune en haut à droite ouvre le sélecteur de thèmes : clair et sombre, chacun en
 sept accents, 14 en tout. Une pastille choisit ce mode. L'interrupteur sous les pastilles remet
-NoteCraft à suivre le réglage clair ou sombre de votre système.
+ErgoNote à suivre le réglage clair ou sombre de votre système.
 
 Chaque couleur de chaque thème est vérifiée contre son fond par un test, donc aucun thème ne
 peut vous montrer un texte illisible.
@@ -31,7 +31,7 @@ la page. Les lignes et le zoom sont mémorisés.
 
 ## Rouvrir là où vous étiez
 
-NoteCraft rouvre la page sur laquelle vous avez fermé, avec les sections au-dessus dépliées.
+ErgoNote rouvre la page sur laquelle vous avez fermé, avec les sections au-dessus dépliées.
 
 ## Les réglages sur le disque
 

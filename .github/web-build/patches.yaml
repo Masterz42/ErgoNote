@@ -1,5 +1,5 @@
-# NoteCraft in the browser. This repo ships a desktop window only; these patches add the web build that
-# .github/workflows/deploy-website.yml compiles and deploys to notecraft.cloud, with wasm-opt. No external
+# ErgoNote in the browser. This repo ships a desktop window only; these patches add the web build that
+# .github/workflows/deploy-website.yml compiles and deploys to ergonote.cloud, with wasm-opt. No external
 # build service is used or needed — this workflow does the whole build itself, in its own CI run.
 #
 # Recipe origin: adapted from daijro/openplayground's patches/onenote.yaml (SPDX MIT OR Apache-2.0, same as
@@ -10,10 +10,10 @@
 # out: this build is a solo, no-sign-in demo.
 #
 # web.diff adds new files only:
-#   apps/notecraft-web/          the web crate build.mjs finds (Cargo.toml, Trunk.toml, index.html, src/main.rs): the
+#   apps/ergonote-web/          the web crate build.mjs finds (Cargo.toml, Trunk.toml, index.html, src/main.rs): the
 #                                desktop window (crates/ui-egui) on the page's canvas; the notebooks folder kept in
-#                                Playground's Files as plain folders (browser:/NoteCraft/…), the sample notebooks on
-#                                the first start, pictures read from the folder, dropped files, "Open in NoteCraft",
+#                                Playground's Files as plain folders (browser:/ErgoNote/…), the sample notebooks on
+#                                the first start, pictures read from the folder, dropped files, "Open in ErgoNote",
 #                                the CJK face as a file beside the page (fetched when a page needs it), and a pen's
 #                                pressure from pointer events (eframe passes them on without it).
 #   crates/model/src/playground.rs  web shims for the library: an in-memory `std::fs` that notes every change, and
@@ -33,7 +33,7 @@
   find: '(?![\s\S])'
   after: "\n[target.'cfg(all(target_arch = \"wasm32\"))'.dependencies]\nweb-time = \"1\"\n"
 
-# Rule 1b/28: the web build's own profile (apps/notecraft-web/index.html names it): release with whole-program
+# Rule 1b/28: the web build's own profile (apps/ergonote-web/index.html names it): release with whole-program
 # optimisation, as the ArtCraft web profiles do (PhotoCraft's wasm-release): 13.4 -> 11.2 MB of wasm, 5.6 -> 4.5 MB
 # gzipped. A table of its own, so upstream's [profile.release] stays as it is.
 # If upstream adds a profile of this name, rename it here and in index.html.
@@ -41,7 +41,7 @@
   find: '(?![\s\S])'
   after: "\n# Playground's web build (patches/onenote.yaml): release with whole-program optimisation.\n[profile.playground-web]\ninherits = \"release\"\nlto = \"fat\"\ncodegen-units = 1\n"
 
-# Rule 2/28: the shims, as notecraft_model::playground on wasm.
+# Rule 2/28: the shims, as ergonote_model::playground on wasm.
 - file: crates/model/src/lib.rs
   find: '(?![\s\S])'
   after: "\n// Playground's browser build (patches/onenote.yaml): files and the clock in the browser.\n#[cfg(target_arch = \"wasm32\")] #[doc(hidden)] pub mod playground;\n"
@@ -56,31 +56,31 @@
   after: "\n// Playground's browser build: the clock (patches/onenote.yaml).\n#[cfg(target_arch = \"wasm32\")] use crate::playground::std;\n"
 - file: crates/store/src/tree.rs
   find: '(?![\s\S])'
-  after: "\n// Playground's browser build: files (patches/onenote.yaml).\n#[cfg(target_arch = \"wasm32\")] use notecraft_model::playground::std;\n"
+  after: "\n// Playground's browser build: files (patches/onenote.yaml).\n#[cfg(target_arch = \"wasm32\")] use ergonote_model::playground::std;\n"
 - file: crates/store/src/page.rs
   find: '(?![\s\S])'
-  after: "\n// Playground's browser build: files and the clock (patches/onenote.yaml).\n#[cfg(target_arch = \"wasm32\")] use notecraft_model::playground::std;\n"
+  after: "\n// Playground's browser build: files and the clock (patches/onenote.yaml).\n#[cfg(target_arch = \"wasm32\")] use ergonote_model::playground::std;\n"
 - file: crates/store/src/ops.rs
   find: '(?![\s\S])'
-  after: "\n// Playground's browser build: files (patches/onenote.yaml).\n#[cfg(target_arch = \"wasm32\")] use notecraft_model::playground::std;\n"
+  after: "\n// Playground's browser build: files (patches/onenote.yaml).\n#[cfg(target_arch = \"wasm32\")] use ergonote_model::playground::std;\n"
 - file: crates/store/src/assets.rs
   find: '(?![\s\S])'
-  after: "\n// Playground's browser build: files (patches/onenote.yaml).\n#[cfg(target_arch = \"wasm32\")] use notecraft_model::playground::std;\n"
+  after: "\n// Playground's browser build: files (patches/onenote.yaml).\n#[cfg(target_arch = \"wasm32\")] use ergonote_model::playground::std;\n"
 - file: crates/store/src/settings.rs
   find: '(?![\s\S])'
-  after: "\n// Playground's browser build: files (patches/onenote.yaml).\n#[cfg(target_arch = \"wasm32\")] use notecraft_model::playground::std;\n"
+  after: "\n// Playground's browser build: files (patches/onenote.yaml).\n#[cfg(target_arch = \"wasm32\")] use ergonote_model::playground::std;\n"
 - file: crates/engine/src/session.rs
   find: '(?![\s\S])'
-  after: "\n// Playground's browser build: files (patches/onenote.yaml).\n#[cfg(target_arch = \"wasm32\")] use notecraft_model::playground::std;\n"
+  after: "\n// Playground's browser build: files (patches/onenote.yaml).\n#[cfg(target_arch = \"wasm32\")] use ergonote_model::playground::std;\n"
 - file: crates/ui-egui/src/app.rs
   find: '(?![\s\S])'
-  after: "\n// Playground's browser build: files and the clock (patches/onenote.yaml).\n#[cfg(target_arch = \"wasm32\")] use notecraft_model::playground::std;\n"
+  after: "\n// Playground's browser build: files and the clock (patches/onenote.yaml).\n#[cfg(target_arch = \"wasm32\")] use ergonote_model::playground::std;\n"
 
 # The page source viewer reads the virtual notebook files too. Path::is_file asks the host file system,
 # so use the browser file-system shim for both enumeration and the file check.
 - file: crates/ui-egui/src/codeview.rs
   find: '(?![\s\S])'
-  after: "\n// Playground's browser build: files (patches/onenote.yaml).\n#[cfg(target_arch = \"wasm32\")] use notecraft_model::playground::std;\n"
+  after: "\n// Playground's browser build: files (patches/onenote.yaml).\n#[cfg(target_arch = \"wasm32\")] use ergonote_model::playground::std;\n"
 - file: crates/ui-egui/src/codeview.rs
   find: 'if\s+!entry\.path\(\)\.is_file\(\)|if\s+!std::fs::metadata\(entry\.path\(\)\)\.is_ok_and\(\|m\| m\.is_file\(\)\)'
   replace: 'if !std::fs::metadata(entry.path()).is_ok_and(|m| m.is_file())'
@@ -89,7 +89,7 @@
 # picture drew as its alt text. The same one-line rule as codeview.rs reads them from the in-memory notebook.
 - file: crates/ui-egui/src/preview.rs
   find: '(?![\s\S])'
-  after: "\n// Playground's browser build: files (patches/onenote.yaml).\n#[cfg(target_arch = \"wasm32\")] use notecraft_model::playground::std;\n"
+  after: "\n// Playground's browser build: files (patches/onenote.yaml).\n#[cfg(target_arch = \"wasm32\")] use ergonote_model::playground::std;\n"
 
 # File::open in the browser must read from the same in-memory notebook as read_to_string and read_dir.
 - file: crates/model/src/playground.rs
@@ -165,11 +165,11 @@
   after: "\ntargets = [\"wasm32-unknown-unknown\"]"
 
 # Rules 18-19/28: the CJK face (16 MB, two copies in the binary: one per crate that names the const) stays out of the
-# wasm, which would otherwise be 46 MB, over the host's 25 MiB per file once gzipped. apps/notecraft-web copies the
+# wasm, which would otherwise be 46 MB, over the host's 25 MiB per file once gzipped. apps/ergonote-web copies the
 # file next to the page and loads it when a page needs those scripts (Arabic, Hebrew and Devanagari, 1 MB, stay in);
 # the window skips a face it has no bytes for (egui panics on one).
 # Verify: the wasm.gz is a few MB, a page in Chinese draws its letters a moment after it opens. If upstream renames
-# the const or the font list, follow it (and the file name in apps/notecraft-web/src/main.rs).
+# the const or the font list, follow it (and the file name in apps/ergonote-web/src/main.rs).
 - file: crates/text/src/lib.rs
   find: 'pub\s+const\s+CJK\s*:\s*&\[u8\]\s*=\s*include_bytes!\(([^)]*)\);'
   replace: "#[cfg(not(target_arch = \"wasm32\"))] pub const CJK: &[u8] = include_bytes!($1);\n    #[cfg(target_arch = \"wasm32\")] pub const CJK: &[u8] = &[];"
@@ -181,13 +181,13 @@
 # notebook (File screen), and links between pages (which ask whether a path is a folder or a file).
 - file: crates/ui-egui/src/inkpad.rs
   find: '(?![\s\S])'
-  after: "\n// Playground's browser build: files (patches/onenote.yaml).\n#[cfg(target_arch = \"wasm32\")] use notecraft_model::playground::std;\n"
+  after: "\n// Playground's browser build: files (patches/onenote.yaml).\n#[cfg(target_arch = \"wasm32\")] use ergonote_model::playground::std;\n"
 - file: crates/ui-egui/src/history.rs
   find: '(?![\s\S])'
-  after: "\n// Playground's browser build: the clock (patches/onenote.yaml).\n#[cfg(target_arch = \"wasm32\")] use notecraft_model::playground::std;\n"
+  after: "\n// Playground's browser build: the clock (patches/onenote.yaml).\n#[cfg(target_arch = \"wasm32\")] use ergonote_model::playground::std;\n"
 - file: crates/store/src/links.rs
   find: '(?![\s\S])'
-  after: "\n// Playground's browser build: files (patches/onenote.yaml).\n#[cfg(target_arch = \"wasm32\")] use notecraft_model::playground::std;\n"
+  after: "\n// Playground's browser build: files (patches/onenote.yaml).\n#[cfg(target_arch = \"wasm32\")] use ergonote_model::playground::std;\n"
 - file: crates/store/src/links.rs
   find: '\bif\s+full\.is_dir\(\)'
   replace: 'if std::fs::metadata(&full).is_ok_and(|m| m.is_dir())'

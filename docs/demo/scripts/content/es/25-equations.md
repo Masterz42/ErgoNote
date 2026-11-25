@@ -4,7 +4,7 @@ title: Ecuaciones
 
 # Ecuaciones
 
-NoteCraft dibuja las matemáticas en TeX por sí mismo, con tipos de letra matemáticos de verdad. Cada fórmula de esta página es texto sencillo: pulse el botón `< >` para ver su TeX.
+ErgoNote dibuja las matemáticas en TeX por sí mismo, con tipos de letra matemáticos de verdad. Cada fórmula de esta página es texto sencillo: pulse el botón `< >` para ver su TeX.
 
 ## En una línea o solas
 
@@ -60,7 +60,7 @@ $$
 
 Insertar, y después Ecuación, abre una lista de ecuaciones para empezar. Elija una y su TeX entra donde está el cursor.
 
-Si una fórmula está mal escrita, NoteCraft muestra su texto en lugar de ocultarla.
+Si una fórmula está mal escrita, ErgoNote muestra su texto en lugar de ocultarla.
 
 Siguiente: [Etiquetar una línea](../tag-a-line/).
 

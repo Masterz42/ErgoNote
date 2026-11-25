@@ -5,8 +5,8 @@
 //! marked as an older version, and compared with the page line by line; Restore stays a separate,
 //! explicit choice, and closing the preview leaves the page exactly as it was.
 
-use notecraft_formats::Block;
-use notecraft_model::PageFormat;
+use ergonote_formats::Block;
+use ergonote_model::PageFormat;
 
 /// A saved version opened for reading.
 #[derive(Clone, Debug)]
@@ -39,7 +39,7 @@ const MAX_LINES: usize = 4000;
 /// do not crowd the comparison. Blank lines carry nothing and are left out.
 pub fn lines_of(format: PageFormat, body: &str) -> Vec<String> {
     let text = match format {
-        PageFormat::Html => notecraft_formats::html::to_markdown(body),
+        PageFormat::Html => ergonote_formats::html::to_markdown(body),
         PageFormat::Cmgfm => body.to_string(),
     };
     text.lines().map(str::trim_end).filter(|l| !l.trim().is_empty()).map(str::to_string).take(MAX_LINES).collect()
@@ -79,12 +79,12 @@ pub fn compare(then: &[String], now: &[String]) -> Vec<Change> {
 /// When a version was saved, on the user's clock ("Saturday, 17 October 2026, 18:29"), or as
 /// written when it cannot be read.
 pub fn when(created: &str) -> String {
-    notecraft_model::time::long_from_iso(created).unwrap_or_else(|| created.to_string())
+    ergonote_model::time::long_from_iso(created).unwrap_or_else(|| created.to_string())
 }
 
 /// Opens version `id` of the page at `page` for reading, against the page's body `now`.
 pub fn open(page: &std::path::Path, id: &str, created: &str, now: &str) -> Result<Preview, String> {
-    let (format, body) = notecraft_store::page::version_body(page, id).map_err(|e| e.to_string())?;
+    let (format, body) = ergonote_store::page::version_body(page, id).map_err(|e| e.to_string())?;
     let changes = compare(&lines_of(format, &body), &lines_of(format, now));
     Ok(Preview { id: id.to_string(), when: when(created), blocks: crate::preview::blocks_for(format, &body), changes, comparing: false })
 }

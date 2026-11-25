@@ -7,11 +7,11 @@ updated: 2026-10-18T00:00:00Z
 tags: []
 ---
 
-![El koala de NoteCraft, escribiendo en un cuaderno](assets/banner-es.png)
+![El koala de ErgoNote, escribiendo en un cuaderno](assets/banner-es.png)
 
 *Notas en archivos simples, en carpetas simples.*
 
-NoteCraft guarda las notas como tú guardas los archivos: un cuaderno es una carpeta, una
+ErgoNote guarda las notas como tú guardas los archivos: un cuaderno es una carpeta, una
 sección es una carpeta, una página es una carpeta con un archivo y sus imágenes dentro. Nada
 queda encerrado en una base de datos, así que cualquier carpeta que tu herramienta de
 sincronización ya vigila se convierte en un cuaderno sincronizado, y una copia de seguridad es
@@ -19,7 +19,7 @@ una copia.
 
 ## Qué puedes hacer aquí
 
-Cada página de esta sección muestra una parte de NoteCraft en la propia página:
+Cada página de esta sección muestra una parte de ErgoNote en la propia página:
 
 - [Escribir una página](../write-a-page/): títulos, listas, negrita, enlaces, ecuaciones, teclas.
 - [Etiquetar una línea](../tag-a-line/): casillas de tareas y las demás marcas.

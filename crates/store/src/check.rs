@@ -2,7 +2,7 @@
 
 use crate::tree::{child_dirs, folder_name, read_node};
 use crate::vfs as fs;
-use notecraft_model::names;
+use ergonote_model::names;
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
@@ -81,7 +81,7 @@ mod tests {
     use crate::ops;
     use crate::settings::Settings;
     use crate::testing::TempDir;
-    use notecraft_model::NodeKind;
+    use ergonote_model::NodeKind;
 
     fn notebook(t: &TempDir) -> (Settings, PathBuf) {
         let s = Settings::at(t.path().join("s.toml"));
@@ -120,9 +120,9 @@ mod tests {
         let a = ops::create_node(&nb, "A", NodeKind::Page, None, &s).expect("a");
         let b = ops::create_node(&nb, "B", NodeKind::Page, None, &s).expect("b");
         let ta = fs::read_to_string(a.join("index.html")).expect("a");
-        let id_a = notecraft_formats::html::meta(&ta, "notecraft:id").expect("id");
+        let id_a = ergonote_formats::html::meta(&ta, "ergonote:id").expect("id");
         let tb = fs::read_to_string(b.join("index.html")).expect("b");
-        fs::write(b.join("index.html"), notecraft_formats::html::set_meta(&tb, "notecraft:id", &id_a)).expect("dup");
+        fs::write(b.join("index.html"), ergonote_formats::html::set_meta(&tb, "ergonote:id", &id_a)).expect("dup");
         let c = ops::create_node(&nb, "C", NodeKind::Page, None, &s).expect("c");
         fs::write(c.join("index.html"), "<html><body>no meta</body></html>").expect("blank");
         let msgs: Vec<String> = check_tree(&nb).problems.into_iter().map(|p| p.message).collect();

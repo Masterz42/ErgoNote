@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Builds the NoteCraft Android APK: dist/android/notecraft-<version>-android-arm64.apk
+# Builds the ErgoNote Android APK: dist/android/ergonote-<version>-android-arm64.apk
 #
 #   bash android/build.sh [--skip-build]
 #
@@ -54,7 +54,7 @@ done
 
 DIST="${DIST:-$ROOT/dist/android}"
 WORK="$ROOT/target/android-apk"
-NAME="notecraft-$VERSION-android-arm64"
+NAME="ergonote-$VERSION-android-arm64"
 rm -rf "$WORK"
 mkdir -p "$WORK" "$DIST"
 
@@ -65,20 +65,20 @@ if [[ "$SKIP_BUILD" == 0 ]]; then
         NDK_VERSION="${ARTCRAFT_NDK_VERSION:-27.2.12479018}"
         export ANDROID_NDK_HOME="$SDK/ndk/$NDK_VERSION"
     fi
-    cargo ndk --target "$ABI" --platform "$MIN_SDK" build --release --locked -p notecraft-android
+    cargo ndk --target "$ABI" --platform "$MIN_SDK" build --release --locked -p ergonote-android
 fi
-LIB="$ROOT/target/$TARGET/release/libnotecraft_android.so"
+LIB="$ROOT/target/$TARGET/release/libergonote_android.so"
 [[ -s "$LIB" ]] || { echo "missing $LIB; build without --skip-build" >&2; exit 1; }
 
 # 2. Keep empty assets directory (ErgoNote creates the French school binder directly; skipping
-# the 14 MB multilingual welcome-to-notecraft.zip trims APK size substantially).
+# the 14 MB multilingual welcome-to-ergonote.zip trims APK size substantially).
 mkdir -p "$WORK/assets"
 
-# 3. Resources: the theme and the launcher icon (the app icon, assets/brand/notecraft-256.png).
+# 3. Resources: the theme and the launcher icon (the app icon, assets/brand/ergonote-256.png).
 mkdir -p "$WORK/res"
 cp -R "$ROOT/android/res/." "$WORK/res/"
 mkdir -p "$WORK/res/mipmap-xxxhdpi"
-cp "$ROOT/assets/brand/notecraft-256.png" "$WORK/res/mipmap-xxxhdpi/ic_launcher.png"
+cp "$ROOT/assets/brand/ergonote-256.png" "$WORK/res/mipmap-xxxhdpi/ic_launcher.png"
 "$BUILD_TOOLS/aapt2" compile --dir "$WORK/res" -o "$WORK/resources.zip"
 "$BUILD_TOOLS/aapt2" link \
     -o "$WORK/unaligned.apk" \
@@ -94,9 +94,9 @@ cp "$ROOT/assets/brand/notecraft-256.png" "$WORK/res/mipmap-xxxhdpi/ic_launcher.
 # 3b. The thin Java NativeActivity subclass (SAF image/file picker + Gboard IME proxy).
 mkdir -p "$WORK/java-classes" "$WORK/dex"
 javac -Xlint:-options -source 8 -target 8 -bootclasspath "$PLATFORM" -d "$WORK/java-classes" \
-    "$ROOT/android/java/com/alientechsoftware/notecraft/ErgoNoteActivity.java"
+    "$ROOT/android/java/com/ergonote/app/ErgoNoteActivity.java"
 "$BUILD_TOOLS/d8" --release --min-api "$MIN_SDK" --lib "$PLATFORM" \
-    --output "$WORK/dex" "$WORK/java-classes"/com/alientechsoftware/notecraft/*.class
+    --output "$WORK/dex" "$WORK/java-classes"/com/ergonote/app/*.class
 
 # 4. The library goes in as lib/<abi>/, without its symbol table (a fifth of its size) and
 # deflated: the manifest leaves extractNativeLibs at its default, so Android unpacks it on install
@@ -105,8 +105,8 @@ NDK_HOME="${ANDROID_NDK_HOME:-$SDK/ndk/${ARTCRAFT_NDK_VERSION:-27.2.12479018}}"
 STRIP="$NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip"
 [[ -x "$STRIP" ]] || { echo "missing $STRIP; set ANDROID_NDK_HOME" >&2; exit 1; }
 mkdir -p "$WORK/apk/lib/$ABI"
-"$STRIP" --strip-all -o "$WORK/apk/lib/$ABI/libnotecraft_android.so" "$LIB"
-(cd "$WORK/apk" && python3 - "$WORK/unaligned.apk" "lib/$ABI/libnotecraft_android.so" "$WORK/dex/classes.dex" <<'PY'
+"$STRIP" --strip-all -o "$WORK/apk/lib/$ABI/libergonote_android.so" "$LIB"
+(cd "$WORK/apk" && python3 - "$WORK/unaligned.apk" "lib/$ABI/libergonote_android.so" "$WORK/dex/classes.dex" <<'PY'
 import sys, zipfile
 apk, lib, dex = sys.argv[1], sys.argv[2], sys.argv[3]
 with zipfile.ZipFile(apk, "a") as archive:
@@ -132,13 +132,13 @@ else
     KEY_PASS="$STORE_PASS"
     ALIAS_ARGS=(--ks-key-alias throwaway)
     keytool -genkeypair -keystore "$KEYSTORE" -storetype PKCS12 -storepass "$STORE_PASS" -keypass "$KEY_PASS" \
-        -alias throwaway -keyalg RSA -keysize 3072 -validity 10000 -dname "CN=NoteCraft build $VERSION" >/dev/null 2>&1
+        -alias throwaway -keyalg RSA -keysize 3072 -validity 10000 -dname "CN=ErgoNote build $VERSION" >/dev/null 2>&1
     echo "warning: no ANDROID_KEYSTORE; signed with a throwaway key made for this build only." >&2
     echo "warning: a build signed with any other key cannot update this one in place." >&2
 fi
 # Passwords go through the environment, never the command line.
-NOTECRAFT_STORE_PASS="$STORE_PASS" NOTECRAFT_KEY_PASS="$KEY_PASS" "$BUILD_TOOLS/apksigner" sign \
-    --ks "$KEYSTORE" --ks-pass env:NOTECRAFT_STORE_PASS --key-pass env:NOTECRAFT_KEY_PASS "${ALIAS_ARGS[@]}" \
+ERGONOTE_STORE_PASS="$STORE_PASS" ERGONOTE_KEY_PASS="$KEY_PASS" "$BUILD_TOOLS/apksigner" sign \
+    --ks "$KEYSTORE" --ks-pass env:ERGONOTE_STORE_PASS --key-pass env:ERGONOTE_KEY_PASS "${ALIAS_ARGS[@]}" \
     --min-sdk-version "$MIN_SDK" --v1-signing-enabled true --v2-signing-enabled true --v3-signing-enabled true --v4-signing-enabled false --out "$DIST/$NAME.apk" "$WORK/aligned.apk"
 rm -f "$WORK/throwaway.p12"
 "$BUILD_TOOLS/apksigner" verify --min-sdk-version "$MIN_SDK" "$DIST/$NAME.apk"

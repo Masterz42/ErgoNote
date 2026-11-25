@@ -1,5 +1,5 @@
 //! Real Stroke -> SVG -> existing SVG-loader regressions. No window or test doubles.
-use notecraft_ink::{Dab, Drawing, Rgb, Stroke, Tool, svg};
+use ergonote_ink::{Dab, Drawing, Rgb, Stroke, Tool, svg};
 
 #[test]
 fn saved_svg_keeps_smoothed_ink_outside_the_raw_reading_bounds() {

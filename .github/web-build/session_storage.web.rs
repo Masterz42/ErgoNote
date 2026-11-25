@@ -19,7 +19,7 @@ impl SessionChanges {
     }
 
     pub(crate) fn observe_file(&mut self, path: &Path) {
-        if path != self.root && path.starts_with(&self.root) && !path.starts_with(self.root.join(".notecraft")) {
+        if path != self.root && path.starts_with(&self.root) && !path.starts_with(self.root.join(".ergonote")) {
             self.changed = true;
         }
     }
@@ -43,7 +43,7 @@ mod tests {
         fn new() -> Self {
             loop {
                 let path =
-                    std::env::temp_dir().join(format!("notecraft-session-storage-{}-{}", std::process::id(), NEXT.fetch_add(1, Ordering::Relaxed)));
+                    std::env::temp_dir().join(format!("ergonote-session-storage-{}-{}", std::process::id(), NEXT.fetch_add(1, Ordering::Relaxed)));
                 match fs::create_dir(&path) {
                     Ok(()) => return Self(path),
                     Err(e) if e.kind() == std::io::ErrorKind::AlreadyExists => continue,
@@ -69,9 +69,9 @@ mod tests {
     #[test]
     fn preferences_and_files_outside_the_notebook_root_do_not_arm_a_warning() {
         let files = Files::new();
-        let root = files.0.join("NoteCraft");
-        let settings = files.write("NoteCraft/.notecraft/settings.toml");
-        let outside = files.write("NoteCraft-other/page.md");
+        let root = files.0.join("ErgoNote");
+        let settings = files.write("ErgoNote/.ergonote/settings.toml");
+        let outside = files.write("ErgoNote-other/page.md");
         let mut changes = SessionChanges::new(&root);
         changes.observe_file(&root);
         changes.observe_file(&settings);
@@ -83,11 +83,11 @@ mod tests {
     #[test]
     fn a_dirty_editor_arms_the_warning_before_autosave_and_keeps_it_afterwards() {
         let files = Files::new();
-        let root = files.0.join("NoteCraft");
+        let root = files.0.join("ErgoNote");
         let mut changes = SessionChanges::new(&root);
         changes.observe_editor(true);
         assert!(changes.needs_warning(), "typing needs protection before a virtual file is written");
-        let page = files.write("NoteCraft/book/section/page/index.md");
+        let page = files.write("ErgoNote/book/section/page/index.md");
         changes.observe_file(&page);
         changes.observe_editor(false);
         assert!(changes.needs_warning(), "autosave only wrote a transient virtual file");
@@ -96,9 +96,9 @@ mod tests {
     #[test]
     fn structural_changes_and_deletions_are_protected_without_a_dirty_editor() {
         let files = Files::new();
-        let root = files.0.join("NoteCraft");
-        let node = files.write("NoteCraft/book/section/new-page/_node.toml");
-        let page = files.write("NoteCraft/book/section/old-page/index.html");
+        let root = files.0.join("ErgoNote");
+        let node = files.write("ErgoNote/book/section/new-page/_node.toml");
+        let page = files.write("ErgoNote/book/section/old-page/index.html");
         let mut added = SessionChanges::new(&root);
         added.observe_file(&node);
         added.observe_editor(false);

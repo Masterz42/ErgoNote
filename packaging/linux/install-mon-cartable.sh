@@ -7,13 +7,13 @@
 # Le script cherche le binaire ergonote, les icones et le carnet d'accueil :
 #   1. dans son propre dossier (archive portable),
 #   2. deux dossiers au-dessus (depot de developpement : ErgoNote-*-Linux-x86_64),
-#   3. dans target/release/notecraft (build local).
-# Il ne touche pas aux carnets : ils restent dans Documents/NoteCraft ou dans le
+#   3. dans target/release/ergonote (build local).
+# Il ne touche pas aux carnets : ils restent dans Documents/ErgoNote ou dans le
 # dossier deja memorise par l'application.
 set -euo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-APP_ID="com.alientechsoftware.notecraft"
+APP_ID="com.ergonote.app"
 BIN_NAME="ergonote"
 LAUNCH=0
 
@@ -30,13 +30,13 @@ BIN=""
 for base in "$HERE" "$HERE/../.."; do
     if [ -f "$base/$BIN_NAME" ]; then
         BIN="$base/$BIN_NAME"
-    elif [ -f "$base/notecraft" ]; then
-        BIN="$base/notecraft"
+    elif [ -f "$base/ergonote" ]; then
+        BIN="$base/ergonote"
     else
         # Plusieurs versions peuvent cohabiter dans le depot : prendre la plus recente.
         BIN="$(ls -1t "$base"/ErgoNote-v*-Linux-* 2>/dev/null | head -n 1 || true)"
-        if [ -z "$BIN" ] && [ -f "$base/target/release/notecraft" ]; then
-            BIN="$base/target/release/notecraft"
+        if [ -z "$BIN" ] && [ -f "$base/target/release/ergonote" ]; then
+            BIN="$base/target/release/ergonote"
         fi
     fi
     [ -n "$BIN" ] && break
@@ -52,7 +52,7 @@ BIN_DIR="$HOME/.local/bin"
 APP_DIR="$HOME/.local/share/applications"
 ICON_ROOT="$HOME/.local/share/icons/hicolor"
 DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
-DEMO_DIR="$DATA_HOME/notecraft/demo"
+DEMO_DIR="$DATA_HOME/ergonote/demo"
 
 echo "== Installation d'ErgoNote dans le dossier de l'utilisateur =="
 install -d "$BIN_DIR" "$APP_DIR" "$ICON_ROOT"
@@ -63,7 +63,7 @@ echo "  programme : $BIN_DIR/$BIN_NAME"
 for size in 32 64 128 256 512; do
     SRC=""
     for base in "$HERE/icons" "$HERE/../.."; do
-        for name in "notecraft-$size.png" "icons/notecraft-$size.png" "assets/brand/notecraft-$size.png"; do
+        for name in "ergonote-$size.png" "icons/ergonote-$size.png" "assets/brand/ergonote-$size.png"; do
             if [ -f "$base/$name" ]; then
                 SRC="$base/$name"
                 break
@@ -80,8 +80,8 @@ echo "  icones    : $ICON_ROOT"
 # ---------- carnet d'accueil (Welcome) ----------
 DEMO_SRC=""
 for base in "$HERE" "$HERE/../.."; do
-    if [ -d "$base/demo/welcome-to-notecraft" ]; then
-        DEMO_SRC="$base/demo/welcome-to-notecraft"
+    if [ -d "$base/demo/welcome-to-ergonote" ]; then
+        DEMO_SRC="$base/demo/welcome-to-ergonote"
         break
     fi
     if [ -d "$base/docs/demo/DemoNotebook" ]; then
@@ -91,11 +91,11 @@ for base in "$HERE" "$HERE/../.."; do
 done
 if [ -n "$DEMO_SRC" ]; then
     install -d "$DEMO_DIR"
-    rm -rf "$DEMO_DIR/.welcome-to-notecraft-new"
-    cp -R "$DEMO_SRC" "$DEMO_DIR/.welcome-to-notecraft-new"
-    rm -rf "$DEMO_DIR/welcome-to-notecraft"
-    mv "$DEMO_DIR/.welcome-to-notecraft-new" "$DEMO_DIR/welcome-to-notecraft"
-    echo "  accueil   : $DEMO_DIR/welcome-to-notecraft"
+    rm -rf "$DEMO_DIR/.welcome-to-ergonote-new"
+    cp -R "$DEMO_SRC" "$DEMO_DIR/.welcome-to-ergonote-new"
+    rm -rf "$DEMO_DIR/welcome-to-ergonote"
+    mv "$DEMO_DIR/.welcome-to-ergonote-new" "$DEMO_DIR/welcome-to-ergonote"
+    echo "  accueil   : $DEMO_DIR/welcome-to-ergonote"
 else
     echo "  accueil   : non trouve (le carnet d'accueil sera cree par l'application)"
 fi
@@ -115,7 +115,7 @@ Terminal=false
 StartupNotify=true
 StartupWMClass=$APP_ID
 Categories=Office;Education;
-MimeType=x-scheme-handler/notecraft;
+MimeType=x-scheme-handler/ergonote;
 EOF
 chmod 755 "$ENTRY"
 echo "  menu      : $ENTRY"

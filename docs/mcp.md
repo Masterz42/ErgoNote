@@ -2,17 +2,17 @@
 
 Last reviewed: 2026-10-17.
 
-NoteCraft speaks the [Model Context Protocol](https://modelcontextprotocol.io), so an assistant
+ErgoNote speaks the [Model Context Protocol](https://modelcontextprotocol.io), so an assistant
 can read and write your notes the same way you can. It is not a second way of doing things:
-every tool runs an engine command, the same ones the window's buttons and `notecraft-cli run`
+every tool runs an engine command, the same ones the window's buttons and `ergonote-cli run`
 dispatch, so a tool cannot do anything the app cannot, and one test covers both.
 
 ## Starting it
 
 ```bash
-notecraft-cli mcp                       # opens the notebooks folder itself
-notecraft-cli mcp --notebooks FOLDER    # another notebooks folder
-notecraft-cli mcp --connect 54321       # drives a running window instead
+ergonote-cli mcp                       # opens the notebooks folder itself
+ergonote-cli mcp --notebooks FOLDER    # another notebooks folder
+ergonote-cli mcp --connect 54321       # drives a running window instead
 ```
 
 The server reads JSON-RPC 2.0 requests from stdin, one per line, and writes one reply line
@@ -24,8 +24,8 @@ In a client's configuration file that looks like:
 ```json
 {
   "mcpServers": {
-    "notecraft": {
-      "command": "notecraft-cli",
+    "ergonote": {
+      "command": "ergonote-cli",
       "args": ["mcp"]
     }
   }
@@ -34,14 +34,14 @@ In a client's configuration file that looks like:
 
 ### Headless, or the running window
 
-| | `notecraft-cli mcp` | `notecraft-cli mcp --connect PORT` |
+| | `ergonote-cli mcp` | `ergonote-cli mcp --connect PORT` |
 |---|---|---|
-| Needs the app running | no | yes: `notecraft --control PORT` |
+| Needs the app running | no | yes: `ergonote --control PORT` |
 | Sees | the notebooks folder on disk | what the person has open |
 | Tools | the nine that work on files, and `open`, which says what it would open | those ten and `inspect`, `screenshot` |
 
 Connecting needs the window's key, which the window writes to `control-key.local-PORT` beside
-the settings file; the server reads it from there, or from `NOTECRAFT_CONTROL_KEY`. The rest of
+the settings file; the server reads it from there, or from `ERGONOTE_CONTROL_KEY`. The rest of
 that channel is in [control-protocol.md](control-protocol.md).
 
 ## What the protocol says
@@ -81,9 +81,9 @@ to name the command to throw anything away.
 
 | URI | What |
 |---|---|
-| `notecraft://tree` | every notebook, section and page with its path |
-| `notecraft://commands` | the command registry as JSON |
-| `notecraft://page/{path}` | one page's body, for example `notecraft://page/work/projects/kickoff` |
+| `ergonote://tree` | every notebook, section and page with its path |
+| `ergonote://commands` | the command registry as JSON |
+| `ergonote://page/{path}` | one page's body, for example `ergonote://page/work/projects/kickoff` |
 
 ## What it does not do
 

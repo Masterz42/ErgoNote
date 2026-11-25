@@ -2,7 +2,7 @@
 //! in-memory virtual filesystem on `wasm32-unknown-unknown` (where `std::fs` always fails
 //! with `Unsupported`).
 //!
-//! Having notebooks, settings, pages and ink go through this module lets NoteCraft run in a
+//! Having notebooks, settings, pages and ink go through this module lets ErgoNote run in a
 //! browser (e.g. iPad Safari) without rewriting any of the folder-based store logic.
 
 #[cfg(not(target_arch = "wasm32"))]

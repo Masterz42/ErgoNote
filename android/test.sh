@@ -8,28 +8,28 @@ set -Eeuo pipefail
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 VERSION="$(tr -d '\r' < "$ROOT/Cargo.toml" | sed -n '/^\[workspace.package\]/,/^\[/s/^version = "\([^"]*\)"$/\1/p' | head -n 1)"
 DIST="${DIST:-$ROOT/dist/android}"
-APK="$DIST/notecraft-$VERSION-android-arm64.apk"
+APK="$DIST/ergonote-$VERSION-android-arm64.apk"
 [[ -s "$APK" ]] || { echo "missing package: $APK" >&2; exit 1; }
 SDK="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-$HOME/Android/Sdk}}"
 BUILD_TOOLS="$SDK/build-tools/${ARTCRAFT_BUILD_TOOLS_VERSION:-35.0.0}"
 
 "$BUILD_TOOLS/apksigner" verify --min-sdk-version 26 "$APK"
 badging="$("$BUILD_TOOLS/aapt2" dump badging "$APK")"
-grep -q "^package: name='com.alientechsoftware.notecraft' versionCode='[1-9][0-9]*' versionName='$VERSION'" <<<"$badging" \
+grep -q "^package: name='com.ergonote.app' versionCode='[1-9][0-9]*' versionName='$VERSION'" <<<"$badging" \
     || { echo "unexpected package line: $(head -n 1 <<<"$badging")" >&2; exit 1; }
 grep -q "^minSdkVersion:'26'" <<<"$badging" || { echo "minSdkVersion is not 26" >&2; exit 1; }
 grep -q "^targetSdkVersion:'35'" <<<"$badging" || { echo "targetSdkVersion is not 35" >&2; exit 1; }
 grep -q "^native-code: 'arm64-v8a'" <<<"$badging" || { echo "no arm64-v8a native code" >&2; exit 1; }
-grep -q "^launchable-activity: name='com.alientechsoftware.notecraft.ErgoNoteActivity'" <<<"$badging" || { echo "no launchable ErgoNoteActivity" >&2; exit 1; }
+grep -q "^launchable-activity: name='com.ergonote.app.ErgoNoteActivity'" <<<"$badging" || { echo "no launchable ErgoNoteActivity" >&2; exit 1; }
 
 python3 - "$APK" <<'PY'
 import io, re, sys, zipfile
 apk = zipfile.ZipFile(sys.argv[1])
-lib = apk.getinfo("lib/arm64-v8a/libnotecraft_android.so")
+lib = apk.getinfo("lib/arm64-v8a/libergonote_android.so")
 assert lib.file_size > 1_000_000, f"the native library is only {lib.file_size} bytes"
 assert b".symtab" not in apk.read(lib.filename)[-65536:], "the native library still has its symbol table"
 assert "classes.dex" in apk.namelist(), "the APK is missing classes.dex"
-payload = zipfile.ZipFile(io.BytesIO(apk.read("assets/welcome-to-notecraft.zip")))
+payload = zipfile.ZipFile(io.BytesIO(apk.read("assets/welcome-to-ergonote.zip")))
 names = payload.namelist()
 for path in ("html/_node.toml", "html/00-start/welcome/index.html", "cmgfm/_node.toml", "cmgfm/00-start/welcome/index.md"):
     assert path in names, f"the Welcome payload has no {path}"

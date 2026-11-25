@@ -24,7 +24,7 @@ fn unavailable() {
     NOTICE.with(|notice| *notice.borrow_mut() = Some(note));
 }
 
-/// The subset of `rfd::FileDialog` that NoteCraft uses.
+/// The subset of `rfd::FileDialog` that ErgoNote uses.
 #[derive(Default)]
 pub struct FileDialog;
 

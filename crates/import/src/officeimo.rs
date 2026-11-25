@@ -1,10 +1,10 @@
 //! Optional OfficeIMO bridge discovery and invocation.
 //!
-//! The bridge is deliberately an external process. This keeps the NoteCraft core Rust-only,
+//! The bridge is deliberately an external process. This keeps the ErgoNote core Rust-only,
 //! lets releases carry a platform-specific OfficeIMO build, and gives us a stable replacement
 //! point if the importer implementation changes later.
 
-use notecraft_formats::{frontmatter, html, templates};
+use ergonote_formats::{frontmatter, html, templates};
 use std::ffi::OsString;
 use std::fs;
 #[cfg(windows)]
@@ -59,14 +59,14 @@ impl Format {
 
 /// Locates an explicitly installed or bundled OfficeIMO bridge.
 pub fn locate() -> Result<PathBuf, String> {
-    if let Some(path) = std::env::var_os("NOTECRAFT_OFFICEIMO_BRIDGE") {
+    if let Some(path) = std::env::var_os("ERGONOTE_OFFICEIMO_BRIDGE") {
         let path = PathBuf::from(path);
-        return executable_or_error(path, "NOTECRAFT_OFFICEIMO_BRIDGE");
+        return executable_or_error(path, "ERGONOTE_OFFICEIMO_BRIDGE");
     }
 
     let relative = Path::new("importers").join("officeimo").join(target_name()).join(executable_name());
     let mut candidates = Vec::new();
-    if let Some(root) = std::env::var_os("NOTECRAFT_DATA_DIR").map(PathBuf::from).or_else(data_dir) {
+    if let Some(root) = std::env::var_os("ERGONOTE_DATA_DIR").map(PathBuf::from).or_else(data_dir) {
         candidates.push(root.join(&relative));
     }
     // Windows MSI installs the bridge beside the application under Program Files, while
@@ -364,7 +364,7 @@ fn page_metadata(text: &str, format: Format, id: &str, title: Option<&str>) -> S
                 text.to_string()
             } else {
                 html::replace_inner(
-                    &templates::html_page(title.or(Some("Imported page")), id, 0, &notecraft_model::time::iso_now()),
+                    &templates::html_page(title.or(Some("Imported page")), id, 0, &ergonote_model::time::iso_now()),
                     &html::inner(text),
                 )
             };
@@ -376,15 +376,15 @@ fn page_metadata(text: &str, format: Format, id: &str, title: Option<&str>) -> S
                     text.replacen("</head>", &format!("<title>{escaped}</title>\n</head>"), 1)
                 };
             }
-            html::set_meta(&text, "notecraft:id", id)
+            html::set_meta(&text, "ergonote:id", id)
         }
         Format::Cmgfm => {
             let (mut front, body) = frontmatter::split_front(text);
             if front.is_empty() {
                 front =
-                    frontmatter::split_front(&templates::markdown_page(title.or(Some("Imported page")), id, 0, &notecraft_model::time::iso_now())).0;
+                    frontmatter::split_front(&templates::markdown_page(title.or(Some("Imported page")), id, 0, &ergonote_model::time::iso_now())).0;
             } else if let Some(title) = title {
-                front = frontmatter::set_value(&front, "title", &notecraft_model::kv::quote(title));
+                front = frontmatter::set_value(&front, "title", &ergonote_model::kv::quote(title));
             }
             format!("{}{body}", frontmatter::set_value(&front, "id", id))
         }
@@ -468,7 +468,7 @@ fn normalize_ids(root: &Path) -> Result<(), String> {
     nodes.sort();
     for node in &nodes {
         let text = fs::read_to_string(node).map_err(|e| format!("cannot read {}: {e}", node.display()))?;
-        let id = notecraft_model::id::new_id();
+        let id = ergonote_model::id::new_id();
         let updated = text
             .lines()
             .map(|line| if line.starts_with("id = ") { format!("id = \"{id}\"") } else { line.to_string() })
@@ -482,7 +482,7 @@ fn normalize_ids(root: &Path) -> Result<(), String> {
     pages.sort();
     for page in &pages {
         let text = fs::read_to_string(page).map_err(|e| format!("cannot read {}: {e}", page.display()))?;
-        let id = notecraft_model::id::new_id();
+        let id = ergonote_model::id::new_id();
         let format = if page.file_name().is_some_and(|name| name == "index.html") { Format::Html } else { Format::Cmgfm };
         let updated = page_metadata(&text, format, &id, None);
         fs::write(page, updated).map_err(|e| format!("cannot rewrite {}: {e}", page.display()))?;
@@ -544,12 +544,12 @@ fn executable_or_error(path: PathBuf, source: &str) -> Result<PathBuf, String> {
 
 fn data_dir() -> Option<PathBuf> {
     if cfg!(windows) {
-        std::env::var_os("LOCALAPPDATA").map(PathBuf::from).map(|p| p.join("NoteCraft"))
+        std::env::var_os("LOCALAPPDATA").map(PathBuf::from).map(|p| p.join("ErgoNote"))
     } else {
         std::env::var_os("XDG_DATA_HOME")
             .map(PathBuf::from)
             .or_else(|| std::env::var_os("HOME").map(|p| PathBuf::from(p).join(".local").join("share")))
-            .map(|p| p.join("NoteCraft"))
+            .map(|p| p.join("ErgoNote"))
     }
 }
 
@@ -568,7 +568,7 @@ fn target_name() -> &'static str {
 }
 
 fn executable_name() -> OsString {
-    if cfg!(windows) { OsString::from("officeimo-notecraft.exe") } else { OsString::from("officeimo-notecraft") }
+    if cfg!(windows) { OsString::from("officeimo-ergonote.exe") } else { OsString::from("officeimo-ergonote") }
 }
 
 #[cfg(test)]
@@ -578,7 +578,7 @@ mod tests {
     #[test]
     fn a_flat_bridge_export_becomes_a_readable_section_with_its_assets() {
         for format in [Format::Html, Format::Cmgfm] {
-            let t = notecraft_store::testing::TempDir::new("officeimo-flat-output");
+            let t = ergonote_store::testing::TempDir::new("officeimo-flat-output");
             let file = if format == Format::Html { "index.html" } else { "index.md" };
             let text = if format == Format::Html {
                 "<!DOCTYPE html><html><head><title>Document</title></head><body><article><h2>So good</h2><p>This is one note 2016</p><img src=\"assets/pixel.png\"></article></body></html>"
@@ -591,13 +591,13 @@ mod tests {
             let (section, combined) = bridge_section(t.path(), format, "Section").expect("flat output is supported");
             assert!(combined, "the caller can disclose combined-page output");
             normalize_ids(&section).expect("metadata");
-            let tree = notecraft_store::tree::load_tree(&section).expect("section tree");
-            assert_eq!(tree.info.kind, notecraft_model::NodeKind::Section);
+            let tree = ergonote_store::tree::load_tree(&section).expect("section tree");
+            assert_eq!(tree.info.kind, ergonote_model::NodeKind::Section);
             assert_eq!(tree.children.len(), 1, "the flat bridge's document is one explicit page");
             let page = &tree.children[0];
-            assert_eq!(page.info.kind, notecraft_model::NodeKind::Page);
+            assert_eq!(page.info.kind, ergonote_model::NodeKind::Page);
             assert!(!page.info.id.is_empty());
-            let loaded = notecraft_store::page::load_page(&page.path).expect("read imported page");
+            let loaded = ergonote_store::page::load_page(&page.path).expect("read imported page");
             assert!(loaded.body.contains("This is one note 2016"));
             assert!(loaded.body.contains("assets/pixel.png"));
             assert_eq!(
@@ -610,7 +610,7 @@ mod tests {
     #[test]
     fn flat_html_unwraps_only_known_exporter_containers() {
         for known in [true, false] {
-            let t = notecraft_store::testing::TempDir::new("officeimo-flat-wrappers");
+            let t = ergonote_store::testing::TempDir::new("officeimo-flat-wrappers");
             let wrapper = if known { "officeimo-onenote-semantic" } else { "user-container" };
             let body = format!(
                 "<article class=\"markdown-body\"><article class=\"{wrapper}\"><h1>Section</h1><section class=\"officeimo-onenote-page\"><section class=\"officeimo-onenote-outline\"><p>Keep <b>every</b> word.</p></section></section></article></article>"
@@ -618,7 +618,7 @@ mod tests {
             fs::write(t.path().join("index.html"), format!("<html><head><title>Document</title></head><body>{body}</body></html>"))
                 .expect("bridge document");
             let (section, _) = bridge_section(t.path(), Format::Html, "Section").expect("section");
-            let loaded = notecraft_store::page::load_page(&section.join("imported-page")).expect("imported page");
+            let loaded = ergonote_store::page::load_page(&section.join("imported-page")).expect("imported page");
             assert!(loaded.body.contains("<p>Keep <b>every</b> word.</p>"));
             if known {
                 assert_eq!(
@@ -634,31 +634,30 @@ mod tests {
 
     #[test]
     fn normalizing_import_ids_preserves_inline_html_and_markdown_body_text() {
-        let t = notecraft_store::testing::TempDir::new("officeimo-id-content");
+        let t = ergonote_store::testing::TempDir::new("officeimo-id-content");
         let html = t.path().join("HTML");
         let md = t.path().join("Markdown");
         fs::create_dir(&html).expect("HTML page");
         fs::create_dir(&md).expect("Markdown page");
         let html_body = "<p>Keep every word and <b>mark</b>.</p>";
-        let html_text =
-            format!("<html><head><title>Inline</title><meta name=\"notecraft:id\" content=\"old\"></head><body>{html_body}</body></html>");
+        let html_text = format!("<html><head><title>Inline</title><meta name=\"ergonote:id\" content=\"old\"></head><body>{html_body}</body></html>");
         let md_body = "\n```text\nid: this is page content\n```\n";
         fs::write(html.join("index.html"), &html_text).expect("HTML output");
         fs::write(md.join("index.md"), format!("---\nid: old\ntitle: Markdown\n---\n{md_body}")).expect("Markdown output");
         normalize_ids(t.path()).expect("normalize");
-        assert_eq!(notecraft_store::page::load_page(&html).expect("HTML page").body, html_body);
-        assert_eq!(notecraft_store::page::load_page(&md).expect("Markdown page").body, md_body.trim_start_matches('\n'));
+        assert_eq!(ergonote_store::page::load_page(&html).expect("HTML page").body, html_body);
+        assert_eq!(ergonote_store::page::load_page(&md).expect("Markdown page").body, md_body.trim_start_matches('\n'));
         assert_eq!(
             frontmatter::split_front(&fs::read_to_string(md.join("index.md")).expect("saved Markdown")).1,
             md_body,
             "the stored body is byte-for-byte unchanged"
         );
-        assert_ne!(notecraft_store::tree::read_node(&html).expect("HTML metadata").id, "old");
+        assert_ne!(ergonote_store::tree::read_node(&html).expect("HTML metadata").id, "old");
     }
 
     #[test]
     fn independent_imports_do_not_reuse_notebook_section_or_page_ids() {
-        let t = notecraft_store::testing::TempDir::new("officeimo-independent-ids");
+        let t = ergonote_store::testing::TempDir::new("officeimo-independent-ids");
         let mut seen = std::collections::HashSet::new();
         for name in ["First", "Second"] {
             let notebook = t.path().join(name);
@@ -670,7 +669,7 @@ mod tests {
             fs::write(page.join("index.html"), "<html><head><title>Page</title></head><body><p>Content</p></body></html>").expect("page");
             normalize_ids(&notebook).expect("normalize import");
             for path in [&notebook, &section, &page] {
-                let id = notecraft_store::tree::read_node(path).expect("node").id;
+                let id = ergonote_store::tree::read_node(path).expect("node").id;
                 assert!(!id.is_empty());
                 assert!(seen.insert(id), "a second import must not reuse an existing node's identity");
             }
@@ -679,7 +678,7 @@ mod tests {
 
     #[test]
     fn normalizing_import_metadata_does_not_rewrite_owned_assets_or_staging_copies() {
-        let t = notecraft_store::testing::TempDir::new("officeimo-owned-file-ids");
+        let t = ergonote_store::testing::TempDir::new("officeimo-owned-file-ids");
         let page = t.path().join("Page");
         fs::create_dir(&page).expect("page");
         fs::write(page.join("index.html"), "<html><head><title>Page</title></head><body><p>Words</p></body></html>").expect("page file");
@@ -695,7 +694,7 @@ mod tests {
             assert_eq!(fs::read_to_string(directory.join("index.md")).expect("attached document"), contents);
             assert_eq!(fs::read_to_string(directory.join("_node.toml")).expect("attached metadata document"), node_contents);
         }
-        assert!(!notecraft_store::tree::read_node(&page).expect("page metadata").id.is_empty());
+        assert!(!ergonote_store::tree::read_node(&page).expect("page metadata").id.is_empty());
     }
 
     /// Issue #17: a package is unpacked and imported as a folder of sections named after it.
@@ -704,7 +703,7 @@ mod tests {
     #[test]
     fn a_package_is_unpacked_and_its_sections_imported_as_a_folder() {
         let source = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/3p/officeimo/makecab-lzx-notebook.onepkg");
-        let out = notecraft_store::testing::TempDir::new("officeimo-onepkg");
+        let out = ergonote_store::testing::TempDir::new("officeimo-onepkg");
         let mut seen = Vec::new();
         let mut destination = None;
         let result = run_with_progress(&source, out.path(), Format::Html, &AtomicBool::new(false), &mut |p| {
@@ -724,7 +723,7 @@ mod tests {
     /// nothing to show, because navigation would present it as though the source had been read.
     #[test]
     fn a_folder_whose_sections_all_fail_leaves_no_phantom_notebook() {
-        let t = notecraft_store::testing::TempDir::new("officeimo-total-failure");
+        let t = ergonote_store::testing::TempDir::new("officeimo-total-failure");
         let source = t.path().join("Journal");
         let output = t.path().join("Output");
         fs::create_dir(&source).expect("source");
@@ -751,7 +750,7 @@ mod tests {
 
     #[test]
     fn a_folder_without_sections_does_not_leave_an_empty_imported_notebook() {
-        let t = notecraft_store::testing::TempDir::new("officeimo-empty-source");
+        let t = ergonote_store::testing::TempDir::new("officeimo-empty-source");
         let source = t.path().join("Source");
         let output = t.path().join("Output");
         fs::create_dir(&source).expect("source");
@@ -764,7 +763,7 @@ mod tests {
 
     #[test]
     fn an_already_cancelled_folder_import_does_not_create_output() {
-        let t = notecraft_store::testing::TempDir::new("officeimo-cancelled-folder");
+        let t = ergonote_store::testing::TempDir::new("officeimo-cancelled-folder");
         let source = t.path().join("Source");
         let output = t.path().join("Output");
         fs::create_dir(&source).expect("source");
@@ -778,7 +777,7 @@ mod tests {
     #[test]
     fn folder_progress_reports_the_actual_notebook_destination() {
         for name in ["Notebook.v2", "Notes (On 1-2-2026)", "Folder with spaces"] {
-            let t = notecraft_store::testing::TempDir::new("officeimo-reported-destination");
+            let t = ergonote_store::testing::TempDir::new("officeimo-reported-destination");
             let source = t.path().join(name);
             let output = t.path().join("Output");
             fs::create_dir(&source).expect("source");
@@ -803,7 +802,7 @@ mod tests {
 
     #[test]
     fn section_discovery_is_recursive_and_skips_recycle_bin() {
-        let root = std::env::temp_dir().join(format!("notecraft-officeimo-{}", std::process::id()));
+        let root = std::env::temp_dir().join(format!("ergonote-officeimo-{}", std::process::id()));
         let nested = root.join("2026").join("MBA");
         let recycle = root.join("2026").join("OneNote_RecycleBin");
         let _ = fs::remove_dir_all(&root);
@@ -819,7 +818,7 @@ mod tests {
 
     #[test]
     fn repeated_folder_imports_get_windows_style_names() {
-        let root = std::env::temp_dir().join(format!("notecraft-officeimo-names-{}", std::process::id()));
+        let root = std::env::temp_dir().join(format!("ergonote-officeimo-names-{}", std::process::id()));
         let _ = fs::remove_dir_all(&root);
         fs::create_dir_all(root.join("2026")).expect("test directory");
         fs::create_dir_all(root.join("2026 (1)")).expect("test directory");

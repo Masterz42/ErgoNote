@@ -7,7 +7,7 @@
 //!   template's, written in whichever format the section uses.
 //! - **Saved**: a page someone kept as a template. It is a copy of that page's folder (its words,
 //!   boxes, ink, pictures and other files, its paper and its colour; not its subpages) under
-//!   `.notecraft/templates/` in the notebooks folder. A dot folder is not a notebook, so the tree
+//!   `.ergonote/templates/` in the notebooks folder. A dot folder is not a notebook, so the tree
 //!   never shows it. A new page from one is a copy of that folder with ids of its own, the way
 //!   Copy makes one.
 //!
@@ -21,11 +21,11 @@ use crate::page::{set_appearance, write_atomic};
 use crate::settings::Settings;
 use crate::tree::{self, page_file, read_node};
 use crate::vfs as fs;
-use notecraft_formats::{frontmatter, html, markdown, render};
-use notecraft_model::{NodeKind, PageFormat, kv, names, time::iso_now};
+use ergonote_formats::{frontmatter, html, markdown, render};
+use ergonote_model::{NodeKind, PageFormat, kv, names, time::iso_now};
 use std::path::{Path, PathBuf};
 
-/// A starting page that ships with NoteCraft.
+/// A starting page that ships with ErgoNote.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct BuiltIn {
     /// What `template` names it by: `builtin:<id>`.
@@ -159,9 +159,9 @@ pub enum Source {
     Saved(PathBuf),
 }
 
-/// Where saved templates are kept: `.notecraft/templates` in the notebooks folder.
+/// Where saved templates are kept: `.ergonote/templates` in the notebooks folder.
 pub fn folder(root: &Path) -> PathBuf {
-    root.join(".notecraft").join("templates")
+    root.join(".ergonote").join("templates")
 }
 
 /// Every template: the built-in ones, then the saved ones by name.
@@ -262,9 +262,9 @@ pub fn new_page(template: &Template, parent: &Path, settings: &Settings) -> Resu
     }
 }
 
-/// Takes away a page folder's hidden `.notecraft` folder (its versions).
+/// Takes away a page folder's hidden `.ergonote` folder (its versions).
 fn drop_history(page: &Path) {
-    let hidden = page.join(".notecraft");
+    let hidden = page.join(".ergonote");
     if crate::vfs::is_dir(&hidden) {
         let _ = ops::remove_tree(&hidden);
     }
@@ -291,7 +291,7 @@ fn restamp(page: &Path) -> Result<()> {
     let text = fs::read_to_string(&file).map_err(|e| StoreError::io("read", &file, e))?;
     let now = iso_now();
     let out = match format {
-        PageFormat::Html => html::set_meta(&html::set_meta(&text, "notecraft:created", &now), "notecraft:updated", &now),
+        PageFormat::Html => html::set_meta(&html::set_meta(&text, "ergonote:created", &now), "ergonote:updated", &now),
         PageFormat::Cmgfm => {
             let (front, body) = frontmatter::split_front(&text);
             let front = frontmatter::set_value(&frontmatter::set_value(&front, "created", &now), "updated", &now);
@@ -301,7 +301,7 @@ fn restamp(page: &Path) -> Result<()> {
     write_atomic(&file, &out)
 }
 
-/// Copies a page's folder without the subpages in it and without its hidden `.notecraft`
+/// Copies a page's folder without the subpages in it and without its hidden `.ergonote`
 /// folder (its versions): its own files, its assets and any other folder that is not a page.
 fn copy_page_only(from: &Path, to: &Path) -> std::io::Result<()> {
     fs::create_dir(to)?;
@@ -309,7 +309,7 @@ fn copy_page_only(from: &Path, to: &Path) -> std::io::Result<()> {
         let entry = entry?;
         let kind = entry.file_type()?;
         let target = to.join(entry.file_name());
-        // The page's own history (`.notecraft/versions`) is not part of what it looks like.
+        // The page's own history (`.ergonote/versions`) is not part of what it looks like.
         if entry.file_name().to_string_lossy().starts_with('.') {
             continue;
         }
@@ -387,17 +387,17 @@ mod tests {
         let page = ops::create_node(&sec, "Lab report", NodeKind::Page, None, &settings).expect("page");
         crate::page::save_body(&page, "# Lab report\n\n## Method\n\n## Results\n").expect("save");
         set_appearance(&page, Some("grid-small"), Some("yellow")).expect("paper");
-        let a5 = notecraft_model::paper::Paper { landscape: true, ..notecraft_model::paper::Paper::new(notecraft_model::paper::Size::A5) };
+        let a5 = ergonote_model::paper::Paper { landscape: true, ..ergonote_model::paper::Paper::new(ergonote_model::paper::Size::A5) };
         crate::page::set_paper_size(&page, Some(a5)).expect("paper size");
         fs::write(page.join("assets").join("diagram.txt"), "a file").expect("asset");
-        fs::create_dir_all(page.join(".notecraft").join("versions")).expect("history");
+        fs::create_dir_all(page.join(".ergonote").join("versions")).expect("history");
         let sub = ops::create_node(&page, "Subpage", NodeKind::Page, None, &settings).expect("subpage");
         assert!(sub.is_dir());
 
         let kept = save(&root, &page, "Lab Report").expect("save as template");
         assert!(kept.starts_with(folder(&root)));
         assert!(!kept.join("subpage").exists(), "subpages are not part of a template");
-        assert!(!kept.join(".notecraft").exists(), "nor is the page's history");
+        assert!(!kept.join(".ergonote").exists(), "nor is the page's history");
         let template = find(&root, "saved:lab-report").expect("listed");
         assert_eq!((template.name.as_str(), template.category), ("Lab Report", Category::Mine));
         // The notebooks folder's tree does not show the templates.

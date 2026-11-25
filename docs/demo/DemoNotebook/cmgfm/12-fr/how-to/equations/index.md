@@ -7,7 +7,7 @@ updated: 2026-10-18T00:00:00Z
 tags: []
 ---
 
-NoteCraft dessine lui-même les mathématiques en TeX, avec de vraies polices mathématiques. Chaque formule de cette page est du texte simple : appuyez sur le bouton `< >` pour voir son TeX.
+ErgoNote dessine lui-même les mathématiques en TeX, avec de vraies polices mathématiques. Chaque formule de cette page est du texte simple : appuyez sur le bouton `< >` pour voir son TeX.
 
 ## Dans une ligne, ou seules
 
@@ -63,7 +63,7 @@ $$
 
 Insertion, puis Équation, ouvre une liste d'équations pour commencer. Choisissez-en une et son TeX entre à l'endroit du curseur.
 
-Si une formule est fausse, NoteCraft affiche son texte au lieu de la cacher.
+Si une formule est fausse, ErgoNote affiche son texte au lieu de la cacher.
 
 Suite : [Étiqueter une ligne](../tag-a-line/).
 

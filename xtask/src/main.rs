@@ -40,26 +40,26 @@ mod version;
 
 /// The layer of each workspace crate. A crate may depend only on crates in lower layers.
 const LAYERS: &[(&str, u8)] = &[
-    ("notecraft-model", 0),
-    ("notecraft-math", 1),
-    ("notecraft-diagram", 1),
-    ("notecraft-ink", 1),
-    ("notecraft-input-language", 1),
-    ("notecraft-onenote", 1),
-    ("notecraft-formats", 1),
-    ("notecraft-text", 1),
-    ("notecraft-store", 2),
-    ("notecraft-import", 3),
-    ("notecraft-engine", 4),
-    ("notecraft-mcp", 5),
-    ("notecraft-ui-egui", 6),
-    ("notecraft-setup", 6),
-    ("notecraft", 7),
-    ("notecraft-web", 7),
-    ("notecraft-cli", 7),
-    ("notecraft-android", 7),
+    ("ergonote-model", 0),
+    ("ergonote-math", 1),
+    ("ergonote-diagram", 1),
+    ("ergonote-ink", 1),
+    ("ergonote-input-language", 1),
+    ("ergonote-onenote", 1),
+    ("ergonote-formats", 1),
+    ("ergonote-text", 1),
+    ("ergonote-store", 2),
+    ("ergonote-import", 3),
+    ("ergonote-engine", 4),
+    ("ergonote-mcp", 5),
+    ("ergonote-ui-egui", 6),
+    ("ergonote-setup", 6),
+    ("ergonote", 7),
+    ("ergonote-web", 7),
+    ("ergonote-cli", 7),
+    ("ergonote-android", 7),
     ("xtask", 7),
-    ("notecraft-demo", 7),
+    ("ergonote-demo", 7),
 ];
 
 /// Crates that nothing below the UI layer (6) may depend on.
@@ -358,8 +358,8 @@ fn text(root: &Path, fix: bool) -> Result<(), String> {
 /// (`crates/ui-egui/examples/ui_shot.rs`) over the desktop and phone scripts.
 fn screenshots(root: &Path) -> Result<(), String> {
     fs::create_dir_all(root.join("docs").join("images")).map_err(|e| e.to_string())?;
-    cargo(root, &["run", "-q", "-p", "notecraft-ui-egui", "--example", "ui_shot", "--", "scripts/readme-screens.jsonl"])?;
-    cargo(root, &["run", "-q", "-p", "notecraft-ui-egui", "--example", "ui_shot", "--", "scripts/phone-screens.jsonl"])
+    cargo(root, &["run", "-q", "-p", "ergonote-ui-egui", "--example", "ui_shot", "--", "scripts/readme-screens.jsonl"])?;
+    cargo(root, &["run", "-q", "-p", "ergonote-ui-egui", "--example", "ui_shot", "--", "scripts/phone-screens.jsonl"])
 }
 
 /// Copies one checked-in demo format to the ignored test notebooks folder.
@@ -510,10 +510,10 @@ fn copy_directory(source: &Path, target: &Path) -> Result<(), String> {
 }
 
 fn run_test(root: &Path, recorder: &mut devx_timing::Recorder) -> Result<(), String> {
-    recorder.measure("workspace-tests", || cargo(root, &["test", "--workspace", "--exclude", "notecraft-ui-egui"]))?;
+    recorder.measure("workspace-tests", || cargo(root, &["test", "--workspace", "--exclude", "ergonote-ui-egui"]))?;
     // Pixel assertions hold the shared renderer for their full test. Semantic UI tests need no
     // renderer and can run concurrently with each other and with the serialized pixel tests.
-    recorder.measure("ui-tests", || cargo(root, &["test", "-p", "notecraft-ui-egui"]))
+    recorder.measure("ui-tests", || cargo(root, &["test", "-p", "ergonote-ui-egui"]))
 }
 
 fn run_ci(root: &Path) -> Result<(), String> {
@@ -589,7 +589,7 @@ fn run_task(root: &Path, task: &str, options: &[String]) -> Result<(), String> {
                 [format] if ["html", "cmgfm", "both"].contains(&format.as_str()) => format.clone(),
                 _ => return Err("usage: cargo xtask demo [html|cmgfm|both] (default: both)".into()),
             };
-            cargo(root, &["run", "--quiet", "-p", "notecraft-demo", "--", "build", &selection])?;
+            cargo(root, &["run", "--quiet", "-p", "ergonote-demo", "--", "build", &selection])?;
             // The scratch copy is always replaced from docs/demo: the source is the one truth.
             if selection == "both" {
                 demo_copy(root, &["html".into(), "--replace".into()])?;
@@ -598,7 +598,7 @@ fn run_task(root: &Path, task: &str, options: &[String]) -> Result<(), String> {
                 demo_copy(root, &[selection, "--replace".into()])
             }
         }
-        "demo-check" => cargo(root, &["run", "--quiet", "-p", "notecraft-demo", "--", "check"]),
+        "demo-check" => cargo(root, &["run", "--quiet", "-p", "ergonote-demo", "--", "check"]),
         "demo-copy" => Err("demo-copy accepts options; use `cargo xtask demo-copy [html|cmgfm] [--replace]`".into()),
         other => Err(format!(
             "unknown task '{other}'. Tasks: ci fmt clippy test i18n-audit layers assets docs text screenshots coverage check-branch pre-push check-push-validation commit-msg version demo demo-check demo-copy devx-time"
@@ -648,7 +648,7 @@ mod tests {
         fn new() -> Self {
             let path = create_test_tree(&std::env::temp_dir(), || {
                 let id = NEXT_TEST_TREE_ID.fetch_add(1, Ordering::Relaxed);
-                format!("notecraft-xtask-{}-{id}", std::process::id())
+                format!("ergonote-xtask-{}-{id}", std::process::id())
             })
             .expect("create test tree");
             Self(path)
@@ -661,8 +661,8 @@ mod tests {
         }
     }
 
-    const MODEL: &str = "[package]\nname = \"notecraft-model\"\n\n[dependencies]\n";
-    const GOOD_STORE: &str = "[package]\nname = \"notecraft-store\"\n[dependencies]\nnotecraft-model = { workspace = true }\nnotecraft-formats = { workspace = true }\n[dev-dependencies]\negui_kittest = { workspace = true }\n";
+    const MODEL: &str = "[package]\nname = \"ergonote-model\"\n\n[dependencies]\n";
+    const GOOD_STORE: &str = "[package]\nname = \"ergonote-store\"\n[dependencies]\nergonote-model = { workspace = true }\nergonote-formats = { workspace = true }\n[dev-dependencies]\negui_kittest = { workspace = true }\n";
 
     #[test]
     fn test_tree_creation_retries_a_name_collision() {
@@ -772,24 +772,24 @@ mod tests {
 
     #[test]
     fn reads_package_and_dependencies() {
-        assert_eq!(package_name(MODEL).as_deref(), Some("notecraft-model"));
-        assert_eq!(dependencies(GOOD_STORE), vec!["notecraft-model", "notecraft-formats"], "dev-dependencies are not layer dependencies");
+        assert_eq!(package_name(MODEL).as_deref(), Some("ergonote-model"));
+        assert_eq!(dependencies(GOOD_STORE), vec!["ergonote-model", "ergonote-formats"], "dev-dependencies are not layer dependencies");
     }
 
     #[test]
     fn an_upward_dependency_is_a_problem() {
-        let bad = "[package]\nname = \"notecraft-model\"\n[dependencies]\nnotecraft-store = { workspace = true }\n";
+        let bad = "[package]\nname = \"ergonote-model\"\n[dependencies]\nergonote-store = { workspace = true }\n";
         assert_eq!(layer_problems(bad).len(), 1);
-        let same = "[package]\nname = \"notecraft-store\"\n[dependencies]\nnotecraft-store = { workspace = true }\n";
+        let same = "[package]\nname = \"ergonote-store\"\n[dependencies]\nergonote-store = { workspace = true }\n";
         assert_eq!(layer_problems(same).len(), 1, "a crate may not depend on its own layer");
         assert!(layer_problems(GOOD_STORE).is_empty());
     }
 
     #[test]
     fn egui_below_the_ui_layer_is_a_problem() {
-        let bad = "[package]\nname = \"notecraft-engine\"\n[dependencies]\negui = { workspace = true }\n";
+        let bad = "[package]\nname = \"ergonote-engine\"\n[dependencies]\negui = { workspace = true }\n";
         assert_eq!(layer_problems(bad).len(), 1);
-        let ok = "[package]\nname = \"notecraft-ui-egui\"\n[dependencies]\negui = { workspace = true }\nnotecraft-engine = { workspace = true }\n";
+        let ok = "[package]\nname = \"ergonote-ui-egui\"\n[dependencies]\negui = { workspace = true }\nergonote-engine = { workspace = true }\n";
         assert!(layer_problems(ok).is_empty());
     }
 

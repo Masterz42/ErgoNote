@@ -151,10 +151,10 @@ pub fn strip_tags(html: &str) -> String {
 /// Converts an HTML fragment to Markdown-like text, so previews of both formats can
 /// share one renderer. Handles headings, paragraphs, line breaks, lists (nested by
 /// indentation), emphasis, code, preformatted blocks, links, images, block quotes,
-/// rules, tables, and the NoteCraft markers for equations (`span.math`) and diagrams
+/// rules, tables, and the ErgoNote markers for equations (`span.math`) and diagrams
 /// (`pre.diagram`). Unknown tags are skipped and their text kept. Scripts and styles
 /// are dropped.
-/// Tags the block model can hold. Everything NoteCraft writes uses only these.
+/// Tags the block model can hold. Everything ErgoNote writes uses only these.
 const KNOWN_TAGS: &[&str] = &[
     "html",
     "head",
@@ -258,17 +258,17 @@ fn supported_span_style(attrs: &str) -> bool {
             }
         } else if prop.eq_ignore_ascii_case("text-decoration-color") && !u_color {
             u_color = true;
-            if notecraft_model::NodeColor::parse(value).is_none() {
+            if ergonote_model::NodeColor::parse(value).is_none() {
                 return false;
             }
         } else if prop.eq_ignore_ascii_case("color") && !t_color {
             t_color = true;
-            if notecraft_model::NodeColor::parse(value).is_none() {
+            if ergonote_model::NodeColor::parse(value).is_none() {
                 return false;
             }
         } else if prop.eq_ignore_ascii_case("background-color") && !h_color {
             h_color = true;
-            if notecraft_model::NodeColor::parse(value).is_none() {
+            if ergonote_model::NodeColor::parse(value).is_none() {
                 return false;
             }
         } else {
@@ -361,7 +361,7 @@ fn style_node_color(attrs: &str, property_name: &str) -> Option<String> {
     let style = attr(attrs, "style")?;
     crate::markdown::style_declarations(&style).into_iter().find_map(|declaration| {
         let (property, value) = declaration.split_once(':')?;
-        property.trim().eq_ignore_ascii_case(property_name).then(|| notecraft_model::NodeColor::parse(value).map(|c| c.id().to_string())).flatten()
+        property.trim().eq_ignore_ascii_case(property_name).then(|| ergonote_model::NodeColor::parse(value).map(|c| c.id().to_string())).flatten()
     })
 }
 
@@ -610,7 +610,7 @@ impl Writer {
             }
             ("pre", false) => {
                 self.block_break();
-                // `diagram` is how NoteCraft has always written one; `mermaid` is how Mermaid's own
+                // `diagram` is how ErgoNote has always written one; `mermaid` is how Mermaid's own
                 // pages and most other tools do, so a page from elsewhere is read the same.
                 let class = attr(attrs, "class").unwrap_or_default();
                 self.pre_diagram = class.eq_ignore_ascii_case("diagram") || class.eq_ignore_ascii_case("mermaid");
@@ -740,7 +740,7 @@ impl Writer {
             .map(|l| {
                 // A ballot box starts a to-do, whether it is a paragraph of its own or a
                 // list item: "&#9744; buy milk" and "<li>&#9744; buy milk</li>" both mean
-                // the same thing, and NoteCraft writes the second one.
+                // the same thing, and ErgoNote writes the second one.
                 let (prefix, rest) = match l.find(['\u{2610}', '\u{2611}', '\u{2612}']) {
                     Some(at) if l.get(..at).is_some_and(|p| p.trim_end().is_empty() || p.trim_end().ends_with('-')) => {
                         (l.get(..at).unwrap_or(""), l.get(at..).unwrap_or(""))
@@ -770,7 +770,7 @@ impl Writer {
 mod tests {
     use super::*;
 
-    const PAGE: &str = "<!doctype html>\n<html>\n<head>\n<meta charset=\"utf-8\">\n<title>A &amp; B</title>\n<meta name=\"notecraft:id\" content=\"x1\">\n</head>\n<body>\n<h1>A &amp; B</h1>\n</body>\n</html>\n";
+    const PAGE: &str = "<!doctype html>\n<html>\n<head>\n<meta charset=\"utf-8\">\n<title>A &amp; B</title>\n<meta name=\"ergonote:id\" content=\"x1\">\n</head>\n<body>\n<h1>A &amp; B</h1>\n</body>\n</html>\n";
 
     #[test]
     fn reads_and_replaces_the_body() {
@@ -789,12 +789,12 @@ mod tests {
     #[test]
     fn meta_and_title() {
         assert_eq!(title(PAGE).as_deref(), Some("A & B"));
-        assert_eq!(meta(PAGE, "notecraft:id").as_deref(), Some("x1"));
-        let updated = set_meta(PAGE, "notecraft:updated", "now");
-        assert_eq!(meta(&updated, "notecraft:updated").as_deref(), Some("now"));
-        let again = set_meta(&updated, "notecraft:updated", "later");
-        assert_eq!(meta(&again, "notecraft:updated").as_deref(), Some("later"));
-        assert_eq!(again.matches("notecraft:updated").count(), 1);
+        assert_eq!(meta(PAGE, "ergonote:id").as_deref(), Some("x1"));
+        let updated = set_meta(PAGE, "ergonote:updated", "now");
+        assert_eq!(meta(&updated, "ergonote:updated").as_deref(), Some("now"));
+        let again = set_meta(&updated, "ergonote:updated", "later");
+        assert_eq!(meta(&again, "ergonote:updated").as_deref(), Some("later"));
+        assert_eq!(again.matches("ergonote:updated").count(), 1);
     }
 
     #[test]

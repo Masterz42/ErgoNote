@@ -1,8 +1,8 @@
 //! What a person typed stays what it was after the page is saved and opened again: words that
 //! look like the syntax of a block (a task box, a heading mark, a quote mark, a box's closing tag)
 //! must not turn into that block, and links written before quoting existed keep working.
-use notecraft_formats::{Block, Span, boxes, markdown};
-use notecraft_model::{Container, PageFormat};
+use ergonote_formats::{Block, Span, boxes, markdown};
+use ergonote_model::{Container, PageFormat};
 
 fn words(text: &str) -> Vec<Span> {
     vec![Span { text: text.into(), ..Default::default() }]

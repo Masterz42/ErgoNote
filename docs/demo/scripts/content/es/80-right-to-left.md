@@ -4,7 +4,7 @@ title: De derecha a izquierda
 
 # De derecha a izquierda
 
-El árabe, el hebreo, el persa y el urdu se leen desde la derecha. NoteCraft los dibuja así: las
+El árabe, el hebreo, el persa y el urdu se leen desde la derecha. ErgoNote los dibuja así: las
 letras se unen, una línea cuelga del borde derecho, y una línea que mezcla las dos direcciones
 se ordena con el algoritmo Unicode, de modo que un precio conserva su número del derecho:
 
@@ -26,7 +26,7 @@ incluidas:
 | **Párrafo** | El menú de alineación en **Texto básico** | En qué sentido se lee el párrafo donde está el cursor |
 | **Tramo** | **Más...** en el grupo Dirección | En qué sentido se lee la selección, o lo que escribas a continuación |
 
-La dirección de página es propia de NoteCraft; las aplicaciones de las que viene la gente no
+La dirección de página es propia de ErgoNote; las aplicaciones de las que viene la gente no
 tienen ese ajuste, y un cuaderno escrito en árabe lo necesita.
 
 ## Dónde se guarda el ajuste

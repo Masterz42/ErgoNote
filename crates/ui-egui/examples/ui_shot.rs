@@ -1,7 +1,7 @@
-//! Headless UI screenshots: renders the whole NoteCraft window off screen (wgpu), so it works
+//! Headless UI screenshots: renders the whole ErgoNote window off screen (wgpu), so it works
 //! with a locked screen or a hidden window and never takes focus.
 //!
-//! `cargo run -p notecraft-ui-egui --example ui_shot -- script.jsonl`
+//! `cargo run -p ergonote-ui-egui --example ui_shot -- script.jsonl`
 //!
 //! The script is JSON lines:
 //! - control requests, `{"method": "...", "params": {...}}` (see `docs/control-protocol.md`);
@@ -15,24 +15,24 @@
 //!   is never touched). Paths are redacted (`<notebooks>/...`).
 
 use egui_kittest::Harness;
-use notecraft_engine::sample::create_sample;
-use notecraft_engine::{Params, Session};
-use notecraft_store::Settings;
-use notecraft_store::testing::TempDir;
-use notecraft_ui_egui::control::ControlRequest;
-use notecraft_ui_egui::theme::Theme;
-use notecraft_ui_egui::{LOGO_PNG, NoteCraftApp};
+use ergonote_engine::sample::create_sample;
+use ergonote_engine::{Params, Session};
+use ergonote_store::Settings;
+use ergonote_store::testing::TempDir;
+use ergonote_ui_egui::control::ControlRequest;
+use ergonote_ui_egui::theme::Theme;
+use ergonote_ui_egui::{ErgoNoteApp, LOGO_PNG};
 use serde_json::Value;
 use std::sync::mpsc;
 use std::time::{Duration, Instant};
 
-fn step(h: &mut Harness<'_, NoteCraftApp>) {
+fn step(h: &mut Harness<'_, ErgoNoteApp>) {
     let events = h.state_mut().take_events();
     h.input_mut().events.extend(events);
     h.step();
 }
 
-fn step_n(h: &mut Harness<'_, NoteCraftApp>, n: usize) {
+fn step_n(h: &mut Harness<'_, ErgoNoteApp>, n: usize) {
     for _ in 0..n {
         step(h);
     }
@@ -114,7 +114,7 @@ fn main() {
             .expect("open supplied notebook");
     }
     let (tx, rx) = mpsc::channel::<ControlRequest>();
-    let mut app = NoteCraftApp::new(session).with_requests(rx);
+    let mut app = ErgoNoteApp::new(session).with_requests(rx);
     if simple_mobile {
         app = app.with_simple_mobile(true);
     }
@@ -141,7 +141,7 @@ fn main() {
         .with_pixels_per_point(scale)
         .with_max_steps(1_000_000)
         .wgpu()
-        .build_ui_state(|ui, app: &mut NoteCraftApp| app.show(ui), app);
+        .build_ui_state(|ui, app: &mut ErgoNoteApp| app.show(ui), app);
     step_n(&mut harness, 6);
     for l in lines {
         if let Some(p) = l.get("shot").and_then(Value::as_str) {

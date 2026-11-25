@@ -26,7 +26,7 @@ Une ligne à faire est un élément de liste de tâches, que tout lecteur Markdo
 
 #remember La référence de réservation est dans le fichier joint.
 
-NoteCraft dessine la marque à la place du mot, mais c'est le mot qui est dans le fichier, donc
+ErgoNote dessine la marque à la place du mot, mais c'est le mot qui est dans le fichier, donc
 vos notes restent lisibles dans n'importe quel éditeur et cherchables depuis un terminal. Un mot
 qui ressemble seulement à une étiquette, comme #ideas sans espace derrière, est laissé tel quel.
 

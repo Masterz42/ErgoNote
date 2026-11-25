@@ -2,15 +2,15 @@
 //! drawn by the production painter and by an independent reference painter with literal
 //! geometry, on the same offscreen renderer, and the two images must be identical. No
 //! tolerance, no committed pictures, no automatic baseline. Negative controls move one point
-//! by a pixel and must be caught. Set `NOTECRAFT_UI_VISUAL_DIR` to keep before, after and
+//! by a pixel and must be caught. Set `ERGONOTE_UI_VISUAL_DIR` to keep before, after and
 //! difference pictures for review.
 
 use egui::{Color32, CornerRadius, Painter, Pos2, Rect, Shape, Stroke, pos2, vec2};
 use egui_kittest::Harness;
 use egui_kittest::wgpu::{WgpuTestRenderer, create_render_state, default_wgpu_setup};
 use egui_wgpu::{RenderState, Renderer, RendererOptions};
+use ergonote_ui_egui::icons::{self, Icon};
 use image::RgbaImage;
-use notecraft_ui_egui::icons::{self, Icon};
 use std::path::PathBuf;
 
 /// Every test here builds its own offscreen GPU renderer. Letting four of them do that at
@@ -645,7 +645,7 @@ fn changed(a: &RgbaImage, b: &RgbaImage) -> usize {
 }
 
 fn keep(label: &str, before: &RgbaImage, after: &RgbaImage) {
-    let Some(dir) = std::env::var_os("NOTECRAFT_UI_VISUAL_DIR") else { return };
+    let Some(dir) = std::env::var_os("ERGONOTE_UI_VISUAL_DIR") else { return };
     let dir = PathBuf::from(dir).join("icons");
     let _ = std::fs::create_dir_all(&dir);
     let _ = before.save(dir.join(format!("{label}-before.png")));

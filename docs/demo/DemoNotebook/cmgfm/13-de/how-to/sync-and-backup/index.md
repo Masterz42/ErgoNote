@@ -7,10 +7,10 @@ updated: 2026-10-18T00:00:00Z
 tags: []
 ---
 
-NoteCraft hat keine eigene Synchronisierung und kein Konto. Ein Notizbuch ist ein Ordner mit
+ErgoNote hat keine eigene Synchronisierung und kein Konto. Ein Notizbuch ist ein Ordner mit
 kleinen Dateien, also legen Sie Ihren Notizbuchordner dorthin, wo Ihr Synchronisierungsdienst
 schon hinschaut: OneDrive, Dropbox, Google Drive, iCloud Drive, Syncthing, eine Netzwerkfreigabe
-oder ein git-Repository. Keiner davon muss NoteCraft verstehen. Sie kopieren Dateien.
+oder ein git-Repository. Keiner davon muss ErgoNote verstehen. Sie kopieren Dateien.
 
 ## Warum das funktioniert
 
@@ -21,7 +21,7 @@ oder ein git-Repository. Keiner davon muss NoteCraft verstehen. Sie kopieren Dat
 - **Kurze, sichere Namen.** Ordnernamen haben höchstens 64 Zeichen, Pfade höchstens 255, und
   nichts, was Windows ablehnt, wird je geschrieben.
 - **Konfliktkopien fallen auf.** Legt ein Dienst eine Konfliktkopie neben eine Seite, meldet es
-  der Prüfer: **Datei**, dann **Prüfen**, oder `notecraft-cli check` im Terminal.
+  der Prüfer: **Datei**, dann **Prüfen**, oder `ergonote-cli check` im Terminal.
 
 ## Sicherung
 
@@ -36,7 +36,7 @@ separate Sicherung des Notebooks.
 
 ## Was nicht behandelt wird
 
-NoteCraft führt zwei Fassungen einer Seite nicht zusammen. Wenn Ihr Sync-Dienst eine
+ErgoNote führt zwei Fassungen einer Seite nicht zusammen. Wenn Ihr Sync-Dienst eine
 Konfliktkopie erstellt, entscheiden Sie, welche Fassung Sie behalten.
 
 Weiter: [Nach Ihrem Geschmack](../make-it-yours/).

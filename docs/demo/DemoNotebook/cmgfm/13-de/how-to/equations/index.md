@@ -7,7 +7,7 @@ updated: 2026-10-18T00:00:00Z
 tags: []
 ---
 
-NoteCraft zeichnet TeX-Mathematik selbst, mit echten Mathematikschriften. Jede Formel auf dieser Seite ist einfacher Text: Mit der Schaltfläche `< >` sehen Sie ihr TeX.
+ErgoNote zeichnet TeX-Mathematik selbst, mit echten Mathematikschriften. Jede Formel auf dieser Seite ist einfacher Text: Mit der Schaltfläche `< >` sehen Sie ihr TeX.
 
 ## In der Zeile oder für sich
 
@@ -63,7 +63,7 @@ $$
 
 Einfügen, dann Gleichung, öffnet eine Liste von Gleichungen zum Anfangen. Wählen Sie eine, und ihr TeX steht an der Textmarke.
 
-Ist eine Formel falsch, zeigt NoteCraft ihren Text, statt sie zu verbergen.
+Ist eine Formel falsch, zeigt ErgoNote ihren Text, statt sie zu verbergen.
 
 Weiter: [Eine Zeile markieren](../tag-a-line/).
 

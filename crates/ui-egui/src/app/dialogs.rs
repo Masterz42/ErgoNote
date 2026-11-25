@@ -1,6 +1,6 @@
 use super::*;
 
-impl NoteCraftApp {
+impl ErgoNoteApp {
     // ---------- dialogs ----------
 
     pub(super) fn dialogs(&mut self, ctx: &Context) {
@@ -81,12 +81,12 @@ impl NoteCraftApp {
                 let panel = self.tokens.panel;
                 let dark = (u32::from(panel.r()) + u32::from(panel.g()) + u32::from(panel.b())) < 384;
                 let (banner_uri, banner_bytes) = if dark {
-                    ("bytes://notecraft-wizard-banner-dark", crate::BANNER_DARK_PNG)
+                    ("bytes://ergonote-wizard-banner-dark", crate::BANNER_DARK_PNG)
                 } else {
-                    ("bytes://notecraft-wizard-banner-light", crate::BANNER_LIGHT_PNG)
+                    ("bytes://ergonote-wizard-banner-light", crate::BANNER_LIGHT_PNG)
                 };
                 let title = match *step {
-                    0 => crate::tl_id!("ui.welcome_to_notecraft"),
+                    0 => crate::tl_id!("ui.welcome_to_ergonote"),
                     1 => crate::tl_id!("ui.local_collection_level"),
                     2 => crate::tl_id!("ui.welcome_format_title"),
                     3 => crate::tl_id!("ui.welcome_notebook_prompt_title"),
@@ -710,7 +710,7 @@ impl NoteCraftApp {
                     .show(ctx, |ui| {
                         modal_title(ui, &self.tokens, crate::tl_id!("ui.reset_app_preferences"));
                         ui.set_min_width(460.0);
-                        ui.label(crate::tl_id!("ui.reset_notecraft_s_saved_preferences_to_their_built_in_defaults"));
+                        ui.label(crate::tl_id!("ui.reset_ergonote_s_saved_preferences_to_their_built_in_defaults"));
                         ui.add_space(6.0);
                         ui.colored_label(self.tokens.warn, crate::tl_id!("ui.this_does_not_delete_notebooks_or_pages_it_cannot_be_undone"));
                         ui.add_space(14.0);
@@ -756,10 +756,10 @@ impl NoteCraftApp {
                         modal_title(ui, &self.tokens, crate::tl_id!("ui.attachment_icon_missing"));
                         ui.set_min_width(520.0);
                         let message =
-                            crate::i18n::format_message_id("ui.notecraft_found_an_attachment_without_its_generated_icon_name", &[("name", name)]);
+                            crate::i18n::format_message_id("ui.ergonote_found_an_attachment_without_its_generated_icon_name", &[("name", name)]);
                         ui.label(egui::RichText::new(message).strong());
                         ui.add_space(6.0);
-                        ui.label(crate::tl_id!("ui.the_original_file_is_still_safe_notecraft_can_regene_f10ded524a"));
+                        ui.label(crate::tl_id!("ui.the_original_file_is_still_safe_ergonote_can_regene_f10ded524a"));
                         ui.add_space(8.0);
                         ui.checkbox(&mut suppress, crate::tl_id!("ui.do_not_warn_about_similar_missing_icons_again_this_session"));
                         ui.add_space(12.0);
@@ -774,12 +774,12 @@ impl NoteCraftApp {
                     });
                 if repair {
                     self.icon_recovery_suppressed = suppress;
-                    match notecraft_store::assets::ensure_icon(page, name).and_then(|()| {
+                    match ergonote_store::assets::ensure_icon(page, name).and_then(|()| {
                         let icon_exists = attachment_icon_exists(page, name);
                         if !icon_exists {
-                            return Err(notecraft_store::StoreError::invalid("the icon generator produced no sidecar file"));
+                            return Err(ergonote_store::StoreError::invalid("the icon generator produced no sidecar file"));
                         }
-                        self.repair_attachment_reference(page, name).map_err(notecraft_store::StoreError::invalid).map(|_| ())
+                        self.repair_attachment_reference(page, name).map_err(ergonote_store::StoreError::invalid).map(|_| ())
                     }) {
                         Ok(()) => {
                             log::info!("repaired missing attachment icon and reference: page={:?} attachment={name:?}", page);
@@ -819,10 +819,10 @@ impl NoteCraftApp {
                         modal_title(ui, &self.tokens, crate::tl_id!("ui.attachment_not_linked"));
                         ui.set_min_width(520.0);
                         let message =
-                            crate::i18n::format_message_id("ui.notecraft_found_an_attachment_that_is_not_referenced_8c0eb51257", &[("name", name)]);
+                            crate::i18n::format_message_id("ui.ergonote_found_an_attachment_that_is_not_referenced_8c0eb51257", &[("name", name)]);
                         ui.label(egui::RichText::new(message).strong());
                         ui.add_space(6.0);
-                        ui.label(crate::tl_id!("ui.the_file_is_safe_notecraft_can_append_a_link_to_it_a_c31b3d9716"));
+                        ui.label(crate::tl_id!("ui.the_file_is_safe_ergonote_can_append_a_link_to_it_a_c31b3d9716"));
                         ui.add_space(8.0);
                         ui.checkbox(&mut suppress, crate::tl_id!("ui.do_not_warn_about_similar_attachment_issues_again_this_session"));
                         ui.add_space(12.0);
@@ -912,7 +912,7 @@ impl NoteCraftApp {
                 let (dir, file) = (dir.clone(), files.first().cloned().unwrap_or_default());
                 let name = file.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_default();
                 let left = files.len().saturating_sub(1);
-                let kind = notecraft_store::assets::media_kind(&name);
+                let kind = ergonote_store::assets::media_kind(&name);
                 let mut chosen: Option<FileChoice> = None;
                 let title = if left > 0 {
                     crate::i18n::format_message_id("ui.add_name_left_more", &[("name", &name), ("left", &left.to_string())])
@@ -933,10 +933,10 @@ impl NoteCraftApp {
                         );
                         ui.add_space(6.0);
                         let copy_label = match kind {
-                            notecraft_store::assets::MediaKind::Image => crate::tl_id!("ui.insert_the_picture"),
-                            notecraft_store::assets::MediaKind::Video => crate::tl_id!("ui.insert_the_video"),
-                            notecraft_store::assets::MediaKind::Audio => crate::tl_id!("ui.insert_the_recording"),
-                            notecraft_store::assets::MediaKind::Other => crate::tl_id!("ui.attach_the_file"),
+                            ergonote_store::assets::MediaKind::Image => crate::tl_id!("ui.insert_the_picture"),
+                            ergonote_store::assets::MediaKind::Video => crate::tl_id!("ui.insert_the_video"),
+                            ergonote_store::assets::MediaKind::Audio => crate::tl_id!("ui.insert_the_recording"),
+                            ergonote_store::assets::MediaKind::Other => crate::tl_id!("ui.attach_the_file"),
                         };
                         if modal_button(ui, &self.tokens, copy_label, true).clicked() {
                             log::debug!("file attach choice clicked: choice=copy name={name:?}");
@@ -1110,7 +1110,7 @@ impl NoteCraftApp {
             Dialog::MoveOrCopy { path, title, kind, dest } => {
                 let places = self.move_destinations(path, *kind);
                 let here = path.parent().map(Path::to_path_buf);
-                let fits = |p: &Path| notecraft_store::tree::read_node(p).is_some_and(|n| n.kind.may_contain().contains(kind));
+                let fits = |p: &Path| ergonote_store::tree::read_node(p).is_some_and(|n| n.kind.may_contain().contains(kind));
                 let mut chosen: Option<bool> = None;
                 egui::Window::new(crate::tl_id!("ui.move_or_copy"))
                     .collapsible(false)
@@ -1122,7 +1122,7 @@ impl NoteCraftApp {
                             .iter()
                             .find(|(p, _, _)| here.as_deref() == Some(p.as_path()))
                             .map(|(_, name, _)| name.clone())
-                            .or_else(|| here.as_deref().and_then(notecraft_store::tree::read_node).map(|n| n.title))
+                            .or_else(|| here.as_deref().and_then(ergonote_store::tree::read_node).map(|n| n.title))
                             .unwrap_or_default();
                         ui.label(
                             egui::RichText::new(crate::i18n::format_message_id("ui.it_is_in_place_now", &[("place", now.as_str())]))
@@ -1335,7 +1335,7 @@ impl NoteCraftApp {
                         });
                         if !valid {
                             let limits =
-                                crate::i18n::format_message_id("ui.spacing_limits", &[("max", &notecraft_model::justify::MAX_POINTS.to_string())]);
+                                crate::i18n::format_message_id("ui.spacing_limits", &[("max", &ergonote_model::justify::MAX_POINTS.to_string())]);
                             ui.colored_label(self.tokens.warn, limits);
                         }
                         ui.add_space(8.0);
@@ -1404,7 +1404,7 @@ impl NoteCraftApp {
                     let page = page.clone();
                     if self.run("page.detach", &params(&[("path", &path_str(&page)), ("name", name)])).is_some() {
                         if let Some(ed) = self.editor.as_mut() {
-                            ed.attachments = notecraft_store::assets::list(&page);
+                            ed.attachments = ergonote_store::assets::list(&page);
                         }
                         self.say(crate::tl_id!("ui.the_file_is_gone"));
                         // The page may have named the drawing it no longer has.
@@ -1443,7 +1443,7 @@ impl NoteCraftApp {
                     let path = path.clone();
                     let was_open = self.editor.as_ref().and_then(|editor| notebook_for(&editor.dir)).is_some_and(|notebook| notebook == path);
                     log::info!("DeleteNotebook dialog: deleting {:?}", path);
-                    match notecraft_store::ops::remove_tree(&path) {
+                    match ergonote_store::ops::remove_tree(&path) {
                         Ok(()) => {
                             log::info!("notebook deleted successfully: {:?}", path);
                             self.remove_recent_notebook(&path);
@@ -1468,7 +1468,7 @@ impl NoteCraftApp {
             }
             Dialog::Delete { path, title, count } => {
                 let mut go = false;
-                let is_notebook = notecraft_store::tree::read_node(path).is_some_and(|node| node.kind == NodeKind::Notebook);
+                let is_notebook = ergonote_store::tree::read_node(path).is_some_and(|node| node.kind == NodeKind::Notebook);
                 egui::Window::new(crate::tl_id!("ui.delete"))
                     .collapsible(false)
                     .resizable(false)
@@ -1509,7 +1509,7 @@ impl NoteCraftApp {
                     if is_notebook {
                         let path = path.clone();
                         log::info!("deleting notebook: {:?}", path);
-                        match notecraft_store::ops::remove_tree(&path) {
+                        match ergonote_store::ops::remove_tree(&path) {
                             Ok(()) => {
                                 log::info!("notebook deleted successfully: {:?}", path);
                                 self.remove_recent_notebook(&path);
@@ -1624,7 +1624,7 @@ impl NoteCraftApp {
                         });
                         ui.separator();
                         let needle = filter.trim().to_lowercase();
-                        let shown: Vec<&notecraft_store::recent::Edited> = items
+                        let shown: Vec<&ergonote_store::recent::Edited> = items
                             .iter()
                             .filter(|e| {
                                 needle.is_empty()
@@ -1650,7 +1650,7 @@ impl NoteCraftApp {
                                     );
                                     ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                                         let when =
-                                            notecraft_model::time::long_from_iso(&notecraft_model::time::iso_from_secs(e.at)).unwrap_or_default();
+                                            ergonote_model::time::long_from_iso(&ergonote_model::time::iso_from_secs(e.at)).unwrap_or_default();
                                         let label = egui::RichText::new(when).small().color(t.muted);
                                         let resp = ui.label(label);
                                         if !e.stamped {
@@ -1725,7 +1725,7 @@ impl NoteCraftApp {
                                         .color(t.muted),
                                     );
                                 } else {
-                                    let _ = crate::preview::show(ui, &p.blocks, page, &t, None, &notecraft_model::justify::Justified::default());
+                                    let _ = crate::preview::show(ui, &p.blocks, page, &t, None, &ergonote_model::justify::Justified::default());
                                 }
                             });
                             ui.add_space(8.0);
@@ -1745,7 +1745,7 @@ impl NoteCraftApp {
                         ui.label(crate::tl_id!("ui.saved_copies_of_this_page"));
                         ui.add_space(6.0);
                         if versions.is_empty() {
-                            ui.label(crate::tl_id!("ui.no_saved_versions_yet_notecraft_keeps_a_copy_when_th_aa2e25acad"));
+                            ui.label(crate::tl_id!("ui.no_saved_versions_yet_ergonote_keeps_a_copy_when_th_aa2e25acad"));
                         } else {
                             egui::ScrollArea::vertical().max_height(320.0).show(ui, |ui| {
                                 for version in versions.iter() {
@@ -1775,7 +1775,7 @@ impl NoteCraftApp {
                 if let Some((id, created)) = open {
                     // Compared with the page as it stands, unsaved words included.
                     let now = self.editor.as_ref().filter(|e| e.dir == *page).map(|e| e.body.clone());
-                    let now = now.or_else(|| notecraft_store::page::load_page(page).ok().map(|p| p.body)).unwrap_or_default();
+                    let now = now.or_else(|| ergonote_store::page::load_page(page).ok().map(|p| p.body)).unwrap_or_default();
                     match crate::versions::open(page, &id, &created, &now) {
                         Ok(p) => *preview = Some(Box::new(p)),
                         Err(e) => self.complain(&crate::i18n::format_message_id("ui.cannot_open_that_version_error", &[("error", &e)])),

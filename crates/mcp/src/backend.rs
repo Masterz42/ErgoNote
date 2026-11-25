@@ -1,7 +1,7 @@
 //! Where the tools land: a notebooks folder opened here, or a running window.
 
-use notecraft_engine::{Session, commands_json, output_json, params_from_json};
-use notecraft_store::Settings;
+use ergonote_engine::{Session, commands_json, output_json, params_from_json};
+use ergonote_store::Settings;
 use serde_json::{Value, json};
 use std::io::{BufRead, BufReader, Write};
 use std::net::TcpStream;
@@ -22,8 +22,8 @@ pub trait Backend {
 }
 
 /// What a `ui.*` tool answers with when nothing is running.
-pub const NEEDS_APP: &str = "that needs a running NoteCraft window. Start one with `notecraft --control 0`, \
-then run the MCP server with `notecraft-cli mcp --connect PORT`.";
+pub const NEEDS_APP: &str = "that needs a running ErgoNote window. Start one with `ergonote --control 0`, \
+then run the MCP server with `ergonote-cli mcp --connect PORT`.";
 
 /// A notebooks folder opened by the server itself: no window, no control channel.
 pub struct Headless {
@@ -60,7 +60,7 @@ impl Backend for Headless {
     }
 
     fn describe(&self) -> String {
-        format!("the notebooks folder {} (no window is running)", notecraft_store::tree::display_path(self.session.root()))
+        format!("the notebooks folder {} (no window is running)", ergonote_store::tree::display_path(self.session.root()))
     }
 }
 
@@ -81,15 +81,15 @@ pub struct Remote {
 }
 
 impl Remote {
-    /// Connects to a window listening on `127.0.0.1:port`. The key is `NOTECRAFT_CONTROL_KEY`
+    /// Connects to a window listening on `127.0.0.1:port`. The key is `ERGONOTE_CONTROL_KEY`
     /// if it is set, else the window's own `control-key.local-PORT` file in `key_dir`.
     pub fn connect(port: u16, key_dir: &Path) -> Result<Remote, String> {
-        let key = match std::env::var("NOTECRAFT_CONTROL_KEY") {
+        let key = match std::env::var("ERGONOTE_CONTROL_KEY") {
             Ok(k) if !k.trim().is_empty() => k.trim().to_string(),
             _ => {
                 let file = key_dir.join(format!("control-key.local-{port}"));
                 std::fs::read_to_string(&file)
-                    .map_err(|e| format!("cannot read the window's key from {}: {e}. Is NoteCraft running with --control {port}?", file.display()))?
+                    .map_err(|e| format!("cannot read the window's key from {}: {e}. Is ErgoNote running with --control {port}?", file.display()))?
                     .trim()
                     .to_string()
             }
@@ -132,14 +132,14 @@ impl Backend for Remote {
     }
 
     fn describe(&self) -> String {
-        format!("the NoteCraft window on 127.0.0.1:{} (what the person is looking at)", self.port)
+        format!("the ErgoNote window on 127.0.0.1:{} (what the person is looking at)", self.port)
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use notecraft_store::testing::TempDir;
+    use ergonote_store::testing::TempDir;
 
     fn headless(name: &str) -> (TempDir, Headless) {
         let t = TempDir::new(name);

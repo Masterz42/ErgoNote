@@ -1,5 +1,5 @@
 #![deny(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::unimplemented, clippy::todo, clippy::unreachable)]
-//! NoteCraft importer (layer L3): a folder of OneNote section files into a NoteCraft notebook tree.
+//! ErgoNote importer (layer L3): a folder of OneNote section files into a ErgoNote notebook tree.
 //!
 //! ```text
 //! discover  ->  plan  ->  read  ->  convert  ->  write  ->  report
@@ -17,13 +17,13 @@ pub mod package;
 
 use convert::{Loss, convert_page};
 use discover::{Planned, Scan};
-use notecraft_formats::markdown::Block;
-use notecraft_formats::render::{blocks_to_html, blocks_to_markdown};
-use notecraft_model::text::{Dir, direction};
-use notecraft_model::{NodeKind, PageFormat};
-use notecraft_onenote::{OneError, Page, Section, Store, Toc};
-use notecraft_store::tree::{child_dirs, read_node};
-use notecraft_store::{Settings, assets, ops, page};
+use ergonote_formats::markdown::Block;
+use ergonote_formats::render::{blocks_to_html, blocks_to_markdown};
+use ergonote_model::text::{Dir, direction};
+use ergonote_model::{NodeKind, PageFormat};
+use ergonote_onenote::{OneError, Page, Section, Store, Toc};
+use ergonote_store::tree::{child_dirs, read_node};
+use ergonote_store::{Settings, assets, ops, page};
 use std::fmt;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -220,7 +220,7 @@ pub fn run(options: &Options, progress: &mut dyn FnMut(&Event)) -> Result<Report
     let loaded_tocs: Vec<LoadedToc> = scan
         .tocs
         .iter()
-        .filter_map(|file| match fs::read(&file.path).ok().and_then(|bytes| notecraft_onenote::read_toc(&bytes).ok()) {
+        .filter_map(|file| match fs::read(&file.path).ok().and_then(|bytes| ergonote_onenote::read_toc(&bytes).ok()) {
             Some(toc) => {
                 report.toc_files_read += 1;
                 Some(LoadedToc { folders: file.folders.clone(), toc })
@@ -313,14 +313,14 @@ fn import_section(
     report: &mut Report,
 ) -> Result<(), String> {
     let data = fs::read(&item.file.path).map_err(|e| format!("cannot read the file: {e}"))?;
-    let store = match notecraft_onenote::read(&data) {
+    let store = match ergonote_onenote::read(&data) {
         Ok(s) => s,
         Err(OneError::Encrypted) => return Err("password protected".to_string()),
         Err(OneError::NotASection(_)) => return Err("not a OneNote section file".to_string()),
         Err(OneError::TooLarge(_)) => return Err("larger than the importer can read".to_string()),
         Err(e) => return Err(format!("cannot be read: {e}")),
     };
-    let section = notecraft_onenote::section(&store);
+    let section = ergonote_onenote::section(&store);
     let encrypted = store.spaces.iter().filter(|s| s.encrypted).count();
     if section.pages.is_empty() {
         return Err(if encrypted > 0 { "password protected".to_string() } else { "no pages".to_string() });
@@ -389,7 +389,7 @@ fn notebook_color_for(section_folders: &[String], tocs: &[LoadedToc]) -> Option<
     tocs.iter().find(|toc| same_folders(&toc.folders, notebook_folders)).and_then(|toc| toc.toc.color)
 }
 
-fn section_color_for(file: &discover::SectionFile, identity: notecraft_onenote::Guid, tocs: &[LoadedToc]) -> Option<u32> {
+fn section_color_for(file: &discover::SectionFile, identity: ergonote_onenote::Guid, tocs: &[LoadedToc]) -> Option<u32> {
     let filename = file.path.file_name()?.to_string_lossy();
     for toc in tocs.iter().filter(|toc| same_folders(&toc.folders, &file.folders)) {
         for entry in &toc.toc.sections {
@@ -414,11 +414,11 @@ fn toc_filename_matches(toc_name: &str, file_name: &str) -> bool {
     normalized.eq_ignore_ascii_case(file_name)
 }
 
-/// Maps OneNote's free-form ARGB values to NoteCraft's named container palette by hue.
+/// Maps OneNote's free-form ARGB values to ErgoNote's named container palette by hue.
 /// This is intentionally lossy; alpha is ignored because OneNote section colors commonly
-/// store it as zero, and near-neutral colors use NoteCraft's Gray option.
-fn node_color(argb: u32) -> Option<notecraft_model::NodeColor> {
-    use notecraft_model::NodeColor;
+/// store it as zero, and near-neutral colors use ErgoNote's Gray option.
+fn node_color(argb: u32) -> Option<ergonote_model::NodeColor> {
+    use ergonote_model::NodeColor;
 
     if argb == u32::MAX {
         return None;
@@ -533,9 +533,9 @@ fn reads_right_to_left(title: &str, blocks: &[Block]) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use notecraft_onenote::testing::OneNote;
-    use notecraft_store::testing::TempDir;
-    use notecraft_store::tree::load_tree;
+    use ergonote_onenote::testing::OneNote;
+    use ergonote_store::testing::TempDir;
+    use ergonote_store::tree::load_tree;
 
     fn section_file(root: &Path, folders: &[&str], file: &str, one: OneNote) {
         let mut dir = root.to_path_buf();
@@ -550,15 +550,15 @@ mod tests {
 
     #[test]
     fn imported_colors_map_to_the_named_palette_and_ignore_undefined_values() {
-        for color in notecraft_model::NodeColor::ALL {
-            if color == notecraft_model::NodeColor::Gray {
+        for color in ergonote_model::NodeColor::ALL {
+            if color == ergonote_model::NodeColor::Gray {
                 continue;
             }
             let (red, green, blue) = color.rgb(false);
             let argb = (u32::from(red) << 16) | (u32::from(green) << 8) | u32::from(blue);
             assert_eq!(node_color(argb), Some(color), "{color:?}");
         }
-        assert_eq!(node_color(0x0080_8080), Some(notecraft_model::NodeColor::Gray));
+        assert_eq!(node_color(0x0080_8080), Some(ergonote_model::NodeColor::Gray));
         assert_eq!(node_color(u32::MAX), None);
     }
 

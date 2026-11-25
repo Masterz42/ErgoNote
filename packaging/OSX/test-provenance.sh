@@ -3,7 +3,7 @@
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 source "$ROOT/packaging/OSX/provenance.sh"
-WORK="$(mktemp -d "${TMPDIR:-/tmp}/notecraft-provenance.XXXXXX")"
+WORK="$(mktemp -d "${TMPDIR:-/tmp}/ergonote-provenance.XXXXXX")"
 trap 'rm -rf -- "$WORK"' EXIT
 trap 'exit 129' HUP
 trap 'exit 130' INT

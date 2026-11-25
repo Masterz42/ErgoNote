@@ -5,7 +5,7 @@
 
 use crate::theme::Tokens;
 use egui::{Align2, FontId, Pos2, Rect, Stroke, Vec2, pos2, vec2};
-use notecraft_model::paper::{POINTS_PER_MM, Paper, Size};
+use ergonote_model::paper::{POINTS_PER_MM, Paper, Size};
 
 /// A sheet in screen points at the page's zoom.
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -123,7 +123,7 @@ pub fn paint(painter: &egui::Painter, view: Rect, top_left: Pos2, sheet: Sheet, 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use notecraft_model::paper::Size;
+    use ergonote_model::paper::Size;
 
     #[test]
     fn a_sheet_is_the_paper_at_the_page_zoom() {

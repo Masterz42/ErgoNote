@@ -1,19 +1,19 @@
 ---
 id: e9dcc4d20c93f404aa30
-title: "Welcome to NoteCraft (Ver 0.0.9)"
+title: "Welcome to ErgoNote (Ver 2026.11.25)"
 order: 10
 created: 2026-10-18T00:00:00Z
 updated: 2026-10-18T00:00:00Z
 tags: []
 ---
 
-![NoteCraft, notes as plain files in plain folders](assets/banner-start.png)
+![ErgoNote, notes as plain files in plain folders](assets/banner-start.png)
 
 **Notes as plain files, in plain folders.**
 
-This notebook is NoteCraft showing itself. Every page in it is an ordinary page: open it, change it, delete it.
+This notebook is ErgoNote showing itself. Every page in it is an ordinary page: open it, change it, delete it.
 
-**Demo build:** NoteCraft 0.0.9. This notebook is the release demonstration and regression reference for both HTML and CMGFM page formats.
+**Demo build:** ErgoNote 2026.11.25. This notebook is the release demonstration and regression reference for both HTML and CMGFM page formats.
 
 ## How it is organised
 
@@ -41,4 +41,4 @@ Like every notebook, it is a folder on your disk. Look at the bottom right of th
 
 ## Who wrote it
 
-The English pages were written by hand from NoteCraft's own guides. The other languages were drafted by an AI model and are marked as such on each page until a native reader has gone over them. Corrections are welcome in the project's issue tracker.
+The English pages were written by hand from ErgoNote's own guides. The other languages were drafted by an AI model and are marked as such on each page until a native reader has gone over them. Corrections are welcome in the project's issue tracker.

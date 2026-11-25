@@ -7,18 +7,18 @@
 //! behind the Code button.
 //!
 //! The document is the blocks. After every change they are written back to the page's own
-//! format (`notecraft_formats::render`), so the file on disk stays HTML or Markdown.
+//! format (`ergonote_formats::render`), so the file on disk stays HTML or Markdown.
 
 use crate::pagetext;
 use crate::preview;
 use crate::theme::Tokens;
 use egui::{Key, Sense, Ui, vec2};
-use notecraft_formats::markdown::{Block, Span, parse_inline};
+use ergonote_formats::markdown::{Block, Span, parse_inline};
 mod inline_edit;
 pub use inline_edit::InlineEdit;
 
 fn spans_to_editor(spans: &[Span]) -> String {
-    notecraft_formats::render::editable_spans(spans).0
+    ergonote_formats::render::editable_spans(spans).0
 }
 
 fn spans_of(block: &Block) -> Option<&[Span]> {
@@ -28,7 +28,7 @@ fn spans_of(block: &Block) -> Option<&[Span]> {
     }
 }
 
-use notecraft_model::Tag;
+use ergonote_model::Tag;
 
 /// Where a selection that a right click collapsed is to be put back: `(block, primary, secondary)`.
 /// Set by the container, taken by the block's text box on the next frame. A text box moves its
@@ -608,16 +608,7 @@ pub fn span_of(block: &Block, cell: (usize, usize), what: TableSpan) -> Option<(
 
 /// The character of `text` a click at `x` lands on, given how the block is drawn. Used so a
 /// click puts the caret where the pointer is, the way it does in any editor.
-pub fn char_at(
-    ui: &Ui,
-    text: &str,
-    size: f32,
-    strong: bool,
-    t: &Tokens,
-    width: f32,
-    offset: egui::Vec2,
-    page: Option<notecraft_model::Dir>,
-) -> usize {
+pub fn char_at(ui: &Ui, text: &str, size: f32, strong: bool, t: &Tokens, width: f32, offset: egui::Vec2, page: Option<ergonote_model::Dir>) -> usize {
     let job = pagetext::inline_job_with_fonts(ui.ctx(), text, size, strong, t, width.max(1.0), page);
     let galley = ui.fonts_mut(|f| f.layout_job(job));
     let chars = text.chars().count();
@@ -647,9 +638,9 @@ pub fn char_at(
 /// inside it. Asking again for a run that already has one takes it off.
 ///
 /// The characters are invisible and are part of the text, so the run keeps its direction in
-/// any other editor too. What NoteCraft cannot do yet is draw a mixed line in the right
+/// any other editor too. What ErgoNote cannot do yet is draw a mixed line in the right
 /// order; that needs the bidi algorithm (`docs/gaps.md`).
-pub fn isolate(text: &str, selection: (usize, usize), dir: notecraft_model::Dir) -> (String, (usize, usize)) {
+pub fn isolate(text: &str, selection: (usize, usize), dir: ergonote_model::Dir) -> (String, (usize, usize)) {
     const PDI: char = '\u{2069}';
     const RLI: char = '\u{2067}';
     const LRI: char = '\u{2066}';
@@ -689,7 +680,7 @@ pub enum InlineFormat {
 /// Formats text in a visible-character range without splitting atomic images or maths.
 /// Returns false when no formattable text was selected or nothing changed.
 pub fn format_span_range(spans: &mut Vec<Span>, range: std::ops::Range<usize>, format: InlineFormat) -> bool {
-    use notecraft_formats::markdown::Script;
+    use ergonote_formats::markdown::Script;
     if range.start >= range.end {
         return false;
     }
@@ -845,7 +836,7 @@ pub struct Marks {
 impl Marks {
     /// The marks of one run of words.
     pub fn of(span: &Span) -> Self {
-        use notecraft_formats::markdown::Script;
+        use ergonote_formats::markdown::Script;
         Self {
             bold: span.bold,
             italic: span.italic,
@@ -1089,7 +1080,7 @@ pub fn format_source_selection(text: &str, selection: (usize, usize), format: In
 /// spans, not on the text, so words that are partly marked already come out right (`a **b** c`
 /// becomes `**a b c**`, not `**a **b** c**`). Returns false when the range has no words to mark.
 pub fn toggle_mark(blocks: &mut [Block], range: std::ops::Range<usize>, mark: &str) -> bool {
-    use notecraft_formats::markdown::Script;
+    use ergonote_formats::markdown::Script;
     if !matches!(mark, "bold" | "italic" | "strike" | "underline" | "subscript" | "superscript" | "code") {
         log::warn!("unknown inline mark requested: {mark}");
         return false;
@@ -1219,8 +1210,8 @@ pub fn set_kind(blocks: &mut [Block], at: usize, kind: &str) -> bool {
     if let (Block::Code { lang, text }, "codeblock" | "codenumbers") = (block, kind)
         && block_kind(block) != kind
     {
-        let language = notecraft_formats::markdown::code_lang(lang).1.to_string();
-        let lang = if kind == "codenumbers" { format!("{}{language}", notecraft_formats::markdown::NUMBERED) } else { language };
+        let language = ergonote_formats::markdown::code_lang(lang).1.to_string();
+        let lang = if kind == "codenumbers" { format!("{}{language}", ergonote_formats::markdown::NUMBERED) } else { language };
         let text = text.clone();
         if let Some(b) = blocks.get_mut(at) {
             *b = Block::Code { lang, text };
@@ -1241,7 +1232,7 @@ pub fn set_kind(blocks: &mut [Block], at: usize, kind: &str) -> bool {
         "quote" => Block::Quote(spans),
         "codeblock" => Block::Code { lang: String::new(), text: spans.iter().map(|s| s.text.as_str()).collect() },
         "codenumbers" => {
-            Block::Code { lang: notecraft_formats::markdown::NUMBERED.to_string(), text: spans.iter().map(|s| s.text.as_str()).collect() }
+            Block::Code { lang: ergonote_formats::markdown::NUMBERED.to_string(), text: spans.iter().map(|s| s.text.as_str()).collect() }
         }
         "bullet" => Block::Item { ordered: false, number: 0, task: None, depth: 0, spans },
         "number" => Block::Item { ordered: true, number: 1, task: None, depth: 0, spans },
@@ -1262,7 +1253,7 @@ pub fn set_kind(blocks: &mut [Block], at: usize, kind: &str) -> bool {
 }
 
 /// Puts a tag on the line the caret is in, or takes it off. To Do is a task list item;
-/// every other tag is a marker word at the start of the line ([`notecraft_model::Tag`]).
+/// every other tag is a marker word at the start of the line ([`ergonote_model::Tag`]).
 /// Asking for the tag that is already there removes it, the way OneNote toggles a tag.
 pub fn set_tag(blocks: &mut [Block], at: usize, tag: Tag) -> bool {
     let Some(block) = blocks.get(at) else { return false };
@@ -1292,21 +1283,21 @@ pub fn set_tag(blocks: &mut [Block], at: usize, tag: Tag) -> bool {
 
 /// Which way the paragraph in block `at` reads: a mark at its start, or `None` to let the
 /// words decide again. False if there is no such block or it holds no words.
-pub fn set_direction(blocks: &mut [Block], at: usize, dir: Option<notecraft_model::Dir>) -> bool {
+pub fn set_direction(blocks: &mut [Block], at: usize, dir: Option<ergonote_model::Dir>) -> bool {
     set_direction_over(blocks, at..=at, dir)
 }
 
 /// The same over a run of blocks, which is what selecting several paragraphs and asking for
 /// a direction means: there is no direction of its own on a block or an outline, it simply
 /// goes on every paragraph inside the selection. One place to store it, one rule to read it.
-pub fn set_direction_over(blocks: &mut [Block], range: std::ops::RangeInclusive<usize>, dir: Option<notecraft_model::Dir>) -> bool {
+pub fn set_direction_over(blocks: &mut [Block], range: std::ops::RangeInclusive<usize>, dir: Option<ergonote_model::Dir>) -> bool {
     let mut done = false;
     for at in range {
         let Some(block) = blocks.get(at) else { continue };
         if !is_writable(block) {
             continue;
         }
-        let text = notecraft_model::text::set_direction(&block_text(block), dir);
+        let text = ergonote_model::text::set_direction(&block_text(block), dir);
         if let Some(b) = blocks.get_mut(at) {
             set_block_text(b, &text);
             done = true;
@@ -1478,7 +1469,7 @@ pub fn is_page_stamp(blocks: &[Block], i: usize) -> bool {
     match blocks.get(i) {
         Some(Block::Paragraph(spans)) => {
             let words: String = spans.iter().map(|s| s.text.as_str()).collect();
-            notecraft_model::time::is_long_date(&words)
+            ergonote_model::time::is_long_date(&words)
         }
         _ => false,
     }
@@ -1526,7 +1517,7 @@ pub fn block_kind(block: &Block) -> &'static str {
         Block::Heading { level: 5, .. } => "h5",
         Block::Heading { .. } => "h6",
         Block::Quote(_) => "quote",
-        Block::Code { lang, .. } if notecraft_formats::markdown::code_lang(lang).0 => "codenumbers",
+        Block::Code { lang, .. } if ergonote_formats::markdown::code_lang(lang).0 => "codenumbers",
         Block::Code { .. } => "codeblock",
         Block::Item { task: Some(_), .. } => "todo",
         Block::Item { ordered: true, .. } => "number",
@@ -1629,7 +1620,7 @@ const GRAB: f32 = 4.0;
 /// The colour a shaded table cell is drawn in (issue #169): a wash of its named colour over the
 /// page, strong enough to tell cells apart and pale enough that the words keep their contrast,
 /// in a light theme and a dark one.
-pub fn cell_shade(t: &Tokens, colour: notecraft_model::NodeColor) -> egui::Color32 {
+pub fn cell_shade(t: &Tokens, colour: ergonote_model::NodeColor) -> egui::Color32 {
     let dark = t.editor.r() < 128;
     let (r, g, b) = colour.rgb(dark);
     crate::theme::mix(t.editor, egui::Color32::from_rgb(r, g, b), if dark { 0.30 } else { 0.24 })
@@ -1643,8 +1634,8 @@ pub fn show_table_read(
     block: &Block,
     i: usize,
     t: &Tokens,
-    page: Option<notecraft_model::Dir>,
-    cols: &notecraft_model::tablecols::Widths,
+    page: Option<ergonote_model::Dir>,
+    cols: &ergonote_model::tablecols::Widths,
     zoom: f32,
 ) {
     let mut cols = cols.clone();
@@ -1674,8 +1665,8 @@ fn table(
     i: usize,
     caret: &mut Option<Caret>,
     t: &Tokens,
-    page: Option<notecraft_model::Dir>,
-    cols: &mut notecraft_model::tablecols::Widths,
+    page: Option<ergonote_model::Dir>,
+    cols: &mut ergonote_model::tablecols::Widths,
     changed: &mut Changed,
     zoom: f32,
     live: bool,
@@ -1726,7 +1717,7 @@ fn table(
             cols.of(i)
                 .and_then(|w| w.get(c).copied())
                 .unwrap_or(COLUMN_W)
-                .clamp(notecraft_model::tablecols::MIN_WIDTH, notecraft_model::tablecols::MAX_WIDTH)
+                .clamp(ergonote_model::tablecols::MIN_WIDTH, ergonote_model::tablecols::MAX_WIDTH)
         })
         .collect();
     let avail_screen = ui.available_width();
@@ -1755,9 +1746,9 @@ fn table(
                     // The cell's own alignment, if it was given one (issue #170). Only its words
                     // move: the column keeps its width and the table its place.
                     let halign = match cols.align(i, cell) {
-                        Some(notecraft_model::tablecols::Align::Center) => egui::Align::Center,
-                        Some(notecraft_model::tablecols::Align::Right) => egui::Align::RIGHT,
-                        Some(notecraft_model::tablecols::Align::Left) | None => egui::Align::LEFT,
+                        Some(ergonote_model::tablecols::Align::Center) => egui::Align::Center,
+                        Some(ergonote_model::tablecols::Align::Right) => egui::Align::RIGHT,
+                        Some(ergonote_model::tablecols::Align::Left) | None => egui::Align::LEFT,
                     };
                     ui.allocate_ui_with_layout(vec2(w, 0.0), egui::Layout::top_down(egui::Align::LEFT), |ui| {
                         ui.set_min_width(w);
@@ -1987,7 +1978,7 @@ fn table(
                 ui.ctx().set_cursor_icon(egui::CursorIcon::ResizeHorizontal);
             }
             if grip.dragged() {
-                let want = (fitted_widths[c] + grip.drag_delta().x / zoom).max(notecraft_model::tablecols::MIN_WIDTH);
+                let want = (fitted_widths[c] + grip.drag_delta().x / zoom).max(ergonote_model::tablecols::MIN_WIDTH);
                 cols.set(i, c, want, &fitted_widths);
                 changed.columns = true;
             }
@@ -2041,7 +2032,7 @@ fn table_borders(ui: &Ui, edge_x: &[f32], edge_y: &[f32], t: &Tokens, zoom: f32)
 }
 
 /// egui blinks a text cursor from the last time the field itself was clicked or typed in. A field
-/// NoteCraft puts the caret in (a click on open paper starting a box, an arrow from the line
+/// ErgoNote puts the caret in (a click on open paper starting a box, an arrow from the line
 /// above) has no such time, so its cursor could stay dark for up to half a blink after the click,
 /// and the click seemed slow to take. The blink is kept here instead, from when the caret came to
 /// where it is (`at`: its block, words and selection) or last changed there.
@@ -2497,9 +2488,9 @@ pub fn show(
     caret: &mut Option<Caret>,
     page_dir: &std::path::Path,
     t: &Tokens,
-    page: Option<notecraft_model::Dir>,
-    cols: &mut notecraft_model::tablecols::Widths,
-    justified: &notecraft_model::justify::Justified,
+    page: Option<ergonote_model::Dir>,
+    cols: &mut ergonote_model::tablecols::Widths,
+    justified: &ergonote_model::justify::Justified,
     across: &mut Option<Across>,
     shown_title: &str,
 ) -> Changed {
@@ -2525,11 +2516,11 @@ pub fn show_blocks(
     caret: &mut Option<Caret>,
     page_dir: &std::path::Path,
     t: &Tokens,
-    page: Option<notecraft_model::Dir>,
+    page: Option<ergonote_model::Dir>,
     range: std::ops::Range<usize>,
-    cols: &mut notecraft_model::tablecols::Widths,
-    // Which blocks are stretched to reach the column; see `notecraft_model::justify`.
-    justified: &notecraft_model::justify::Justified,
+    cols: &mut ergonote_model::tablecols::Widths,
+    // Which blocks are stretched to reach the column; see `ergonote_model::justify`.
+    justified: &ergonote_model::justify::Justified,
     // A selection that runs across more than one block, grown here as the drag moves.
     across: &mut Option<Across>,
     // The title the window is already showing, so the body does not repeat it.
@@ -2634,7 +2625,7 @@ pub fn show_blocks(
             changed.mark = formatting_key(ui, id);
             // A line that reads right to left is written from the right: its bullet, box or
             // tag mark sits on the right, and the words hang from that edge.
-            let natural = if notecraft_model::direction_in(&c.text, page).is_rtl() { egui::Align::RIGHT } else { egui::Align::LEFT };
+            let natural = if ergonote_model::direction_in(&c.text, page).is_rtl() { egui::Align::RIGHT } else { egui::Align::LEFT };
             let row = if natural == egui::Align::RIGHT {
                 egui::Layout::right_to_left(egui::Align::Min)
             } else {
@@ -2646,7 +2637,7 @@ pub fn show_blocks(
                 (Block::Paragraph(_) | Block::Heading { .. }, Some(a)) => preview::egui_align(a),
                 _ => natural,
             };
-            // A line with right-to-left text in it is written in by NoteCraft's own caret;
+            // A line with right-to-left text in it is written in by ErgoNote's own caret;
             // everything else stays with egui's text box, which does it well.
             let ours = needs_our_caret(&c.text) && !matches!(block, Block::Code { .. } | Block::MathBlock(_));
             if ours {
@@ -2739,9 +2730,9 @@ pub fn show_blocks(
                             .show(ui, |ui| {
                                 ui.set_width(ui.available_width());
                                 if let Block::Code { lang, .. } = &block
-                                    && !notecraft_formats::markdown::code_lang(lang).1.is_empty()
+                                    && !ergonote_formats::markdown::code_lang(lang).1.is_empty()
                                 {
-                                    ui.label(egui::RichText::new(notecraft_formats::markdown::code_lang(lang).1).size(12.0 * zoom).color(t.muted));
+                                    ui.label(egui::RichText::new(ergonote_formats::markdown::code_lang(lang).1).size(12.0 * zoom).color(t.muted));
                                 }
                                 let at = (i, c.text.clone(), c.selection);
                                 steady_blink(ui, (at.0, &at.1, at.2), |ui| {
@@ -3681,7 +3672,7 @@ pub fn pasted_blocks(p: Pasted) -> Vec<Block> {
         Pasted::Inline => Vec::new(),
         // The same path an HTML page takes when it is opened, so a pasted table keeps its
         // cells and a pasted sentence keeps its bold and its links.
-        Pasted::Markup(html) => notecraft_formats::markdown::parse(&notecraft_formats::html::to_markdown(&html)),
+        Pasted::Markup(html) => ergonote_formats::markdown::parse(&ergonote_formats::html::to_markdown(&html)),
         Pasted::Paragraphs(lines) => lines.into_iter().map(|l| Block::Paragraph(parse_inline(&l))).collect(),
         Pasted::Table(mut rows) => {
             if rows.is_empty() {
@@ -3697,7 +3688,7 @@ pub fn pasted_blocks(p: Pasted) -> Vec<Block> {
 /// True for a line egui cannot put a caret in: anything with right-to-left letters, where
 /// egui counts glyphs as characters and the caret lands in the wrong place.
 pub fn needs_our_caret(text: &str) -> bool {
-    text.chars().any(|c| notecraft_model::direction(c.encode_utf8(&mut [0u8; 4])) == notecraft_model::Dir::Rtl)
+    text.chars().any(|c| ergonote_model::direction(c.encode_utf8(&mut [0u8; 4])) == ergonote_model::Dir::Rtl)
 }
 
 /// A character offset turned into a byte offset in `text`, and back.
@@ -3721,11 +3712,11 @@ pub struct Wrote {
 /// egui's own text box cannot do it: it treats a glyph index as a character offset, so in a
 /// shaped script the caret lands in the wrong place and the text appears to jump
 /// (`crates/ui-egui/tests/arabic_layout.rs`). So the line is drawn by the bidi painter,
-/// which puts the runs where the Unicode algorithm says, and the caret is NoteCraft's own:
+/// which puts the runs where the Unicode algorithm says, and the caret is ErgoNote's own:
 /// a click asks parley which character is under the pointer, and the arrow keys step the
 /// way the eye moves, not the way the bytes run. `page` is the page's direction, which the
 /// line reads in when it has no mark of its own, the same as when it is not being written in.
-pub fn write_rtl(ui: &mut Ui, c: &mut Caret, size: f32, t: &Tokens, id: egui::Id, page: Option<notecraft_model::Dir>) -> Wrote {
+pub fn write_rtl(ui: &mut Ui, c: &mut Caret, size: f32, t: &Tokens, id: egui::Id, page: Option<ergonote_model::Dir>) -> Wrote {
     let width = ui.available_width().max(32.0);
     let inline = c.inline.clone().unwrap_or_default();
     let job = inline.layout(&c.text, |text| pagetext::inline_job_with_fonts(ui.ctx(), text, size, false, t, width, page));
@@ -4069,7 +4060,7 @@ fn split_formatted_line(text: &str, cut: usize, source: &InlineEdit) -> (String,
     let total = text.chars().count();
     let mut cut = snap_caret_out_of_markers(text, (cut, cut)).0.min(total);
     if !text.contains(INLINE_IMAGE_CHAR) {
-        let mut marker = "NoteCraftSplitProbe".to_string();
+        let mut marker = "ErgoNoteSplitProbe".to_string();
         while text.contains(&marker) {
             marker.push('X');
         }
@@ -4213,7 +4204,7 @@ fn split_formatted_line(text: &str, cut: usize, source: &InlineEdit) -> (String,
 
 /// Splits the block currently holding the caret (if not inside a table cell), keeping table column
 /// widths aligned and closing/reopening active inline emphasis cleanly across the line break.
-pub fn split_block(blocks: &mut Vec<Block>, caret: &mut Option<Caret>, cols: &mut notecraft_model::tablecols::Widths) -> Changed {
+pub fn split_block(blocks: &mut Vec<Block>, caret: &mut Option<Caret>, cols: &mut ergonote_model::tablecols::Widths) -> Changed {
     let mut changed = Changed::default();
     if let Some(at) = caret.as_ref().filter(|c| c.cell.is_none()).map(|c| c.block) {
         apply_keeping_widths(Action::Split(at), blocks, caret, &mut changed, cols);
@@ -4238,7 +4229,7 @@ fn apply_keeping_widths(
     blocks: &mut Vec<Block>,
     caret: &mut Option<Caret>,
     changed: &mut Changed,
-    cols: &mut notecraft_model::tablecols::Widths,
+    cols: &mut ergonote_model::tablecols::Widths,
 ) {
     let before = blocks.len();
     // Which block the action takes out, if it does (`Some` for certain; the bool says it
@@ -4515,7 +4506,7 @@ fn apply(action: Action, blocks: &mut Vec<Block>, caret: &mut Option<Caret>, cha
 }
 
 /// The character of a finished block under `pos`, given the area `resp` it was drawn in.
-fn char_under(ui: &Ui, block: &Block, resp: &egui::Response, pos: egui::Pos2, t: &Tokens, page: Option<notecraft_model::Dir>) -> usize {
+fn char_under(ui: &Ui, block: &Block, resp: &egui::Response, pos: egui::Pos2, t: &Tokens, page: Option<ergonote_model::Dir>) -> usize {
     if let Some(at) = char_under_drawn(ui, block, resp, pos, t, page) {
         return at;
     }
@@ -4532,7 +4523,7 @@ fn char_under(ui: &Ui, block: &Block, resp: &egui::Response, pos: egui::Pos2, t:
 /// the text and invisible on the page. So the pointer is measured against what was drawn and
 /// the answer is carried back over the marks. `None` when that carrying back cannot be
 /// trusted, and the caller measures the old way.
-fn char_under_drawn(ui: &Ui, block: &Block, resp: &egui::Response, pos: egui::Pos2, t: &Tokens, page: Option<notecraft_model::Dir>) -> Option<usize> {
+fn char_under_drawn(ui: &Ui, block: &Block, resp: &egui::Response, pos: egui::Pos2, t: &Tokens, page: Option<ergonote_model::Dir>) -> Option<usize> {
     let spans = match block {
         Block::Heading { spans, .. } | Block::Paragraph(spans) | Block::Quote(spans) | Block::Item { spans, .. } => spans,
         _ => return None,
@@ -4603,7 +4594,7 @@ fn over_marks(spans: &[Span], drawn: usize) -> usize {
 /// The link the character `at` of `block` sits in, if any, for a block egui laid out. Code
 /// and equations hold no links. A block the bidi painter drew is not mapped this way (see
 /// `link_under`).
-fn link_in(block: &Block, at: usize, page: Option<notecraft_model::Dir>) -> Option<String> {
+fn link_in(block: &Block, at: usize, page: Option<ergonote_model::Dir>) -> Option<String> {
     if matches!(block, Block::Code { .. } | Block::MathBlock(_)) {
         return None;
     }
@@ -4617,7 +4608,7 @@ fn link_in(block: &Block, at: usize, page: Option<notecraft_model::Dir>) -> Opti
 /// The link under the pointer at `pos` in a finished block, if the pointer is on one. A
 /// right-to-left or mixed line is asked through the painter that drew it; any other line
 /// through egui's layout of its text.
-pub fn link_under(ui: &Ui, block: &Block, resp: &egui::Response, pos: egui::Pos2, t: &Tokens, page: Option<notecraft_model::Dir>) -> Option<String> {
+pub fn link_under(ui: &Ui, block: &Block, resp: &egui::Response, pos: egui::Pos2, t: &Tokens, page: Option<ergonote_model::Dir>) -> Option<String> {
     if !is_writable(block) {
         return None;
     }
@@ -4680,25 +4671,25 @@ fn lead(ui: &mut Ui, block: &Block, t: &Tokens) -> Option<bool> {
 }
 
 /// The blocks written back in the page's own format.
-pub fn to_body(format: notecraft_model::PageFormat, blocks: &[Block]) -> String {
+pub fn to_body(format: ergonote_model::PageFormat, blocks: &[Block]) -> String {
     match format {
-        notecraft_model::PageFormat::Html => notecraft_formats::render::blocks_to_html(blocks),
-        notecraft_model::PageFormat::Cmgfm => notecraft_formats::render::blocks_to_markdown(blocks),
+        ergonote_model::PageFormat::Html => ergonote_formats::render::blocks_to_html(blocks),
+        ergonote_model::PageFormat::Cmgfm => ergonote_formats::render::blocks_to_markdown(blocks),
     }
 }
 
 /// Whether a page can be written on as blocks: its own text must survive the trip through
-/// them. A page NoteCraft wrote always does; one with markup the block model does not know
+/// them. A page ErgoNote wrote always does; one with markup the block model does not know
 /// would lose that markup, so it stays read-only and the source pane is offered instead.
-pub fn round_trips(format: notecraft_model::PageFormat, body: &str) -> bool {
+pub fn round_trips(format: ergonote_model::PageFormat, body: &str) -> bool {
     // Markup the block model cannot hold would be dropped on the way back out.
-    if format == notecraft_model::PageFormat::Html && notecraft_formats::html::unsupported_tag(body).is_some() {
+    if format == ergonote_model::PageFormat::Html && ergonote_formats::html::unsupported_tag(body).is_some() {
         return false;
     }
     // The boxes are part of the text, so they have to come back as they went in.
-    let (blocks, boxes) = notecraft_formats::boxes::read(format, body);
-    let written = notecraft_formats::boxes::write(format, &blocks, boxes.as_deref());
-    notecraft_formats::boxes::read(format, &written) == (blocks, boxes)
+    let (blocks, boxes) = ergonote_formats::boxes::read(format, body);
+    let written = ergonote_formats::boxes::write(format, &blocks, boxes.as_deref());
+    ergonote_formats::boxes::read(format, &written) == (blocks, boxes)
 }
 
 #[cfg(test)]
@@ -4714,10 +4705,10 @@ mod tests {
     }
 
     use super::*;
-    use notecraft_model::PageFormat;
+    use ergonote_model::PageFormat;
 
     fn blocks(md: &str) -> Vec<Block> {
-        notecraft_formats::markdown::parse(md)
+        ergonote_formats::markdown::parse(md)
     }
 
     /// Issue #163: the Link dialog finds the link the caret is in, writes one that reads back as
@@ -4735,12 +4726,12 @@ mod tests {
         assert_eq!(link_markup("the plan", " https://example.test/a b "), "[the plan](https://example.test/a%20b)");
         assert_eq!(link_markup("", "https://example.test"), "[https://example.test](https://example.test)", "no words: the address shows");
         assert_eq!(link_markup("a [b] c", "x(1)"), "[a b c](x%281%29)");
-        let spans = notecraft_formats::markdown::parse(&link_markup("go [now]", "../other page/")).remove(0);
+        let spans = ergonote_formats::markdown::parse(&link_markup("go [now]", "../other page/")).remove(0);
         let Block::Paragraph(spans) = spans else { panic!("a paragraph") };
         assert_eq!(spans.len(), 1, "one link: {spans:?}");
         assert_eq!(spans[0].link.as_deref(), Some("../other%20page/"));
 
-        for ok in ["https://example.test", "mailto:a@example.test", "../page/", "notecraft:/book/s/p?id=1"] {
+        for ok in ["https://example.test", "mailto:a@example.test", "../page/", "ergonote:/book/s/p?id=1"] {
             assert!(linkable_address(ok), "{ok}");
         }
         for bad in ["", "  ", "javascript:alert(1)", "JavaScript:x", "data:text/html,x", "vbscript:x", "a\nb"] {
@@ -4861,7 +4852,7 @@ mod tests {
         let (script, _) = format_source_selection(&family, selection, InlineFormat::Superscript).expect("script");
         let spans = parse_inline(&script);
         assert_eq!(
-            spans.iter().filter(|s| s.script == Some(notecraft_formats::markdown::Script::Superscript)).map(|s| s.text.as_str()).collect::<String>(),
+            spans.iter().filter(|s| s.script == Some(ergonote_formats::markdown::Script::Superscript)).map(|s| s.text.as_str()).collect::<String>(),
             "رحب"
         );
         assert!(spans.iter().filter(|s| s.script.is_some()).all(|s| s.bold && s.font_family.as_deref() == Some("Noto Sans")), "{script}");
@@ -4882,7 +4873,7 @@ mod tests {
 
     #[test]
     fn formatting_mixed_runs_and_scripts_uses_one_consistent_toggle() {
-        use notecraft_formats::markdown::Script;
+        use ergonote_formats::markdown::Script;
         let mut spans = parse_inline("<u>a</u>b<sub>c</sub>");
         assert!(format_span_range(&mut spans, 0..3, InlineFormat::Underline));
         assert!(spans.iter().all(|s| s.underline));
@@ -5125,13 +5116,13 @@ mod tests {
 
     #[test]
     fn a_direction_over_several_paragraphs_goes_on_each_of_them() {
-        use notecraft_model::Dir;
+        use ergonote_model::Dir;
         let mut bs = blocks("one\n\ntwo\n\nthree\n");
         assert_eq!(bs.len(), 3);
         // Selecting a block of the page and asking for right to left marks every paragraph
         // in it, because a paragraph is the only thing that carries a direction.
         assert!(set_direction_over(&mut bs, 0..=1, Some(Dir::Rtl)));
-        let marked: Vec<bool> = bs.iter().map(|b| notecraft_model::direction(&block_text(b)).is_rtl()).collect();
+        let marked: Vec<bool> = bs.iter().map(|b| ergonote_model::direction(&block_text(b)).is_rtl()).collect();
         assert_eq!(marked, vec![true, true, false], "the third was not in the selection");
 
         // Asking for auto over the same run takes them all off again.
@@ -5423,12 +5414,12 @@ A note to self.
         assert!(html.contains("<h1>Title</h1>") && html.contains("<p>Words</p>"), "{html}");
     }
 
-    /// Every page NoteCraft itself writes can be written on. If one of these fails, the
+    /// Every page ErgoNote itself writes can be written on. If one of these fails, the
     /// user sees a page that is read-only for no good reason.
     #[test]
-    fn the_pages_notecraft_writes_can_be_written_on() {
+    fn the_pages_ergonote_writes_can_be_written_on() {
         for body in
-            [notecraft_engine::sample::HTML_BODY, "<h1>Untitled page</h1>\n<p class=\"page-date\"><i>Saturday, 17 October 2026, 18:29</i></p>\n"]
+            [ergonote_engine::sample::HTML_BODY, "<h1>Untitled page</h1>\n<p class=\"page-date\"><i>Saturday, 17 October 2026, 18:29</i></p>\n"]
         {
             let before = preview::blocks_for(PageFormat::Html, body);
             let after = preview::blocks_for(PageFormat::Html, &to_body(PageFormat::Html, &before));
@@ -5440,12 +5431,12 @@ A note to self.
                 after.len()
             );
         }
-        assert!(round_trips(PageFormat::Cmgfm, notecraft_engine::sample::MD_BODY));
+        assert!(round_trips(PageFormat::Cmgfm, ergonote_engine::sample::MD_BODY));
     }
 
     #[test]
     fn a_page_the_editor_would_damage_is_left_alone() {
-        // What NoteCraft writes round-trips.
+        // What ErgoNote writes round-trips.
         assert!(round_trips(PageFormat::Html, "<h1>T</h1>\n<p>Words with <b>bold</b>.</p>\n"));
         assert!(round_trips(PageFormat::Cmgfm, "# T\n\n- one\n- two\n"));
         // Markup the block model does not know does not round-trip, so it is read-only.
@@ -5457,7 +5448,7 @@ A note to self.
 
     #[test]
     fn text_color_and_highlight_format_selection_cleanly() {
-        let mut spans = vec![notecraft_formats::markdown::Span { text: "bonjour monde".into(), ..Default::default() }];
+        let mut spans = vec![ergonote_formats::markdown::Span { text: "bonjour monde".into(), ..Default::default() }];
         assert!(format_span_range(&mut spans, 0..7, InlineFormat::TextColor(Some("red".into()))));
         assert!(format_span_range(&mut spans, 8..13, InlineFormat::HighlightColor(Some("yellow".into()))));
         assert_eq!(spans[0].text_color.as_deref(), Some("red"));
@@ -5588,7 +5579,7 @@ A note to self.
     /// Bold, italic and the rest are toggles, and words that are partly marked already do not break them.
     #[test]
     fn a_mark_is_a_toggle_over_words_that_are_partly_marked() {
-        let md = |b: &[Block]| notecraft_formats::render::blocks_to_markdown(b).trim().to_string();
+        let md = |b: &[Block]| ergonote_formats::render::blocks_to_markdown(b).trim().to_string();
         for (mark, open) in [("bold", "**"), ("italic", "*"), ("strike", "~~")] {
             // Partly marked: it goes on all of it, once, and the same button takes it off again.
             let mut b = blocks(
@@ -5661,7 +5652,7 @@ code
 
     #[test]
     fn underline_and_scripts_toggle_across_mixed_blocks_without_changing_other_marks() {
-        use notecraft_formats::markdown::Script;
+        use ergonote_formats::markdown::Script;
         for (mark, script) in [("underline", None), ("subscript", Some(Script::Subscript)), ("superscript", Some(Script::Superscript))] {
             let mut blocks = blocks("plain **bold**\n\n*italic*\n");
             let original = blocks.clone();
@@ -5812,8 +5803,8 @@ code
     #[test]
     fn blocks_that_were_copied_come_back_whole_and_other_text_is_read_as_text() {
         let original =
-            notecraft_formats::markdown::parse("# Copy me\n\n*the date*\n\n[a link](https://example.org)\n\n```mermaid\ngraph TD;\n  A-->B;\n```\n");
-        let markdown = notecraft_formats::render::blocks_to_markdown(&original);
+            ergonote_formats::markdown::parse("# Copy me\n\n*the date*\n\n[a link](https://example.org)\n\n```mermaid\ngraph TD;\n  A-->B;\n```\n");
+        let markdown = ergonote_formats::render::blocks_to_markdown(&original);
         remember_copied(&markdown, &original);
         // What comes back is the blocks, not lines of words with their marks showing.
         assert_eq!(blocks_to_paste(&markdown), original);
@@ -5830,7 +5821,7 @@ code
 
     #[test]
     fn pasting_blocks_takes_the_place_of_an_empty_line_and_goes_after_a_full_one() {
-        let new = notecraft_formats::markdown::parse("# Title\n\nbody\n");
+        let new = ergonote_formats::markdown::parse("# Title\n\nbody\n");
         let mut blocks = vec![Block::Paragraph(Vec::new())];
         let mut caret = None;
         paste_at(&mut blocks, &mut caret, 0, new.clone());
@@ -5838,7 +5829,7 @@ code
         assert!(matches!(blocks[0], Block::Heading { .. }));
         assert_eq!(caret.as_ref().map(|c| c.block), Some(1), "the caret is after the last of them");
 
-        let mut blocks = notecraft_formats::markdown::parse("words\n");
+        let mut blocks = ergonote_formats::markdown::parse("words\n");
         let mut caret = None;
         paste_at(&mut blocks, &mut caret, 0, new);
         assert_eq!(blocks.len(), 3, "after the line that has words");

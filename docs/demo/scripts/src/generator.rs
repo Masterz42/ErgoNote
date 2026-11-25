@@ -16,15 +16,15 @@
 //! cargo xtask demo-check    # build to a scratch folder and compare, without writing
 //! ```
 
-use notecraft_model::{kv, names};
-use notecraft_store::check;
-use notecraft_store::links::{self, Link};
+use ergonote_model::{kv, names};
+use ergonote_store::check;
+use ergonote_store::links::{self, Link};
 use std::collections::BTreeMap;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
-const NOTEBOOK_TITLE: &str = "Welcome to NoteCraft";
+const NOTEBOOK_TITLE: &str = "Welcome to ErgoNote";
 const VERSION_MARK: &str = "{{version}}";
 /// Every node carries this date, so a rebuild changes nothing but what the content changed.
 const DATE: &str = "2026-10-18T00:00:00Z";
@@ -87,7 +87,7 @@ struct Source {
     /// `rtl` or `ltr` when the front matter says; otherwise the language decides.
     dir: Option<String>,
     /// The paragraphs this page justifies, by their position among its blocks, as the
-    /// page's head records them (`notecraft_model::justify`). Checked against the body when
+    /// page's head records them (`ergonote_model::justify`). Checked against the body when
     /// the file is read, so a page edited without moving the number fails the build rather
     /// than quietly justifying the wrong paragraph.
     justify: Option<String>,
@@ -167,17 +167,17 @@ fn workspace_version(here: &Path) -> Result<String, String> {
 /// nothing) is replaced, so a wrong path cannot delete someone's notes.
 fn build_in_place(content: &Path, out: &Path, art: &Path, version: &str, formats: &[DemoFormat]) -> Result<(), String> {
     if out.exists() {
-        let old_node = notecraft_store::tree::read_node(out);
+        let old_node = ergonote_store::tree::read_node(out);
         let old_layout = old_node.as_ref().is_some_and(|n| n.title == NOTEBOOK_TITLE);
-        let html_node = notecraft_store::tree::read_node(&out.join("html"));
-        let cmgfm_node = notecraft_store::tree::read_node(&out.join("cmgfm"));
+        let html_node = ergonote_store::tree::read_node(&out.join("html"));
+        let cmgfm_node = ergonote_store::tree::read_node(&out.join("cmgfm"));
         let paired_layout = html_node.as_ref().is_some_and(|node| node.title == NOTEBOOK_TITLE)
             && cmgfm_node.as_ref().is_some_and(|node| node.title == NOTEBOOK_TITLE);
         let partial_layout = html_node.as_ref().is_some_and(|node| node.title == NOTEBOOK_TITLE)
             || cmgfm_node.as_ref().is_some_and(|node| node.title == NOTEBOOK_TITLE);
         let selected_layout = formats.iter().any(|format| {
             let path = out.join(format.folder());
-            notecraft_store::tree::read_node(&path).is_some_and(|node| node.title == NOTEBOOK_TITLE)
+            ergonote_store::tree::read_node(&path).is_some_and(|node| node.title == NOTEBOOK_TITLE)
         });
         let ours = old_layout || paired_layout || partial_layout || selected_layout;
         let empty = fs::read_dir(out).map(|mut rd| rd.next().is_none()).unwrap_or(false);
@@ -205,7 +205,7 @@ fn build_in_place(content: &Path, out: &Path, art: &Path, version: &str, formats
 
 /// Builds into a scratch folder and compares it with `out`, file by file.
 fn check_in_place(content: &Path, out: &Path, art: &Path, version: &str) -> Result<(), String> {
-    let scratch = std::env::temp_dir().join(format!("notecraft-demo-check-{}", std::process::id()));
+    let scratch = std::env::temp_dir().join(format!("ergonote-demo-check-{}", std::process::id()));
     let _ = fs::remove_dir_all(&scratch);
     let fresh = scratch.join("DemoNotebook");
     let both = selected_formats("both")?;
@@ -258,20 +258,20 @@ impl DemoFormat {
         }
     }
 
-    fn page_format(self) -> notecraft_model::PageFormat {
+    fn page_format(self) -> ergonote_model::PageFormat {
         match self {
-            Self::Html => notecraft_model::PageFormat::Html,
-            Self::Cmgfm => notecraft_model::PageFormat::Cmgfm,
+            Self::Html => ergonote_model::PageFormat::Html,
+            Self::Cmgfm => ergonote_model::PageFormat::Cmgfm,
         }
     }
 }
 
-fn build_variant(content: &Path, out: &Path, art: &Path, target_format: notecraft_model::PageFormat, version: &str) -> Result<Built, String> {
+fn build_variant(content: &Path, out: &Path, art: &Path, target_format: ergonote_model::PageFormat, version: &str) -> Result<Built, String> {
     let mut built = Built::default();
     fs::create_dir_all(out).map_err(|e| format!("cannot create {}: {e}", out.display()))?;
     let format_name = match target_format {
-        notecraft_model::PageFormat::Html => "html",
-        notecraft_model::PageFormat::Cmgfm => "cmgfm",
+        ergonote_model::PageFormat::Html => "html",
+        ergonote_model::PageFormat::Cmgfm => "cmgfm",
     };
     write(&out.join("_node.toml"), &node_toml("notebook", NOTEBOOK_TITLE, &id_for("notebook"), 10, Some(format_name), Some("purple")))?;
 
@@ -378,14 +378,14 @@ fn write_page(dir: &Path, s: &Source, id: &str, default_dir: Option<&str>, art: 
 }
 
 /// Converts a source page into the selected notebook format without changing its blocks or layout.
-fn convert_source(mut source: Source, target: notecraft_model::PageFormat, path: &Path) -> Result<Source, String> {
-    let input = if source.html { notecraft_model::PageFormat::Html } else { notecraft_model::PageFormat::Cmgfm };
+fn convert_source(mut source: Source, target: ergonote_model::PageFormat, path: &Path) -> Result<Source, String> {
+    let input = if source.html { ergonote_model::PageFormat::Html } else { ergonote_model::PageFormat::Cmgfm };
     if input == target {
         return Ok(source);
     }
-    let (blocks, containers) = notecraft_formats::boxes::read(input, &source.body);
-    let body = notecraft_formats::boxes::write(target, &blocks, containers.as_deref());
-    let (converted_blocks, converted_containers) = notecraft_formats::boxes::read(target, &body);
+    let (blocks, containers) = ergonote_formats::boxes::read(input, &source.body);
+    let body = ergonote_formats::boxes::write(target, &blocks, containers.as_deref());
+    let (converted_blocks, converted_containers) = ergonote_formats::boxes::read(target, &body);
     if blocks != converted_blocks || containers != converted_containers {
         let difference = blocks
             .iter()
@@ -400,10 +400,10 @@ fn convert_source(mut source: Source, target: notecraft_model::PageFormat, path:
         ));
     }
     if let Some(justify) = &source.justify {
-        check_justify(path, justify, target == notecraft_model::PageFormat::Html, &body)?;
+        check_justify(path, justify, target == ergonote_model::PageFormat::Html, &body)?;
     }
     source.body = body;
-    source.html = target == notecraft_model::PageFormat::Html;
+    source.html = target == ergonote_model::PageFormat::Html;
     Ok(source)
 }
 
@@ -451,13 +451,13 @@ fn copy_assets(dir: &Path, body: &str, art: &Path) -> Result<(), String> {
     Ok(())
 }
 
-/// A drawing for a page: a few strokes written as NoteCraft's own ink file.
+/// A drawing for a page: a few strokes written as ErgoNote's own ink file.
 ///
 /// The demo should show what the pen leaves behind, and a page with ink in the folder is
 /// the only honest way to show it. The strokes are drawn here with the same crate the pen
 /// uses, so the file the demo ships is the file the pen would have written.
 fn write_ink(dir: &Path) -> Result<(), String> {
-    use notecraft_ink::{Dab, Drawing, Rgb, Stroke, Tool};
+    use ergonote_ink::{Dab, Drawing, Rgb, Stroke, Tool};
     let mut drawing = Drawing::new(820.0, 1100.0);
 
     // A hand-drawn underline under the page's first heading, and a tick beside it.
@@ -481,33 +481,33 @@ fn write_ink(dir: &Path) -> Result<(), String> {
     }
     drawing.add(tick);
 
-    let svg = notecraft_ink::svg::write(&drawing, notecraft_ink::svg::Flavour::Editable);
+    let svg = ergonote_ink::svg::write(&drawing, ergonote_ink::svg::Flavour::Editable);
     write(&dir.join("ink.svg"), &svg)
 }
 
 /// A two-column sheet of every shape offered by the Draw tab.
 fn write_shapes_ink(dir: &Path) -> Result<(), String> {
-    use notecraft_ink::{Drawing, Rgb, Stroke, Tool};
+    use ergonote_ink::{Drawing, Rgb, Stroke, Tool};
     let mut drawing = Drawing::new(820.0, 800.0);
-    for (index, shape) in notecraft_ink::shapes::Shape::ALL.into_iter().enumerate() {
+    for (index, shape) in ergonote_ink::shapes::Shape::ALL.into_iter().enumerate() {
         let column = index % 2;
         let row = index / 2;
         let x = 160.0 + column as f32 * 420.0;
         let y = 300.0 + row as f32 * 100.0;
-        let dabs = notecraft_ink::shapes::trace(shape, (x, y), (x + 80.0, y + 60.0), 0.75);
+        let dabs = ergonote_ink::shapes::trace(shape, (x, y), (x + 80.0, y + 60.0), 0.75);
         let mut stroke = Stroke::new(Tool::Pen, Rgb(0x28, 0x57, 0x8a), 4.0);
         for dab in dabs {
             stroke.add(dab);
         }
         drawing.add(stroke);
     }
-    let svg = notecraft_ink::svg::write(&drawing, notecraft_ink::svg::Flavour::Editable);
+    let svg = ergonote_ink::svg::write(&drawing, ergonote_ink::svg::Flavour::Editable);
     write(&dir.join("ink.svg"), &svg)
 }
 
 /// Handwritten words and a small landscape, saved as editable pen strokes.
 fn write_handwriting_ink(dir: &Path) -> Result<(), String> {
-    use notecraft_ink::{Dab, Drawing, Rgb, Stroke, Tool};
+    use ergonote_ink::{Dab, Drawing, Rgb, Stroke, Tool};
     let mut drawing = Drawing::new(820.0, 700.0);
     let mut x = 70.0;
     for ch in "Meet me at 3".chars() {
@@ -600,7 +600,7 @@ fn write_handwriting_ink(dir: &Path) -> Result<(), String> {
         }
         drawing.add(stroke);
     }
-    let svg = notecraft_ink::svg::write(&drawing, notecraft_ink::svg::Flavour::Editable);
+    let svg = ergonote_ink::svg::write(&drawing, ergonote_ink::svg::Flavour::Editable);
     write(&dir.join("ink.svg"), &svg)
 }
 
@@ -664,19 +664,19 @@ fn look_of(slug: &str) -> Look {
 fn html_page(title: &str, id: &str, order: u32, dir: Option<&str>, body: &str, look: Look, justify: Option<&str>) -> String {
     let t = escape(title);
     let mut head = format!(
-        "<!doctype html>\n<html>\n<head>\n<meta charset=\"utf-8\">\n<title>{t}</title>\n<meta name=\"notecraft:id\" content=\"{id}\">\n<meta name=\"notecraft:order\" content=\"{order}\">\n<meta name=\"notecraft:created\" content=\"{DATE}\">\n<meta name=\"notecraft:updated\" content=\"{DATE}\">\n"
+        "<!doctype html>\n<html>\n<head>\n<meta charset=\"utf-8\">\n<title>{t}</title>\n<meta name=\"ergonote:id\" content=\"{id}\">\n<meta name=\"ergonote:order\" content=\"{order}\">\n<meta name=\"ergonote:created\" content=\"{DATE}\">\n<meta name=\"ergonote:updated\" content=\"{DATE}\">\n"
     );
     if let Some(d) = dir {
-        head.push_str(&format!("<meta name=\"notecraft:dir\" content=\"{d}\">\n"));
+        head.push_str(&format!("<meta name=\"ergonote:dir\" content=\"{d}\">\n"));
     }
     if let Some(j) = justify {
-        head.push_str(&format!("<meta name=\"notecraft:justify\" content=\"{j}\">\n"));
+        head.push_str(&format!("<meta name=\"ergonote:justify\" content=\"{j}\">\n"));
     }
     if let Some(p) = look.paper {
-        head.push_str(&format!("<meta name=\"notecraft:paper\" content=\"{p}\">\n"));
+        head.push_str(&format!("<meta name=\"ergonote:paper\" content=\"{p}\">\n"));
     }
     if let Some(c) = look.colour {
-        head.push_str(&format!("<meta name=\"notecraft:page-color\" content=\"{c}\">\n"));
+        head.push_str(&format!("<meta name=\"ergonote:page-color\" content=\"{c}\">\n"));
     }
     format!("{head}</head>\n<body>\n{}\n</body>\n</html>\n", body.trim())
 }
@@ -737,15 +737,15 @@ fn read_source(path: &Path, order: u32) -> Result<Source, String> {
 /// with the reader the editor itself uses: a number that has drifted onto a heading, a table
 /// or off the end of the page stops the build.
 fn check_justify(path: &Path, line: &str, html: bool, body: &str) -> Result<(), String> {
-    let marked = notecraft_model::justify::parse(line);
+    let marked = ergonote_model::justify::parse(line);
     if marked.is_empty() {
         return Err(format!("{}: justify is block numbers separated by commas, not '{line}'", path.display()));
     }
-    let format = if html { notecraft_model::PageFormat::Html } else { notecraft_model::PageFormat::Cmgfm };
-    let blocks = notecraft_formats::boxes::read(format, body).0;
+    let format = if html { ergonote_model::PageFormat::Html } else { ergonote_model::PageFormat::Cmgfm };
+    let blocks = ergonote_formats::boxes::read(format, body).0;
     for (at, _) in marked.marks() {
         match blocks.get(*at) {
-            Some(notecraft_formats::Block::Paragraph(_)) => {}
+            Some(ergonote_formats::Block::Paragraph(_)) => {}
             Some(other) => return Err(format!("{}: justify names block {at}, which is a {}, not a paragraph", path.display(), name_of(other))),
             None => return Err(format!("{}: justify names block {at}, and the page has {} blocks", path.display(), blocks.len())),
         }
@@ -754,8 +754,8 @@ fn check_justify(path: &Path, line: &str, html: bool, body: &str) -> Result<(), 
 }
 
 /// What a block is, for an error message.
-fn name_of(block: &notecraft_formats::Block) -> &'static str {
-    use notecraft_formats::Block;
+fn name_of(block: &ergonote_formats::Block) -> &'static str {
+    use ergonote_formats::Block;
     match block {
         Block::Heading { .. } => "heading",
         Block::Paragraph(_) => "paragraph",
@@ -833,8 +833,8 @@ fn verify_pair(out: &Path) -> Result<(), String> {
 /// Every page folder under `dir` with the text of its file.
 fn pages_under(dir: &Path) -> Result<Vec<(PathBuf, String)>, String> {
     let mut out = Vec::new();
-    for child in notecraft_store::tree::child_dirs(dir) {
-        if let Some((_, file)) = notecraft_store::tree::page_file(&child) {
+    for child in ergonote_store::tree::child_dirs(dir) {
+        if let Some((_, file)) = ergonote_store::tree::page_file(&child) {
             let text = fs::read_to_string(&file).map_err(|e| format!("{}: {e}", file.display()))?;
             out.push((child.clone(), text));
         }
@@ -911,7 +911,7 @@ mod tests {
     }
 
     fn scratch(label: &str) -> PathBuf {
-        let p = std::env::temp_dir().join(format!("notecraft-demo-test-{label}-{}", std::process::id()));
+        let p = std::env::temp_dir().join(format!("ergonote-demo-test-{label}-{}", std::process::id()));
         let _ = fs::remove_dir_all(&p);
         p
     }
@@ -960,8 +960,8 @@ mod tests {
 
     #[test]
     fn a_leading_banner_stays_first_without_repeating_the_page_title() {
-        let body = "![Banner](assets/banner-start.png)\n\n# Welcome to NoteCraft\n\nWords on the page.\n";
-        assert_eq!(without_title_heading(body, "Welcome to NoteCraft"), "![Banner](assets/banner-start.png)\n\nWords on the page.\n");
+        let body = "![Banner](assets/banner-start.png)\n\n# Welcome to ErgoNote\n\nWords on the page.\n";
+        assert_eq!(without_title_heading(body, "Welcome to ErgoNote"), "![Banner](assets/banner-start.png)\n\nWords on the page.\n");
     }
 
     #[test]
@@ -997,12 +997,12 @@ page-color: yellow
             "{dressed}"
         );
         let dressed_html = html_page("T", "id", 10, None, "<p>x</p>", Look { paper: Some("grid-medium"), colour: None }, None);
-        assert!(dressed_html.contains("notecraft:paper"), "{dressed_html}");
+        assert!(dressed_html.contains("ergonote:paper"), "{dressed_html}");
         assert!(!dressed_html.contains("page-color"), "and says nothing about a colour it was not given");
         assert!(html.contains("<title>A &lt;b&gt;</title>"));
-        assert!(html.contains("name=\"notecraft:id\" content=\"abc\""));
-        assert!(!html.contains("notecraft:dir"));
-        assert!(html.contains("notecraft:justify\" content=\"0\""), "the justified paragraphs are a meta tag: {html}");
+        assert!(html.contains("name=\"ergonote:id\" content=\"abc\""));
+        assert!(!html.contains("ergonote:dir"));
+        assert!(html.contains("ergonote:justify\" content=\"0\""), "the justified paragraphs are a meta tag: {html}");
         let node = node_toml("section-group", "Español", "id1", 30, None, Some("blue"));
         assert_eq!(
             node,
@@ -1029,12 +1029,12 @@ page-color: yellow
         assert!(built.languages.contains(&"en".to_string()));
         let html = out.join("html");
         let cmgfm = out.join("cmgfm");
-        let html_tree = notecraft_store::tree::load_tree(&html).expect("HTML notebook tree");
-        let cmgfm_tree = notecraft_store::tree::load_tree(&cmgfm).expect("CMGFM notebook tree");
+        let html_tree = ergonote_store::tree::load_tree(&html).expect("HTML notebook tree");
+        let cmgfm_tree = ergonote_store::tree::load_tree(&cmgfm).expect("CMGFM notebook tree");
         assert_eq!(html_tree.info.title, NOTEBOOK_TITLE);
         assert_eq!(cmgfm_tree.info.title, NOTEBOOK_TITLE);
-        assert_eq!(html_tree.info.format, Some(notecraft_model::PageFormat::Html));
-        assert_eq!(cmgfm_tree.info.format, Some(notecraft_model::PageFormat::Cmgfm));
+        assert_eq!(html_tree.info.format, Some(ergonote_model::PageFormat::Html));
+        assert_eq!(cmgfm_tree.info.format, Some(ergonote_model::PageFormat::Cmgfm));
         assert_eq!(html_tree.children.len(), cmgfm_tree.children.len(), "both editions have the same top-level sections");
         let first = html_tree.children.first().expect("a first child");
         assert_eq!(first.info.title, START_TITLE, "the start section sorts first");
@@ -1042,7 +1042,7 @@ page-color: yellow
         for (html_group, cmgfm_group) in html_tree.children.iter().zip(&cmgfm_tree.children) {
             assert_eq!(html_group.info.title, cmgfm_group.info.title);
             assert_eq!(html_group.children.len(), cmgfm_group.children.len(), "matching structure in {}", html_group.path.display());
-            if html_group.info.kind == notecraft_model::NodeKind::SectionGroup {
+            if html_group.info.kind == ergonote_model::NodeKind::SectionGroup {
                 assert_eq!(html_group.children.len(), 1, "one How to section in {}", html_group.path.display());
                 assert!(html_group.children[0].children.len() >= 8, "the same pages in every language");
             }

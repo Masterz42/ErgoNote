@@ -1,5 +1,5 @@
 #![deny(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::unimplemented, clippy::todo, clippy::unreachable)]
-//! NoteCraft diagrams (layer L1): Mermaid source found in a page's text, and drawn as a picture.
+//! ErgoNote diagrams (layer L1): Mermaid source found in a page's text, and drawn as a picture.
 //!
 //! A diagram lives in a page as text, in either format: a ```` ```mermaid ```` fence in a
 //! Markdown page, `<pre class="diagram">` or `<pre class="mermaid">` (or a `<div>` with that
@@ -378,7 +378,7 @@ mod tests {
             "classDiagram\n  class Page\n  Page <|-- HtmlPage",
             "erDiagram\n  NOTEBOOK ||--o{ SECTION : holds",
             "gantt\n  title Release\n  dateFormat YYYY-MM-DD\n  section Build\n  Band :a1, 2026-10-12, 5d",
-            "mindmap\n  root((NoteCraft))\n    Pages\n    Ink",
+            "mindmap\n  root((ErgoNote))\n    Pages\n    Ink",
         ] {
             let svg = draw(source, &Palette::default());
             assert!(svg.as_ref().is_ok_and(|s| s.contains("<svg")), "{source}: {svg:?}");

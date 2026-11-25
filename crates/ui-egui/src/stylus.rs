@@ -113,7 +113,7 @@ impl Stylus {
         }
         if self.diagnostics.frames == 1 || self.diagnostics.frames.is_multiple_of(60) {
             log::debug!(
-                target: "notecraft::stylus",
+                target: "ergonote::stylus",
                 "input diagnostics: events={} pointer_moved={} mouse_moved={} pointer_buttons={} touch={} force={} no_force={} pen={} pressure={:.3} highest={:.3} readings={} last={}",
                 self.diagnostics.events,
                 self.diagnostics.pointer_moved,

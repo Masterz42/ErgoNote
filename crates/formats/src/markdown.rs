@@ -4,7 +4,7 @@
 //! (nested by indentation), block quotes, fenced code (a `mermaid` fence is kept as
 //! code with its language), math blocks (`$$ ... $$`), tables, rules and standalone
 //! images. Supported inline: bold, italic, strikethrough, code, links, images and
-//! `$math$`, and NoteCraft font-size spans. Other HTML is not supported. Also not
+//! `$math$`, and ErgoNote font-size spans. Other HTML is not supported. Also not
 //! supported: reference links, nested block quotes and lists inside quotes, setext
 //! headings, footnotes.
 
@@ -21,7 +21,7 @@ pub struct Span {
     pub script: Option<Script>,
     pub code: bool,
     pub math: bool,
-    /// Font size in points, carried by a NoteCraft inline `<span>`.
+    /// Font size in points, carried by a ErgoNote inline `<span>`.
     pub font_size: Option<u8>,
     pub font_family: Option<String>,
     /// Link target, if this span is part of a link.
@@ -249,11 +249,11 @@ fn font_style_open(chars: &[char], start: usize) -> Option<InlineSpanStyle> {
         } else if prop.eq_ignore_ascii_case("font-family") {
             family = Some(font_family_from_css(value)?);
         } else if prop.eq_ignore_ascii_case("text-decoration-color") {
-            u_color = Some(notecraft_model::NodeColor::parse(value)?.id().to_string());
+            u_color = Some(ergonote_model::NodeColor::parse(value)?.id().to_string());
         } else if prop.eq_ignore_ascii_case("color") {
-            t_color = Some(notecraft_model::NodeColor::parse(value)?.id().to_string());
+            t_color = Some(ergonote_model::NodeColor::parse(value)?.id().to_string());
         } else if prop.eq_ignore_ascii_case("background-color") {
-            h_color = Some(notecraft_model::NodeColor::parse(value)?.id().to_string());
+            h_color = Some(ergonote_model::NodeColor::parse(value)?.id().to_string());
         } else {
             return None;
         }

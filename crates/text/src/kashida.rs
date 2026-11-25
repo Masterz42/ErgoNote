@@ -32,7 +32,7 @@
 //! character, so the stretch comes in steps of one tatweel. A face with a `JSTF` table or a
 //! variable elongation axis would do it smoothly, and that is a later question.
 
-use notecraft_model::justify::Strength;
+use ergonote_model::justify::Strength;
 
 /// The tatweel, U+0640: the character that *is* the stretched join.
 pub const TATWEEL: char = '\u{0640}';
@@ -41,7 +41,7 @@ pub const TATWEEL: char = '\u{0640}';
 /// will stretch at all.
 ///
 /// Word's Justify Low, Medium and High change how many kashidas a line is given
-/// (`docs/rtl-in-word-and-onenote.md`), and these are NoteCraft's reading of that. Each
+/// (`docs/rtl-in-word-and-onenote.md`), and these are ErgoNote's reading of that. Each
 /// setting is a **ceiling**, not a target: how long one join may grow, and how far down the
 /// ranking the line may reach for another join. A line that the weakest setting can already
 /// fill looks the same at all three, which is right - there is no reason to stretch a join

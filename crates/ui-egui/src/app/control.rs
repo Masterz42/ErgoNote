@@ -1,6 +1,6 @@
 use super::*;
 
-impl NoteCraftApp {
+impl ErgoNoteApp {
     // ---------- control channel ----------
 
     /// Attaches a control channel (see `control.rs` and `docs/control-protocol.md`).
@@ -62,16 +62,16 @@ impl NoteCraftApp {
         let flag = |k: &str| p.get(k).and_then(Value::as_bool).unwrap_or(false);
         let text = |k: &str| p.get(k).and_then(Value::as_str);
         match method {
-            "engine.commands" => Ok(notecraft_engine::commands_json()),
+            "engine.commands" => Ok(ergonote_engine::commands_json()),
             "engine.execute" => {
                 let id = text("command").ok_or("missing command")?;
-                let params = notecraft_engine::params_from_json(p.get("params"));
+                let params = ergonote_engine::params_from_json(p.get("params"));
                 self.save_now();
                 let out = self.session.run(id, &params).map_err(|e| e.to_string())?;
                 if self.editor.as_ref().is_some_and(|ed| !ed.dir.exists()) {
                     self.editor = None;
                 }
-                Ok(notecraft_engine::output_json(&out))
+                Ok(ergonote_engine::output_json(&out))
             }
             "ui.inspect" => Ok(self.inspect(ctx)),
             "ui.open" => {
@@ -231,7 +231,7 @@ impl NoteCraftApp {
                 e.blocks
                     .iter()
                     .filter_map(|b| match b {
-                        notecraft_formats::markdown::Block::Code { lang, text } if lang == "mermaid" => Some(text.clone()),
+                        ergonote_formats::markdown::Block::Code { lang, text } if lang == "mermaid" => Some(text.clone()),
                         _ => None,
                     })
                     .collect()
@@ -239,10 +239,10 @@ impl NoteCraftApp {
             .unwrap_or_default();
         let in_page_counts = crate::diagramview::counts(ctx, &in_page, &self.tokens);
         let mut rows = Vec::new();
-        fn walk(app: &NoteCraftApp, n: &Node, depth: usize, rows: &mut Vec<Value>) {
+        fn walk(app: &ErgoNoteApp, n: &Node, depth: usize, rows: &mut Vec<Value>) {
             let open = app.open.contains(&n.path);
             rows.push(json!({
-                "path": notecraft_store::tree::display_path(n.path.strip_prefix(app.session.root()).unwrap_or(&n.path)).replace('\\', "/"),
+                "path": ergonote_store::tree::display_path(n.path.strip_prefix(app.session.root()).unwrap_or(&n.path)).replace('\\', "/"),
                 "title": n.info.title,
                 "kind": n.info.kind.id(),
                 "format": n.info.format.map(|f| f.id()),
@@ -307,16 +307,16 @@ impl NoteCraftApp {
             "theme": {"id": self.theme().id(), "modePref": self.mode_pref.id(), "accent": self.accent.id()},
             // The paper behind the pages, as the View tab's gallery sets it.
             "paper": self.paper_now().id(),
-            "paperSize": self.editor.as_ref().and_then(|e| e.paper_size).map_or_else(|| "auto".to_string(), notecraft_model::paper::Paper::write),
-            "ruleColour": self.editor.as_ref().and_then(|e| e.rule_colour).map(notecraft_model::NodeColor::id),
-            "pageColour": self.editor.as_ref().and_then(|e| e.colour).map(notecraft_model::NodeColor::id),
+            "paperSize": self.editor.as_ref().and_then(|e| e.paper_size).map_or_else(|| "auto".to_string(), ergonote_model::paper::Paper::write),
+            "ruleColour": self.editor.as_ref().and_then(|e| e.rule_colour).map(ergonote_model::NodeColor::id),
+            "pageColour": self.editor.as_ref().and_then(|e| e.colour).map(ergonote_model::NodeColor::id),
             // The pen the Draw tab is set to, and the drawing it writes in.
             "ink": {
                 "pointer": self.pointer.id(),
                 "tool": self.pen().tool.id(),
                 "colour": self.pen().colour.hex(),
                 "width": self.pen().width,
-                "rack": notecraft_ink::rack::write(&self.rack),
+                "rack": ergonote_ink::rack::write(&self.rack),
                 "nib": self.nib,
                 "sensitivity": self.sensitivity,
                 "holding": self.pad.as_ref().map_or(0, crate::inkpad::Pad::holding),

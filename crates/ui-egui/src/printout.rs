@@ -3,7 +3,7 @@
 //! The page editor owns insertion and persistence. This module owns the renderer boundary,
 //! keeps temporary output private, and never reports a partial printout as complete.
 
-use notecraft_store::vfs as fs;
+use ergonote_store::vfs as fs;
 use std::ffi::{OsStr, OsString};
 use std::path::{Path, PathBuf};
 use std::process::Command;
@@ -129,13 +129,13 @@ fn office_renderers() -> Vec<OsString> {
 
 fn temporary_workspace() -> Result<PathBuf, String> {
     let stamp = SystemTime::now().duration_since(UNIX_EPOCH).map_err(|e| format!("clock error: {e}"))?.as_nanos();
-    Ok(std::env::temp_dir().join(format!("notecraft-printout-{}-{stamp}", std::process::id())))
+    Ok(std::env::temp_dir().join(format!("ergonote-printout-{}-{stamp}", std::process::id())))
 }
 
 #[cfg(test)]
 mod tests {
     use super::{render_pdf, supports, temporary_workspace};
-    use notecraft_store::vfs as fs;
+    use ergonote_store::vfs as fs;
     use std::io::Write as IoWrite;
     use std::path::Path;
 

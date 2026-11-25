@@ -1,4 +1,4 @@
-# NoteCraft for Android
+# ErgoNote for Android
 
 The Android app: the same egui window as the desktop, in an APK for 64-bit ARM phones and
 tablets with Android 8 (API 26) or later.
@@ -6,13 +6,13 @@ tablets with Android 8 (API 26) or later.
 ## How it is put together
 
 - **No Java code.** The APK's activity is Android's own `android.app.NativeActivity`
-  ([`AndroidManifest.xml`](AndroidManifest.xml)). It loads `libnotecraft_android.so`, built from
+  ([`AndroidManifest.xml`](AndroidManifest.xml)). It loads `libergonote_android.so`, built from
   this crate, and calls its `android_main` ([`src/activity.rs`](src/activity.rs)).
 - **The window** is eframe's native-activity backend drawing with wgpu (Vulkan, or OpenGL ES 3).
-  It runs `NoteCraftApp` from `crates/ui-egui`, unchanged. Narrower than 600 points the window uses
+  It runs `ErgoNoteApp` from `crates/ui-egui`, unchanged. Narrower than 600 points the window uses
   the phone layout ([`crates/ui-egui/src/compact.rs`](../crates/ui-egui/src/compact.rs)).
 - **Storage** ([`src/storage.rs`](src/storage.rs)): settings and logs in the app's internal
-  storage; notebooks in `Android/data/com.alientechsoftware.notecraft/files/NoteCraft`, which can
+  storage; notebooks in `Android/data/com.ergonote.app/files/ErgoNote`, which can
   be copied off the device over USB.
 - **The Welcome notebook** ([`src/welcome.rs`](src/welcome.rs)): both editions travel in one APK
   asset, are unpacked into internal storage once per version, and the first-use wizard copies the
@@ -33,7 +33,7 @@ Set up once with [`SKILLS/nc-devx/scripts/setup.android.sh`](../SKILLS/nc-devx/s
 (Linux or WSL2), then from the repository root:
 
 ```bash
-bash android/build.sh   # dist/android/notecraft-<version>-android-arm64.apk
+bash android/build.sh   # dist/android/ergonote-<version>-android-arm64.apk
 bash android/test.sh    # checks the APK
 ```
 
@@ -46,9 +46,9 @@ publishes.
 ## Run on a device
 
 ```bash
-adb install -r dist/android/notecraft-<version>-android-arm64.apk
-adb shell am start -n com.alientechsoftware.notecraft/android.app.NativeActivity
-adb logcat -s NoteCraft
+adb install -r dist/android/ergonote-<version>-android-arm64.apk
+adb shell am start -n com.ergonote.app/android.app.NativeActivity
+adb logcat -s ErgoNote
 ```
 
 More in [`SKILLS/nc-devx/references/android.md`](../SKILLS/nc-devx/references/android.md).

@@ -10,9 +10,9 @@ use crate::icons::{self, Icon};
 use crate::ribbon_icons::{self, Mark};
 use crate::theme::Tokens;
 use egui::{Align2, Color32, Rect, Sense, Ui, vec2};
-use notecraft_ink::rack::{self, Nib};
-use notecraft_ink::{Rgb, Tool};
-use notecraft_model::{PageFormat, Tag};
+use ergonote_ink::rack::{self, Nib};
+use ergonote_ink::{Rgb, Tool};
+use ergonote_model::{PageFormat, Tag};
 
 /// The tabs, in order. "Source" only appears while the page source is shown, the way Office
 /// shows a tab for what is selected.
@@ -141,18 +141,18 @@ pub enum Act {
     /// More or less indent on a list item.
     Indent(bool),
     /// Which way the line the caret is in reads. `None` lets the words decide again.
-    Direction(Option<notecraft_model::Dir>),
+    Direction(Option<ergonote_model::Dir>),
     /// Stretch the paragraph the caret is in to fill the column, at this strength, or stop
     /// when it is already at that strength. An Arabic paragraph is stretched by kashida, a
     /// Latin one by its spaces.
-    Justify(notecraft_model::justify::Strength),
+    Justify(ergonote_model::justify::Strength),
     /// Set the caret's paragraphs against the left, the middle or the right (issue #258), or
     /// give them back their own alignment when they already have that one.
-    Align(notecraft_model::justify::Align),
+    Align(ergonote_model::justify::Align),
     /// Which way the whole page reads. `None` lets every line decide for itself.
-    PageDirection(Option<notecraft_model::Dir>),
+    PageDirection(Option<ergonote_model::Dir>),
     /// Which way the selection, or what is typed next, reads: an isolated run inside the line.
-    Embedding(notecraft_model::Dir),
+    Embedding(ergonote_model::Dir),
     /// Take the marks off the selection.
     ClearFormatting,
     /// Put a tag on the line the caret is in, or take it off again.
@@ -168,7 +168,7 @@ pub enum Act {
     /// Open the Page Templates pane: new pages from templates, and this page kept as one
     /// (issue #173).
     PageTemplates,
-    /// Something OneNote has that NoteCraft does not: say so plainly.
+    /// Something OneNote has that ErgoNote does not: say so plainly.
     NotBuilt(&'static str),
     /// Change the shape of the table the caret is in.
     Table(crate::pageedit::TableEdit),
@@ -182,17 +182,17 @@ pub enum Act {
     /// Draw the lines round the cells of a table, or stop drawing them.
     TableBorders(bool),
     /// Align the words in the caret's cell, or in every picked cell (issue #170).
-    TableAlign(notecraft_model::tablecols::Align),
+    TableAlign(ergonote_model::tablecols::Align),
     /// A colour behind the caret's cell, or behind every picked cell; `None` takes it away
     /// (issue #169).
-    TableShade(Option<notecraft_model::NodeColor>),
+    TableShade(Option<ergonote_model::NodeColor>),
     /// The colour behind the open page. `None` is the theme's own paper.
-    PageColour(Option<notecraft_model::NodeColor>),
+    PageColour(Option<ergonote_model::NodeColor>),
     /// View > Paper Size: the sheet the page is written for, as the page file writes it
-    /// ([`notecraft_model::paper::Paper::write`]), or `None` for Auto (issue #269).
+    /// ([`ergonote_model::paper::Paper::write`]), or `None` for Auto (issue #269).
     PaperSize(Option<String>),
     /// Colour the open page's rule and grid lines, or `None` for the theme's own (issue #288).
-    RuleColour(Option<notecraft_model::NodeColor>),
+    RuleColour(Option<ergonote_model::NodeColor>),
     /// Take back the last change to the page, or put it back.
     Undo,
     Redo,
@@ -236,11 +236,11 @@ pub enum Act {
     /// Capture an area of the screen and insert it into the page.
     ScreenClip,
     /// Underline the selected text (or current line) in a chosen color (`None` clears underlining).
-    UnderlineColor(Option<notecraft_model::NodeColor>),
+    UnderlineColor(Option<ergonote_model::NodeColor>),
     /// Change foreground text colour (`None` restores default theme text colour).
-    TextColor(Option<notecraft_model::NodeColor>),
+    TextColor(Option<ergonote_model::NodeColor>),
     /// Change text highlight background colour (`None` clears highlighting).
-    HighlightColor(Option<notecraft_model::NodeColor>),
+    HighlightColor(Option<ergonote_model::NodeColor>),
     /// The user picked another tab.
     Tab(String),
 }
@@ -260,7 +260,7 @@ pub enum Pointer {
     /// Pick ink up by drawing a loop round it.
     Lasso,
     /// Draw a regular shape: the drag gives the two corners it is drawn between.
-    Shape(notecraft_ink::shapes::Shape),
+    Shape(ergonote_ink::shapes::Shape),
     /// Draw > Panning Hand: a drag with the main button (or one finger) moves the page, and
     /// nothing on it is drawn, picked or written in.
     Pan,
@@ -318,7 +318,7 @@ pub enum RuleLines {
     GridMedium,
     GridLarge,
     GridHuge,
-    /// NoteCraft's own two: the same paper with every fifth line drawn stronger, which is
+    /// ErgoNote's own two: the same paper with every fifth line drawn stronger, which is
     /// easier to count down and across than a plain grid.
     CraftLines,
     CraftGrid,
@@ -328,7 +328,7 @@ impl RuleLines {
     /// Every choice, in the order the menu shows them: the ruled ones, then the squares.
     pub const RULED: [RuleLines; 4] = [RuleLines::Narrow, RuleLines::College, RuleLines::Standard, RuleLines::Wide];
     pub const GRIDS: [RuleLines; 4] = [RuleLines::GridSmall, RuleLines::GridMedium, RuleLines::GridLarge, RuleLines::GridHuge];
-    /// NoteCraft's own, offered under the other two.
+    /// ErgoNote's own, offered under the other two.
     pub const CRAFT: [RuleLines; 2] = [RuleLines::CraftLines, RuleLines::CraftGrid];
 
     pub fn id(self) -> &'static str {
@@ -358,8 +358,8 @@ impl RuleLines {
             RuleLines::GridMedium => "Medium squares",
             RuleLines::GridLarge => "Large squares",
             RuleLines::GridHuge => "Very large squares",
-            RuleLines::CraftLines => "NoteCraft ruled",
-            RuleLines::CraftGrid => "NoteCraft squares",
+            RuleLines::CraftLines => "ErgoNote ruled",
+            RuleLines::CraftGrid => "ErgoNote squares",
         }
     }
 
@@ -401,8 +401,8 @@ impl RuleLines {
             RuleLines::GridMedium => crate::tl_id!("ui.medium_squares"),
             RuleLines::GridLarge => crate::tl_id!("ui.large_squares"),
             RuleLines::GridHuge => crate::tl_id!("ui.very_large_squares"),
-            RuleLines::CraftLines => crate::tl_id!("ui.notecraft_ruled"),
-            RuleLines::CraftGrid => crate::tl_id!("ui.notecraft_squares"),
+            RuleLines::CraftLines => crate::tl_id!("ui.ergonote_ruled"),
+            RuleLines::CraftGrid => crate::tl_id!("ui.ergonote_squares"),
         }
     }
 
@@ -428,7 +428,7 @@ impl RuleLines {
         matches!(self, RuleLines::GridSmall | RuleLines::GridMedium | RuleLines::GridLarge | RuleLines::GridHuge | RuleLines::CraftGrid)
     }
 
-    /// True where every fifth line is drawn stronger: NoteCraft's own two papers.
+    /// True where every fifth line is drawn stronger: ErgoNote's own two papers.
     pub fn fives(self) -> bool {
         matches!(self, RuleLines::CraftLines | RuleLines::CraftGrid)
     }
@@ -442,7 +442,7 @@ impl RuleLines {
         if want == "none" {
             return Some(RuleLines::None);
         }
-        // "lines" and "grid" are NoteCraft's own two, and the ids the first version wrote.
+        // "lines" and "grid" are ErgoNote's own two, and the ids the first version wrote.
         RuleLines::RULED.into_iter().chain(RuleLines::GRIDS).chain(RuleLines::CRAFT).find(|r| r.id() == want)
     }
 }
@@ -565,18 +565,18 @@ pub struct View<'a> {
     pub table_borders: bool,
     /// How the words in the caret's cell, or in every picked cell, are aligned; `None` when
     /// the picked cells differ.
-    pub table_align: Option<notecraft_model::tablecols::Align>,
+    pub table_align: Option<ergonote_model::tablecols::Align>,
     /// The colour behind the caret's cell, or behind every picked cell: `Some(None)` for none,
     /// and `None` when the picked cells differ.
-    pub table_shade: Option<Option<notecraft_model::NodeColor>>,
+    pub table_shade: Option<Option<ergonote_model::NodeColor>>,
     /// True when GridCraft is installed, which is when a table can be handed to it.
     pub gridcraft: bool,
     /// The colour behind the open page, when it carries one of its own.
-    pub page_colour: Option<notecraft_model::NodeColor>,
+    pub page_colour: Option<ergonote_model::NodeColor>,
     /// The colour of the open page's rule and grid lines, `None` for the theme's (issue #288).
-    pub rule_colour: Option<notecraft_model::NodeColor>,
+    pub rule_colour: Option<ergonote_model::NodeColor>,
     /// The open page's sheet; `None` is Auto (issue #269).
-    pub paper_size: Option<notecraft_model::paper::Paper>,
+    pub paper_size: Option<ergonote_model::paper::Paper>,
     /// Whether the page has anything to take back, and anything to put back.
     pub can_undo: bool,
     pub can_redo: bool,
@@ -598,7 +598,7 @@ pub struct View<'a> {
     /// The marks of the words at the caret or of the whole selection, which Home's mark
     /// buttons show as pressed (issue #255).
     pub marks: crate::pageedit::Marks,
-    pub align: Option<notecraft_model::justify::Align>,
+    pub align: Option<ergonote_model::justify::Align>,
     pub font_size: Option<&'a str>,
 }
 
@@ -1166,7 +1166,7 @@ pub const STYLES: [(&str, &str); 12] = [
 ];
 
 /// OneNote's tag list. Every one of them works: To Do is a task item, the rest are a
-/// marker word at the start of the line (`notecraft_model::Tag`).
+/// marker word at the start of the line (`ergonote_model::Tag`).
 pub fn tag_label(tag: Tag) -> String {
     let label = crate::tl!(tag.label());
     match tag.shortcut() {
@@ -1217,7 +1217,7 @@ fn home_tab(ui: &mut Ui, view: &View<'_>, t: &Tokens, acts: &mut Vec<Act>) {
                     {
                         match crate::fonts::catalog_if_ready() {
                             Some(Ok(catalog)) => (
-                                catalog.families().iter().filter(|name| notecraft_formats::markdown::valid_font_family(name)).cloned().collect(),
+                                catalog.families().iter().filter(|name| ergonote_formats::markdown::valid_font_family(name)).cloned().collect(),
                                 None,
                             ),
                             Some(Err(error)) => {
@@ -1249,7 +1249,7 @@ fn home_tab(ui: &mut Ui, view: &View<'_>, t: &Tokens, acts: &mut Vec<Act>) {
                         width: 114.0,
                         items: &families,
                         empty_note: families_note.as_deref(),
-                        accept: &|typed| notecraft_formats::markdown::valid_font_family(typed),
+                        accept: &|typed| ergonote_formats::markdown::valid_font_family(typed),
                     },
                 );
                 if let Some(name) = family_out.chosen {
@@ -1323,12 +1323,12 @@ fn home_tab(ui: &mut Ui, view: &View<'_>, t: &Tokens, acts: &mut Vec<Act>) {
                     "",
                     crate::tl_id!("ui.align_left_ctrl_l"),
                     crate::tl_id!("ui.align_left_ctrl_l"),
-                    view.align == Some(notecraft_model::justify::Align::Left),
+                    view.align == Some(ergonote_model::justify::Align::Left),
                     t,
                 )
                 .clicked()
                 {
-                    acts.push(Act::Align(notecraft_model::justify::Align::Left));
+                    acts.push(Act::Align(ergonote_model::justify::Align::Left));
                 }
                 if small(
                     ui,
@@ -1336,12 +1336,12 @@ fn home_tab(ui: &mut Ui, view: &View<'_>, t: &Tokens, acts: &mut Vec<Act>) {
                     "",
                     crate::tl_id!("ui.center"),
                     crate::tl_id!("ui.center"),
-                    view.align == Some(notecraft_model::justify::Align::Center),
+                    view.align == Some(ergonote_model::justify::Align::Center),
                     t,
                 )
                 .clicked()
                 {
-                    acts.push(Act::Align(notecraft_model::justify::Align::Center));
+                    acts.push(Act::Align(ergonote_model::justify::Align::Center));
                 }
                 if small(
                     ui,
@@ -1349,12 +1349,12 @@ fn home_tab(ui: &mut Ui, view: &View<'_>, t: &Tokens, acts: &mut Vec<Act>) {
                     "",
                     crate::tl_id!("ui.align_right_ctrl_r"),
                     crate::tl_id!("ui.align_right_ctrl_r"),
-                    view.align == Some(notecraft_model::justify::Align::Right),
+                    view.align == Some(ergonote_model::justify::Align::Right),
                     t,
                 )
                 .clicked()
                 {
-                    acts.push(Act::Align(notecraft_model::justify::Align::Right));
+                    acts.push(Act::Align(ergonote_model::justify::Align::Right));
                 }
             });
             ui.horizontal(|ui| {
@@ -1499,8 +1499,8 @@ fn home_tab(ui: &mut Ui, view: &View<'_>, t: &Tokens, acts: &mut Vec<Act>) {
 
 /// View > Paper Size (issue #269): Auto or a sheet, which way it is turned, and its margins.
 /// Every change is an act at once, so the page shows it while the menu stays open.
-fn paper_size_menu(ui: &mut Ui, now: Option<notecraft_model::paper::Paper>, t: &Tokens, acts: &mut Vec<Act>) {
-    use notecraft_model::paper::{MAX_SIDE, MIN_SIDE, Paper, Size};
+fn paper_size_menu(ui: &mut Ui, now: Option<ergonote_model::paper::Paper>, t: &Tokens, acts: &mut Vec<Act>) {
+    use ergonote_model::paper::{MAX_SIDE, MIN_SIDE, Paper, Size};
     ui.set_min_width(250.0);
     ui.label(egui::RichText::new(crate::tl_id!("ui.size")).strong());
     if ui.selectable_label(now.is_none(), crate::tl_id!("ui.auto_the_page_grows_with_what_is_on_it")).clicked() {
@@ -1747,8 +1747,8 @@ fn equation_gallery(ui: &mut Ui, t: &Tokens, acts: &mut Vec<Act>) {
 
 /// OneNote's alignment button: a menu of alignment, then the paragraph's direction under a
 /// separator, in that order. Left, centre and right are not built and say so; Justify is,
-/// and is the one of the four NoteCraft has an answer for that no other note taking
-/// application does (see `notecraft_text::kashida`).
+/// and is the one of the four ErgoNote has an answer for that no other note taking
+/// application does (see `ergonote_text::kashida`).
 #[allow(dead_code)]
 fn align_menu(ui: &mut Ui, t: &Tokens, acts: &mut Vec<Act>) {
     let resp = small(
@@ -1775,9 +1775,9 @@ fn align_menu(ui: &mut Ui, t: &Tokens, acts: &mut Vec<Act>) {
                     ui.set_min_width(200.0);
                     ui.spacing_mut().item_spacing = vec2(2.0, 1.0);
                     for (icon, label, align) in [
-                        (Icon::AlignLeft, crate::tl_id!("ui.align_left_ctrl_l"), notecraft_model::justify::Align::Left),
-                        (Icon::AlignCenter, crate::tl_id!("ui.center"), notecraft_model::justify::Align::Center),
-                        (Icon::AlignRight, crate::tl_id!("ui.align_right_ctrl_r"), notecraft_model::justify::Align::Right),
+                        (Icon::AlignLeft, crate::tl_id!("ui.align_left_ctrl_l"), ergonote_model::justify::Align::Left),
+                        (Icon::AlignCenter, crate::tl_id!("ui.center"), ergonote_model::justify::Align::Center),
+                        (Icon::AlignRight, crate::tl_id!("ui.align_right_ctrl_r"), ergonote_model::justify::Align::Right),
                     ] {
                         if floating::menu_row(ui, Some(Glyph::Icon(icon)), label, t).clicked() {
                             acts.push(Act::Align(align));
@@ -1788,9 +1788,9 @@ fn align_menu(ui: &mut Ui, t: &Tokens, acts: &mut Vec<Act>) {
                     // meets what they already know. They decide how many kashidas a line
                     // may take; `docs/rtl-in-word-and-onenote.md` has the comparison.
                     for (strength, icon, label) in [
-                        (notecraft_model::justify::Strength::Low, Icon::JustifyLow, "Justify Low"),
-                        (notecraft_model::justify::Strength::Medium, Icon::JustifyMedium, "Justify Medium"),
-                        (notecraft_model::justify::Strength::High, Icon::JustifyHigh, "Justify High"),
+                        (ergonote_model::justify::Strength::Low, Icon::JustifyLow, "Justify Low"),
+                        (ergonote_model::justify::Strength::Medium, Icon::JustifyMedium, "Justify Medium"),
+                        (ergonote_model::justify::Strength::High, Icon::JustifyHigh, "Justify High"),
                     ] {
                         if floating::menu_row(ui, Some(Glyph::Icon(icon)), label, t).clicked() {
                             acts.push(Act::Justify(strength));
@@ -1804,11 +1804,11 @@ fn align_menu(ui: &mut Ui, t: &Tokens, acts: &mut Vec<Act>) {
                     }
                     ui.separator();
                     if direction_row(ui, Some(Icon::ParaLtr), crate::tl_id!("ui.left_to_right"), t).clicked() {
-                        acts.push(Act::Direction(Some(notecraft_model::Dir::Ltr)));
+                        acts.push(Act::Direction(Some(ergonote_model::Dir::Ltr)));
                         picked = true;
                     }
                     if direction_row(ui, Some(Icon::ParaRtl), crate::tl_id!("ui.right_to_left"), t).clicked() {
-                        acts.push(Act::Direction(Some(notecraft_model::Dir::Rtl)));
+                        acts.push(Act::Direction(Some(ergonote_model::Dir::Rtl)));
                         picked = true;
                     }
                     if direction_row(ui, None, crate::tl_id!("ui.direction_from_the_words"), t).clicked() {
@@ -1865,11 +1865,11 @@ fn run_direction_menu(ui: &mut Ui, t: &Tokens, acts: &mut Vec<Act>) {
                     ui.label(egui::RichText::new(crate::tl_id!("ui.selected_text_next_typing")).small().color(t.muted));
                     ui.separator();
                     if direction_row(ui, Some(Icon::CaretLtr), crate::tl_id!("ui.left_to_right"), t).clicked() {
-                        acts.push(Act::Embedding(notecraft_model::Dir::Ltr));
+                        acts.push(Act::Embedding(ergonote_model::Dir::Ltr));
                         picked = true;
                     }
                     if direction_row(ui, Some(Icon::CaretRtl), crate::tl_id!("ui.right_to_left"), t).clicked() {
-                        acts.push(Act::Embedding(notecraft_model::Dir::Rtl));
+                        acts.push(Act::Embedding(ergonote_model::Dir::Rtl));
                         picked = true;
                     }
                 });
@@ -1970,7 +1970,7 @@ pub fn paint_tag(painter: &egui::Painter, rect: Rect, tag: Tag, text: Color32, a
 }
 
 /// A custom tag's symbol in its colour; a plain dot when it has none.
-pub fn paint_symbol(painter: &egui::Painter, rect: Rect, symbol: &str, colour: notecraft_model::NodeColor) {
+pub fn paint_symbol(painter: &egui::Painter, rect: Rect, symbol: &str, colour: ergonote_model::NodeColor) {
     let (r, g, b) = colour.rgb(painter.ctx().global_style().visuals.dark_mode);
     let colour = Color32::from_rgb(r, g, b);
     if symbol.is_empty() {
@@ -2067,12 +2067,12 @@ enum ColorPickerKind {
 fn color_picker_popup(ui: &mut Ui, id: &str, tip: &str, label_text: &str, kind: ColorPickerKind, t: &Tokens, acts: &mut Vec<Act>) {
     let mem_id = ui.id().with((id, "last-color"));
     let default_color = match kind {
-        ColorPickerKind::Highlight => notecraft_model::NodeColor::Yellow,
-        ColorPickerKind::Text | ColorPickerKind::Underline => notecraft_model::NodeColor::Red,
+        ColorPickerKind::Highlight => ergonote_model::NodeColor::Yellow,
+        ColorPickerKind::Text | ColorPickerKind::Underline => ergonote_model::NodeColor::Red,
     };
-    let active_color = ui.data(|d| d.get_temp::<Option<notecraft_model::NodeColor>>(mem_id)).flatten().unwrap_or(default_color);
+    let active_color = ui.data(|d| d.get_temp::<Option<ergonote_model::NodeColor>>(mem_id)).flatten().unwrap_or(default_color);
     let dark = t.editor.r() < 128;
-    let swatch_for = |c: notecraft_model::NodeColor| match kind {
+    let swatch_for = |c: ergonote_model::NodeColor| match kind {
         ColorPickerKind::Text => crate::theme::text_swatch_color(c, dark),
         ColorPickerKind::Highlight => crate::theme::highlight_bg(c, dark),
         ColorPickerKind::Underline => {
@@ -2117,26 +2117,26 @@ fn color_picker_popup(ui: &mut Ui, id: &str, tip: &str, label_text: &str, kind: 
             ui.horizontal(|ui| match kind {
                 ColorPickerKind::Text => {
                     if ui.small_button("Défaut").clicked() {
-                        ui.data_mut(|d| d.remove::<Option<notecraft_model::NodeColor>>(mem_id));
+                        ui.data_mut(|d| d.remove::<Option<ergonote_model::NodeColor>>(mem_id));
                         acts.push(Act::TextColor(None));
                         ui.close();
                     }
                 }
                 ColorPickerKind::Highlight => {
                     if ui.small_button("Aucun").clicked() {
-                        ui.data_mut(|d| d.remove::<Option<notecraft_model::NodeColor>>(mem_id));
+                        ui.data_mut(|d| d.remove::<Option<ergonote_model::NodeColor>>(mem_id));
                         acts.push(Act::HighlightColor(None));
                         ui.close();
                     }
                 }
                 ColorPickerKind::Underline => {
                     if ui.small_button("Normal").clicked() {
-                        ui.data_mut(|d| d.remove::<Option<notecraft_model::NodeColor>>(mem_id));
+                        ui.data_mut(|d| d.remove::<Option<ergonote_model::NodeColor>>(mem_id));
                         acts.push(Act::Mark("underline"));
                         ui.close();
                     }
                     if ui.small_button("Aucun").clicked() {
-                        ui.data_mut(|d| d.remove::<Option<notecraft_model::NodeColor>>(mem_id));
+                        ui.data_mut(|d| d.remove::<Option<ergonote_model::NodeColor>>(mem_id));
                         acts.push(Act::UnderlineColor(None));
                         ui.close();
                     }
@@ -2144,7 +2144,7 @@ fn color_picker_popup(ui: &mut Ui, id: &str, tip: &str, label_text: &str, kind: 
             });
             ui.add_space(4.0);
             egui::Grid::new(id).spacing([4.0, 4.0]).show(ui, |ui| {
-                for (i, c) in notecraft_model::NodeColor::ALL.into_iter().enumerate() {
+                for (i, c) in ergonote_model::NodeColor::ALL.into_iter().enumerate() {
                     let swatch = swatch_for(c);
                     let (r_rect, r_resp) = ui.allocate_exact_size(vec2(22.0, 22.0), Sense::click());
                     ui.painter().rect_filled(r_rect, 4.0, swatch);
@@ -2187,7 +2187,7 @@ fn underline_color_picker_button(ui: &mut Ui, t: &Tokens, acts: &mut Vec<Act>) {
     color_picker_popup(ui, "underline-color-picker", "Couleur du soulignage", "S", ColorPickerKind::Underline, t, acts);
 }
 
-/// OneNote's Insert tab, group for group and in its order. What NoteCraft can do is
+/// OneNote's Insert tab, group for group and in its order. What ErgoNote can do is
 /// wired; what it cannot is greyed and says so, so the tab is an honest map of where the
 /// work is rather than a short list of what happens to exist.
 #[allow(dead_code)]
@@ -2245,7 +2245,7 @@ fn insert_tab(ui: &mut Ui, view: &View<'_>, t: &Tokens, acts: &mut Vec<Act>) {
 /// a paper is picking a look, so the look is what is shown; the name is there to say it.
 fn paper_swatch(ui: &mut Ui, r: RuleLines, here: bool, t: &Tokens) -> egui::Response {
     // Half size. At that scale the closest two papers still differ by two lines, and
-    // NoteCraft's own show their stronger fifth line, which is the whole point of them.
+    // ErgoNote's own show their stronger fifth line, which is the whole point of them.
     const SCALE: f32 = 0.5;
     const PAPER: egui::Vec2 = egui::vec2(78.0, 66.0);
     const CAPTION: f32 = 15.0;
@@ -2280,7 +2280,7 @@ fn paper_swatch(ui: &mut Ui, r: RuleLines, here: bool, t: &Tokens) -> egui::Resp
 
 /// One page colour in the Format Background menu: a pale wash of it, as the page is
 /// drawn, with a ring round the one the page is using.
-fn colour_swatch(ui: &mut Ui, colour: Option<notecraft_model::NodeColor>, here: bool, t: &Tokens) -> egui::Response {
+fn colour_swatch(ui: &mut Ui, colour: Option<ergonote_model::NodeColor>, here: bool, t: &Tokens) -> egui::Response {
     let side = 22.0;
     let (rect, resp) = ui.allocate_exact_size(vec2(side, side), Sense::click());
     let dark = t.editor.r() < 128;
@@ -2298,7 +2298,7 @@ fn colour_swatch(ui: &mut Ui, colour: Option<notecraft_model::NodeColor>, here: 
     if colour.is_none() {
         painter.text(rect.center(), egui::Align2::CENTER_CENTER, "/", egui::FontId::proportional(13.0), t.muted);
     }
-    let name = colour.map(notecraft_model::NodeColor::label).unwrap_or(crate::tl_id!("ui.no_colour"));
+    let name = colour.map(ergonote_model::NodeColor::label).unwrap_or(crate::tl_id!("ui.no_colour"));
     let enabled = ui.is_enabled();
     resp.widget_info(|| egui::WidgetInfo::selected(egui::WidgetType::Button, enabled, here, name));
     resp.on_hover_text(name)
@@ -2311,7 +2311,7 @@ fn rule_colour_palette(ui: &mut Ui, view: &View<'_>, t: &Tokens, acts: &mut Vec<
     ui.label(egui::RichText::new(crate::tl_id!("ui.rule_line_colour")).strong().color(t.text));
     ui.add_enabled_ui(view.has_page, |ui| {
         ui.horizontal(|ui| {
-            for colour in std::iter::once(None).chain(notecraft_model::NodeColor::ALL.into_iter().map(Some)) {
+            for colour in std::iter::once(None).chain(ergonote_model::NodeColor::ALL.into_iter().map(Some)) {
                 let here = view.rule_colour == colour;
                 let side = 22.0;
                 let (rect, resp) = ui.allocate_exact_size(vec2(side, side), Sense::click());
@@ -2352,7 +2352,7 @@ fn page_colour_palette(ui: &mut Ui, view: &View<'_>, t: &Tokens, acts: &mut Vec<
             acts.push(Act::PageColour(None));
             picked = true;
         }
-        for c in notecraft_model::NodeColor::ALL {
+        for c in ergonote_model::NodeColor::ALL {
             if colour_swatch(ui, Some(c), view.page_colour == Some(c), t).clicked() {
                 acts.push(Act::PageColour(Some(c)));
                 picked = true;
@@ -2419,7 +2419,7 @@ fn shading_menu(ui: &mut Ui, view: &View<'_>, t: &Tokens, acts: &mut Vec<Act>) {
                         acts.push(Act::TableShade(None));
                         picked = true;
                     }
-                    for c in notecraft_model::NodeColor::ALL {
+                    for c in ergonote_model::NodeColor::ALL {
                         if shade_swatch(ui, Some(c), now == Some(Some(c)), t).clicked() {
                             acts.push(Act::TableShade(Some(c)));
                             picked = true;
@@ -2438,7 +2438,7 @@ fn shading_menu(ui: &mut Ui, view: &View<'_>, t: &Tokens, acts: &mut Vec<Act>) {
 }
 
 /// One colour in the Shading palette, drawn as a cell shaded with it would be.
-fn shade_swatch(ui: &mut Ui, colour: Option<notecraft_model::NodeColor>, here: bool, t: &Tokens) -> egui::Response {
+fn shade_swatch(ui: &mut Ui, colour: Option<ergonote_model::NodeColor>, here: bool, t: &Tokens) -> egui::Response {
     let side = 22.0;
     let (rect, resp) = ui.allocate_exact_size(vec2(side, side), Sense::click());
     let fill = colour.map_or(t.editor, |c| crate::pageedit::cell_shade(t, c));
@@ -2449,7 +2449,7 @@ fn shade_swatch(ui: &mut Ui, colour: Option<notecraft_model::NodeColor>, here: b
     if colour.is_none() {
         painter.text(rect.center(), egui::Align2::CENTER_CENTER, "/", egui::FontId::proportional(13.0), t.muted);
     }
-    let name = colour.map(notecraft_model::NodeColor::label).unwrap_or(crate::tl_id!("ui.no_colour"));
+    let name = colour.map(ergonote_model::NodeColor::label).unwrap_or(crate::tl_id!("ui.no_colour"));
     let enabled = ui.is_enabled();
     resp.widget_info(|| egui::WidgetInfo::selected(egui::WidgetType::Button, enabled, here, name));
     resp.on_hover_text(name)
@@ -2610,7 +2610,7 @@ fn rule_lines_menu(ui: &mut Ui, view: &View<'_>, t: &Tokens, acts: &mut Vec<Act>
                     shelf(ui, "No lines", &[RuleLines::None], acts, &mut picked);
                     shelf(ui, "Rule lines", &RuleLines::RULED, acts, &mut picked);
                     shelf(ui, "Grid lines", &RuleLines::GRIDS, acts, &mut picked);
-                    shelf(ui, "NoteCraft's own", &RuleLines::CRAFT, acts, &mut picked);
+                    shelf(ui, "ErgoNote's own", &RuleLines::CRAFT, acts, &mut picked);
                     ui.add_space(1.0);
                     ui.label(
                         egui::RichText::new(crate::tl_id!("ui.every_fifth_line_is_slightly_stronger_for_easier_counting")).small().color(t.muted),
@@ -2889,9 +2889,9 @@ fn modify_tool(ui: &mut Ui, id: egui::Id, under: Rect, i: usize, nib: Nib, rack_
                 // The stroke this tool makes, drawn by the code that draws the page's ink,
                 // so the sample cannot say one thing and the page another.
                 let (sample, _) = ui.allocate_exact_size(vec2(180.0, 26.0), Sense::hover());
-                let mut stroke = notecraft_ink::Stroke::new(nib.tool, nib.colour, nib.width());
+                let mut stroke = ergonote_ink::Stroke::new(nib.tool, nib.colour, nib.width());
                 for (at, press) in [(0.04, 0.12), (0.3, 0.55), (0.62, 1.0), (0.96, 0.3)] {
-                    stroke.dabs.push(notecraft_ink::Dab::new(sample.width() * at, 13.0 + (at * 9.0).sin() * 3.0, press));
+                    stroke.dabs.push(ergonote_ink::Dab::new(sample.width() * at, 13.0 + (at * 9.0).sin() * 3.0, press));
                 }
                 crate::inkpad::paint_stroke(&ui.painter_at(sample), sample.min, &stroke);
                 ui.separator();
@@ -2959,7 +2959,7 @@ fn modify_tool(ui: &mut Ui, id: egui::Id, under: Rect, i: usize, nib: Nib, rack_
                     if egui::color_picker::color_picker_color32(ui, &mut colour, egui::color_picker::Alpha::Opaque) {
                         acts.push(Act::InkRack(RackEdit::Set(
                             i,
-                            Nib::new(nib.tool, notecraft_ink::Rgb(colour.r(), colour.g(), colour.b()), nib.tenths),
+                            Nib::new(nib.tool, ergonote_ink::Rgb(colour.r(), colour.g(), colour.b()), nib.tenths),
                         )));
                         more_colours = false;
                         done = true;
@@ -3165,7 +3165,7 @@ fn swatch_name(colour: Rgb) -> &'static str {
     }
 }
 
-/// A big button that is drawn but does nothing, for what OneNote has and NoteCraft does
+/// A big button that is drawn but does nothing, for what OneNote has and ErgoNote does
 /// not. It keeps the tab's shape honest: the control is where a OneNote user looks for it,
 /// greyed, saying plainly that it is not here yet rather than being left out.
 /// A small button with an icon and a word, greyed when there is nothing for it to do.
@@ -3188,7 +3188,7 @@ fn row_button(ui: &mut Ui, icon: Icon, label: &str, tip: &str, live: bool, t: &T
 /// A shape drawn here is ink like any other stroke, so the eraser, Select and Undo Stroke
 /// all work on it the day it is drawn.
 fn shapes_group(ui: &mut Ui, view: &View<'_>, t: &Tokens, acts: &mut Vec<Act>) {
-    use notecraft_ink::shapes::Shape;
+    use ergonote_ink::shapes::Shape;
     let active_nib = view.in_hand();
     let active_col = egui::Color32::from_rgb(active_nib.colour.0, active_nib.colour.1, active_nib.colour.2);
     group(ui, crate::tl_id!("ui.shapes"), t, |ui| {
@@ -3239,13 +3239,13 @@ fn shapes_group(ui: &mut Ui, view: &View<'_>, t: &Tokens, acts: &mut Vec<Act>) {
 }
 
 /// One shape on the Shapes row: the shape itself, drawn small, with its name beside it.
-fn shape_button(ui: &mut Ui, shape: notecraft_ink::shapes::Shape, here: bool, stroke_col: Color32, t: &Tokens) -> egui::Response {
+fn shape_button(ui: &mut Ui, shape: ergonote_ink::shapes::Shape, here: bool, stroke_col: Color32, t: &Tokens) -> egui::Response {
     let (rect, resp) = ui.allocate_exact_size(vec2(86.0, 20.0), Sense::click());
     if here || resp.hovered() {
         ui.painter().rect_filled(rect, 3.0, if here { t.row_selected } else { t.row_hover });
     }
     let box_ = egui::Rect::from_min_size(egui::pos2(rect.min.x + 4.0, rect.min.y + 4.0), vec2(12.0, 12.0));
-    let dabs = notecraft_ink::shapes::trace(shape, (box_.min.x, box_.min.y), (box_.max.x, box_.max.y), 1.0);
+    let dabs = ergonote_ink::shapes::trace(shape, (box_.min.x, box_.min.y), (box_.max.x, box_.max.y), 1.0);
     let points: Vec<egui::Pos2> = dabs.iter().map(|d| egui::pos2(d.x, d.y)).collect();
     if points.len() >= 2 {
         ui.painter().add(egui::Shape::line(points, egui::Stroke::new(1.6, stroke_col)));
@@ -3264,7 +3264,7 @@ fn soon(ui: &mut Ui, icon: Icon, label: &str, t: &Tokens) {
     resp.on_hover_text(crate::i18n::format_message_id("ui.label_not_built_yet", &[(crate::tl_id!("ui.label"), crate::tl!(label))]));
 }
 
-/// OneNote's History tab, with the same groups and controls. NoteCraft does not yet keep
+/// OneNote's History tab, with the same groups and controls. ErgoNote does not yet keep
 /// unread flags or authors, so those controls are visible but disabled.
 #[allow(dead_code)]
 fn history_tab(ui: &mut Ui, view: &View<'_>, t: &Tokens, acts: &mut Vec<Act>) {
@@ -3319,7 +3319,7 @@ fn history_tab(ui: &mut Ui, view: &View<'_>, t: &Tokens, acts: &mut Vec<Act>) {
 }
 
 /// OneNote's Draw tab, group for group, and built the way OneNote builds it: big buttons
-/// with the mark each one makes above its name. What NoteCraft cannot do yet is greyed and
+/// with the mark each one makes above its name. What ErgoNote cannot do yet is greyed and
 /// says so, rather than being left out, so the tab is an honest map of the ink work.
 fn draw_tab(ui: &mut Ui, view: &View<'_>, t: &Tokens, acts: &mut Vec<Act>) {
     group(ui, crate::tl_id!("ui.undo"), t, |ui| {
@@ -3409,8 +3409,8 @@ fn table_grid_btn(ui: &mut Ui, width: f32, icon: Option<Icon>, mark: Option<Mark
 }
 
 /// Crisp 3-line alignment glyph button (`Left`, `Center`, `Right`), 30 px wide.
-fn table_align_btn(ui: &mut Ui, align: notecraft_model::tablecols::Align, on: bool, t: &Tokens) -> egui::Response {
-    use notecraft_model::tablecols::Align as A;
+fn table_align_btn(ui: &mut Ui, align: ergonote_model::tablecols::Align, on: bool, t: &Tokens) -> egui::Response {
+    use ergonote_model::tablecols::Align as A;
     let (rect, resp) = ui.allocate_exact_size(vec2(30.0, SMALL_H), Sense::click());
     let painter = ui.painter_at(rect);
     if on {
@@ -3469,7 +3469,7 @@ fn compact_delete_btn(ui: &mut Ui, tip: &str, widget_label: &str, t: &Tokens) ->
 /// appearance (cell shading, borders, alignment) and whole-table deletion with confirmation.
 fn table_tab(ui: &mut Ui, view: &View<'_>, t: &Tokens, acts: &mut Vec<Act>) {
     use crate::pageedit::TableEdit as E;
-    use notecraft_model::tablecols::Align as A;
+    use ergonote_model::tablecols::Align as A;
     group(ui, "Lignes et colonnes", t, |ui| {
         ui.vertical(|ui| {
             ui.add_space(6.0);
@@ -3680,7 +3680,7 @@ fn compact_colour_menu_button(
     label: &str,
     spoken_label: &str,
     tip: &str,
-    page_colour: Option<notecraft_model::NodeColor>,
+    page_colour: Option<ergonote_model::NodeColor>,
     t: &Tokens,
 ) -> egui::Response {
     let font = egui::FontId::proportional(12.0);
@@ -3718,7 +3718,7 @@ fn compact_colour_menu_button(
 }
 
 /// A control that is listed so nobody goes looking for it, and says it is not built.
-/// Something OneNote has that NoteCraft does not, among the small controls: drawn as a
+/// Something OneNote has that ErgoNote does not, among the small controls: drawn as a
 /// greyed chip the size of a control rather than as a line of writing, so a row of them
 /// reads as buttons that are off and not as a paragraph.
 // i18n-ui-text: label
@@ -3870,7 +3870,7 @@ mod tests {
         assert!(RuleLines::CraftGrid.squares() && !RuleLines::CraftLines.squares());
         assert!(RuleLines::CRAFT.iter().all(|r| r.fives()));
         assert!(RuleLines::RULED.iter().chain(RuleLines::GRIDS.iter()).all(|r| !r.fives()), "OneNote's papers are evenly weighted");
-        // The ids the first version wrote are NoteCraft's own two, so a settings file
+        // The ids the first version wrote are ErgoNote's own two, so a settings file
         // written before the other papers existed keeps the paper it had.
         assert_eq!(RuleLines::parse("lines"), Some(RuleLines::CraftLines));
         assert_eq!(RuleLines::parse("grid"), Some(RuleLines::CraftGrid));

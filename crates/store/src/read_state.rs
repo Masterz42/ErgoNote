@@ -9,11 +9,11 @@
 //! old page unread. Their own edits do not make a page unread: the window records the page as
 //! read whenever it saves it or leaves it.
 //!
-//! Stamps are compared as NoteCraft writes them, `YYYY-MM-DDTHH:MM:SSZ` in UTC, which sort in
+//! Stamps are compared as ErgoNote writes them, `YYYY-MM-DDTHH:MM:SSZ` in UTC, which sort in
 //! time order as text.
 
 use crate::tree::page_file;
-use notecraft_model::PageFormat;
+use ergonote_model::PageFormat;
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
@@ -34,8 +34,8 @@ pub fn page_stamp(dir: &Path) -> Option<String> {
     let (format, file) = page_file(dir)?;
     let text = crate::vfs::read_to_string(&file).ok()?;
     let value = match format {
-        PageFormat::Html => notecraft_formats::html::meta(&text, "notecraft:updated"),
-        PageFormat::Cmgfm => notecraft_formats::frontmatter::value(&notecraft_formats::frontmatter::split_front(&text).0, "updated"),
+        PageFormat::Html => ergonote_formats::html::meta(&text, "ergonote:updated"),
+        PageFormat::Cmgfm => ergonote_formats::frontmatter::value(&ergonote_formats::frontmatter::split_front(&text).0, "updated"),
     }?;
     let value = value.trim().to_string();
     (!value.is_empty()).then_some(value)
@@ -57,7 +57,7 @@ impl ReadState {
             }
         }
         if state.since.is_empty() {
-            state.since = notecraft_model::time::iso_now();
+            state.since = ergonote_model::time::iso_now();
             let _ = state.save();
         }
         state
@@ -97,7 +97,7 @@ impl ReadState {
         if id.is_empty() {
             return;
         }
-        let stamp = stamp.map_or_else(notecraft_model::time::iso_now, str::to_string);
+        let stamp = stamp.map_or_else(ergonote_model::time::iso_now, str::to_string);
         self.seen.insert(id.to_string(), stamp);
     }
 
@@ -154,9 +154,9 @@ mod tests {
         let t = TempDir::new("read-state-stamp");
         let settings = crate::settings::Settings::at(t.path().join("s.toml"));
         let nb = crate::ops::create_notebook(t.path(), "NB", None, &settings).expect("nb");
-        let section = crate::ops::create_node(&nb, "S", notecraft_model::NodeKind::Section, None, &settings).expect("section");
+        let section = crate::ops::create_node(&nb, "S", ergonote_model::NodeKind::Section, None, &settings).expect("section");
         for format in [PageFormat::Html, PageFormat::Cmgfm] {
-            let page = crate::ops::create_node(&section, "P", notecraft_model::NodeKind::Page, Some(format), &settings).expect("page");
+            let page = crate::ops::create_node(&section, "P", ergonote_model::NodeKind::Page, Some(format), &settings).expect("page");
             let saved = crate::page::save_body(&page, "words").expect("save");
             assert_eq!(page_stamp(&page), Some(saved), "{format:?}");
         }

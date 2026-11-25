@@ -8,11 +8,11 @@
 use crate::theme::Tokens;
 use egui::text::{LayoutJob, TextFormat};
 use egui::{FontId, RichText, Stroke, Ui, vec2};
-use notecraft_formats::html;
-use notecraft_formats::markdown::{self, Block, Span};
-use notecraft_model::Dir;
-use notecraft_model::PageFormat;
-use notecraft_model::justify::{Align, Justified, Mark};
+use ergonote_formats::html;
+use ergonote_formats::markdown::{self, Block, Span};
+use ergonote_model::Dir;
+use ergonote_model::PageFormat;
+use ergonote_model::justify::{Align, Justified, Mark};
 use std::path::Path;
 
 /// Blocks to draw for the editable part of a page in `format`.
@@ -31,7 +31,7 @@ pub fn image_uri(page_dir: &Path, src: &str) -> Option<String> {
     if rel.is_empty() || rel.contains("..") || rel.contains('\\') || rel.starts_with('/') {
         return None;
     }
-    let full = notecraft_store::tree::display_path(&page_dir.join("assets").join(rel));
+    let full = ergonote_store::tree::display_path(&page_dir.join("assets").join(rel));
     Some(file_uri(&full))
 }
 
@@ -65,16 +65,16 @@ fn image_bytes(ctx: &egui::Context, page_dir: &Path, src: &str) -> Option<(Strin
         return None;
     }
     let path = page_dir.join("assets").join(rel);
-    let meta = notecraft_store::vfs::metadata(&path).ok()?;
+    let meta = ergonote_store::vfs::metadata(&path).ok()?;
     let stamp = (meta.len(), file_time(&path));
-    let cache = ctx.data_mut(|d| d.get_temp_mut_or_default::<PageImages>(egui::Id::new("notecraft-page-images")).clone());
+    let cache = ctx.data_mut(|d| d.get_temp_mut_or_default::<PageImages>(egui::Id::new("ergonote-page-images")).clone());
     let mut cache = cache.lock().ok()?;
     if let Some((had, uri, bytes)) = cache.get(&path)
         && *had == stamp
     {
         return Some((uri.clone(), egui::load::Bytes::Shared(bytes.clone())));
     }
-    let bytes: std::sync::Arc<[u8]> = notecraft_store::vfs::read(&path).ok()?.into();
+    let bytes: std::sync::Arc<[u8]> = ergonote_store::vfs::read(&path).ok()?.into();
     #[cfg(test)]
     IMAGE_READS.with(|n| n.set(n.get() + 1));
     let nanos = stamp.1.and_then(|t| t.duration_since(std::time::UNIX_EPOCH).ok()).map_or(0, |d| d.as_nanos());
@@ -142,7 +142,7 @@ fn pieces(ctx: &egui::Context, spans: &[Span], size: f32, color: egui::Color32, 
 
 fn format_with_family(ctx: &egui::Context, span: &Span, size: f32, color: egui::Color32, tokens: &Tokens) -> TextFormat {
     let mut format = format_of(span, size, color, tokens);
-    let dys_spaced = ctx.data(|d| d.get_temp::<bool>(egui::Id::new("notecraft-dys-spaced")).unwrap_or(false));
+    let dys_spaced = ctx.data(|d| d.get_temp::<bool>(egui::Id::new("ergonote-dys-spaced")).unwrap_or(false));
     let mut is_dys_font = false;
     if !span.code
         && !span.math
@@ -175,7 +175,7 @@ fn format_of(s: &Span, size: f32, color: egui::Color32, tokens: &Tokens) -> Text
     let mono = s.code || s.math;
     let size = s.font_size.map_or(size, |points| size * f32::from(points) / 11.0);
     let size = if s.script.is_some() { size * 0.7 } else { size };
-    let custom_text_color = s.text_color.as_deref().and_then(notecraft_model::NodeColor::parse);
+    let custom_text_color = s.text_color.as_deref().and_then(ergonote_model::NodeColor::parse);
     let c = if s.link.is_some() {
         tokens.link
     } else if let Some(nc) = custom_text_color {
@@ -189,7 +189,7 @@ fn format_of(s: &Span, size: f32, color: egui::Color32, tokens: &Tokens) -> Text
         Stroke::new(1.0, c)
     } else if s.underline || s.underline_color.is_some() {
         if let Some(col_name) = s.underline_color.as_deref()
-            && let Some(nc) = notecraft_model::NodeColor::parse(col_name)
+            && let Some(nc) = ergonote_model::NodeColor::parse(col_name)
         {
             let (r, g, b) = nc.rgb(false);
             Stroke::new(2.2, egui::Color32::from_rgb(r, g, b))
@@ -201,7 +201,7 @@ fn format_of(s: &Span, size: f32, color: egui::Color32, tokens: &Tokens) -> Text
     };
     let bg = if s.code {
         tokens.code_bg
-    } else if let Some(nc) = s.highlight_color.as_deref().and_then(notecraft_model::NodeColor::parse) {
+    } else if let Some(nc) = s.highlight_color.as_deref().and_then(ergonote_model::NodeColor::parse) {
         crate::theme::highlight_bg(nc, dark)
     } else {
         egui::Color32::TRANSPARENT
@@ -212,7 +212,7 @@ fn format_of(s: &Span, size: f32, color: egui::Color32, tokens: &Tokens) -> Text
         italics: s.italic || s.math,
         underline: u_stroke,
         strikethrough: if s.strike { Stroke::new(1.0, c) } else { Stroke::NONE },
-        valign: if s.script == Some(notecraft_formats::markdown::Script::Superscript) { egui::Align::TOP } else { egui::Align::BOTTOM },
+        valign: if s.script == Some(ergonote_formats::markdown::Script::Superscript) { egui::Align::TOP } else { egui::Align::BOTTOM },
         background: bg,
         ..TextFormat::default()
     }
@@ -276,7 +276,7 @@ fn selection_bands(galley: &egui::Galley, a: usize, b: usize) -> Vec<egui::Rect>
 
 /// Which way a block's words read, given the direction of the page they are on.
 pub fn dir_of(spans: &[Span], page: Option<Dir>) -> Dir {
-    notecraft_model::direction_in(&text_of(spans), page)
+    ergonote_model::direction_in(&text_of(spans), page)
 }
 
 /// Draws spans as wrapped text. A paragraph with inline math flows text and formulas
@@ -538,7 +538,7 @@ fn draw_inline_images(ui: &mut Ui, spans: &[Span], page_dir: &Path, zoom: f32, b
         if let Some(src) = &s.image {
             match image_bytes(ui.ctx(), page_dir, src) {
                 Some((uri, bytes)) => {
-                    // A linked image is the attachment-card form used by NoteCraft. Keep its
+                    // A linked image is the attachment-card form used by ErgoNote. Keep its
                     // generated shell icon compact; standalone images still use the picture box.
                     let size = if s.link.is_some() { egui::vec2(48.0 * zoom, 56.0 * zoom) } else { picture_box(ui, src, zoom) };
                     let response = ui.add(egui::Image::from_bytes(uri, bytes).fit_to_exact_size(size).sense(egui::Sense::hover()));
@@ -648,7 +648,7 @@ pub fn show_zoomed(
 /// Draws one block and reports what happened in it. With `live` the to-do box can be
 /// ticked, which is what the page editor passes. With `justified` the block's lines are
 /// made to reach the column; the page says which blocks those are, and only a paragraph
-/// listens (see `notecraft_model::justify`).
+/// listens (see `ergonote_model::justify`).
 #[allow(clippy::too_many_arguments)]
 pub fn show_block(
     ui: &mut Ui,
@@ -798,7 +798,7 @@ pub(crate) fn show_block_zoomed(
                 ui.add_space(4.0);
             }
             Block::Code { lang, text } => {
-                let (numbered, language) = notecraft_formats::markdown::code_lang(lang);
+                let (numbered, language) = ergonote_formats::markdown::code_lang(lang);
                 egui::Frame::new().fill(tokens.code_bg).corner_radius(6.0).inner_margin(8.0).show(ui, |ui| {
                     ui.set_width(ui.available_width());
                     if !language.is_empty() {
@@ -1027,8 +1027,8 @@ pub fn is_blank(block: &Block) -> bool {
 }
 
 /// The tag at the start of a line, and the words without its marker.
-pub fn tagged(spans: &[Span]) -> Option<(notecraft_model::Tag, Vec<Span>)> {
-    let (tag, _) = notecraft_model::Tag::split(&text_of(spans));
+pub fn tagged(spans: &[Span]) -> Option<(ergonote_model::Tag, Vec<Span>)> {
+    let (tag, _) = ergonote_model::Tag::split(&text_of(spans));
     let tag = tag?;
     let marker = tag.marker();
     let mut out = spans.to_vec();
@@ -1043,7 +1043,7 @@ pub fn tagged(spans: &[Span]) -> Option<(notecraft_model::Tag, Vec<Span>)> {
 }
 
 /// Draws a line behind its tag mark.
-fn with_tag(ui: &mut Ui, tag: notecraft_model::Tag, tokens: &Tokens, body: impl FnOnce(&mut Ui)) {
+fn with_tag(ui: &mut Ui, tag: ergonote_model::Tag, tokens: &Tokens, body: impl FnOnce(&mut Ui)) {
     ui.horizontal_top(|ui| {
         let (rect, resp) = ui.allocate_exact_size(egui::vec2(21.0, 20.0), egui::Sense::hover());
         crate::ribbon::paint_tag(
@@ -1076,7 +1076,7 @@ mod tests {
     /// when the file changes.
     #[test]
     fn an_unchanged_picture_is_read_from_disk_once() {
-        let t = notecraft_store::testing::TempDir::new("page-image-once");
+        let t = ergonote_store::testing::TempDir::new("page-image-once");
         std::fs::create_dir_all(t.path().join("assets")).expect("assets");
         std::fs::write(t.path().join("assets").join("a.png"), b"first picture bytes").expect("picture");
         let ctx = egui::Context::default();
@@ -1092,7 +1092,7 @@ mod tests {
 
     #[test]
     fn a_changed_picture_is_read_again_under_a_new_name() {
-        let t = notecraft_store::testing::TempDir::new("page-image-changed");
+        let t = ergonote_store::testing::TempDir::new("page-image-changed");
         std::fs::create_dir_all(t.path().join("assets")).expect("assets");
         let file = t.path().join("assets").join("a.png");
         std::fs::write(&file, b"first").expect("picture");
@@ -1108,7 +1108,7 @@ mod tests {
 
     #[test]
     fn pictures_with_the_same_name_on_two_pages_are_kept_apart() {
-        let t = notecraft_store::testing::TempDir::new("page-image-two-pages");
+        let t = ergonote_store::testing::TempDir::new("page-image-two-pages");
         for (page, bytes) in [("one", b"page one's picture".as_slice()), ("two", b"page two's picture".as_slice())] {
             std::fs::create_dir_all(t.path().join(page).join("assets")).expect("assets");
             std::fs::write(t.path().join(page).join("assets").join("a.png"), bytes).expect("picture");
@@ -1158,8 +1158,8 @@ mod tests {
         let underline = Span { underline: true, ..Span::default() };
         assert_ne!(format_of(&underline, 20.0, tokens.text, &tokens).underline, Stroke::NONE);
         for (script, alignment) in [
-            (notecraft_formats::markdown::Script::Subscript, egui::Align::BOTTOM),
-            (notecraft_formats::markdown::Script::Superscript, egui::Align::TOP),
+            (ergonote_formats::markdown::Script::Subscript, egui::Align::BOTTOM),
+            (ergonote_formats::markdown::Script::Superscript, egui::Align::TOP),
         ] {
             let span = Span { script: Some(script), ..Span::default() };
             let format = format_of(&span, 20.0, tokens.text, &tokens);
@@ -1170,25 +1170,15 @@ mod tests {
 
     #[test]
     fn a_blank_line_is_a_line_tall_so_it_can_be_clicked() {
-        use notecraft_formats::markdown::Block;
+        use ergonote_formats::markdown::Block;
         let t = crate::theme::Theme::DEFAULT.tokens();
         let ctx = egui::Context::default();
         let mut heights = Vec::new();
         let mut frame = ctx.run_ui(egui::RawInput::default(), |ui| {
             crate::fonts::install_once(ui.ctx());
             for block in [Block::Paragraph(Vec::new()), Block::Heading { level: 1, spans: Vec::new() }, Block::Quote(Vec::new())] {
-                let out = show_block(
-                    ui,
-                    &block,
-                    0,
-                    std::path::Path::new("."),
-                    &t,
-                    true,
-                    Some(notecraft_model::Dir::Ltr),
-                    None,
-                    None,
-                    ui.id().with("block"),
-                );
+                let out =
+                    show_block(ui, &block, 0, std::path::Path::new("."), &t, true, Some(ergonote_model::Dir::Ltr), None, None, ui.id().with("block"));
                 heights.push(out.response.rect.height());
             }
         });
@@ -1257,7 +1247,7 @@ mod tests {
     /// An attachment link must resolve to something egui can actually load.
     #[test]
     fn attachment_images_load_through_the_file_loader() {
-        use notecraft_store::testing::TempDir;
+        use ergonote_store::testing::TempDir;
         let t = TempDir::new("preview-img");
         let page = t.path().join("page");
         std::fs::create_dir_all(page.join("assets")).expect("assets");
@@ -1309,7 +1299,7 @@ mod tests {
     /// above have filled the view.
     #[test]
     fn a_picture_low_on_a_page_is_still_drawn() {
-        use notecraft_store::testing::TempDir;
+        use ergonote_store::testing::TempDir;
         let t = TempDir::new("preview-low");
         let page = t.path().join("page");
         std::fs::create_dir_all(page.join("assets")).expect("assets");
@@ -1345,7 +1335,7 @@ mod tests {
     /// its page grows with the words, rather than stopping at the size of the picture's pixels.
     #[test]
     fn a_picture_grows_with_the_zoom_past_its_own_size() {
-        let t = notecraft_store::testing::TempDir::new("picture-zoom");
+        let t = ergonote_store::testing::TempDir::new("picture-zoom");
         let page = t.path().to_path_buf();
         std::fs::create_dir_all(page.join("assets")).expect("assets");
         std::fs::write(page.join("assets").join("logo.png"), crate::LOGO_PNG).expect("png");
@@ -1470,7 +1460,7 @@ mod tests {
 
     #[test]
     fn rendered_images_are_recorded_for_standalone_and_inline_images() {
-        let t = notecraft_store::testing::TempDir::new("preview-img-hits");
+        let t = ergonote_store::testing::TempDir::new("preview-img-hits");
         let page_dir = t.path();
         let assets_dir = page_dir.join("assets");
         std::fs::create_dir_all(&assets_dir).expect("assets");

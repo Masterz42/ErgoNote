@@ -1,6 +1,6 @@
 use super::*;
 
-impl NoteCraftApp {
+impl ErgoNoteApp {
     pub(super) fn find_tree_node<'a>(nodes: &'a [Node], target: &Path) -> Option<&'a Node> {
         for n in nodes {
             if n.path == target {
@@ -91,7 +91,7 @@ impl NoteCraftApp {
                             go_up = true;
                         }
                     } else {
-                        ui.add(egui::Image::from_bytes("bytes://notecraft-logo", crate::LOGO_PNG).fit_to_exact_size(vec2(24.0, 24.0)));
+                        ui.add(egui::Image::from_bytes("bytes://ergonote-logo", crate::LOGO_PNG).fit_to_exact_size(vec2(24.0, 24.0)));
                     }
                     let right_reserve = if show_exit_simple { 244.0 } else { 206.0 };
                     let title_max_w = (total_w - right_reserve).max(40.0);
@@ -179,7 +179,7 @@ impl NoteCraftApp {
         let t = self.tokens;
         let style = self.caret_style(ui.ctx());
         let font_sel = self.font_selection(ui.ctx());
-        let active_nib = self.rack.get(self.nib).copied().unwrap_or_else(|| notecraft_ink::rack::new_nib(notecraft_ink::Tool::Pen));
+        let active_nib = self.rack.get(self.nib).copied().unwrap_or_else(|| ergonote_ink::rack::new_nib(ergonote_ink::Tool::Pen));
         let mut acts: Vec<ribbon::Act> = Vec::new();
         let mut take_photo = false;
         let pill_rich = |ui: &mut Ui, label: egui::RichText, active: bool, custom_fill: Option<(Color32, Color32)>| -> egui::Response {
@@ -350,10 +350,10 @@ impl NoteCraftApp {
                             acts.push(ribbon::Act::InkPointer(ribbon::Pointer::Erase));
                         }
                         for rgb in [
-                            notecraft_ink::Rgb(28, 30, 36),
-                            notecraft_ink::Rgb(32, 96, 210),
-                            notecraft_ink::Rgb(205, 48, 48),
-                            notecraft_ink::Rgb(34, 139, 76),
+                            ergonote_ink::Rgb(28, 30, 36),
+                            ergonote_ink::Rgb(32, 96, 210),
+                            ergonote_ink::Rgb(205, 48, 48),
+                            ergonote_ink::Rgb(34, 139, 76),
                         ] {
                             let (rect, resp) = ui.allocate_exact_size(vec2(28.0, 30.0), Sense::click());
                             let chosen = active_nib.colour == rgb && self.pointer == ribbon::Pointer::Draw;
@@ -366,7 +366,7 @@ impl NoteCraftApp {
                             if resp.clicked() {
                                 acts.push(ribbon::Act::InkRack(ribbon::RackEdit::Set(
                                     self.nib,
-                                    notecraft_ink::rack::Nib::new(active_nib.tool, rgb, active_nib.tenths),
+                                    ergonote_ink::rack::Nib::new(active_nib.tool, rgb, active_nib.tenths),
                                 )));
                                 acts.push(ribbon::Act::InkPointer(ribbon::Pointer::Draw));
                             }

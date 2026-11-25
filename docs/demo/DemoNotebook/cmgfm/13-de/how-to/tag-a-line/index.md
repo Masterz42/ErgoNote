@@ -31,7 +31,7 @@ Eine Aufgabenzeile ist ein Aufgabenlisten-Punkt, den jeder Markdown-Leser verste
 
 #remember Die Buchungsnummer steht in der angehängten Datei.
 
-NoteCraft zeichnet das Symbol statt des Wortes, aber in der Datei steht das Wort, also bleiben
+ErgoNote zeichnet das Symbol statt des Wortes, aber in der Datei steht das Wort, also bleiben
 Ihre Notizen in jedem Editor lesbar und vom Terminal aus durchsuchbar. Ein Wort, das nur wie
 eine Markierung aussieht, etwa #ideas ohne Leerzeichen dahinter, bleibt unberührt.
 

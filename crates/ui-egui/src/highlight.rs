@@ -822,7 +822,7 @@ mod tests {
 
     #[test]
     fn svg_and_xml_declarations_and_namespaces() {
-        let svg = "<?xml version=\"1.0\"?>\n<svg xmlns:nc=\"https://notecraft.org/ns/ink\"><path nc:tool=\"pen\" d=\"M0 0\"/></svg>";
+        let svg = "<?xml version=\"1.0\"?>\n<svg xmlns:nc=\"https://ergonote.org/ns/ink\"><path nc:tool=\"pen\" d=\"M0 0\"/></svg>";
         assert!(has(Lang::Xml, svg, "<?xml version=\"1.0\"?>", Class::Meta));
         assert!(has(Lang::Xml, svg, "svg", Class::Tag));
         assert!(has(Lang::Xml, svg, "xmlns:nc", Class::Attr));

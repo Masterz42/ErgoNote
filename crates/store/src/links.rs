@@ -11,13 +11,13 @@
 use crate::tree::read_node;
 use std::path::{Component, Path, PathBuf};
 
-/// The scheme a link to a page of one's own carries: `notecraft:/notebook/section/page`,
+/// The scheme a link to a page of one's own carries: `ergonote:/notebook/section/page`,
 /// the path from the notebooks folder.
 ///
 /// OneNote has `onenote:` for the same job. A relative path cannot do it, because what it
 /// is relative to is the page the link is pasted into, which nobody knows when the link is
 /// copied; this names the page from the top and reads the same wherever it is pasted.
-pub const SCHEME: &str = "notecraft:";
+pub const SCHEME: &str = "ergonote:";
 
 /// A link to this page, to paste into another one. `None` when the folder is not under any
 /// of the open notebooks.
@@ -46,7 +46,7 @@ pub fn page_uri(roots: &[PathBuf], dir: &Path) -> Option<String> {
 pub enum Link {
     /// A web address or another scheme the operating system handles (`https:`, `mailto:`).
     Web(String),
-    /// A NoteCraft node: a notebook, section group, section or page folder.
+    /// A ErgoNote node: a notebook, section group, section or page folder.
     Node(PathBuf),
     /// A file, or a folder that is not a node (such as `assets/`).
     File(PathBuf),
@@ -193,7 +193,7 @@ fn node_with_id(dir: &Path, id: &str, depth: usize) -> Option<PathBuf> {
 /// The folder a link of our own is written from: the notebooks folder, or, for a notebook
 /// opened from elsewhere, the folder holding it, so the link names the notebook.
 fn link_base(root: &Path) -> &Path {
-    let is_notebook = read_node(root).is_some_and(|n| n.kind == notecraft_model::NodeKind::Notebook);
+    let is_notebook = read_node(root).is_some_and(|n| n.kind == ergonote_model::NodeKind::Notebook);
     match root.parent() {
         Some(parent) if is_notebook => parent,
         _ => root,
@@ -273,9 +273,9 @@ mod tests {
         let root = t.path().join("notebooks");
         let settings = crate::Settings::at(t.path().join("settings.toml"));
         let nb = crate::ops::create_notebook(&root, "Book", None, &settings).expect("notebook");
-        let section = crate::ops::create_node(&nb, "Section", notecraft_model::NodeKind::Section, None, &settings).expect("section");
-        let a = crate::ops::create_node(&section, "Page A", notecraft_model::NodeKind::Page, None, &settings).expect("a");
-        let b = crate::ops::create_node(&section, "Page B", notecraft_model::NodeKind::Page, None, &settings).expect("b");
+        let section = crate::ops::create_node(&nb, "Section", ergonote_model::NodeKind::Section, None, &settings).expect("section");
+        let a = crate::ops::create_node(&section, "Page A", ergonote_model::NodeKind::Page, None, &settings).expect("a");
+        let b = crate::ops::create_node(&section, "Page B", ergonote_model::NodeKind::Page, None, &settings).expect("b");
         std::fs::create_dir_all(a.join("assets")).expect("assets");
         std::fs::write(a.join("assets").join("my notes.pdf"), b"%PDF").expect("pdf");
         (t, root, a, b)
@@ -304,9 +304,9 @@ mod tests {
         let settings = crate::Settings::at(t.path().join("settings.toml"));
         std::fs::create_dir_all(&root).expect("root");
         let nb = crate::ops::create_notebook(&away, "Away", None, &settings).expect("notebook");
-        let section = crate::ops::create_node(&nb, "Section", notecraft_model::NodeKind::Section, None, &settings).expect("section");
-        let a = crate::ops::create_node(&section, "Page A", notecraft_model::NodeKind::Page, None, &settings).expect("a");
-        let b = crate::ops::create_node(&section, "Page B", notecraft_model::NodeKind::Page, None, &settings).expect("b");
+        let section = crate::ops::create_node(&nb, "Section", ergonote_model::NodeKind::Section, None, &settings).expect("section");
+        let a = crate::ops::create_node(&section, "Page A", ergonote_model::NodeKind::Page, None, &settings).expect("a");
+        let b = crate::ops::create_node(&section, "Page B", ergonote_model::NodeKind::Page, None, &settings).expect("b");
 
         // Knowing only the notebooks folder, every link in it is refused.
         assert_eq!(resolve(&root, &a, "../page-b/"), Link::Outside, "the fault, as it was");
@@ -361,7 +361,7 @@ mod tests {
         let (_t, root, a, b) = fixture("links-scheme");
         let roots = vec![root.clone()];
         let uri = page_uri(&roots, &b).expect("a link to the page");
-        assert!(uri.starts_with("notecraft:/"), "{uri}");
+        assert!(uri.starts_with("ergonote:/"), "{uri}");
         assert!(!uri.contains('\\'), "written with forward slashes: {uri}");
 
         // It leads to that page from anywhere, not only from the page next door.
@@ -369,14 +369,14 @@ mod tests {
         assert_eq!(resolve_in(&roots, &b, &uri), Link::Node(b.clone()), "and from the page itself");
 
         // Upper case scheme, and a fragment on the end, are the same link.
-        let shouted = uri.replacen("notecraft:", "NoteCraft:", 1);
+        let shouted = uri.replacen("ergonote:", "ErgoNote:", 1);
         assert_eq!(resolve_in(&roots, &a, &shouted), Link::Node(b.clone()));
         assert_eq!(resolve_in(&roots, &a, &format!("{uri}#heading")), Link::Node(b.clone()));
 
         // A link of this kind cannot climb out of the notebooks folder.
-        assert_eq!(resolve_in(&roots, &a, "notecraft:/../secret"), Link::Outside);
-        assert_eq!(resolve_in(&roots, &a, "notecraft:/"), Link::Outside);
-        assert!(matches!(resolve_in(&roots, &a, "notecraft:/nothing/here"), Link::Missing(_)));
+        assert_eq!(resolve_in(&roots, &a, "ergonote:/../secret"), Link::Outside);
+        assert_eq!(resolve_in(&roots, &a, "ergonote:/"), Link::Outside);
+        assert!(matches!(resolve_in(&roots, &a, "ergonote:/nothing/here"), Link::Missing(_)));
     }
 
     /// Issue #128: two notebooks opened from elsewhere, laid out alike, gave their matching
@@ -389,8 +389,8 @@ mod tests {
         std::fs::create_dir_all(&root).expect("root");
         let page_in = |away: &str, name: &str| {
             let nb = crate::ops::create_notebook(&t.path().join(away), name, None, &settings).expect("notebook");
-            let section = crate::ops::create_node(&nb, "Section", notecraft_model::NodeKind::Section, None, &settings).expect("section");
-            let page = crate::ops::create_node(&section, "Page", notecraft_model::NodeKind::Page, None, &settings).expect("page");
+            let section = crate::ops::create_node(&nb, "Section", ergonote_model::NodeKind::Section, None, &settings).expect("section");
+            let page = crate::ops::create_node(&section, "Page", ergonote_model::NodeKind::Page, None, &settings).expect("page");
             (nb, page)
         };
         let (nb_a, page_a) = page_in("away-a", "Book A");
@@ -400,16 +400,16 @@ mod tests {
             let uri_a = page_uri(&roots, &page_a).expect("a link to page A");
             let uri_b = page_uri(&roots, &page_b).expect("a link to page B");
             assert_ne!(uri_a, uri_b, "two pages, two links");
-            assert!(uri_b.starts_with("notecraft:/book-b/"), "the link names its notebook: {uri_b}");
+            assert!(uri_b.starts_with("ergonote:/book-b/"), "the link names its notebook: {uri_b}");
             assert_eq!(resolve_in(&roots, &page_a, &uri_b), Link::Node(page_b.clone()));
             assert_eq!(resolve_in(&roots, &page_b, &uri_a), Link::Node(page_a.clone()));
         }
 
         // A link copied before the fix, without the notebook's name, still opens a page.
         let roots = vec![root.clone(), nb_a.clone()];
-        assert_eq!(resolve_in(&roots, &page_a, "notecraft:/section/page"), Link::Node(page_a.clone()));
+        assert_eq!(resolve_in(&roots, &page_a, "ergonote:/section/page"), Link::Node(page_a.clone()));
         // And the folder above the notebook is not a way out of it.
-        assert_eq!(resolve_in(&roots, &page_a, "notecraft:/away-a-sibling/x"), Link::Missing(root.join("away-a-sibling").join("x")));
+        assert_eq!(resolve_in(&roots, &page_a, "ergonote:/away-a-sibling/x"), Link::Missing(root.join("away-a-sibling").join("x")));
     }
 
     /// Issue #129: Make Subpage moved the page's folder, and a link copied before the move
@@ -441,12 +441,12 @@ mod tests {
         // Another page in the old place: the link is for page B, not for whatever is there now.
         let section = a.parent().expect("section").to_path_buf();
         let settings = crate::Settings::at(root.parent().expect("temp").join("settings2.toml"));
-        let other = crate::ops::create_node(&section, "Page B", notecraft_model::NodeKind::Page, None, &settings).expect("a new page B");
+        let other = crate::ops::create_node(&section, "Page B", ergonote_model::NodeKind::Page, None, &settings).expect("a new page B");
         assert_eq!(other, b, "the new page took the old folder name");
         assert_eq!(node(resolve_in(&roots, &a, &uri)), moved_at, "the link still finds the page it was copied for");
 
         // An id that is nowhere is no way out of the notebooks: the path decides as before.
-        assert_eq!(resolve_in(&roots, &a, "notecraft:/../secret?id=nothing"), Link::Outside);
+        assert_eq!(resolve_in(&roots, &a, "ergonote:/../secret?id=nothing"), Link::Outside);
     }
 
     #[test]
@@ -458,11 +458,11 @@ mod tests {
     }
 
     /// Issue #102: a link whose first bytes end inside a character panicked on the check for
-    /// `notecraft:`. Each of these has a character across byte 10, the length of the scheme.
+    /// `ergonote:`. Each of these has a character across byte 9, the length of the scheme.
     #[test]
     fn a_link_with_characters_across_the_scheme_length_does_not_panic() {
         let (_t, root, a, _b) = fixture("links-unicode");
-        for href in ["../日本語.txt", "日本語語.txt", "aééééé.txt", "notecraf日本"] {
+        for href in ["..日本語.txt", "a日本語.txt", "ééééé.txt", "ergonot日本"] {
             assert!(href.len() > SCHEME.len() && !href.is_char_boundary(SCHEME.len()), "{href} must straddle the scheme length");
             assert!(matches!(resolve(&root, &a, href), Link::Missing(_) | Link::Outside), "{href}");
             assert!(matches!(resolve_in(std::slice::from_ref(&root), &a, href), Link::Missing(_) | Link::Outside), "{href}");

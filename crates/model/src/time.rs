@@ -66,7 +66,7 @@ pub fn clock_from_iso(iso: &str) -> Option<String> {
 
 /// A timestamp the way a note shows it, under the page title: "Saturday, 17 October 2026,
 /// 18:29" in English, "samedi 17 octobre 2026, 18:29" in French. A UTC timestamp (one ending
-/// in `Z`, as every one NoteCraft writes does) is shown on the user's clock; one written with
+/// in `Z`, as every one ErgoNote writes does) is shown on the user's clock; one written with
 /// no zone is shown as written.
 pub fn long_from_iso(iso: &str) -> Option<String> {
     long_from_iso_at(iso, local_offset())
@@ -121,7 +121,7 @@ pub fn long_from_iso_at_lang(iso: &str, offset: i32, lang: &str) -> Option<Strin
     Some(format!("{weekday}, {d} {month} {y}, {clock}"))
 }
 
-/// Seconds since 1970 for a timestamp NoteCraft writes ("2026-11-14T10:00:00Z", seconds
+/// Seconds since 1970 for a timestamp ErgoNote writes ("2026-11-14T10:00:00Z", seconds
 /// optional). One written with no zone is taken as UTC. `None` when it cannot be read.
 pub fn secs_from_iso(iso: &str) -> Option<i64> {
     let (date, time) = iso.trim().split_once('T')?;

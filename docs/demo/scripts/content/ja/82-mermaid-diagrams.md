@@ -4,7 +4,7 @@ title: Mermaid 図
 
 # Mermaid 図
 
-Write a diagram as Mermaid text in a fenced block. NoteCraft draws the block on the page in the
+Write a diagram as Mermaid text in a fenced block. ErgoNote draws the block on the page in the
 current theme; open the page source with **< >** to edit the text.
 
 ## Flowchart

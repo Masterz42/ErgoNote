@@ -1,9 +1,9 @@
-# NoteCraft architecture
+# ErgoNote architecture
 
 Last reviewed: 2026-10-17. How the code is built today. Rules for working in the code are
 in [`AGENTS.md`](../AGENTS.md). The on-disk format is in [`folder-format.md`](folder-format.md).
 
-NoteCraft follows the layout of the other Craft apps (WordCraft, PdfCraft and their
+ErgoNote follows the layout of the other Craft apps (WordCraft, PdfCraft and their
 siblings): a Cargo workspace of small crates in layers, one command registry that every front
 end shares, a headless way to look at the UI, and gates that run with one command.
 
@@ -22,15 +22,15 @@ and nothing below L6 may depend on egui, eframe, winit or rfd.
 | L2 | `store` | Notebooks as plain folders: the tree, creating and deleting nodes, page content, attachments, settings, search, and the folder checker. |
 | L3 | `import` | Turns a folder of `.one` files into a notebook tree: finds the files, picks the newest copy of each section, converts pages to blocks, and asks the store to write them. The source is only read. |
 | L4 | `engine` | `Session` and the **command registry**. Every user-visible action is a `CommandSpec`. |
-| L5 | `mcp` | NoteCraft as an MCP server: the command registry over the Model Context Protocol, headless or against a running window. |
+| L5 | `mcp` | ErgoNote as an MCP server: the command registry over the Model Context Protocol, headless or against a running window. |
 | L6 | `ui-egui` | The egui front end: tree with code-drawn icons, the page and how it is written on (`pagetext`), themes, math drawing. Swappable. |
-| apps | `apps/notecraft`, `apps/notecraft-cli` | The desktop window (eframe) and the command line. |
+| apps | `apps/ergonote`, `apps/ergonote-cli` | The desktop window (eframe) and the command line. |
 | tools | `xtask` | `cargo xtask ci` and friends. |
 
 ```text
-model  <--  formats  <--  store  <--  engine  <--  ui-egui  <--  apps/notecraft
+model  <--  formats  <--  store  <--  engine  <--  ui-egui  <--  apps/ergonote
   ^  ^                      ^           ^
-  |  +----- math            |           +-----  mcp  <---------  apps/notecraft-cli
+  |  +----- math            |           +-----  mcp  <---------  apps/ergonote-cli
   +------------------------ +
 ```
 
@@ -41,7 +41,7 @@ lower crates. The picture is a summary; `cargo xtask layers` is the rule.)
 
 A user-visible action is a `CommandSpec` in `crates/engine/src/commands.rs`: an id such as
 `node.create`, a label, a documented parameter list, a flag that says whether it changes the
-tree, and a `run` function. The window, `notecraft-cli run`, the control channel and the MCP
+tree, and a `run` function. The window, `ergonote-cli run`, the control channel and the MCP
 server all dispatch by id. Programmatic calls never open dialogs. The list is in
 [`commands.md`](commands.md), and a test keeps that file in step with the registry.
 
@@ -79,7 +79,7 @@ See [`themes.md`](themes.md).
 
 ## Control channel
 
-`notecraft --control PORT` opens a loopback JSON-lines channel that can run any engine command
+`ergonote --control PORT` opens a loopback JSON-lines channel that can run any engine command
 and drive the window (click, type, theme, screenshot). The same methods run against an
 off-screen window in `ui_shot` and in the tests. See [`control-protocol.md`](control-protocol.md).
 
@@ -122,13 +122,13 @@ the window. Where real files differ from the specification, see
 section file at a time, so memory is bounded by the largest file, and a file that cannot be
 read costs that file and not the run. The tree it writes comes from `store` (notebook, section
 group, section, page, and sub-pages nested to any depth), and the pages from `formats`, so an
-imported page is the same as a typed one. Run it with `notecraft-cli import onenote`; see
+imported page is the same as a typed one. Run it with `ergonote-cli import onenote`; see
 [`how-to/move-your-notes.md`](how-to/move-your-notes.md).
 
 The optional OfficeIMO path is an external bridge, not a Rust dependency. The resolver looks
-for `NOTECRAFT_OFFICEIMO_BRIDGE` first, then for a pinned platform artifact under the NoteCraft
+for `ERGONOTE_OFFICEIMO_BRIDGE` first, then for a pinned platform artifact under the ErgoNote
 data directory. The bridge receives `--source`, `--out` and `--format html|cmgfm`; its output can
-then be checked as a normal NoteCraft folder by the existing store checks. Artifact download and
+then be checked as a normal ErgoNote folder by the existing store checks. Artifact download and
 checksum metadata are release tooling, not an implicit network operation during Cargo builds.
 
 ## Equations and diagrams

@@ -1,4 +1,4 @@
-name: notecraft
+name: ergonote
 arch: ${NFPM_ARCH}
 platform: linux
 version: ${VERSION}
@@ -6,34 +6,34 @@ version_schema: semver
 release: 1
 section: utils
 priority: optional
-maintainer: NoteCraft maintainers <notecraft@example.invalid>
+maintainer: ErgoNote maintainers <ergonote@example.invalid>
 homepage: https://github.com/Masterz42/ErgoNote
 license: MIT OR Apache-2.0
 description: |-
-  NoteCraft is a clean-room note taking app.
+  ErgoNote is a clean-room note taking app.
   Notes live as plain files in plain folders.
 contents:
-  - src: ${STAGE}/usr/bin/notecraft
-    dst: /usr/bin/notecraft
+  - src: ${STAGE}/usr/bin/ergonote
+    dst: /usr/bin/ergonote
     file_info: { mode: 0755 }
-  - src: ${STAGE}/usr/share/applications/com.alientechsoftware.notecraft.desktop
-    dst: /usr/share/applications/com.alientechsoftware.notecraft.desktop
-  - src: ${STAGE}/usr/share/icons/hicolor/32x32/apps/com.alientechsoftware.notecraft.png
-    dst: /usr/share/icons/hicolor/32x32/apps/com.alientechsoftware.notecraft.png
-  - src: ${STAGE}/usr/share/icons/hicolor/64x64/apps/com.alientechsoftware.notecraft.png
-    dst: /usr/share/icons/hicolor/64x64/apps/com.alientechsoftware.notecraft.png
-  - src: ${STAGE}/usr/share/icons/hicolor/128x128/apps/com.alientechsoftware.notecraft.png
-    dst: /usr/share/icons/hicolor/128x128/apps/com.alientechsoftware.notecraft.png
-  - src: ${STAGE}/usr/share/icons/hicolor/256x256/apps/com.alientechsoftware.notecraft.png
-    dst: /usr/share/icons/hicolor/256x256/apps/com.alientechsoftware.notecraft.png
-  - src: ${STAGE}/usr/share/icons/hicolor/512x512/apps/com.alientechsoftware.notecraft.png
-    dst: /usr/share/icons/hicolor/512x512/apps/com.alientechsoftware.notecraft.png
-  - src: ${STAGE}/usr/share/doc/notecraft/LICENSE
-    dst: /usr/share/doc/notecraft/LICENSE
-  - src: ${STAGE}/usr/share/doc/notecraft/NOTICE
-    dst: /usr/share/doc/notecraft/NOTICE
-  - src: ${STAGE}/usr/share/notecraft/demo/
-    dst: /usr/share/notecraft/demo/
+  - src: ${STAGE}/usr/share/applications/com.ergonote.app.desktop
+    dst: /usr/share/applications/com.ergonote.app.desktop
+  - src: ${STAGE}/usr/share/icons/hicolor/32x32/apps/com.ergonote.app.png
+    dst: /usr/share/icons/hicolor/32x32/apps/com.ergonote.app.png
+  - src: ${STAGE}/usr/share/icons/hicolor/64x64/apps/com.ergonote.app.png
+    dst: /usr/share/icons/hicolor/64x64/apps/com.ergonote.app.png
+  - src: ${STAGE}/usr/share/icons/hicolor/128x128/apps/com.ergonote.app.png
+    dst: /usr/share/icons/hicolor/128x128/apps/com.ergonote.app.png
+  - src: ${STAGE}/usr/share/icons/hicolor/256x256/apps/com.ergonote.app.png
+    dst: /usr/share/icons/hicolor/256x256/apps/com.ergonote.app.png
+  - src: ${STAGE}/usr/share/icons/hicolor/512x512/apps/com.ergonote.app.png
+    dst: /usr/share/icons/hicolor/512x512/apps/com.ergonote.app.png
+  - src: ${STAGE}/usr/share/doc/ergonote/LICENSE
+    dst: /usr/share/doc/ergonote/LICENSE
+  - src: ${STAGE}/usr/share/doc/ergonote/NOTICE
+    dst: /usr/share/doc/ergonote/NOTICE
+  - src: ${STAGE}/usr/share/ergonote/demo/
+    dst: /usr/share/ergonote/demo/
     type: tree
 overrides:
   deb:

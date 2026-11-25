@@ -1,4 +1,4 @@
-//! The control channel: scripted access to a running NoteCraft over a loopback port.
+//! The control channel: scripted access to a running ErgoNote over a loopback port.
 //!
 //! Start the app with `--control PORT`. It listens on `127.0.0.1` only and speaks JSON
 //! lines: one request object per line, one reply line each. Every request needs the window's

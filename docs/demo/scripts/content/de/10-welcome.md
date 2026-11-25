@@ -4,11 +4,11 @@ title: Willkommen
 
 # Willkommen
 
-![Der NoteCraft-Koala beim Schreiben](assets/banner-de.png)
+![Der ErgoNote-Koala beim Schreiben](assets/banner-de.png)
 
 *Notizen als einfache Dateien, in einfachen Ordnern.*
 
-NoteCraft bewahrt Notizen so auf, wie Sie Dateien aufbewahren: Ein Notizbuch ist ein Ordner,
+ErgoNote bewahrt Notizen so auf, wie Sie Dateien aufbewahren: Ein Notizbuch ist ein Ordner,
 ein Abschnitt ist ein Ordner, eine Seite ist ein Ordner mit einer Datei und ihren Bildern
 darin. Nichts ist in einer Datenbank eingeschlossen, also wird jeder Ordner, den Ihr
 Synchronisierungsdienst schon beobachtet, zu einem synchronisierten Notizbuch, und eine
@@ -16,7 +16,7 @@ Sicherung ist eine Kopie.
 
 ## Was Sie hier tun können
 
-Jede Seite in diesem Abschnitt zeigt einen Teil von NoteCraft, auf der Seite selbst:
+Jede Seite in diesem Abschnitt zeigt einen Teil von ErgoNote, auf der Seite selbst:
 
 - [Eine Seite schreiben](../write-a-page/): Überschriften, Listen, Fettdruck, Links, Formeln, Tasten.
 - [Eine Zeile markieren](../tag-a-line/): Aufgabenkästchen und die anderen Markierungen.
