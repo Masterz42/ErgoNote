@@ -1550,6 +1550,8 @@ pub struct Changed {
     pub select_object: Option<(usize, String)>,
     /// A formatting gesture owned by the focused page text widget, for the controller.
     pub mark: Option<&'static str>,
+    /// The top-right delete badge of table block `i` was clicked, asking for confirmation.
+    pub delete_table: Option<usize>,
 }
 
 /// Consume before TextEdit handles Command+B/I/U as cursor movement or text deletion.
@@ -1649,6 +1651,20 @@ pub fn show_table_read(
     let _ = table(ui, block, i, &mut None, t, page, &mut cols, &mut Changed::default(), zoom, false);
 }
 
+/// Fits table column widths into `max_width` so wide tables scale proportionally instead of
+/// overflowing the page or container.
+pub fn fit_table_widths(widths: &[f32], max_width: f32) -> Vec<f32> {
+    if widths.is_empty() || !max_width.is_finite() || max_width <= 0.0 {
+        return widths.to_vec();
+    }
+    let total: f32 = widths.iter().sum();
+    if total <= max_width || total <= 0.0 {
+        return widths.to_vec();
+    }
+    let scale = max_width / total;
+    widths.iter().map(|&w| (w * scale).max(16.0)).collect()
+}
+
 /// Draws a table. With `live` it is written in: its cells take clicks, Tab and drags, and
 /// its borders are handles that change a column's width. Without, it is only drawn.
 #[allow(clippy::too_many_arguments)]
@@ -1713,7 +1729,10 @@ fn table(
                 .clamp(notecraft_model::tablecols::MIN_WIDTH, notecraft_model::tablecols::MAX_WIDTH)
         })
         .collect();
-    let screen_widths: Vec<f32> = widths.iter().map(|w| w * zoom).collect();
+    let avail_screen = ui.available_width();
+    let max_unzoomed = if avail_screen.is_finite() && avail_screen > 0.0 && zoom > 0.0 { avail_screen / zoom } else { f32::INFINITY };
+    let fitted_widths = fit_table_widths(&widths, max_unzoomed);
+    let screen_widths: Vec<f32> = fitted_widths.iter().map(|w| w * zoom).collect();
 
     // Laid out by hand rather than with a grid, because a grid gives every column the
     // same width and these are each their own. Rows butt up against each other, and the
@@ -1743,7 +1762,7 @@ fn table(
                     ui.allocate_ui_with_layout(vec2(w, 0.0), egui::Layout::top_down(egui::Align::LEFT), |ui| {
                         ui.set_min_width(w);
                         ui.set_max_width(w);
-                        let pad_x = PAD_X * zoom;
+                        let pad_x = (PAD_X * zoom).min((w * 0.15).max(2.0 * zoom));
                         let pad_y = PAD_Y * zoom;
                         let inner = (w - 2.0 * pad_x).max(8.0 * zoom);
                         egui::Frame::NONE.inner_margin(egui::Margin::symmetric(pad_x as i8, pad_y as i8)).show(ui, |ui| {
@@ -1756,6 +1775,15 @@ fn table(
                                 let Some(caret) = caret.as_mut() else { return };
                                 caret.ensure_inline(block);
                                 let previous_selection = caret.selection;
+                                let inline = caret.inline.clone().unwrap_or_default();
+                                let size = 14.5 * zoom;
+                                let strong = r == 0;
+                                let mut layouter = |ui: &Ui, text: &dyn egui::TextBuffer, width: f32| {
+                                    let mut job = inline
+                                        .layout(text.as_str(), |text| pagetext::inline_job_with_fonts(ui.ctx(), text, size, strong, t, width, page));
+                                    job.halign = halign;
+                                    ui.fonts_mut(|f| f.layout_job(job))
+                                };
                                 let id = ui.make_persistent_id(("table-cell", i, r, c));
                                 changed.mark = formatting_key(ui, id);
                                 let at = (i, caret.text.clone(), caret.selection);
@@ -1765,7 +1793,8 @@ fn table(
                                         .frame(egui::Frame::NONE)
                                         .horizontal_align(halign)
                                         .desired_width(inner)
-                                        .font(egui::FontId::proportional(14.5 * zoom))
+                                        .font(egui::FontId::proportional(size))
+                                        .layouter(&mut layouter)
                                         .show(ui)
                                 });
                                 if caret.focus {
@@ -1887,6 +1916,14 @@ fn table(
     {
         action = Some(Action::Select(i, from, to));
     }
+    // Right-clicking any cell places the caret there right away (as in Word) so the
+    // context menu that opens on the same click can offer row/column actions for it.
+    if ui.input(|inp| inp.pointer.secondary_clicked())
+        && let Some(cell) = ui.ctx().pointer_latest_pos().and_then(|p| where_.iter().find(|(_, r)| r.contains(p)).map(|(c, _)| *c))
+        && here != Some(cell)
+    {
+        action = Some(Action::EnterCell(i, cell));
+    }
 
     // The picked block is washed over in the accent colour, the way a selection is shown
     // anywhere else, and the words stay readable underneath.
@@ -1912,31 +1949,57 @@ fn table(
         table_borders(ui, &edge_x, &edge_y, t, zoom);
     }
 
+    // Small red badge (`×`) at the top-right corner of the table to delete it with confirmation.
+    let btn_sz = (18.0 * zoom).clamp(16.0, 26.0);
+    let table_right = edge_x.last().copied().unwrap_or(left);
+    let btn_rect = egui::Rect::from_min_size(
+        egui::pos2((table_right - btn_sz).max(left), (edge_y[0] - btn_sz * 0.5).max(ui.clip_rect().min.y)),
+        vec2(btn_sz, btn_sz),
+    );
+    let del_resp = ui.interact(btn_rect, ui.make_persistent_id(("table-delete-btn", i)), Sense::click()).on_hover_text("Supprimer le tableau");
+    let on_delete_btn = del_resp.hovered() || del_resp.clicked() || at.is_some_and(|p| btn_rect.contains(p));
+    if del_resp.hovered() {
+        ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
+    }
+    let fill = if del_resp.hovered() { egui::Color32::from_rgb(185, 28, 28) } else { egui::Color32::from_rgb(220, 38, 38) };
+    let center = btn_rect.center();
+    let radius = btn_sz * 0.5;
+    ui.painter().circle_filled(center, radius, fill);
+    let arm = radius * 0.45;
+    let cross = egui::Stroke::new((1.75 * zoom).max(1.5), egui::Color32::WHITE);
+    ui.painter().line_segment([center - vec2(arm, arm), center + vec2(arm, arm)], cross);
+    ui.painter().line_segment([center + vec2(arm, -arm), center + vec2(-arm, arm)], cross);
+    if del_resp.clicked() {
+        changed.delete_table = Some(i);
+    }
+
     // The borders are handles as well as lines: a drag on one changes the width of the
     // column to its left, the way a column is resized in OneNote or Word. Added after
     // the cells so the few pixels round a line answer to the drag and not to the words.
     let mut on_handle = false;
-    for c in 0..columns {
-        let Some(&x) = edge_x.get(c + 1) else { continue };
-        let handle = egui::Rect::from_min_max(egui::pos2(x - GRAB * zoom, edge_y[0]), egui::pos2(x + GRAB * zoom, bottom));
-        let grip = ui.interact(handle, ui.make_persistent_id(("table-column", i, c)), Sense::drag());
-        if grip.hovered() || grip.dragged() {
-            on_handle = true;
-            ui.ctx().set_cursor_icon(egui::CursorIcon::ResizeHorizontal);
-        }
-        if grip.dragged() {
-            let want = widths[c] + grip.drag_delta().x / zoom;
-            cols.set(i, c, want, &widths);
-            changed.columns = true;
-        }
-        // While a column is being dragged its line is drawn in the accent colour, so it
-        // is plain which one is moving.
-        if grip.dragged() {
-            ui.painter().vline(x, edge_y[0]..=bottom, egui::Stroke::new(1.5 * zoom, t.accent));
+    if !on_delete_btn {
+        for c in 0..columns {
+            let Some(&x) = edge_x.get(c + 1) else { continue };
+            let handle = egui::Rect::from_min_max(egui::pos2(x - GRAB * zoom, edge_y[0]), egui::pos2(x + GRAB * zoom, bottom));
+            let grip = ui.interact(handle, ui.make_persistent_id(("table-column", i, c)), Sense::drag());
+            if grip.hovered() || grip.dragged() {
+                on_handle = true;
+                ui.ctx().set_cursor_icon(egui::CursorIcon::ResizeHorizontal);
+            }
+            if grip.dragged() {
+                let want = (fitted_widths[c] + grip.drag_delta().x / zoom).max(notecraft_model::tablecols::MIN_WIDTH);
+                cols.set(i, c, want, &fitted_widths);
+                changed.columns = true;
+            }
+            // While a column is being dragged its line is drawn in the accent colour, so it
+            // is plain which one is moving.
+            if grip.dragged() {
+                ui.painter().vline(x, edge_y[0]..=bottom, egui::Stroke::new(1.5 * zoom, t.accent));
+            }
         }
     }
-    if on_handle {
-        // A press on a border is a resize, not the start of a block of cells.
+    if on_handle || on_delete_btn {
+        // A press on a border or the corner delete button is not the start of a block of cells.
         ui.memory_mut(|m| m.data.remove_temp::<(usize, usize)>(anchor_id));
     }
 
@@ -1949,6 +2012,7 @@ fn table(
         && clicked
         && !on_border
         && !on_handle
+        && !on_delete_btn
         && let (Some(p), Some(cell)) = (at, over)
         && ui.clip_rect().contains(p)
         && ui.ctx().layer_id_at(p) == Some(ui.layer_id())
@@ -3035,7 +3099,7 @@ pub fn show_blocks(
             if resp.has_focus() || resp.lost_focus() {
                 if enter && !multiline {
                     action = Some(Action::Split(i));
-                } else if backspace && at_start {
+                } else if backspace && at_start && !resp.changed() {
                     action = Some(Action::JoinBack(i));
                 } else if tab && !multiline {
                     action = Some(Action::Indent(i, !shift));
@@ -4412,10 +4476,13 @@ fn apply(action: Action, blocks: &mut Vec<Block>, caret: &mut Option<Caret>, cha
             }
         }
         Action::ClickBelow => {
-            let last_writable = blocks.iter().rposition(is_writable);
-            match last_writable {
-                // An empty last block is where the caret goes; otherwise a new one is added.
-                Some(i) if blocks.get(i).map(block_text).unwrap_or_default().is_empty() => {
+            // Only reuse the very last block if it is already an empty text block; never treat a
+            // table, code block, math block, rule or picture as an empty paragraph.
+            let reuse_last = blocks.len().checked_sub(1).filter(|&i| {
+                blocks.get(i).is_some_and(|b| matches!(b, Block::Paragraph(_) | Block::Quote(_) | Block::Item { .. }) && block_text(b).is_empty())
+            });
+            match reuse_last {
+                Some(i) => {
                     *caret = Some(Caret {
                         block: i,
                         text: String::new(),
@@ -4427,7 +4494,7 @@ fn apply(action: Action, blocks: &mut Vec<Block>, caret: &mut Option<Caret>, cha
                         inline: None,
                     });
                 }
-                _ => {
+                None => {
                     blocks.push(Block::Paragraph(Vec::new()));
                     *caret = Some(Caret {
                         block: blocks.len() - 1,
@@ -5718,6 +5785,17 @@ code
     }
 
     #[test]
+    fn clicking_below_a_table_adds_a_paragraph_after_it() {
+        let mut b = blocks("\n| A | B |\n| --- | --- |\n| 1 | 2 |\n");
+        let table_idx = b.iter().position(|blk| matches!(blk, Block::Table { .. })).expect("table");
+        let mut caret = None;
+        let mut changed = Changed::default();
+        apply(Action::ClickBelow, &mut b, &mut caret, &mut changed);
+        assert_eq!(caret.as_ref().map(|c| c.block), Some(table_idx + 1));
+        assert!(matches!(b.last(), Some(Block::Paragraph(_))));
+    }
+
+    #[test]
     fn the_caret_never_points_outside_the_page() {
         let mut b = blocks("one\n");
         let mut caret =
@@ -5933,6 +6011,18 @@ code
         assert_eq!(tracker.step(3.15, true, false, false, Some(egui::pos2(50.0, 240.0))), None);
         assert_eq!(tracker.step(3.50, true, false, false, Some(egui::pos2(50.0, 180.0))), None);
         assert_eq!(tracker.step(3.60, false, false, true, Some(egui::pos2(50.0, 180.0))), None);
+    }
+
+    #[test]
+    fn fit_table_widths_scales_wide_tables_without_overflow() {
+        assert_eq!(fit_table_widths(&[160.0, 160.0, 160.0], 600.0), vec![160.0, 160.0, 160.0]);
+        let shrunk = fit_table_widths(&[160.0; 6], 600.0);
+        let sum: f32 = shrunk.iter().sum();
+        assert!((sum - 600.0).abs() < 0.01, "expected sum ~600, got {sum}");
+        assert!(shrunk.iter().all(|&w| (w - 100.0).abs() < 0.01), "equal columns scale evenly: {shrunk:?}");
+
+        let prop = fit_table_widths(&[400.0, 200.0, 200.0], 400.0);
+        assert!((prop[0] - 200.0).abs() < 0.01 && (prop[1] - 100.0).abs() < 0.01 && (prop[2] - 100.0).abs() < 0.01);
     }
 
     #[test]

@@ -27,6 +27,7 @@ notecraft-diagram = { workspace = true }
 image = { workspace = true }
 jxl-oxide = { workspace = true }
 hayro = { workspace = true }
+kurbo = { version = "0.12.0", default-features = false }
 log = { workspace = true }
 serde_json = { workspace = true }
 zip = { workspace = true }
@@ -50,9 +51,15 @@ fontdb = "0.23"
 # this computer and checks it against the release's SHA-256 before running it. Nothing is sent
 # until the button is pressed.
 ureq = { version = "3", default-features = false, features = ["rustls", "platform-verifier", "json"] }
+oar-ocr = { workspace = true }
+ort = { workspace = true }
 
 [target.'cfg(target_os = "android")'.dependencies]
 ureq = { version = "3", default-features = false, features = ["rustls", "json"] }
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+ocrs = { workspace = true }
+rten = { workspace = true }
 
 [dev-dependencies]
 egui_kittest = { workspace = true }

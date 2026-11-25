@@ -520,9 +520,16 @@ fn picture_box(ui: &Ui, src: &str, zoom: f32) -> egui::Vec2 {
 /// would; other pictures are kept to 480 points, so one photo does not fill the window.
 fn picture_max_height(src: &str, zoom: f32) -> f32 {
     let name = src.rsplit(['/', '\\']).next().unwrap_or(src);
-    let printout = name
-        .rsplit_once(".printout-")
-        .is_some_and(|(_, page)| page.strip_suffix(".png").is_some_and(|n| !n.is_empty() && n.bytes().all(|b| b.is_ascii_digit())));
+    let printout = name.rsplit_once(".printout-").is_some_and(|(_, page)| {
+        let stem = page.strip_suffix(".png").unwrap_or("");
+        let mut digits = stem;
+        for suffix in ["-bg", "-scan", "-contrast", "-cropped", "-rotated", "-flipped"] {
+            if let Some(base) = digits.strip_suffix(suffix) {
+                digits = base;
+            }
+        }
+        !digits.is_empty() && digits.bytes().all(|b| b.is_ascii_digit())
+    });
     if printout { f32::INFINITY } else { 480.0 * zoom }
 }
 

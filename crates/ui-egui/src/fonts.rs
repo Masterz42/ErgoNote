@@ -286,8 +286,8 @@ mod tests {
 
     #[test]
     fn a_context_with_them_has_the_glyphs_and_one_without_does_not() {
-        // One word per script: Arabic, Persian, Urdu, Hebrew, Hindi, Chinese, Japanese, Korean.
-        const WORDS: [&str; 8] = ["مرحبا", "سلام", "خوش آمدید", "שלום", "नमस्ते", "你好", "こんにちは", "안녕하세요"];
+        // One word per bundled script: Arabic, Persian, Urdu, Hebrew, Hindi.
+        const WORDS: [&str; 5] = ["مرحبا", "سلام", "خوش آمدید", "שלום", "नमस्ते"];
         let plain = egui::Context::default();
         let mut out = plain.run_ui(egui::RawInput::default(), |_| {});
         out.textures_delta.clear();

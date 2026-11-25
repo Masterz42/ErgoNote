@@ -34,11 +34,10 @@ pub mod fonts {
     pub const HEBREW: &[u8] = include_bytes!("../../../assets/fonts/NotoSansHebrew.ttf");
     /// Noto Sans Devanagari, variable width and weight, 630 KB: Hindi, Marathi, Nepali, Sanskrit.
     pub const DEVANAGARI: &[u8] = include_bytes!("../../../assets/fonts/NotoSansDevanagari.ttf");
-    /// Noto Sans CJK SC, Regular, 16 MB: Chinese, Japanese and Korean, with Simplified Chinese
-    /// forms where the scripts share a character.
-    pub const CJK: &[u8] = include_bytes!("../../../assets/fonts/NotoSansCJKsc-Regular.otf");
     /// Liberation Sans Bold (SIL OFL 1.1): provides a real bold weight for bold spans.
     pub const BOLD: &[u8] = include_bytes!("../../../assets/fonts/LiberationSans-Bold.ttf");
+    /// DejaVu Sans, 742 KB: maths operators, arrows, stars and checkmarks.
+    pub const SYMBOLS: &[u8] = include_bytes!("../../../assets/fonts/DejaVuSans.ttf");
     /// Noto Emoji monochrome vector font (SIL OFL 1.1): smileys and seasonal symbols.
     pub const EMOJI: &[u8] = include_bytes!("../../../assets/fonts/NotoEmoji.ttf");
 
@@ -47,7 +46,7 @@ pub mod fonts {
         ("noto-naskh-arabic", ARABIC),
         ("noto-sans-hebrew", HEBREW),
         ("noto-sans-devanagari", DEVANAGARI),
-        ("noto-sans-cjk-sc", CJK),
+        ("dejavu-sans", SYMBOLS),
         ("noto-emoji", EMOJI),
     ];
 }
@@ -81,7 +80,7 @@ pub mod katex {
     ];
 }
 
-use fonts::{ARABIC, CJK, DEVANAGARI, HEBREW};
+use fonts::{ARABIC, DEVANAGARI, HEBREW};
 
 /// No brush: the spike cares about where things are, not what colour they are.
 type Brush = [u8; 0];
@@ -110,7 +109,7 @@ impl Text {
         let registered = fonts.collection.register_fonts(blob, None);
         let family = registered.first().and_then(|(id, _)| fonts.collection.family_name(*id)).unwrap_or("Noto Naskh Arabic").to_string();
         let mut fallbacks = Vec::new();
-        for bytes in [HEBREW, DEVANAGARI, CJK] {
+        for bytes in [HEBREW, DEVANAGARI] {
             let blob = Blob::new(Arc::new(bytes) as Arc<dyn AsRef<[u8]> + Send + Sync>);
             let registered = fonts.collection.register_fonts(blob, None);
             if let Some(name) = registered.first().and_then(|(id, _)| fonts.collection.family_name(*id)) {
@@ -310,8 +309,8 @@ mod tests {
     fn the_bundled_faces_register_and_cover_their_scripts() {
         let mut t = Text::new();
         assert!(!t.family().is_empty(), "the face registered under a name");
-        assert_eq!(t.fallbacks.len(), 3, "Hebrew, Devanagari and CJK registered: {:?}", t.fallbacks);
-        for word in ["Hello", "مرحبا", "שלום", "नमस्ते", "你好", "こんにちは", "안녕하세요"] {
+        assert_eq!(t.fallbacks.len(), 2, "Hebrew and Devanagari registered: {:?}", t.fallbacks);
+        for word in ["Hello", "مرحبا", "שלום", "नमस्ते"] {
             let layout = t.layout(word, 16.0, None);
             assert!(layout.width() > 0.0, "{word} has glyphs");
             // A face that lacks the script gives notdef boxes, which parley still advances;

@@ -4,7 +4,7 @@ members = ["crates/*", "apps/*", "android", "xtask", "docs/demo/scripts"]
 default-members = ["crates/*", "apps/notecraft", "apps/notecraft-cli", "apps/notecraft-setup", "xtask"]
 
 [workspace.package]
-version = "2026.11.24"
+version = "2026.11.25"
 edition = "2024"
 rust-version = "1.95"
 license = "LicenseRef-ErgoNote-Freeware"
@@ -59,6 +59,10 @@ cab = "0.6"
 # hooks, so egui_extras' loader draws a .jxl like any other picture. Decoding only; NoteCraft never
 # writes JPEG XL.
 jxl-oxide = { version = "0.12", default-features = false, features = ["image"] }
+ocrs = { version = "0.14", default-features = false, features = ["rten"] }
+rten = { version = "0.28", default-features = false, features = ["rten_format"] }
+oar-ocr = { version = "0.11.0", default-features = false, features = ["simd"] }
+ort = { version = "=2.0.0-rc.15", default-features = false, features = ["download-binaries", "tls-rustls"] }
 hayro = { version = "=0.5.0", default-features = false, features = ["embed-fonts"] }
 # A drop-in SystemTime/Instant: std's own panics with "time not implemented on this
 # platform" on wasm32-unknown-unknown, which has no clock. This is std's types everywhere
@@ -93,9 +97,11 @@ debug = "line-tables-only"
 split-debuginfo = "unpacked"
 
 [profile.release]
-opt-level = 3
-lto = "thin"
-codegen-units = 16
+opt-level = "s"
+lto = "fat"
+codegen-units = 1
+strip = "symbols"
+panic = "abort"
 debug = 0
 
 

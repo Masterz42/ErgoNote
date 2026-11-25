@@ -38,7 +38,10 @@ pub mod i18n;
 pub mod icons;
 pub mod imagemenu;
 pub mod language_flag;
+pub mod ocr;
 pub mod seasons;
+#[cfg(any(target_os = "windows", test))]
+pub(crate) mod tts_win;
 pub mod turn;
 pub mod versions;
 pub mod input_language {

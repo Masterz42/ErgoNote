@@ -655,6 +655,26 @@ mod alert_tests {
             assert_eq!((&ed.blocks, &ed.boxes), (&blocks_before, &before), "html={html}: one undo takes the printout back out of the box");
         }
     }
+
+    #[test]
+    fn pdf_printout_omits_filename_header_and_keeps_pdf_asset() {
+        for html in [false, true] {
+            let (_t, page, pdf, mut h) = printout_harness(html, "pdf-no-header");
+            let before_len = h.state().editor.as_ref().expect("editor").blocks.len();
+            h.state_mut().add_file(&page, &pdf, FileChoice::Printout);
+            for _ in 0..5 {
+                h.step();
+            }
+            let ed = h.state().editor.as_ref().expect("editor");
+            let added = &ed.blocks[before_len..];
+            assert!(!added.is_empty(), "html={html}: printout image should be added");
+            assert!(
+                added.iter().all(|b| matches!(b, notecraft_formats::Block::Image { .. })),
+                "html={html}: only printout image blocks should be added, got: {added:?}"
+            );
+            assert!(page.join("assets").join("sheet.pdf").is_file(), "html={html}: source PDF must remain in assets for native text extraction");
+        }
+    }
 }
 
 /// Blocks put into a page that has several boxes go into the box the caret is in, and every
@@ -1093,6 +1113,26 @@ mod structural_undo_tests {
         assert_eq!(h.state().editor.as_ref().and_then(|e| e.caret.as_ref()).map(|c| c.block), Some(0));
     }
 
+    #[test]
+    fn confirm_delete_table_opens_dialog_then_deletes_with_undo() {
+        use notecraft_formats::Block;
+        let (_t, mut h) = page_with_table(false, "confirm-delete-table");
+        let table = blocks(&h).iter().position(|b| matches!(b, Block::Table { .. })).expect("a table");
+        h.state_mut().ribbon_act(ribbon::Act::ConfirmDeleteTable(Some(table)));
+        settle(&mut h);
+        assert!(matches!(h.state().dialog, Some(Dialog::DeleteTable { block }) if block == table));
+        assert!(blocks(&h).iter().any(|b| matches!(b, Block::Table { .. })), "table stays until confirmed");
+
+        h.state_mut().delete_table_at(table);
+        h.state_mut().dialog = None;
+        settle(&mut h);
+        assert!(!blocks(&h).iter().any(|b| matches!(b, Block::Table { .. })), "table removed after confirm");
+
+        h.state_mut().ribbon_act(ribbon::Act::Undo);
+        settle(&mut h);
+        assert!(blocks(&h).iter().any(|b| matches!(b, Block::Table { .. })), "undo restores deleted table");
+    }
+
     /// Writing first and then changing the table is two steps, not one: Undo takes back the
     /// table change and leaves the writing.
     #[test]
@@ -1472,6 +1512,91 @@ mod picture_turn_tests {
             assert_eq!((width, height), (Some(40.0), Some(60.0)));
             assert_eq!(size_of(&page, &flipped), (20, 30));
         }
+    }
+
+    #[test]
+    fn image_tab_enhance_crop_insert_ocr_and_delete_with_undo() {
+        let t = notecraft_store::testing::TempDir::new("image-ribbon-ops");
+        let settings = notecraft_store::Settings::at(t.path().join("settings.toml"));
+        settings.set("privacy_welcome_seen", "true").expect("settings");
+        let mut session = Session::new(&t.path().join("notebooks"), settings).expect("session");
+        let sample = notecraft_engine::sample::create_sample(&mut session, None).expect("sample");
+        let page = sample.html_page.clone();
+        let mut png = std::io::Cursor::new(Vec::new());
+        image::DynamicImage::ImageRgba8(image::RgbaImage::from_pixel(40, 20, image::Rgba([40, 90, 200, 255])))
+            .write_to(&mut png, image::ImageFormat::Png)
+            .expect("png");
+        let raw_bytes = png.into_inner();
+        let src = notecraft_store::assets::attach_bytes(&page, "scan.png", &raw_bytes).expect("attach");
+        notecraft_store::page::save_body(&page, &format!("<p>Titre</p><p><img src=\"{src}\" alt=\"Scan\"></p>")).expect("fixture");
+
+        let mut app = NoteCraftApp::new(session);
+        app.open_path(&page.to_string_lossy());
+        let mut h: H = egui_kittest::Harness::builder()
+            .with_size(vec2(1400.0, 800.0))
+            .with_accessibility_check(false)
+            .build_ui_state(|ui, app: &mut NoteCraftApp| app.show(ui), app);
+        settle(&mut h);
+        assert!(h.state().page_has_image());
+
+        // 1. Scan N&B creates a new asset and can be undone.
+        h.state_mut().ribbon_act(ribbon::Act::EnhancePicture(crate::turn::Enhance::ScanBw));
+        settle(&mut h);
+        let (enhanced, _, _) = picture(&h);
+        assert_eq!(enhanced, "assets/scan-scan.png");
+        h.state_mut().undo();
+        settle(&mut h);
+        assert_eq!(picture(&h).0, src);
+
+        // 2. Crop opens modal and applies crop cleanly.
+        h.state_mut().ribbon_act(ribbon::Act::CropPicture);
+        settle(&mut h);
+        assert!(matches!(h.state().dialog, Some(Dialog::CropPicture { dims: (40, 20), .. })));
+        let img_idx = h.state().active_image_target().expect("img").0;
+        h.state_mut().apply_crop_picture(img_idx, &src, &raw_bytes, [0.25, 0.25, 0.75, 0.75]);
+        h.state_mut().dialog = None;
+        settle(&mut h);
+        let (cropped, _, _) = picture(&h);
+        assert_eq!(cropped, "assets/scan-cropped.png");
+        assert_eq!(size_of(&page, &cropped), (20, 10));
+
+        // 3. OCR text insertion puts paragraphs below image cleanly.
+        h.state_mut().insert_ocr_text_below(img_idx, "Ligne un\nLigne deux");
+        settle(&mut h);
+        let blks = h.state().editor_blocks();
+        assert!(blks.iter().any(|b| pageedit::block_text(b) == "Ligne un"));
+
+        // 4. Delete image removes it cleanly and Undo brings it back.
+        h.state_mut().ribbon_act(ribbon::Act::DeleteSelectedPicture);
+        settle(&mut h);
+        assert!(!h.state().page_has_image());
+        h.state_mut().undo();
+        settle(&mut h);
+        assert!(h.state().page_has_image());
+
+        // 5. Intelligent layout reconstruction replaces image with positioned editable zones and can be undone.
+        let doc = crate::ocr::OcrDocument {
+            source_label: "PDF natif (texte exact)",
+            aspect_ratio: 1.4,
+            blocks: vec![
+                crate::ocr::OcrBlock { x: 0.08, y: 0.06, width: 0.5, height: 0.05, font_scale: 1.8, lines: vec!["Leçon 1".into()] },
+                crate::ocr::OcrBlock { x: 0.08, y: 0.25, width: 0.4, height: 0.08, font_scale: 1.0, lines: vec!["Colonne gauche".into()] },
+                crate::ocr::OcrBlock { x: 0.55, y: 0.25, width: 0.4, height: 0.08, font_scale: 1.0, lines: vec!["Colonne droite".into()] },
+            ],
+            plain_text: "Leçon 1\n\nColonne gauche\n\nColonne droite".into(),
+        };
+        let target_idx = h.state().active_image_target().expect("img target").0;
+        h.state_mut().reconstruct_page_from_ocr(target_idx, &doc, false);
+        settle(&mut h);
+        assert!(!h.state().page_has_image(), "image replaced by editable zones");
+        let ed = h.state().editor.as_ref().expect("ed");
+        assert!(ed.boxes.len() >= 3);
+        let blks = h.state().editor_blocks();
+        assert!(blks.iter().any(|b| matches!(b, notecraft_formats::Block::Heading { .. }) && pageedit::block_text(b) == "Leçon 1"));
+        assert!(blks.iter().any(|b| pageedit::block_text(b) == "Colonne droite"));
+        h.state_mut().undo();
+        settle(&mut h);
+        assert!(h.state().page_has_image(), "undo restores original image");
     }
 }
 
@@ -2172,5 +2297,163 @@ mod section_tabs_bar_tests {
         let _ = super::NoteCraftApp::apply_word_boundary_tsv(&mut cues, "0.0\t0.4\tBonjour\n", 0.0);
         let _ = super::NoteCraftApp::apply_vtt_to_cues("", &mut cues, 0.0);
         super::NoteCraftApp::rescale_tts_cues(&mut cues, 1.0, 0.0);
+    }
+
+    #[test]
+    fn ime_table_cell_active_tracks_table_caret() {
+        let dir = notecraft_store::testing::TempDir::new("ime-table-active");
+        let settings_path = dir.path().join("settings.toml");
+        let s = notecraft_store::Settings::at(&settings_path);
+        s.set("privacy_welcome_seen", "true").expect("settings");
+        let mut session = Session::new(&dir.path().join("nb"), s).expect("session");
+        let page = notecraft_engine::sample::create_school_binder(&mut session).expect("school binder");
+        let mut app = NoteCraftApp::new(session);
+        app.open_path(&page.to_string_lossy());
+        assert!(!app.ime_table_cell_active());
+
+        app.insert_table(2, 2);
+        assert!(app.ime_table_cell_active());
+
+        app.pointer = ribbon::Pointer::Draw;
+        assert!(!app.ime_table_cell_active());
+    }
+
+    #[test]
+    fn deleting_final_letter_on_page_clears_block() {
+        let t = notecraft_store::testing::TempDir::new("delete-last-letter");
+        let settings = notecraft_store::Settings::at(t.path().join("settings.toml"));
+        settings.set("privacy_welcome_seen", "true").expect("settings");
+        let mut session = Session::new(&t.path().join("notebooks"), settings).expect("session");
+        let sample = notecraft_engine::sample::create_sample(&mut session, None).expect("sample");
+        let mut app = NoteCraftApp::new(session);
+        app.open_path(&sample.md_page.to_string_lossy());
+        let mut h: H = egui_kittest::Harness::builder()
+            .with_size(vec2(1024.0, 700.0))
+            .with_accessibility_check(false)
+            .build_ui_state(|ui, app: &mut NoteCraftApp| app.show(ui), app);
+        for _ in 0..3 {
+            h.step();
+        }
+        // Replace page with a single paragraph containing only `"m"` (caret at offset 1) and press Backspace.
+        {
+            let ed = h.state_mut().editor.as_mut().expect("editor");
+            ed.blocks = vec![notecraft_formats::Block::Paragraph(vec![notecraft_formats::Span { text: "m".into(), ..Default::default() }])];
+            ed.boxes = vec![notecraft_model::Container::new(0.0, 0.0, 600.0, 1)];
+            ed.arranged = true;
+            ed.rebuild_body();
+            ed.caret = Some(pageedit::Caret {
+                block: 0,
+                text: "m".into(),
+                focus: true,
+                selection: (1, 1),
+                place: Some(1),
+                cell: None,
+                span: None,
+                inline: None,
+            });
+        }
+        for _ in 0..2 {
+            h.step();
+        }
+        h.key_press(egui::Key::Backspace);
+        for _ in 0..2 {
+            h.step();
+        }
+        let ed = h.state().editor.as_ref().expect("editor");
+        assert!(crate::preview::is_blank(&ed.blocks[0]), "Backspace must delete final 'm', got {:?}", ed.blocks[0]);
+
+        // Also verify Delete clears `"m"` when caret is at offset 0.
+        {
+            let ed = h.state_mut().editor.as_mut().expect("editor");
+            ed.blocks = vec![notecraft_formats::Block::Paragraph(vec![notecraft_formats::Span { text: "m".into(), ..Default::default() }])];
+            ed.boxes = vec![notecraft_model::Container::new(0.0, 0.0, 600.0, 1)];
+            ed.arranged = true;
+            ed.rebuild_body();
+            ed.caret = Some(pageedit::Caret {
+                block: 0,
+                text: "m".into(),
+                focus: true,
+                selection: (0, 0),
+                place: Some(0),
+                cell: None,
+                span: None,
+                inline: None,
+            });
+        }
+        for _ in 0..2 {
+            h.step();
+        }
+        h.key_press(egui::Key::Delete);
+        for _ in 0..2 {
+            h.step();
+        }
+        let ed = h.state().editor.as_ref().expect("editor");
+        assert!(crate::preview::is_blank(&ed.blocks[0]), "Delete must delete final 'm', got {:?}", ed.blocks[0]);
+    }
+
+    #[test]
+    fn ocr_reconstruct_can_be_undone_with_ctrl_z() {
+        for keep_bg in [true, false] {
+            let t = notecraft_store::testing::TempDir::new("ocr-undo-ctrlz");
+            let settings = notecraft_store::Settings::at(t.path().join("settings.toml"));
+            settings.set("privacy_welcome_seen", "true").expect("settings");
+            let mut session = Session::new(&t.path().join("notebooks"), settings).expect("session");
+            let sample = notecraft_engine::sample::create_sample(&mut session, None).expect("sample");
+            let pdf = t.path().join("doc.pdf");
+            std::fs::write(
+                &pdf,
+                "%PDF-1.4\n1 0 obj\n<</Type/Catalog/Pages 2 0 R>>\nendobj\n2 0 obj\n<</Type/Pages/Kids[3 0 R]/Count 1>>\nendobj\n3 0 obj\n<</Type/Page/Parent 2 0 R/MediaBox[0 0 200 200]/Contents 4 0 R/Resources<<>>>>\nendobj\n4 0 obj\n<</Length 33>>\nstream\n0.8 0.1 0.1 rg 20 20 100 100 re f\nendstream\nendobj\nxref\n0 5\n0000000000 65535 f \n0000000009 00000 n \n0000000054 00000 n \n0000000105 00000 n \n0000000199 00000 n \ntrailer\n<</Root 1 0 R/Size 5>>\nstartxref\n280\n%%EOF\n",
+            )
+            .expect("pdf");
+            let mut app = NoteCraftApp::new(session);
+            app.open_path(&sample.md_page.to_string_lossy());
+            let mut h: H = egui_kittest::Harness::builder()
+                .with_size(vec2(1024.0, 700.0))
+                .with_accessibility_check(false)
+                .build_ui_state(|ui, app: &mut NoteCraftApp| app.show(ui), app);
+            for _ in 0..3 {
+                h.step();
+            }
+            h.state_mut().add_file(&sample.md_page, &pdf, FileChoice::Printout);
+            for _ in 0..3 {
+                h.step();
+            }
+            let (before_blocks, before_boxes, before_lock, img_idx) = {
+                let st = h.state();
+                let ed = st.editor.as_ref().expect("editor");
+                let idx = ed.blocks.iter().position(|b| matches!(b, notecraft_formats::Block::Image { .. })).expect("printout image block");
+                (ed.blocks.clone(), ed.boxes.clone(), st.lock_images, idx)
+            };
+            let doc = crate::ocr::OcrDocument {
+                source_label: "Test",
+                aspect_ratio: 1.4,
+                blocks: vec![crate::ocr::OcrBlock {
+                    x: 0.1,
+                    y: 0.1,
+                    width: 0.7,
+                    height: 0.1,
+                    font_scale: 1.0,
+                    lines: vec!["Ligne reconstruite".to_string()],
+                }],
+                plain_text: "Ligne reconstruite".to_string(),
+            };
+            h.state_mut().reconstruct_page_from_ocr(img_idx, &doc, keep_bg);
+            for _ in 0..3 {
+                h.step();
+            }
+            assert!(!keep_bg || h.state().lock_images, "keep_bg locks image");
+            assert_ne!(h.state().editor.as_ref().expect("ed").blocks, before_blocks, "keep_bg={keep_bg}: reconstruction modified blocks");
+
+            // Simulate Ctrl+Z via egui_kittest (same path as desktop window Ctrl+Z).
+            h.key_press_modifiers(egui::Modifiers::COMMAND, egui::Key::Z);
+            for _ in 0..3 {
+                h.step();
+            }
+            let st = h.state();
+            let ed = st.editor.as_ref().expect("editor");
+            assert_eq!(ed.blocks, before_blocks, "keep_bg={keep_bg}: Ctrl+Z must restore original blocks");
+            assert_eq!(ed.boxes, before_boxes, "keep_bg={keep_bg}: Ctrl+Z must restore original boxes");
+            assert_eq!(st.lock_images, before_lock, "keep_bg={keep_bg}: Ctrl+Z must restore lock_images");
+        }
     }
 }

@@ -1050,6 +1050,12 @@ enum DictationState {
     Listening,
 }
 
+struct OcrDone {
+    block: usize,
+    speak: bool,
+    result: Result<crate::ocr::OcrDocument, String>,
+}
+
 enum Dialog {
     /// A dropped file: copy it in, or link to it where it is.
     FileOptions {
@@ -1119,6 +1125,21 @@ enum Dialog {
     DeleteNotebook {
         path: PathBuf,
         title: String,
+    },
+    DeleteTable {
+        block: usize,
+    },
+    CropPicture {
+        block: usize,
+        src: String,
+        bytes: Vec<u8>,
+        dims: (u32, u32),
+        rect: [f32; 4],
+    },
+    OcrResult {
+        block: usize,
+        doc: crate::ocr::OcrDocument,
+        text: String,
     },
     ClearTelemetry {
         path: PathBuf,
@@ -1352,6 +1373,9 @@ pub struct NoteCraftApp {
     editor: Option<Editor>,
     dialog: Option<Dialog>,
     import_job: Option<ImportJob>,
+    ocr_job: Option<Receiver<OcrDone>>,
+    selected_image_block: Option<usize>,
+    last_selected_image: Option<usize>,
     status: String,
     status_is_error: bool,
     /// The host keeps notebook files only for this session, rather than on durable storage.
@@ -1622,6 +1646,9 @@ impl NoteCraftApp {
                 None
             },
             import_job: None,
+            ocr_job: None,
+            selected_image_block: None,
+            last_selected_image: None,
             status: crate::tl_id!("ui.ready_2").into(),
             status_is_error: false,
             session_only_storage: false,
@@ -1843,6 +1870,21 @@ impl NoteCraftApp {
         self.pending_speech_cmd.take()
     }
 
+    /// Locale tag and speaking rate multiplier for host speech engines (Android / web).
+    pub fn speech_locale_and_rate(&self) -> (&'static str, f32) {
+        let rate = match self.tts_speed {
+            TtsSpeed::Slow => 0.75,
+            TtsSpeed::Normal => 1.0,
+            TtsSpeed::Fast => 1.25,
+        };
+        (self.spell_lang.tts_locale(), rate)
+    }
+
+    /// Marks the active host-driven read-aloud utterance finished so word highlighting stops.
+    pub fn mark_tts_done(&self) {
+        self.tts_done.store(true, std::sync::atomic::Ordering::SeqCst);
+    }
+
     /// Takes a pending Android native file/image picker MIME request once, for the Java shell.
     pub fn take_android_pick_request(&mut self) -> Option<String> {
         self.android_pick_request.take()
@@ -1910,6 +1952,20 @@ impl NoteCraftApp {
         let sel_start_utf16 = char_to_utf16(&c.text, secondary_char);
         let sel_end_utf16 = char_to_utf16(&c.text, primary_char);
         Some((c.block, c.text.clone(), sel_start_utf16, sel_end_utf16))
+    }
+
+    /// True while the caret sits in a table cell in write mode so Android keeps the soft
+    /// keyboard open instead of closing and reopening it when the viewport resizes.
+    pub fn ime_table_cell_active(&self) -> bool {
+        if self.show_source
+            || self.dialog.is_some()
+            || self.backstage.is_some()
+            || self.compact_list_fills()
+            || self.pointer != ribbon::Pointer::Write
+        {
+            return false;
+        }
+        self.editor.as_ref().and_then(|ed| ed.caret.as_ref()).is_some_and(|c| c.cell.is_some())
     }
 
     fn sanitize_ime_paragraph(before_text: &str, mut text: String, sel: (usize, usize)) -> (String, (usize, usize)) {
@@ -3422,6 +3478,7 @@ impl NoteCraftApp {
     /// caret in a box it gets a box of its own below the others.
     fn insert_printout_blocks(&mut self, text: &str) {
         let Some(ed) = self.editor.as_mut() else { return };
+        Self::remember_step(ed);
         let Some((index, at)) =
             ed.caret.as_ref().and_then(|c| notecraft_model::container::place(&ed.boxes, c.block).map(|(index, _)| (index, c.block + 1)))
         else {
@@ -3447,7 +3504,7 @@ impl NoteCraftApp {
         ed.arranged = true;
         ed.rebuild_body();
         Self::mark_dirty_from_blocks(ed);
-        Self::remember_step(ed);
+        Self::remember_edit(ed);
         let path = path_str(&ed.dir);
         let cols = cols_moved.then(|| notecraft_model::tablecols::write(&ed.columns));
         let justified = justified_moved.then(|| notecraft_model::justify::write(&ed.justified));
@@ -3609,7 +3666,7 @@ impl NoteCraftApp {
             }
             generated.push(target);
         }
-        let mut text = snippets::attachment(format, &link, &name);
+        let mut text = String::new();
         for (index, _) in generated.iter().enumerate() {
             let image = format!("assets/{base}.printout-{:03}.png", index + 1);
             text.push_str(&snippets::printout_page(format, &image, index + 1));
@@ -4199,14 +4256,14 @@ impl NoteCraftApp {
             return;
         }
         let t = self.tokens;
-        let (tab, source, in_table) = (self.ribbon_tab.clone(), self.show_source, self.caret_in_table());
+        let (tab, source, in_table, has_image) = (self.ribbon_tab.clone(), self.show_source, self.caret_in_table(), self.page_has_image());
         let title = self.editor.as_ref().map(|e| e.title.trim().to_owned()).filter(|s| !s.is_empty());
         let mut acts = Vec::new();
         let collapsed = self.ribbon_folded();
         let band = egui::Panel::top("band").frame(egui::Frame::new().fill(t.band)).show_separator_line(false).show(ui, |ui| {
             ui.spacing_mut().item_spacing = vec2(4.0, 0.0);
             // One row: logo, quick access, tab names, then the controls (issue: save room).
-            let tabs = with_tabs.then_some((tab.as_str(), source, in_table, collapsed));
+            let tabs = with_tabs.then_some((tab.as_str(), source, in_table, has_image, collapsed));
             acts.extend(self.title_row(ui, title.as_deref(), tabs));
         });
         self.band_bottom = band.response.rect.max.y;
@@ -4217,7 +4274,7 @@ impl NoteCraftApp {
     }
 
     /// The band's first row. Anything on it that is not a control moves the window.
-    fn title_row(&mut self, ui: &mut Ui, title: Option<&str>, tabs: Option<(&str, bool, bool, bool)>) -> Vec<ribbon::Act> {
+    fn title_row(&mut self, ui: &mut Ui, title: Option<&str>, tabs: Option<(&str, bool, bool, bool, bool)>) -> Vec<ribbon::Act> {
         const H: f32 = 32.0;
         let mut acts = Vec::new();
         let on = self.tokens.on_band();
@@ -4251,17 +4308,17 @@ impl NoteCraftApp {
         if self.qat.hidden || !self.qat.below {
             self.quick_access(&mut left, on);
         }
-        if let Some((tab, source, in_table, collapsed)) = tabs {
+        if let Some((tab, source, in_table, has_image, collapsed)) = tabs {
             left.add_space(6.0);
             let t = self.tokens;
-            ribbon::tab_names(&mut left, tab, source, in_table, collapsed, &t, &mut acts);
+            ribbon::tab_names(&mut left, tab, source, in_table, has_image, collapsed, &t, &mut acts);
         }
         let mut right = ui.new_child(egui::UiBuilder::new().max_rect(row).layout(egui::Layout::right_to_left(egui::Align::Center)));
         if self.frameless {
             self.window_buttons(&mut right, &on);
         }
         right.add_space(6.0);
-        if let Some((_, _, _, collapsed)) = tabs {
+        if let Some((_, _, _, _, collapsed)) = tabs {
             let t = self.tokens;
             ribbon::fold_button(&mut right, collapsed, &t, &mut acts);
             right.add_space(4.0);
@@ -5461,6 +5518,8 @@ impl NoteCraftApp {
             rack: &self.rack,
             nib: self.nib,
             in_table: self.caret_in_table(),
+            has_image: self.page_has_image(),
+            ocr_busy: self.ocr_job.is_some(),
             space_tool: self.space_tool,
             textbox_tool: self.textbox_tool,
             table_borders: self.caret_table_has_borders(),
@@ -6059,6 +6118,7 @@ impl NoteCraftApp {
             ribbon::Act::InkRack(edit) => self.edit_rack(edit),
             ribbon::Act::Table(what) => self.edit_table(what),
             ribbon::Act::DeleteTable => self.delete_table(),
+            ribbon::Act::ConfirmDeleteTable(block) => self.request_delete_table(block),
             ribbon::Act::TableSort(descending) => self.sort_table(descending),
             ribbon::Act::TableSelect(what) => self.select_in_table(what),
             ribbon::Act::TableBorders(on) => self.set_table_borders(on),
@@ -6141,6 +6201,17 @@ impl NoteCraftApp {
             ribbon::Act::HighlightColor(color) => self.apply_highlight_color(color),
             ribbon::Act::SavePictureAs(src) => self.save_picture_as(&src),
             ribbon::Act::TurnPicture(src, how) => self.turn_picture(&src, how),
+            ribbon::Act::CropPicture => self.open_crop_picture(),
+            ribbon::Act::TurnSelectedPicture(how) => {
+                if let Some((_, src)) = self.active_image_target() {
+                    self.turn_picture(&src, how);
+                } else {
+                    self.say("Sélectionnez d'abord une image sur la page.");
+                }
+            }
+            ribbon::Act::EnhancePicture(mode) => self.enhance_picture(mode),
+            ribbon::Act::OcrPicture { speak } => self.start_ocr(speak),
+            ribbon::Act::DeleteSelectedPicture => self.delete_selected_picture(),
         }
     }
 
@@ -6924,6 +6995,7 @@ impl NoteCraftApp {
         let mut nothing = false;
         let mut cols_moved = false;
         let mut layout_moved = false;
+        let mut restored_lock: Option<bool> = None;
         if let Some(ed) = self.editor.as_mut() {
             if !ed.writable {
                 nothing = true;
@@ -6957,10 +7029,19 @@ impl NoteCraftApp {
                             ed.justified = justified;
                             layout_moved = true;
                         }
+                        if let Some(locked) = step.lock_images {
+                            restored_lock = Some(locked);
+                        }
                     }
                     None => nothing = true,
                 }
             }
+        }
+        if let Some(locked) = restored_lock
+            && locked != self.lock_images
+        {
+            self.lock_images = locked;
+            let _ = self.session.settings.set("lock_images", if locked { "true" } else { "false" });
         }
         if cols_moved || layout_moved {
             self.save_block_marks((cols_moved, layout_moved));
@@ -7230,14 +7311,35 @@ impl NoteCraftApp {
     /// Undo step. The caret goes to the block that takes its place (the one after it, or the
     /// one before when it was last); a page left with nothing gets an empty line to type on.
     /// Table widths, cell marks and justified paragraphs after it move up with their blocks.
+    fn request_delete_table(&mut self, block: Option<usize>) {
+        use notecraft_formats::markdown::Block;
+        let Some(ed) = self.editor.as_ref() else { return };
+        let at = block.or_else(|| ed.caret.as_ref().filter(|c| c.cell.is_some()).map(|c| c.block));
+        let Some(at) = at.filter(|&at| matches!(ed.blocks.get(at), Some(Block::Table { .. }))) else {
+            self.say(crate::tl_id!("ui.put_the_caret_in_a_table_first"));
+            return;
+        };
+        self.dialog = Some(Dialog::DeleteTable { block: at });
+    }
+
     fn delete_table(&mut self) {
         use notecraft_formats::markdown::Block;
-        let Some(ed) = self.editor.as_mut() else { return };
+        let Some(ed) = self.editor.as_ref() else { return };
         let at = ed.caret.as_ref().filter(|c| c.cell.is_some()).map(|c| c.block);
         let Some(at) = at.filter(|&at| matches!(ed.blocks.get(at), Some(Block::Table { .. }))) else {
             self.say(crate::tl_id!("ui.put_the_caret_in_a_table_first"));
             return;
         };
+        self.delete_table_at(at);
+    }
+
+    fn delete_table_at(&mut self, at: usize) {
+        use notecraft_formats::markdown::Block;
+        let Some(ed) = self.editor.as_mut() else { return };
+        if !matches!(ed.blocks.get(at), Some(Block::Table { .. })) {
+            self.say(crate::tl_id!("ui.put_the_caret_in_a_table_first"));
+            return;
+        }
         Self::remember_step(ed);
         ed.caret = None;
         ed.blocks.remove(at);
@@ -7458,6 +7560,452 @@ impl NoteCraftApp {
             (true, true) => crate::tl_id!("ui.rotated_the_picture_ink_on_the_page_stays_where_it_is"),
             (false, true) => crate::tl_id!("ui.flipped_the_picture_ink_on_the_page_stays_where_it_is"),
         });
+    }
+
+    fn is_user_image_block(block: &notecraft_formats::markdown::Block) -> Option<&str> {
+        match block {
+            notecraft_formats::markdown::Block::Image { src, alt, .. }
+                if !crate::inkpad::is_ink_line(src, alt) && !crate::inkpad::is_page_ink(src) =>
+            {
+                Some(src.as_str())
+            }
+            _ => None,
+        }
+    }
+
+    fn page_has_image(&self) -> bool {
+        self.editor.as_ref().is_some_and(|ed| ed.blocks.iter().any(|b| Self::is_user_image_block(b).is_some()))
+    }
+
+    fn active_image_target(&self) -> Option<(usize, String)> {
+        let ed = self.editor.as_ref()?;
+        if let Some(sel) = self.selected_image_block
+            && let Some(block) = ed.blocks.get(sel)
+            && let Some(src) = Self::is_user_image_block(block)
+        {
+            return Some((sel, src.to_string()));
+        }
+        ed.blocks.iter().enumerate().find_map(|(i, b)| Self::is_user_image_block(b).map(|src| (i, src.to_string())))
+    }
+
+    fn replace_picture_asset(&mut self, block_idx: usize, src: &str, edited: &[u8], tag: &str, ext: &str, crop_ratios: Option<(f32, f32)>) -> bool {
+        use notecraft_formats::markdown::Block;
+        let Some(dir) = self.editor.as_ref().filter(|e| e.writable).map(|e| e.dir.clone()) else {
+            self.say(crate::tl_id!("ui.open_a_page_first"));
+            return false;
+        };
+        let filename = crate::turn::edited_name(src, tag, ext);
+        let link = match notecraft_store::assets::attach_bytes(&dir, &filename, edited) {
+            Ok(link) => link,
+            Err(e) => {
+                self.complain(&crate::i18n::format_message_id("ui.cannot_save_the_pasted_picture_error", &[("error", &e.to_string())]));
+                return false;
+            }
+        };
+        let Some(ed) = self.editor.as_mut() else { return false };
+        Self::remember_step(ed);
+        let mut changed = false;
+        if let Some(Block::Image { src: s, width, height, .. }) = ed.blocks.get_mut(block_idx)
+            && s == src
+        {
+            s.clone_from(&link);
+            if let Some((rx, ry)) = crop_ratios
+                && let (Some(w), Some(h)) = (*width, *height)
+            {
+                *width = Some((w * rx).max(24.0));
+                *height = Some((h * ry).max(24.0));
+            }
+            changed = true;
+        }
+        if !changed {
+            let _ = notecraft_store::assets::remove(&dir, link.trim_start_matches("assets/"));
+            return false;
+        }
+        ed.rebuild_body();
+        Self::mark_dirty_from_blocks(ed);
+        Self::remember_edit(ed);
+        ed.attachments = notecraft_store::assets::list(&dir);
+        true
+    }
+
+    fn open_crop_picture(&mut self) {
+        let Some(ed) = self.editor.as_ref() else {
+            self.say(crate::tl_id!("ui.open_a_page_first"));
+            return;
+        };
+        if !ed.writable {
+            self.complain("Cette image ne peut pas être rognée ici.");
+            return;
+        }
+        let Some((block, src)) = self.active_image_target() else {
+            self.say("Aucune image à rogner sur cette page.");
+            return;
+        };
+        let (_, _, bytes) = match crate::imagemenu::validate_and_read_image(&ed.dir, &src) {
+            Ok(read) => read,
+            Err(e) => {
+                self.complain(&crate::i18n::format_message_id("ui.cannot_read_the_picture_error", &[("error", &e.to_string())]));
+                return;
+            }
+        };
+        let Ok(dims) = image::load_from_memory(&bytes).map(|im| (im.width(), im.height())) else {
+            self.complain("Ce format d'image ne peut pas être rogné ici.");
+            return;
+        };
+        self.dialog = Some(Dialog::CropPicture { block, src, bytes, dims, rect: [0.0, 0.0, 1.0, 1.0] });
+    }
+
+    fn apply_crop_picture(&mut self, block: usize, src: &str, bytes: &[u8], rect: [f32; 4]) {
+        match crate::turn::crop(bytes, rect) {
+            Ok((out, ext, _dims)) => {
+                let rx = (rect[2] - rect[0]).abs().clamp(0.05, 1.0);
+                let ry = (rect[3] - rect[1]).abs().clamp(0.05, 1.0);
+                if self.replace_picture_asset(block, src, &out, "cropped", ext, Some((rx, ry))) {
+                    self.say("Image rognée.");
+                }
+            }
+            Err(e) => self.complain(&e),
+        }
+    }
+
+    fn enhance_picture(&mut self, mode: crate::turn::Enhance) {
+        let Some(ed) = self.editor.as_ref() else {
+            self.say(crate::tl_id!("ui.open_a_page_first"));
+            return;
+        };
+        if !ed.writable {
+            self.complain("Cette image ne peut pas être modifiée ici.");
+            return;
+        }
+        let Some((block, src)) = self.active_image_target() else {
+            self.say("Aucune image sur cette page.");
+            return;
+        };
+        let (_, _, bytes) = match crate::imagemenu::validate_and_read_image(&ed.dir, &src) {
+            Ok(read) => read,
+            Err(e) => {
+                self.complain(&crate::i18n::format_message_id("ui.cannot_read_the_picture_error", &[("error", &e.to_string())]));
+                return;
+            }
+        };
+        match crate::turn::enhance(&bytes, mode) {
+            Ok((out, ext)) => {
+                if self.replace_picture_asset(block, &src, &out, mode.tag(), ext, None) {
+                    self.say(match mode {
+                        crate::turn::Enhance::ScanBw => "Scan noir et blanc amélioré.",
+                        crate::turn::Enhance::Contrast => "Contraste renforcé.",
+                    });
+                }
+            }
+            Err(e) => self.complain(&e),
+        }
+    }
+
+    fn start_ocr(&mut self, speak: bool) {
+        if self.ocr_job.is_some() {
+            self.say("Une extraction de texte est déjà en cours.");
+            return;
+        }
+        let Some(ed) = self.editor.as_ref() else {
+            self.say(crate::tl_id!("ui.open_a_page_first"));
+            return;
+        };
+        let dir = ed.dir.clone();
+        let Some((block, src)) = self.active_image_target() else {
+            self.say("Aucune image ou PDF à analyser sur cette page.");
+            return;
+        };
+        let (_, _, bytes) = match crate::imagemenu::validate_and_read_image(&dir, &src) {
+            Ok(read) => read,
+            Err(e) => {
+                self.complain(&crate::i18n::format_message_id("ui.cannot_read_the_picture_error", &[("error", &e.to_string())]));
+                return;
+            }
+        };
+        let (tx, rx) = std::sync::mpsc::channel();
+        self.ocr_job = Some(rx);
+        self.say("Extraction intelligente en cours...");
+        #[cfg(not(target_arch = "wasm32"))]
+        std::thread::spawn(move || {
+            let result = crate::ocr::extract_document(&dir, &src, &bytes);
+            let _ = tx.send(OcrDone { block, speak, result });
+        });
+        #[cfg(target_arch = "wasm32")]
+        {
+            let _ = tx.send(OcrDone { block, speak, result: crate::ocr::extract_document(&dir, &src, &bytes) });
+        }
+    }
+
+    fn poll_ocr(&mut self, ctx: &Context) {
+        let Some(rx) = self.ocr_job.as_ref() else { return };
+        match rx.try_recv() {
+            Ok(done) => {
+                self.ocr_job = None;
+                match done.result {
+                    Ok(doc) => {
+                        if done.speak {
+                            self.speak_text_with_speed(&doc.plain_text);
+                        } else {
+                            let text = doc.plain_text.clone();
+                            self.dialog = Some(Dialog::OcrResult { block: done.block, doc, text });
+                            self.say("Texte extrait.");
+                        }
+                    }
+                    Err(e) => self.complain(&e),
+                }
+            }
+            Err(TryRecvError::Empty) => {
+                ctx.request_repaint_after(std::time::Duration::from_millis(80));
+            }
+            Err(TryRecvError::Disconnected) => {
+                self.ocr_job = None;
+                self.complain("L'analyse OCR s'est arrêtée de manière inattendue.");
+            }
+        }
+    }
+
+    fn reconstruct_page_from_ocr(&mut self, block_idx: usize, doc: &crate::ocr::OcrDocument, keep_image_bg: bool) {
+        use notecraft_formats::markdown::{Block, Span};
+        use notecraft_model::container;
+        if doc.blocks.is_empty() {
+            self.say("Aucune zone de texte à recréer.");
+            return;
+        }
+        let prev_locked = self.lock_images;
+        let Some(ed) = self.editor.as_mut() else { return };
+        Self::remember_step(ed);
+        if let Some(step) = ed.history.here_mut() {
+            step.lock_images = Some(prev_locked);
+        }
+
+        let explicit_img_w = ed.blocks.get(block_idx).and_then(|b| match b {
+            Block::Image { width: Some(w), .. } if w.is_finite() => Some(*w),
+            _ => None,
+        });
+        let (origin_x, origin_y, box_w) = container::place(&ed.boxes, block_idx)
+            .and_then(|(owner, _)| ed.boxes.get(owner))
+            .map(|c| (c.x, c.y, c.width.max(420.0)))
+            .unwrap_or((0.0, 0.0, 700.0));
+        let target_w = explicit_img_w.unwrap_or(box_w).max(420.0);
+        let target_h = (target_w * doc.aspect_ratio).max(240.0);
+
+        let mut cols_changed = false;
+        let mut just_changed = false;
+        if keep_image_bg
+            && block_idx < ed.blocks.len()
+            && let Some(orig_src) = Self::is_user_image_block(&ed.blocks[block_idx]).map(str::to_string)
+        {
+            let dir = ed.dir.clone();
+            let regions: Vec<(f32, f32, f32, f32)> = doc.blocks.iter().map(|b| (b.x, b.y, b.width, b.height)).collect();
+            if let Ok((_, _, orig_bytes)) = crate::imagemenu::validate_and_read_image(&dir, &orig_src)
+                && let Ok(cleaned) = crate::turn::erase_text_regions(&orig_bytes, &regions)
+                && let Ok(bg_link) = notecraft_store::assets::attach_bytes(&dir, &crate::turn::edited_name(&orig_src, "bg", "png"), &cleaned)
+            {
+                if let Some(Block::Image { src, width, height, .. }) = ed.blocks.get_mut(block_idx) {
+                    *src = bg_link;
+                    *width = Some(target_w);
+                    *height = Some(target_h);
+                }
+                ed.attachments = notecraft_store::assets::list(&dir);
+            }
+            if ed.boxes.is_empty() && !ed.blocks.is_empty() {
+                ed.boxes.push(notecraft_model::Container::new(0.0, 0.0, target_w, ed.blocks.len()));
+            }
+        } else if !keep_image_bg && block_idx < ed.blocks.len() && Self::is_user_image_block(&ed.blocks[block_idx]).is_some() {
+            ed.blocks.remove(block_idx);
+            cols_changed |= ed.columns.remove_blocks(block_idx..block_idx + 1);
+            just_changed |= ed.justified.remove_blocks(block_idx..block_idx + 1);
+            if let Some((owner, _)) = container::place(&ed.boxes, block_idx) {
+                if ed.boxes[owner].blocks <= 1 {
+                    ed.boxes.remove(owner);
+                } else {
+                    ed.boxes[owner].blocks -= 1;
+                }
+            }
+        } else if ed.boxes.is_empty() && !ed.blocks.is_empty() {
+            ed.boxes.push(notecraft_model::Container::new(0.0, 0.0, target_w, ed.blocks.len()));
+        }
+
+        let bold_leadin_spans = |text: &str| -> Vec<Span> {
+            if let Some(colon) = text.find(" : ")
+                && text[..colon].chars().count() <= 55
+            {
+                let cut = colon + 2;
+                let mut spans = vec![Span { text: text[..cut].to_string(), bold: true, ..Default::default() }];
+                if !text[cut..].is_empty() {
+                    spans.push(Span { text: text[cut..].to_string(), ..Default::default() });
+                }
+                return spans;
+            }
+            vec![Span { text: text.to_string(), ..Default::default() }]
+        };
+        fn parse_ordered_prefix(line: &str) -> Option<(usize, &str)> {
+            let (num_str, rest) = line.split_once(". ")?;
+            if num_str.is_empty() || num_str.len() > 2 || !num_str.bytes().all(|b| b.is_ascii_digit()) {
+                return None;
+            }
+            let n = num_str.parse::<usize>().ok()?;
+            (n > 0).then_some((n, rest))
+        }
+
+        let first_new_block = ed.blocks.len();
+        let single_container = !keep_image_bg && doc.is_single_column();
+        let mut total_single_count = 0_usize;
+        let mut placed_rects: Vec<(f32, f32, f32, f32)> = Vec::new();
+        for blk in &doc.blocks {
+            if blk.lines.is_empty() {
+                continue;
+            }
+            let is_heading = blk.font_scale >= 1.32 && blk.lines.len() <= 2;
+            let mut new_blocks = Vec::with_capacity(blk.lines.len());
+            if is_heading {
+                let level = if blk.font_scale >= 1.7 { 1 } else { 2 };
+                new_blocks.push(Block::Heading { level, spans: vec![Span { text: blk.lines.join(" "), ..Default::default() }] });
+            } else {
+                for line in &blk.lines {
+                    if let Some(rest) = line.strip_prefix("  - ") {
+                        new_blocks.push(Block::Item { ordered: false, number: 0, task: None, depth: 1, spans: bold_leadin_spans(rest) });
+                    } else if let Some(rest) = line.strip_prefix("- ") {
+                        new_blocks.push(Block::Item { ordered: false, number: 0, task: None, depth: 0, spans: bold_leadin_spans(rest) });
+                    } else if let Some((number, rest)) = parse_ordered_prefix(line) {
+                        new_blocks.push(Block::Item { ordered: true, number, task: None, depth: 0, spans: bold_leadin_spans(rest) });
+                    } else {
+                        new_blocks.push(Block::Paragraph(bold_leadin_spans(line)));
+                    }
+                }
+            }
+            let count = new_blocks.len();
+            let start_at = ed.blocks.len();
+            ed.blocks.extend(new_blocks);
+            for offset in 0..count {
+                cols_changed |= ed.columns.insert_block(start_at + offset);
+                just_changed |= ed.justified.insert_block(start_at + offset);
+            }
+            if single_container {
+                total_single_count += count;
+            } else {
+                // Align overlaid boxes with the background image rectangle (containers have 6px pad and 14px handle).
+                let pad_off = if keep_image_bg { 6.0 } else { 0.0 };
+                let handle_off = if keep_image_bg { 14.0 } else { 0.0 };
+                let box_x = if blk.x.is_finite() { (origin_x + blk.x * target_w - pad_off).max(0.0) } else { origin_x.max(0.0) };
+                let mut box_y = if blk.y.is_finite() { (origin_y + blk.y * target_h - handle_off).max(0.0) } else { origin_y.max(0.0) };
+                let raw_w = if blk.width.is_finite() { blk.width * target_w + if keep_image_bg { 18.0 } else { 0.0 } } else { 240.0 };
+                let box_w = raw_w.clamp(140.0_f32.min(target_w), target_w.max(140.0));
+                let est_h = (blk.height.max(0.02) * target_h).max(count as f32 * 20.0);
+                for &(px, py, pw, ph) in &placed_rects {
+                    if box_x < px + pw && box_x + box_w > px && box_y >= py && box_y < py + ph {
+                        box_y = py + ph + 4.0;
+                    }
+                }
+                placed_rects.push((box_x, box_y, box_w, est_h));
+                ed.boxes.push(notecraft_model::Container::new(box_x, box_y, box_w, count));
+            }
+        }
+        if single_container && total_single_count > 0 {
+            ed.boxes.push(notecraft_model::Container::new(origin_x.max(0.0), origin_y.max(0.0), target_w, total_single_count));
+        }
+
+        ed.arranged = true;
+        pageedit::renumber(&mut ed.blocks);
+        ed.rebuild_body();
+        if let Some(first) = ed.blocks.get(first_new_block) {
+            let caret_text = pageedit::caret_text(first);
+            ed.caret = Some(pageedit::Caret {
+                block: first_new_block,
+                text: caret_text,
+                focus: true,
+                selection: (0, 0),
+                place: Some(0),
+                cell: None,
+                span: None,
+                inline: None,
+            });
+        }
+        Self::mark_dirty_from_blocks(ed);
+        let new_locked = if keep_image_bg { true } else { self.lock_images };
+        if keep_image_bg && !self.lock_images {
+            self.lock_images = true;
+            let _ = self.session.settings.set("lock_images", "true");
+        }
+        Self::remember_edit(ed);
+        if let Some(step) = ed.history.here_mut() {
+            step.lock_images = Some(new_locked);
+        }
+        self.selected_image_block = None;
+        self.last_selected_image = None;
+        self.save_block_marks((cols_changed, just_changed));
+        self.say(format!("{} zone(s) modifiable(s) créée(s) ({}).", doc.blocks.len(), doc.source_label));
+    }
+
+    fn insert_ocr_text_below(&mut self, block_idx: usize, text: &str) {
+        use notecraft_formats::markdown::{Block, Span};
+        let Some(ed) = self.editor.as_mut() else { return };
+        let lines: Vec<Block> = text
+            .lines()
+            .map(str::trim)
+            .filter(|l| !l.is_empty())
+            .map(|l| Block::Paragraph(vec![Span { text: l.to_string(), ..Default::default() }]))
+            .collect();
+        if lines.is_empty() {
+            return;
+        }
+        Self::remember_step(ed);
+        let at = (block_idx + 1).min(ed.blocks.len());
+        let count = lines.len();
+        for (offset, b) in lines.into_iter().enumerate() {
+            ed.blocks.insert(at + offset, b);
+        }
+        let marks = ed.blocks_inserted(at, count);
+        pageedit::renumber(&mut ed.blocks);
+        ed.rebuild_body();
+        let caret_text = pageedit::text_for_caret(&ed.blocks, at);
+        ed.caret = Some(pageedit::Caret {
+            block: at,
+            text: caret_text,
+            focus: true,
+            selection: (0, 0),
+            place: Some(0),
+            cell: None,
+            span: None,
+            inline: None,
+        });
+        Self::mark_dirty_from_blocks(ed);
+        Self::remember_edit(ed);
+        self.save_block_marks(marks);
+        self.say("Texte inséré sous l'image.");
+    }
+
+    fn delete_selected_picture(&mut self) {
+        use notecraft_formats::markdown::Block;
+        let Some((at, _src)) = self.active_image_target() else {
+            self.say("Aucune image sélectionnée sur cette page.");
+            return;
+        };
+        let Some(ed) = self.editor.as_mut() else { return };
+        if Self::is_user_image_block(&ed.blocks[at]).is_none() {
+            return;
+        }
+        Self::remember_step(ed);
+        ed.caret = None;
+        ed.blocks.remove(at);
+        ed.count_removed_from_boxes(at);
+        let cols = ed.columns.remove_blocks(at..at + 1);
+        let justified = ed.justified.remove_blocks(at..at + 1);
+        if ed.blocks.is_empty() {
+            ed.blocks.push(Block::Paragraph(Vec::new()));
+            ed.count_inserted_in_boxes(0, 1);
+        }
+        pageedit::renumber(&mut ed.blocks);
+        ed.rebuild_body();
+        let to = at.min(ed.blocks.len() - 1);
+        let text = pageedit::text_for_caret(&ed.blocks, to);
+        ed.caret = Some(pageedit::Caret { block: to, text, focus: true, selection: (0, 0), place: Some(0), cell: None, span: None, inline: None });
+        self.selected_image_block = None;
+        self.last_selected_image = None;
+        Self::mark_dirty_from_blocks(ed);
+        Self::remember_edit(ed);
+        self.save_block_marks((cols, justified));
+        self.say("Image supprimée.");
     }
 
     fn save_picture_as(&mut self, src: &str) {
@@ -9290,19 +9838,6 @@ impl NoteCraftApp {
                             {
                                 focus_search = true;
                             }
-                            // The source view: a code mark, not the old angle-bracket text button.
-                            if icon_toggle(
-                                ui,
-                                Icon::Code,
-                                show_source,
-                                &tokens,
-                                crate::tl_id!("ui.source"),
-                                crate::tl_id!("ui.close_the_source_pane"),
-                            )
-                            .clicked()
-                            {
-                                toggle_source = true;
-                            }
                         });
                     }
                 });
@@ -9635,7 +10170,13 @@ impl NoteCraftApp {
                                 // carry a context menu at all. So the secondary click is
                                 // watched for directly and the menu drawn where it fell.
                                 crate::imagemenu::show(ui, body, &mut page_acts, &tokens);
-                                crate::pagemenu::show(ui, body, &mut page_acts, &tokens);
+                                let in_table = ed
+                                    .caret
+                                    .as_ref()
+                                    .is_some_and(|c| c.cell.is_some() && matches!(ed.blocks.get(c.block), Some(notecraft_formats::markdown::Block::Table { .. })));
+                                crate::pagemenu::show(ui, body, in_table, &mut page_acts, &tokens);
+                                self.selected_image_block =
+                                    crate::containers::selected_object(ui.ctx(), &ed.dir).and_then(|(i, kind)| (kind == "image").then_some(i));
                             }
                             if moved.changed.blocks {
                                 ed.rebuild_body();
@@ -9658,6 +10199,9 @@ impl NoteCraftApp {
                             ed.origin_in_canvas = Some(moved.origin - content_rect.min);
                             if moved.changed.link.is_some() {
                                 *follow = moved.changed.link;
+                            }
+                            if let Some(table_block) = moved.changed.delete_table {
+                                page_acts.push(ribbon::Act::ConfirmDeleteTable(Some(table_block)));
                             }
                         } else if wide {
                             // A page with markup the block model cannot hold: writing it back
@@ -10171,15 +10715,36 @@ impl NoteCraftApp {
         crate::i18n::set_current(&self.ui_language);
         let ctx = ui.ctx().clone();
         let ctx = &ctx;
+        self.poll_dictation();
+        if self.tts_done.swap(false, std::sync::atomic::Ordering::SeqCst) {
+            self.tts_state = TtsState::Stopped;
+            if let Ok(mut sync) = self.tts_sync.lock() {
+                sync.preparing = false;
+                sync.playback_started_at = None;
+                sync.direct_word_index = None;
+            }
+        }
+        if self.tts_state == TtsState::Playing {
+            ctx.request_repaint_after(std::time::Duration::from_millis(50));
+        }
+        let tts_active_highlight = match self.tts_sync_snapshot() {
+            (false, Some(idx), cues) => cues.get(idx).and_then(|cue| cue.block.map(|b| (b, cue.caret_chars, cue.drawn_bytes))),
+            _ => None,
+        };
         ctx.data_mut(|d| {
             d.insert_temp(Id::new("notecraft-lock-images"), self.lock_images);
             d.insert_temp(Id::new("notecraft-dys-spaced"), self.dys_spaced);
+            d.insert_temp(pageedit::spell_lang_id(), self.spell_lang);
+            d.insert_temp(pageedit::word_prediction_enabled_id(), self.word_prediction_enabled);
+            d.remove::<(usize, egui::Rect)>(pageedit::caret_screen_pos_id());
+            if let Some(hl) = tts_active_highlight {
+                d.insert_temp(pageedit::tts_highlight_id(), hl);
+            } else {
+                d.remove::<(usize, (usize, usize), (usize, usize))>(pageedit::tts_highlight_id());
+            }
         });
         // Search owns Escape before text widgets and the page can consume it.
-        if self.dialog.is_none()
-            && (self.search_open || !self.search.is_empty())
-            && ctx.input_mut(|input| input.consume_key(Modifiers::NONE, Key::Escape))
-        {
+        if self.dialog.is_none() && !self.search.is_empty() && ctx.input_mut(|input| input.consume_key(Modifiers::NONE, Key::Escape)) {
             self.dismiss_search();
             ctx.memory_mut(|memory| memory.surrender_focus(Id::new("page-search")));
         }
@@ -10234,6 +10799,13 @@ impl NoteCraftApp {
         self.clipboard_keys(ctx);
         self.poll_control(ctx);
         self.poll_import(ctx);
+        self.poll_ocr(ctx);
+        if self.selected_image_block != self.last_selected_image {
+            if self.selected_image_block.is_some() {
+                self.ribbon_tab = ribbon::IMAGE_TAB.to_string();
+            }
+            self.last_selected_image = self.selected_image_block;
+        }
         if !self.event_frames.is_empty() {
             ctx.request_repaint();
         }
@@ -10271,7 +10843,7 @@ impl NoteCraftApp {
             if let Some(caret) = self.editor.as_mut().and_then(|ed| ed.caret.as_mut()) {
                 caret.focus = false;
             }
-            self.open_search();
+            self.focus_search = true;
         }
         self.nav_keys(ctx);
         self.replay_typing(ctx);
@@ -10281,32 +10853,6 @@ impl NoteCraftApp {
         self.hierarchy_keys(ctx);
         self.restore_last_page();
         self.attach_dropped(ctx);
-        self.poll_dictation();
-        if self.tts_done.swap(false, std::sync::atomic::Ordering::SeqCst) {
-            self.tts_state = TtsState::Stopped;
-            if let Ok(mut sync) = self.tts_sync.lock() {
-                sync.preparing = false;
-                sync.playback_started_at = None;
-                sync.direct_word_index = None;
-            }
-        }
-        if self.tts_state == TtsState::Playing {
-            ctx.request_repaint_after(std::time::Duration::from_millis(50));
-        }
-        let tts_active_highlight = match self.tts_sync_snapshot() {
-            (false, Some(idx), cues) => cues.get(idx).and_then(|cue| cue.block.map(|b| (b, cue.caret_chars, cue.drawn_bytes))),
-            _ => None,
-        };
-        ctx.data_mut(|d| {
-            d.insert_temp(pageedit::spell_lang_id(), self.spell_lang);
-            d.insert_temp(pageedit::word_prediction_enabled_id(), self.word_prediction_enabled);
-            d.remove::<(usize, egui::Rect)>(pageedit::caret_screen_pos_id());
-            if let Some(hl) = tts_active_highlight {
-                d.insert_temp(pageedit::tts_highlight_id(), hl);
-            } else {
-                d.remove::<(usize, (usize, usize), (usize, usize))>(pageedit::tts_highlight_id());
-            }
-        });
         // The File screen takes the whole window while it is open, as it does in Office.
         if self.backstage.is_some() {
             self.title_band(ui, false);
@@ -10326,10 +10872,7 @@ impl NoteCraftApp {
         self.side_panel(ui);
         self.tags_panel(ui);
         self.templates_panel(ui);
-        // The Word-style search pane on the right, when it is open.
         self.search_panel(ui);
-        // Handle keyboard navigation inside floating word predictions before TextEdit/pageedit
-        // sees ArrowDown/ArrowRight/ArrowUp/ArrowLeft/Enter.
         self.prediction_keys(ctx);
         // In a phone-width window a pane that fills it leaves no room for the page.
         if !self.compact_list_fills() && !(self.compact && (self.tags_pane.is_some() || self.templates_pane.is_some() || self.search_open)) {
@@ -10711,16 +11254,12 @@ fn pick_copy_folder() -> Option<PathBuf> {
     None
 }
 
+mod control;
+mod dialogs;
+mod mobile;
+mod sidebar;
+mod tts_dictation;
+
 #[cfg(test)]
 #[path = "app/tests.rs"]
 mod app_tests;
-#[path = "app/control.rs"]
-mod control;
-#[path = "app/dialogs.rs"]
-mod dialogs;
-#[path = "app/mobile.rs"]
-mod mobile;
-#[path = "app/sidebar.rs"]
-mod sidebar;
-#[path = "app/tts_dictation.rs"]
-mod tts_dictation;

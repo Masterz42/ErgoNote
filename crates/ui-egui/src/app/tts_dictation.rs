@@ -428,11 +428,74 @@ impl NoteCraftApp {
         #[cfg(all(target_os = "windows", not(test)))]
         {
             let win_rate = speed.win_rate();
-            let _ = (&lang, &paused_flag, &initial_cues);
+            let edge_voice = lang.edge_voice();
+            let edge_rate = speed.edge_rate();
+            let piper_file = lang.piper_model_name();
+            let piper_scale = speed.piper_length_scale();
+            crate::tts_win::ensure_piper_in_background(piper_file);
             std::thread::spawn(move || {
                 use std::io::{BufRead, BufReader};
                 use std::os::windows::process::CommandExt;
+                use std::sync::atomic::Ordering;
                 const CREATE_NO_WINDOW: u32 = 0x0800_0000;
+                let wait_unpaused = || -> bool {
+                    while paused_flag.load(Ordering::SeqCst) {
+                        if stop_flag.load(Ordering::SeqCst) {
+                            return false;
+                        }
+                        std::thread::sleep(std::time::Duration::from_millis(30));
+                    }
+                    !stop_flag.load(Ordering::SeqCst)
+                };
+                let begin_clock = |updated_cues: Option<Vec<TtsWordCue>>| {
+                    if let Ok(mut sync) = sync_arc.lock() {
+                        if let Some(cues) = updated_cues {
+                            sync.cues = cues;
+                        }
+                        sync.preparing = false;
+                        sync.elapsed_before_pause = 0.0;
+                        sync.playback_started_at = Some(Instant::now());
+                    }
+                };
+                let tmp = std::env::temp_dir();
+                let mp3 = tmp.join("notecraft_tts.mp3");
+                let tsv = tmp.join("notecraft_tts.words.tsv");
+                let wav = tmp.join("notecraft_tts.wav");
+
+                // 1) Priority 1: online Edge Neural voice with millisecond WordBoundary sync.
+                if crate::tts_win::synthesize_edge_mp3(edge_voice, edge_rate, &clean, (&mp3, &tsv), &pid_slot, &stop_flag) && wait_unpaused() {
+                    let mut cues = initial_cues.clone();
+                    let wb_ok = std::fs::read_to_string(&tsv).ok().is_some_and(|txt| Self::apply_word_boundary_tsv(&mut cues, &txt, 0.10));
+                    if !wb_ok
+                        && let Ok(bytes) = std::fs::read(&mp3)
+                        && let Some(dur) = Self::mp3_duration_secs(&bytes)
+                    {
+                        Self::rescale_tts_cues(&mut cues, dur, 0.12);
+                    }
+                    begin_clock(Some(cues));
+                    let _ = crate::tts_win::play_audio(&mp3, false, &pid_slot, &stop_flag);
+                    done_slot.store(true, Ordering::SeqCst);
+                    return;
+                }
+
+                // 2) Priority 2: cached offline Piper neural voice synced against WAV duration.
+                if crate::tts_win::synthesize_piper_wav(piper_file, piper_scale, &clean, &wav, &pid_slot, &stop_flag) && wait_unpaused() {
+                    let synced = std::fs::read(&wav).ok().and_then(|bytes| Self::wav_duration_secs(&bytes)).map(|dur| {
+                        let mut cues = initial_cues.clone();
+                        Self::rescale_tts_cues(&mut cues, dur, 0.06);
+                        cues
+                    });
+                    begin_clock(synced);
+                    let _ = crate::tts_win::play_audio(&wav, true, &pid_slot, &stop_flag);
+                    done_slot.store(true, Ordering::SeqCst);
+                    return;
+                }
+
+                // 3) Last-resort fallback: built-in Windows SAPI System.Speech.
+                if !wait_unpaused() {
+                    done_slot.store(true, Ordering::SeqCst);
+                    return;
+                }
                 let cmd = format!(
                     "Add-Type -AssemblyName System.Speech; $s = New-Object System.Speech.Synthesis.SpeechSynthesizer; $s.Rate = {win_rate}; $s.add_SpeakProgress({{ param($sender, $e) [Console]::Out.WriteLine('AT:' + $e.CharacterPosition); [Console]::Out.Flush() }}); $s.Speak($env:NOTECRAFT_TTS)"
                 );
@@ -443,7 +506,7 @@ impl NoteCraftApp {
                     .creation_flags(CREATE_NO_WINDOW)
                     .spawn()
                 {
-                    pid_slot.store(child.id(), std::sync::atomic::Ordering::SeqCst);
+                    pid_slot.store(child.id(), Ordering::SeqCst);
                     if let Ok(mut sync) = sync_arc.lock() {
                         sync.preparing = false;
                         sync.playback_started_at = Some(Instant::now());
@@ -452,7 +515,7 @@ impl NoteCraftApp {
                     if let Some(stdout) = child.stdout.take() {
                         let reader = BufReader::new(stdout);
                         for line in reader.lines().map_while(Result::ok) {
-                            if stop_flag.load(std::sync::atomic::Ordering::SeqCst) {
+                            if stop_flag.load(Ordering::SeqCst) {
                                 break;
                             }
                             if let Some(rest) = line.trim().strip_prefix("AT:")
@@ -465,8 +528,8 @@ impl NoteCraftApp {
                     }
                     let _ = child.wait();
                 }
-                pid_slot.store(0, std::sync::atomic::Ordering::SeqCst);
-                done_slot.store(true, std::sync::atomic::Ordering::SeqCst);
+                pid_slot.store(0, Ordering::SeqCst);
+                done_slot.store(true, Ordering::SeqCst);
             });
         }
         #[cfg(all(target_os = "linux", not(test)))]
@@ -659,7 +722,16 @@ asyncio.run(main())";
                 done_slot.store(true, std::sync::atomic::Ordering::SeqCst);
             });
         }
-        #[cfg(any(test, target_arch = "wasm32", target_os = "android"))]
+        #[cfg(all(target_os = "android", not(test)))]
+        {
+            let _ = (&clean, speed, lang, pid_slot, done_slot, stop_flag, paused_flag, initial_cues);
+            if let Ok(mut sync) = sync_arc.lock() {
+                sync.preparing = false;
+                sync.elapsed_before_pause = 0.0;
+                sync.playback_started_at = Some(Instant::now());
+            }
+        }
+        #[cfg(any(test, target_arch = "wasm32"))]
         {
             let _ = (&clean, speed, lang, pid_slot, done_slot, stop_flag, paused_flag, sync_arc, initial_cues);
         }
@@ -697,10 +769,30 @@ asyncio.run(main())";
         #[cfg(all(target_os = "windows", not(test)))]
         {
             let win_rate = speed.win_rate();
-            let _ = (&lang, seq);
+            let edge_voice = lang.edge_voice();
+            let piper_file = lang.piper_model_name();
+            let piper_scale = speed.piper_length_scale();
+            let _ = seq;
+            crate::tts_win::ensure_piper_in_background(piper_file);
             std::thread::spawn(move || {
                 use std::os::windows::process::CommandExt;
+                use std::sync::atomic::{AtomicBool, Ordering};
                 const CREATE_NO_WINDOW: u32 = 0x0800_0000;
+                let never_stop = AtomicBool::new(false);
+                let tmp = std::env::temp_dir();
+                let wav = tmp.join("notecraft_word.wav");
+                let mp3 = tmp.join("notecraft_word.mp3");
+                let tsv = tmp.join("notecraft_word.tsv");
+                if crate::tts_win::synthesize_piper_wav(piper_file, piper_scale, &word, &wav, &preview_pid, &never_stop)
+                    && crate::tts_win::play_audio(&wav, true, &preview_pid, &never_stop)
+                {
+                    return;
+                }
+                if crate::tts_win::synthesize_edge_mp3(edge_voice, "+0%", &word, (&mp3, &tsv), &preview_pid, &never_stop)
+                    && crate::tts_win::play_audio(&mp3, false, &preview_pid, &never_stop)
+                {
+                    return;
+                }
                 let cmd = format!(
                     "Add-Type -AssemblyName System.Speech; $s = New-Object System.Speech.Synthesis.SpeechSynthesizer; $s.Rate = {win_rate}; $s.Speak($env:NOTECRAFT_WORD)"
                 );
@@ -710,10 +802,10 @@ asyncio.run(main())";
                     .creation_flags(CREATE_NO_WINDOW)
                     .spawn()
                 {
-                    preview_pid.store(child.id(), std::sync::atomic::Ordering::SeqCst);
+                    preview_pid.store(child.id(), Ordering::SeqCst);
                     let _ = child.wait();
                 }
-                preview_pid.store(0, std::sync::atomic::Ordering::SeqCst);
+                preview_pid.store(0, Ordering::SeqCst);
             });
         }
         #[cfg(all(target_os = "linux", not(test)))]

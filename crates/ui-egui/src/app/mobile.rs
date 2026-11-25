@@ -381,6 +381,32 @@ impl NoteCraftApp {
                         }
                     });
                 });
+        } else if self.caret_in_table() {
+            egui::Panel::top("mobile-table-bar")
+                .frame(
+                    egui::Frame::new().fill(t.panel).inner_margin(egui::Margin::symmetric(8, 3)).stroke(egui::Stroke::new(1.0, t.container_border)),
+                )
+                .show_separator_line(false)
+                .show(ui, |ui| {
+                    ui.horizontal_wrapped(|ui| {
+                        ui.spacing_mut().item_spacing = vec2(6.0, 6.0);
+                        if pill(ui, "+ Ligne \u{2191}", false).clicked() {
+                            acts.push(ribbon::Act::Table(crate::pageedit::TableEdit::InsertRow(true)));
+                        }
+                        if pill(ui, "+ Ligne \u{2193}", false).clicked() {
+                            acts.push(ribbon::Act::Table(crate::pageedit::TableEdit::InsertRow(false)));
+                        }
+                        if pill(ui, "\u{2212} Ligne", false).clicked() {
+                            acts.push(ribbon::Act::Table(crate::pageedit::TableEdit::DeleteRow));
+                        }
+                        if pill(ui, "+ Col.", false).clicked() {
+                            acts.push(ribbon::Act::Table(crate::pageedit::TableEdit::InsertColumn(false)));
+                        }
+                        if pill(ui, "\u{2212} Col.", false).clicked() {
+                            acts.push(ribbon::Act::Table(crate::pageedit::TableEdit::DeleteColumn));
+                        }
+                    });
+                });
         }
 
         let picked = self.editor.as_ref().and_then(|e| crate::containers::selected(ui.ctx(), &e.dir));

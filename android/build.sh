@@ -70,26 +70,9 @@ fi
 LIB="$ROOT/target/$TARGET/release/libnotecraft_android.so"
 [[ -s "$LIB" ]] || { echo "missing $LIB; build without --skip-build" >&2; exit 1; }
 
-# 2. The Welcome notebook payload: both generated editions in one asset (android/src/welcome.rs).
+# 2. Keep empty assets directory (ErgoNote creates the French school binder directly; skipping
+# the 14 MB multilingual welcome-to-notecraft.zip trims APK size substantially).
 mkdir -p "$WORK/assets"
-python3 - "$ROOT/docs/demo/DemoNotebook" "$WORK/assets/welcome-to-notecraft.zip" <<'PY'
-import os, sys, zipfile
-demo, out = sys.argv[1], sys.argv[2]
-with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as archive:
-    for edition in ("html", "cmgfm"):
-        base = os.path.join(demo, edition)
-        if not os.path.isdir(base):
-            sys.exit(f"missing {base}: run cargo xtask demo")
-        for folder, dirs, files in os.walk(base):
-            dirs.sort()
-            for name in sorted(files):
-                path = os.path.join(folder, name)
-                arcname = os.path.relpath(path, demo).replace(os.sep, "/")
-                info = zipfile.ZipInfo(arcname, date_time=(2026, 1, 1, 0, 0, 0))
-                info.compress_type = zipfile.ZIP_DEFLATED
-                with open(path, "rb") as source:
-                    archive.writestr(info, source.read())
-PY
 
 # 3. Resources: the theme and the launcher icon (the app icon, assets/brand/notecraft-256.png).
 mkdir -p "$WORK/res"
@@ -156,7 +139,7 @@ fi
 # Passwords go through the environment, never the command line.
 NOTECRAFT_STORE_PASS="$STORE_PASS" NOTECRAFT_KEY_PASS="$KEY_PASS" "$BUILD_TOOLS/apksigner" sign \
     --ks "$KEYSTORE" --ks-pass env:NOTECRAFT_STORE_PASS --key-pass env:NOTECRAFT_KEY_PASS "${ALIAS_ARGS[@]}" \
-    --min-sdk-version "$MIN_SDK" --v4-signing-enabled false --out "$DIST/$NAME.apk" "$WORK/aligned.apk"
+    --min-sdk-version "$MIN_SDK" --v1-signing-enabled true --v2-signing-enabled true --v3-signing-enabled true --v4-signing-enabled false --out "$DIST/$NAME.apk" "$WORK/aligned.apk"
 rm -f "$WORK/throwaway.p12"
 "$BUILD_TOOLS/apksigner" verify --min-sdk-version "$MIN_SDK" "$DIST/$NAME.apk"
 echo "wrote $DIST/$NAME.apk (version $VERSION, code $VERSION_CODE)"

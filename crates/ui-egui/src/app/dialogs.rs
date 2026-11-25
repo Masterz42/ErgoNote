@@ -1552,6 +1552,36 @@ impl NoteCraftApp {
                     keep = false;
                 }
             }
+            Dialog::DeleteTable { block } => {
+                let block = *block;
+                let mut go = false;
+                egui::Window::new("Supprimer le tableau")
+                    .collapsible(false)
+                    .resizable(false)
+                    .title_bar(false)
+                    .anchor(Align2::CENTER_CENTER, vec2(0.0, 0.0))
+                    .frame(modal_frame(&self.tokens))
+                    .show(ctx, |ui| {
+                        ui.set_min_width(360.0);
+                        modal_title(ui, &self.tokens, "Supprimer le tableau");
+                        ui.label("Voulez-vous supprimer le tableau ?");
+                        ui.add_space(6.0);
+                        ui.horizontal(|ui| {
+                            if modal_button(ui, &self.tokens, crate::tl_id!("ui.cancel"), false).clicked()
+                                || ctx.input(|i| i.key_pressed(egui::Key::Escape))
+                            {
+                                keep = false;
+                            }
+                            if modal_button(ui, &self.tokens, crate::tl_id!("ui.delete"), true).clicked() {
+                                go = true;
+                            }
+                        });
+                    });
+                if go {
+                    self.delete_table_at(block);
+                    keep = false;
+                }
+            }
             Dialog::RecentEdits { range, this_notebook, filter, items } => {
                 let mut changed = false;
                 let mut go: Option<PathBuf> = None;
@@ -1883,6 +1913,194 @@ impl NoteCraftApp {
                     });
                 if let Some(symbol) = chosen {
                     self.insert_in_page(symbol);
+                    keep = false;
+                }
+            }
+            Dialog::CropPicture { block, src, bytes, dims, rect } => {
+                let block = *block;
+                let src = src.clone();
+                let bytes_for_apply = bytes.clone();
+                let mut apply = false;
+                if ctx.input_mut(|input| input.consume_key(Modifiers::NONE, Key::Escape)) {
+                    keep = false;
+                }
+                let backdrop = modal_backdrop(ctx, "crop-picture-backdrop");
+                egui::Window::new("Rogner l'image")
+                    .title_bar(false)
+                    .collapsible(false)
+                    .resizable(false)
+                    .order(egui::Order::Foreground)
+                    .anchor(Align2::CENTER_CENTER, vec2(0.0, 0.0))
+                    .frame(modal_frame(&self.tokens))
+                    .show(ctx, |ui| {
+                        stay_above(ui, backdrop);
+                        modal_title(ui, &self.tokens, "Rogner l'image");
+                        ui.label("Déplacez les 4 poignées bleues pour ajuster le cadrage :");
+                        ui.add_space(4.0);
+                        let (pw, ph) = (dims.0.max(1) as f32, dims.1.max(1) as f32);
+                        let scale = (520.0 / pw).min(360.0 / ph).min(1.5);
+                        let disp = vec2((pw * scale).max(120.0), (ph * scale).max(90.0));
+                        let (frame_rect, _) = ui.allocate_exact_size(disp, Sense::hover());
+                        let uri = format!("bytes://crop-preview-{block}-{}", bytes_for_apply.len());
+                        ui.put(frame_rect, egui::Image::from_bytes(uri, bytes_for_apply.clone()).fit_to_exact_size(disp).maintain_aspect_ratio(true));
+                        let crop_rect = egui::Rect::from_min_max(
+                            egui::pos2(frame_rect.min.x + rect[0] * frame_rect.width(), frame_rect.min.y + rect[1] * frame_rect.height()),
+                            egui::pos2(frame_rect.min.x + rect[2] * frame_rect.width(), frame_rect.min.y + rect[3] * frame_rect.height()),
+                        );
+                        let shade = egui::Color32::from_black_alpha(125);
+                        let painter = ui.painter_at(frame_rect);
+                        // Dim the four strips outside the crop rectangle.
+                        painter.rect_filled(egui::Rect::from_min_max(frame_rect.min, egui::pos2(frame_rect.max.x, crop_rect.min.y)), 0.0, shade);
+                        painter.rect_filled(egui::Rect::from_min_max(egui::pos2(frame_rect.min.x, crop_rect.max.y), frame_rect.max), 0.0, shade);
+                        painter.rect_filled(
+                            egui::Rect::from_min_max(egui::pos2(frame_rect.min.x, crop_rect.min.y), egui::pos2(crop_rect.min.x, crop_rect.max.y)),
+                            0.0,
+                            shade,
+                        );
+                        painter.rect_filled(
+                            egui::Rect::from_min_max(egui::pos2(crop_rect.max.x, crop_rect.min.y), egui::pos2(frame_rect.max.x, crop_rect.max.y)),
+                            0.0,
+                            shade,
+                        );
+                        painter.rect_stroke(crop_rect, 0.0, egui::Stroke::new(2.0, self.tokens.accent), egui::StrokeKind::Inside);
+
+                        let min_frac_x = (16.0 / pw).clamp(0.03, 0.25);
+                        let min_frac_y = (16.0 / ph).clamp(0.03, 0.25);
+                        let corners = [
+                            (0usize, crop_rect.left_top()),
+                            (1usize, crop_rect.right_top()),
+                            (2usize, crop_rect.left_bottom()),
+                            (3usize, crop_rect.right_bottom()),
+                        ];
+                        for (idx, corner) in corners {
+                            let h_rect = egui::Rect::from_center_size(corner, vec2(16.0, 16.0));
+                            let grip = ui.interact(h_rect, ui.make_persistent_id(("crop-corner", idx)), Sense::drag());
+                            if grip.hovered() || grip.dragged() {
+                                ui.ctx().set_cursor_icon(egui::CursorIcon::Grab);
+                            }
+                            if grip.dragged()
+                                && let Some(p) = ui.ctx().pointer_latest_pos()
+                            {
+                                let nx = ((p.x - frame_rect.min.x) / frame_rect.width()).clamp(0.0, 1.0);
+                                let ny = ((p.y - frame_rect.min.y) / frame_rect.height()).clamp(0.0, 1.0);
+                                match idx {
+                                    0 => {
+                                        rect[0] = nx.min(rect[2] - min_frac_x);
+                                        rect[1] = ny.min(rect[3] - min_frac_y);
+                                    }
+                                    1 => {
+                                        rect[2] = nx.max(rect[0] + min_frac_x);
+                                        rect[1] = ny.min(rect[3] - min_frac_y);
+                                    }
+                                    2 => {
+                                        rect[0] = nx.min(rect[2] - min_frac_x);
+                                        rect[3] = ny.max(rect[1] + min_frac_y);
+                                    }
+                                    _ => {
+                                        rect[2] = nx.max(rect[0] + min_frac_x);
+                                        rect[3] = ny.max(rect[1] + min_frac_y);
+                                    }
+                                }
+                            }
+                            ui.painter().circle(corner, 6.0, self.tokens.accent, egui::Stroke::new(1.5, egui::Color32::WHITE));
+                        }
+
+                        ui.add_space(6.0);
+                        let cw = ((rect[2] - rect[0]) * pw).round().max(1.0) as u32;
+                        let ch = ((rect[3] - rect[1]) * ph).round().max(1.0) as u32;
+                        ui.label(egui::RichText::new(format!("Zone sélectionnée : {cw} × {ch} px")).small().color(self.tokens.muted));
+                        ui.add_space(6.0);
+                        ui.horizontal(|ui| {
+                            if modal_button(ui, &self.tokens, "Réinitialiser", false).clicked() {
+                                *rect = [0.0, 0.0, 1.0, 1.0];
+                            }
+                            if modal_button(ui, &self.tokens, crate::tl_id!("ui.cancel"), false).clicked() {
+                                keep = false;
+                            }
+                            if modal_button(ui, &self.tokens, "Appliquer", true).clicked() {
+                                apply = true;
+                            }
+                        });
+                    });
+                if apply {
+                    let chosen_rect = *rect;
+                    self.apply_crop_picture(block, &src, &bytes_for_apply, chosen_rect);
+                    keep = false;
+                }
+            }
+            Dialog::OcrResult { block, doc, text } => {
+                let block = *block;
+                let doc = doc.clone();
+                let mut reconstruct_replace = false;
+                let mut reconstruct_overlay = false;
+                let mut insert_below = false;
+                let mut copy_now = false;
+                let mut speak_now = false;
+                if ctx.input_mut(|input| input.consume_key(Modifiers::NONE, Key::Escape)) {
+                    keep = false;
+                }
+                let backdrop = modal_backdrop(ctx, "ocr-result-backdrop");
+                egui::Window::new("Texte reconnu (OCR)")
+                    .title_bar(false)
+                    .collapsible(false)
+                    .resizable(true)
+                    .order(egui::Order::Foreground)
+                    .anchor(Align2::CENTER_CENTER, vec2(0.0, 0.0))
+                    .frame(modal_frame(&self.tokens))
+                    .show(ctx, |ui| {
+                        stay_above(ui, backdrop);
+                        ui.set_min_width(520.0);
+                        modal_title(ui, &self.tokens, "Texte extrait de la page");
+                        ui.label(
+                            egui::RichText::new(format!("Source : {} — {} zone(s) positionnée(s) détectée(s)", doc.source_label, doc.blocks.len()))
+                                .small()
+                                .color(self.tokens.accent),
+                        );
+                        ui.label(
+                            "« Recréer la page modifiable » transforme le document en texte modifiable structuré (ou « Copie fidèle sur fond nettoyé » pour les formulaires et schémas) :",
+                        );
+                        ui.add_space(4.0);
+                        egui::ScrollArea::vertical().max_height(240.0).show(ui, |ui| {
+                            ui.add_sized([500.0, 200.0], egui::TextEdit::multiline(text).desired_width(500.0));
+                        });
+                        ui.add_space(6.0);
+                        ui.horizontal_wrapped(|ui| {
+                            if modal_button(ui, &self.tokens, "Recréer la page modifiable", true).clicked() {
+                                reconstruct_replace = true;
+                            }
+                            if modal_button(ui, &self.tokens, "Copie fidèle sur fond nettoyé", false).clicked() {
+                                reconstruct_overlay = true;
+                            }
+                            if modal_button(ui, &self.tokens, "Insérer en dessous", false).clicked() {
+                                insert_below = true;
+                            }
+                            if modal_button(ui, &self.tokens, "Copier", false).clicked() {
+                                copy_now = true;
+                            }
+                            if modal_button(ui, &self.tokens, "Lire à voix haute", false).clicked() {
+                                speak_now = true;
+                            }
+                            if modal_button(ui, &self.tokens, crate::tl_id!("ui.close"), false).clicked() {
+                                keep = false;
+                            }
+                        });
+                    });
+                let snapshot = text.clone();
+                if copy_now {
+                    self.pending_copy = Some(snapshot.clone());
+                    self.say("Texte copié.");
+                }
+                if speak_now {
+                    self.speak_text_with_speed(&snapshot);
+                }
+                if reconstruct_replace {
+                    self.reconstruct_page_from_ocr(block, &doc, false);
+                    keep = false;
+                } else if reconstruct_overlay {
+                    self.reconstruct_page_from_ocr(block, &doc, true);
+                    keep = false;
+                } else if insert_below {
+                    self.insert_ocr_text_below(block, &snapshot);
                     keep = false;
                 }
             }

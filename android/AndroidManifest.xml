@@ -23,6 +23,8 @@
         android:icon="@mipmap/ic_launcher"
         android:theme="@style/NoteCraft"
         android:hasCode="true"
+        android:debuggable="false"
+        android:extractNativeLibs="true"
         android:allowBackup="false"
         android:hasFragileUserData="true"
         android:enableOnBackInvokedCallback="false"

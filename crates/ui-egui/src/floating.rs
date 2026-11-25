@@ -15,7 +15,6 @@ use crate::ribbon::Act;
 use crate::ribbon_icons::{self, Mark};
 use crate::theme::Tokens;
 use egui::{Align2, Area, Context, Frame, Id, Order, Painter, Rect, Response, Sense, Ui, vec2};
-use notecraft_model::Tag;
 
 /// A picture on a menu row or a bar button: one of the ribbon's marks, or one of the app's icons.
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -139,28 +138,14 @@ fn button(glyph: Glyph, label: &'static str, tip: &'static str, act: Act) -> Bar
 /// than drawn and ignored.
 pub fn text_bar() -> Bar {
     let m = Glyph::Mark;
-    let i = Glyph::Icon;
     Bar {
         fonts: None,
         colors: true,
-        rows: vec![
-            vec![
-                button(m(Mark::Bold), "Bold", "Bold (Ctrl+B)", Act::Mark("bold")),
-                button(m(Mark::Italic), "Italic", "Italic (Ctrl+I)", Act::Mark("italic")),
-                button(m(Mark::Strike), "Strikethrough", "Strike through", Act::Mark("strike")),
-                button(i(Icon::Code), "Code", "Code, in one line", Act::Mark("code")),
-                button(i(Icon::ListBullet), "Bullets", "A bullet list", Act::Block("bullet")),
-                button(i(Icon::ListNumber), "Numbering", "A numbered list", Act::Block("number")),
-            ],
-            vec![
-                button(m(Mark::IndentLess), "Decrease indentation", "Decrease indentation (Shift+Tab)", Act::Indent(false)),
-                button(m(Mark::IndentMore), "Increase indentation", "Increase indentation (Tab)", Act::Indent(true)),
-                button(i(Icon::Quote), "Quote", "Quote this paragraph", Act::Block("quote")),
-                button(m(Mark::ToDo), "To Do", "Tag this line as a to-do", Act::Tag(Tag::ToDo)),
-                button(m(Mark::Important), "Important", "Tag this line as important", Act::Tag(Tag::Important)),
-                button(m(Mark::ClearFormat), "Clear Formatting", "Take the marks off", Act::ClearFormatting),
-            ],
-        ],
+        rows: vec![vec![
+            button(m(Mark::Bold), "Bold", "Bold (Ctrl+B)", Act::Mark("bold")),
+            button(m(Mark::Italic), "Italic", "Italic (Ctrl+I)", Act::Mark("italic")),
+            button(m(Mark::Underline), "Underline", "Underline (Ctrl+U)", Act::Mark("underline")),
+        ]],
     }
 }
 
@@ -357,9 +342,12 @@ mod tests {
     fn the_text_bar_has_distinct_buttons_that_each_ask_for_something() {
         let bar = text_bar();
         let all: Vec<&BarButton> = bar.rows.iter().flatten().collect();
-        assert!(all.len() >= 10, "a toolbar with something on it: {}", all.len());
+        assert_eq!(all.len(), 3, "only Bold, Italic and Underline in the simplified mini bar: {}", all.len());
         let labels: std::collections::HashSet<&str> = all.iter().map(|b| b.label).collect();
         assert_eq!(labels.len(), all.len(), "no two buttons share a name");
+        for expected in ["Bold", "Italic", "Underline"] {
+            assert!(labels.contains(expected), "missing {expected}");
+        }
         for b in &all {
             assert!(!b.tip.is_empty(), "{} says what it does", b.label);
         }

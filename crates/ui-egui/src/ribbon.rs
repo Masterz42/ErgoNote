@@ -25,6 +25,8 @@ pub const FONT_SIZES: [u8; 16] = [8, 9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 26, 
 /// Shown only while the caret is in a table, the way Office shows a tab for the thing in
 /// hand. It goes when the caret leaves, and the ribbon falls back to Home.
 pub const TABLE_TAB: &str = "Table";
+/// Shown when an image / PDF printout is on the page (selected or locked in background).
+pub const IMAGE_TAB: &str = "Image";
 
 /// What a ribbon control asks the window to do.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -66,6 +68,18 @@ pub enum Act {
     SavePictureAs(String),
     /// Rotate or flip the picture with this source (issue #273).
     TurnPicture(String, crate::turn::Turn),
+    /// Open interactive crop modal for the selected or active picture on the page.
+    CropPicture,
+    /// Rotate or flip the selected or active picture on the page from the Image ribbon tab.
+    TurnSelectedPicture(crate::turn::Turn),
+    /// Enhance contrast / convert a scan into clean greyscale on the selected or active picture.
+    EnhancePicture(crate::turn::Enhance),
+    /// Run pure-Rust OCR on the active image (`speak`: read aloud right away vs text dialog).
+    OcrPicture {
+        speak: bool,
+    },
+    /// Delete the selected or active picture from the page.
+    DeleteSelectedPicture,
     ToggleSource,
     ToggleFullPage,
     /// Show or hide the horizontal section tabs bar (Français, Maths...) below the ribbon.
@@ -160,6 +174,9 @@ pub enum Act {
     Table(crate::pageedit::TableEdit),
     /// Table > Delete Table: the whole table the caret is in.
     DeleteTable,
+    /// Prompt for confirmation before deleting a table (from the right-click menu or the
+    /// table's corner delete button; `None` deletes the table the caret is in).
+    ConfirmDeleteTable(Option<usize>),
     /// Pick a block of cells of the table the caret is in.
     TableSelect(crate::pageedit::TableSpan),
     /// Draw the lines round the cells of a table, or stop drawing them.
@@ -540,6 +557,10 @@ pub struct View<'a> {
     pub textbox_tool: bool,
     /// True while the caret is in a table, which is when the Table tab is offered.
     pub in_table: bool,
+    /// True while an image / PDF printout is on the page (selected or locked in background).
+    pub has_image: bool,
+    /// True while an offline OCR worker is analyzing an image.
+    pub ocr_busy: bool,
     /// Whether the table the caret is in is drawn with lines round its cells.
     pub table_borders: bool,
     /// How the words in the caret's cell, or in every picked cell, are aligned; `None` when
@@ -612,7 +633,7 @@ const DROP: f32 = 4.0;
 pub fn show(ui: &mut Ui, tab: &str, source: bool, view: &View<'_>, format: Option<PageFormat>, t: &Tokens) -> Vec<Act> {
     let mut acts = Vec::new();
     ui.add_space(3.0);
-    let chosen = resolve_tab(tab, source, view.in_table);
+    let chosen = resolve_tab(tab, source, view.in_table, view.has_image);
     // A tab with many groups is wider than a narrow window: the Draw tab alone has eleven,
     // as OneNote's does. Rather than clipping the last of them, the groups scroll sideways.
     // A mouse drag must not scroll: the controls here are clicked and dragged themselves, and a
@@ -643,6 +664,7 @@ pub fn show(ui: &mut Ui, tab: &str, source: bool, view: &View<'_>, format: Optio
                 match chosen {
                     "Draw" => draw_tab(ui, view, t, &mut acts),
                     TABLE_TAB => table_tab(ui, view, t, &mut acts),
+                    IMAGE_TAB => image_tab(ui, view, t, &mut acts),
                     SOURCE_TAB => source_tab(ui, format, t, &mut acts),
                     _ => home_tab(ui, view, t, &mut acts),
                 }
@@ -724,24 +746,32 @@ fn overflow_arrows<R>(ui: &mut Ui, out: &egui::scroll_area::ScrollAreaOutput<R>,
     ((offset - was).abs() > 0.1).then_some(offset)
 }
 
-/// The tab that is really shown: the Source tab disappears with the source pane.
-pub fn resolve_tab(tab: &str, source: bool, in_table: bool) -> &str {
+/// The tab that is really shown: contextual tabs disappear when their context ends.
+pub fn resolve_tab(tab: &str, source: bool, in_table: bool, has_image: bool) -> &str {
     if tab == SOURCE_TAB && !source {
         return "Home";
     }
-    // The Table tab goes with the caret: leaving a table leaves the tab, so the ribbon
-    // never offers commands for a table that is no longer in hand.
     if tab == TABLE_TAB && !in_table {
         return "Home";
     }
-    if TABS.contains(&tab) || (tab == SOURCE_TAB && source) || (tab == TABLE_TAB && in_table) { tab } else { "Home" }
+    if tab == IMAGE_TAB && !has_image {
+        return "Home";
+    }
+    if TABS.contains(&tab) || (tab == SOURCE_TAB && source) || (tab == TABLE_TAB && in_table) || (tab == IMAGE_TAB && has_image) {
+        tab
+    } else {
+        "Home"
+    }
 }
 
 /// Every tab that can be chosen now.
-pub fn tabs(source: bool, in_table: bool) -> Vec<&'static str> {
+pub fn tabs(source: bool, in_table: bool, has_image: bool) -> Vec<&'static str> {
     let mut v = TABS.to_vec();
     if in_table {
         v.push(TABLE_TAB);
+    }
+    if has_image {
+        v.push(IMAGE_TAB);
     }
     if source {
         v.push(SOURCE_TAB);
@@ -753,13 +783,13 @@ pub fn tabs(source: bool, in_table: bool) -> Vec<&'static str> {
 /// Office. The chosen tab is a raised tab in the ribbon's own colour that runs down into the
 /// ribbon below it; the others are white writing on the band, lit when the pointer is over
 /// one.
-pub fn tab_names(ui: &mut Ui, tab: &str, source: bool, in_table: bool, collapsed: bool, t: &Tokens, acts: &mut Vec<Act>) {
+pub fn tab_names(ui: &mut Ui, tab: &str, source: bool, in_table: bool, has_image: bool, collapsed: bool, t: &Tokens, acts: &mut Vec<Act>) {
     // Folded, no tab is the raised one: there is no ribbon under it to run into.
-    let chosen = if collapsed { "" } else { resolve_tab(tab, source, in_table) };
+    let chosen = if collapsed { "" } else { resolve_tab(tab, source, in_table, has_image) };
     {
         ui.spacing_mut().item_spacing.x = 0.0;
         ui.add_space(4.0);
-        let names = std::iter::once(FILE_TAB).chain(tabs(source, in_table));
+        let names = std::iter::once(FILE_TAB).chain(tabs(source, in_table, has_image));
         for name in names {
             let selected = name == chosen;
             let display_name = crate::tl!(name);
@@ -1427,18 +1457,6 @@ fn home_tab(ui: &mut Ui, view: &View<'_>, t: &Tokens, acts: &mut Vec<Act>) {
             .clicked()
         {
             acts.push(Act::VoiceDictation);
-        }
-        if big_on(
-            ui,
-            Icon::Page,
-            "Verrouiller\nPDF / Images",
-            "Verrouiller les PDF et images en fond pour écrire dessus sans les déplacer par erreur",
-            view.lock_images,
-            t,
-        )
-        .clicked()
-        {
-            acts.push(Act::ToggleLockImages);
         }
         if big_on(
             ui,
@@ -2349,7 +2367,36 @@ fn page_colour_palette(ui: &mut Ui, view: &View<'_>, t: &Tokens, acts: &mut Vec<
 /// The palette is the named colours a page or section can carry, washed the way the cell will
 /// be drawn, with No Colour first; the colour the cells have now is ringed.
 fn shading_menu(ui: &mut Ui, view: &View<'_>, t: &Tokens, acts: &mut Vec<Act>) {
-    let resp = big_menu(ui, Icon::Picture, crate::tl_id!("ui.table_shading"), crate::tl_id!("ui.table_shading_tip"), t);
+    let (rect, resp) = ui.allocate_exact_size(vec2(64.0, GROUP_H - 20.0), Sense::click());
+    let painter = ui.painter_at(rect);
+    if resp.hovered() {
+        painter.rect_filled(rect, 8.0, t.row_hover);
+    }
+    let active_colour = view.table_shade.flatten();
+    let swatch_fill = active_colour.map_or(t.editor, |c| crate::pageedit::cell_shade(t, c));
+    let badge = Rect::from_center_size(egui::pos2(rect.center().x, rect.min.y + ICON_Y), vec2(32.0, 30.0));
+    painter.rect_filled(badge, 8.0, swatch_fill);
+    let badge_stroke = if active_colour.is_some() { t.accent } else { t.faint };
+    painter.rect_stroke(badge, 8.0, egui::Stroke::new(1.25, badge_stroke), egui::StrokeKind::Inside);
+    if active_colour.is_none() {
+        painter.line_segment([badge.min + vec2(9.0, 21.0), badge.max - vec2(9.0, 21.0)], egui::Stroke::new(1.5, t.muted));
+    }
+    let label = "Couleur";
+    let font = egui::FontId::proportional(12.0);
+    let text_w = painter.layout_no_wrap(label.to_string(), font.clone(), t.text).size().x;
+    let total_w = text_w + 10.0;
+    let text_x = rect.center().x - total_w * 0.5;
+    painter.text(egui::pos2(text_x, rect.min.y + LABEL_Y), Align2::LEFT_CENTER, label, font, t.text);
+    let chev_x = text_x + text_w + 6.0;
+    let chev_y = rect.min.y + LABEL_Y + 0.5;
+    painter.add(egui::Shape::line(
+        vec![egui::pos2(chev_x - 3.0, chev_y - 1.5), egui::pos2(chev_x, chev_y + 1.5), egui::pos2(chev_x + 3.0, chev_y - 1.5)],
+        egui::Stroke::new(1.3, t.muted),
+    ));
+    let enabled = ui.is_enabled();
+    resp.widget_info(move || egui::WidgetInfo::labeled(egui::WidgetType::Button, enabled, "Couleur"));
+    let resp = resp.on_hover_text("Couleur de fond des cellules");
+
     let open_id = egui::Id::new("ribbon-table-shading");
     let mut open = ui.data(|d| d.get_temp::<bool>(open_id).unwrap_or(false));
     if resp.clicked() {
@@ -2365,7 +2412,7 @@ fn shading_menu(ui: &mut Ui, view: &View<'_>, t: &Tokens, acts: &mut Vec<Act>) {
         .fixed_pos(resp.rect.left_bottom())
         .show(ui.ctx(), |ui| {
             egui::Frame::popup(ui.style()).show(ui, |ui| {
-                ui.label(egui::RichText::new(crate::tl_id!("ui.table_shading")).strong().color(t.text));
+                ui.label(egui::RichText::new("Couleur de fond").strong().color(t.text));
                 ui.horizontal(|ui| {
                     let now = view.table_shade;
                     if shade_swatch(ui, None, now == Some(None), t).clicked() {
@@ -3333,127 +3380,201 @@ fn draw_tab(ui: &mut Ui, view: &View<'_>, t: &Tokens, acts: &mut Vec<Act>) {
     });
 }
 
-/// OneNote's Table tab, which appears while the caret is in a table. What NoteCraft can
-/// do to a table is wired; the rest is greyed where a OneNote user looks for it.
+/// Fixed-width pill button so stacked Table ribbon rows align to the exact pixel.
+fn table_grid_btn(ui: &mut Ui, width: f32, icon: Option<Icon>, mark: Option<Mark>, label: &str, tip: &str, on: bool, t: &Tokens) -> egui::Response {
+    let (rect, resp) = ui.allocate_exact_size(vec2(width, SMALL_H), Sense::click());
+    let painter = ui.painter_at(rect);
+    if on {
+        painter.rect_filled(rect, 6.0, t.row_selected);
+        painter.rect_stroke(rect, 6.0, egui::Stroke::new(1.0, t.accent), egui::StrokeKind::Inside);
+    } else if resp.hovered() {
+        painter.rect_filled(rect, 6.0, t.row_hover);
+        painter.rect_stroke(rect, 6.0, egui::Stroke::new(1.0, t.faint), egui::StrokeKind::Inside);
+    } else {
+        painter.rect_filled(rect, 6.0, t.editor);
+        painter.rect_stroke(rect, 6.0, egui::Stroke::new(1.0, t.faint), egui::StrokeKind::Inside);
+    }
+    let glyph_box = Rect::from_center_size(egui::pos2(rect.min.x + 13.0, rect.center().y), vec2(16.0, 16.0));
+    if let Some(icon) = icon {
+        icons::paint_ribbon(ui, glyph_box, icon, t.accent);
+    } else if let Some(mark) = mark {
+        let col = mark.color(t.text, t.accent);
+        ribbon_icons::paint(&painter, glyph_box, mark, col);
+    }
+    painter.text(egui::pos2(rect.min.x + 25.0, rect.center().y), Align2::LEFT_CENTER, label, egui::FontId::proportional(12.5), t.text);
+    let enabled = ui.is_enabled();
+    let name = label.to_owned();
+    resp.widget_info(move || egui::WidgetInfo::selected(egui::WidgetType::Button, enabled, on, name.clone()));
+    resp.on_hover_text(tip)
+}
+
+/// Crisp 3-line alignment glyph button (`Left`, `Center`, `Right`), 30 px wide.
+fn table_align_btn(ui: &mut Ui, align: notecraft_model::tablecols::Align, on: bool, t: &Tokens) -> egui::Response {
+    use notecraft_model::tablecols::Align as A;
+    let (rect, resp) = ui.allocate_exact_size(vec2(30.0, SMALL_H), Sense::click());
+    let painter = ui.painter_at(rect);
+    if on {
+        painter.rect_filled(rect, 6.0, t.row_selected);
+        painter.rect_stroke(rect, 6.0, egui::Stroke::new(1.0, t.accent), egui::StrokeKind::Inside);
+    } else if resp.hovered() {
+        painter.rect_filled(rect, 6.0, t.row_hover);
+        painter.rect_stroke(rect, 6.0, egui::Stroke::new(1.0, t.faint), egui::StrokeKind::Inside);
+    } else {
+        painter.rect_filled(rect, 6.0, t.editor);
+        painter.rect_stroke(rect, 6.0, egui::Stroke::new(1.0, t.faint), egui::StrokeKind::Inside);
+    }
+    let stroke = egui::Stroke::new(1.6, if on { t.accent } else { t.text });
+    let cx = rect.center().x;
+    let cy = rect.center().y;
+    let span = 14.0;
+    let left_edge = cx - span * 0.5;
+    let right_edge = cx + span * 0.5;
+    for (dy, len) in [(-4.0_f32, 14.0_f32), (0.0, 9.0), (4.0, 12.0)] {
+        let x0 = match align {
+            A::Left => left_edge,
+            A::Center => cx - len * 0.5,
+            A::Right => right_edge - len,
+        };
+        painter.line_segment([egui::pos2(x0, cy + dy), egui::pos2(x0 + len, cy + dy)], stroke);
+    }
+    let label = match align {
+        A::Left => "Aligner à gauche",
+        A::Center => "Centrer",
+        A::Right => "Aligner à droite",
+    };
+    let enabled = ui.is_enabled();
+    resp.widget_info(move || egui::WidgetInfo::selected(egui::WidgetType::Button, enabled, on, label.to_owned()));
+    resp.on_hover_text(label)
+}
+
+/// Tall compact button matching `big_mark_compact` for deleting a selected table or image.
+fn compact_delete_btn(ui: &mut Ui, tip: &str, widget_label: &str, t: &Tokens) -> egui::Response {
+    let (rect, resp) = ui.allocate_exact_size(vec2(68.0, GROUP_H - 20.0), Sense::click());
+    let painter = ui.painter_at(rect);
+    if resp.hovered() {
+        painter.rect_filled(rect, 8.0, t.row_hover);
+    }
+    let col = Mark::Delete.color(t.text, t.accent);
+    let badge = Rect::from_center_size(egui::pos2(rect.center().x, rect.min.y + ICON_Y), vec2(32.0, 30.0));
+    painter.rect_filled(badge, 8.0, crate::theme::mix(t.editor, col, 0.14));
+    ribbon_icons::paint(&painter, Rect::from_center_size(egui::pos2(rect.center().x, rect.min.y + ICON_Y), vec2(20.0, 20.0)), Mark::Delete, col);
+    painter.text(egui::pos2(rect.center().x, rect.min.y + LABEL_Y), Align2::CENTER_CENTER, "Supprimer", egui::FontId::proportional(12.0), t.text);
+    let enabled = ui.is_enabled();
+    let label = widget_label.to_owned();
+    resp.widget_info(move || egui::WidgetInfo::labeled(egui::WidgetType::Button, enabled, label.clone()));
+    resp.on_hover_text(tip)
+}
+
+/// Compact, aligned Table tab shown while the caret is inside a table: row/column edits,
+/// appearance (cell shading, borders, alignment) and whole-table deletion with confirmation.
 fn table_tab(ui: &mut Ui, view: &View<'_>, t: &Tokens, acts: &mut Vec<Act>) {
     use crate::pageedit::TableEdit as E;
-    use crate::pageedit::TableSpan as S;
-    group(ui, crate::tl_id!("ui.select"), t, |ui| {
-        if big(ui, Icon::Table, crate::tl_id!("ui.select_table_2"), crate::tl_id!("ui.pick_the_whole_table"), t).clicked() {
-            acts.push(Act::TableSelect(S::Whole));
-        }
-        if big(ui, Icon::TableColumn, crate::tl_id!("ui.select_columns_2"), crate::tl_id!("ui.pick_the_caret_s_column"), t).clicked() {
-            acts.push(Act::TableSelect(S::Column));
-        }
-        if big(ui, Icon::TableRow, crate::tl_id!("ui.select_rows_2"), crate::tl_id!("ui.pick_the_caret_s_row"), t).clicked() {
-            acts.push(Act::TableSelect(S::Row));
-        }
+    use notecraft_model::tablecols::Align as A;
+    group(ui, "Lignes et colonnes", t, |ui| {
+        ui.vertical(|ui| {
+            ui.add_space(6.0);
+            ui.spacing_mut().item_spacing = vec2(5.0, 6.0);
+            ui.horizontal(|ui| {
+                if table_grid_btn(ui, 90.0, Some(Icon::TableRow), None, "+ Haut", "Insérer une ligne au-dessus", false, t).clicked() {
+                    acts.push(Act::Table(E::InsertRow(true)));
+                }
+                if table_grid_btn(ui, 90.0, Some(Icon::TableRow), None, "+ Bas", "Insérer une ligne en dessous", false, t).clicked() {
+                    acts.push(Act::Table(E::InsertRow(false)));
+                }
+                if table_grid_btn(ui, 90.0, None, Some(Mark::Delete), "Ligne", "Supprimer la ligne", false, t).clicked() {
+                    acts.push(Act::Table(E::DeleteRow));
+                }
+            });
+            ui.horizontal(|ui| {
+                if table_grid_btn(ui, 90.0, Some(Icon::TableColumn), None, "+ Gauche", "Insérer une colonne à gauche", false, t).clicked() {
+                    acts.push(Act::Table(E::InsertColumn(true)));
+                }
+                if table_grid_btn(ui, 90.0, Some(Icon::TableColumn), None, "+ Droite", "Insérer une colonne à droite", false, t).clicked() {
+                    acts.push(Act::Table(E::InsertColumn(false)));
+                }
+                if table_grid_btn(ui, 90.0, None, Some(Mark::Delete), "Colonne", "Supprimer la colonne", false, t).clicked() {
+                    acts.push(Act::Table(E::DeleteColumn));
+                }
+            });
+        });
     });
-    group(ui, crate::tl_id!("ui.delete"), t, |ui| {
-        if big(ui, Icon::Table, crate::tl_id!("ui.delete_table_2"), crate::tl_id!("ui.take_the_whole_table_out"), t).clicked() {
-            acts.push(Act::DeleteTable);
-        }
-        if big(ui, Icon::TableColumn, crate::tl_id!("ui.delete_columns_2"), crate::tl_id!("ui.take_the_caret_s_column_out"), t).clicked() {
-            acts.push(Act::Table(E::DeleteColumn));
-        }
-        if big(ui, Icon::TableRow, crate::tl_id!("ui.delete_rows_2"), crate::tl_id!("ui.take_the_caret_s_row_out"), t).clicked() {
-            acts.push(Act::Table(E::DeleteRow));
-        }
-    });
-    group(ui, crate::tl_id!("ui.insert"), t, |ui| {
-        if big(ui, Icon::TableRow, crate::tl_id!("ui.insert_row_above_2"), crate::tl_id!("ui.a_row_above_the_caret_s"), t).clicked() {
-            acts.push(Act::Table(E::InsertRow(true)));
-        }
-        if big(ui, Icon::TableRow, crate::tl_id!("ui.insert_row_below_2"), crate::tl_id!("ui.a_row_below_the_caret_s"), t).clicked() {
-            acts.push(Act::Table(E::InsertRow(false)));
-        }
-        if big(ui, Icon::TableColumn, crate::tl_id!("ui.insert_column_left_2"), crate::tl_id!("ui.a_column_left_of_the_caret_s"), t).clicked() {
-            acts.push(Act::Table(E::InsertColumn(true)));
-        }
-        if big(ui, Icon::TableColumn, crate::tl_id!("ui.insert_column_right_2"), crate::tl_id!("ui.a_column_right_of_the_caret_s"), t).clicked() {
-            acts.push(Act::Table(E::InsertColumn(false)));
-        }
-    });
-    group(ui, crate::tl_id!("ui.merge"), t, |ui| {
-        soon(ui, Icon::Table, "Merge\nCells", t);
-        soon(ui, Icon::Table, "Split\nCells", t);
-    });
-    group(ui, crate::tl_id!("ui.format"), t, |ui| {
-        // One button that says what it will do, the way OneNote's does: it reads Hide
-        // Borders while they are drawn, and Show Borders once they are not.
-        let hiding = view.table_borders;
-        let label = if hiding { "Hide\nBorders" } else { "Show\nBorders" };
-        let tip = if hiding { "Draw tables without lines" } else { "Draw the lines round the cells again" };
-        if big_on(ui, Icon::Table, label, tip, !hiding, t).clicked() {
-            acts.push(Act::TableBorders(!hiding));
-        }
+    group(ui, "Apparence", t, |ui| {
         shading_menu(ui, view, t, acts);
-    });
-    group(ui, crate::tl_id!("ui.alignment"), t, |ui| {
-        // The words in the caret's cell, or in every cell picked (issue #170). The one lit is
-        // how those cells are aligned now; none is lit when they differ.
-        use notecraft_model::tablecols::Align as A;
-        for (align, icon, label, tip) in [
-            (A::Left, Icon::DirLtr, crate::tl_id!("ui.table_align_left"), crate::tl_id!("ui.table_align_left_tip")),
-            (A::Center, Icon::DirLtr, crate::tl_id!("ui.table_align_center"), crate::tl_id!("ui.table_align_center_tip")),
-            (A::Right, Icon::DirRtl, crate::tl_id!("ui.table_align_right"), crate::tl_id!("ui.table_align_right_tip")),
-        ] {
-            if big_on(ui, icon, label, tip, view.table_align == Some(align), t).clicked() {
-                acts.push(Act::TableAlign(align));
+        ui.vertical(|ui| {
+            ui.add_space(6.0);
+            ui.spacing_mut().item_spacing = vec2(5.0, 6.0);
+            let hiding = view.table_borders;
+            let tip = if hiding { "Masquer les bordures du tableau" } else { "Afficher les bordures du tableau" };
+            if table_grid_btn(ui, 100.0, Some(Icon::Table), None, "Bordures", tip, hiding, t).clicked() {
+                acts.push(Act::TableBorders(!hiding));
             }
+            ui.horizontal(|ui| {
+                for align in [A::Left, A::Center, A::Right] {
+                    if table_align_btn(ui, align, view.table_align == Some(align), t).clicked() {
+                        acts.push(Act::TableAlign(align));
+                    }
+                }
+            });
+        });
+    });
+    group(ui, "Tableau", t, |ui| {
+        if compact_delete_btn(ui, "Supprimer tout le tableau", "Supprimer le tableau", t).clicked() {
+            acts.push(Act::ConfirmDeleteTable(None));
         }
     });
-    group(ui, crate::tl_id!("ui.data"), t, |ui| {
-        // Whole rows by the caret's column, or only the picked rows; the heading stays on top.
-        if big(ui, Icon::ListNumber, crate::tl_id!("ui.sort_ascending_2"), crate::tl_id!("ui.sort_the_rows_by_the_caret_s_column_a_to_z"), t)
-            .clicked()
-        {
-            acts.push(Act::TableSort(false));
+}
+
+/// Contextual Image / PDF tab matching the compact 3-group layout of the Table tab:
+/// crop/rotate/scan enhancement, pure-Rust offline OCR, background lock, and deletion.
+fn image_tab(ui: &mut Ui, view: &View<'_>, t: &Tokens, acts: &mut Vec<Act>) {
+    use crate::turn::{Enhance, Turn};
+    group(ui, "Modifier", t, |ui| {
+        ui.vertical(|ui| {
+            ui.add_space(6.0);
+            ui.spacing_mut().item_spacing = vec2(5.0, 6.0);
+            ui.horizontal(|ui| {
+                if table_grid_btn(ui, 96.0, Some(Icon::Picture), None, "Rogner", "Rogner l'image", false, t).clicked() {
+                    acts.push(Act::CropPicture);
+                }
+                if table_grid_btn(ui, 96.0, Some(Icon::Redo), None, "Pivoter ↻", "Pivoter de 90° à droite", false, t).clicked() {
+                    acts.push(Act::TurnSelectedPicture(Turn::Right));
+                }
+                if table_grid_btn(ui, 96.0, Some(Icon::Undo), None, "Pivoter ↺", "Pivoter de 90° à gauche", false, t).clicked() {
+                    acts.push(Act::TurnSelectedPicture(Turn::Left));
+                }
+            });
+            ui.horizontal(|ui| {
+                if table_grid_btn(ui, 96.0, Some(Icon::Page), None, "Scan N&B", "Améliorer un scan ou une photocopie en noir et blanc", false, t)
+                    .clicked()
+                {
+                    acts.push(Act::EnhancePicture(Enhance::ScanBw));
+                }
+                if table_grid_btn(ui, 96.0, None, Some(Mark::Highlighter), "Contraste +", "Renforcer le contraste de l'image", false, t).clicked() {
+                    acts.push(Act::EnhancePicture(Enhance::Contrast));
+                }
+                if table_grid_btn(ui, 96.0, Some(Icon::Redo), None, "Miroir ⇄", "Retourner horizontalement", false, t).clicked() {
+                    acts.push(Act::TurnSelectedPicture(Turn::FlipHorizontal));
+                }
+            });
+        });
+    });
+    group(ui, "Texte (OCR)", t, |ui| {
+        let ocr_label = if view.ocr_busy { "OCR en\ncours..." } else { "Extraire\nle texte" };
+        if big(ui, Icon::InkToText, ocr_label, "Reconnaître le texte de l'image (OCR hors-ligne)", t).clicked() && !view.ocr_busy {
+            acts.push(Act::OcrPicture { speak: false });
         }
-        if big(ui, Icon::ListNumber, crate::tl_id!("ui.sort_descending_2"), crate::tl_id!("ui.sort_the_rows_by_the_caret_s_column_z_to_a"), t)
-            .clicked()
-        {
-            acts.push(Act::TableSort(true));
+        if big(ui, Icon::ReadAloud, "Lire\nl'image", "Reconnaître le texte de l'image et le lire à voix haute", t).clicked() && !view.ocr_busy {
+            acts.push(Act::OcrPicture { speak: true });
         }
     });
-    group(ui, crate::tl_id!("ui.convert"), t, |ui| {
-        // Where OneNote converts a table to an Excel spreadsheet, NoteCraft hands it to
-        // GridCraft, the open spreadsheet from the same workshop. Greyed when GridCraft
-        // is not installed, because there is nowhere to hand it to.
-        if view.gridcraft {
-            if big(
-                ui,
-                Icon::Spreadsheet,
-                crate::tl_id!("ui.convert_to_gridcraft_2"),
-                crate::tl_id!("ui.write_the_table_out_and_open_it_in_gridcraft"),
-                t,
-            )
-            .clicked()
-            {
-                acts.push(Act::ToGridCraft);
-            }
-            // The table went out as a file; this brings back what the spreadsheet made of
-            // it. Nothing watches the file, because a page being edited should not change
-            // under the writer's hands.
-            if big(
-                ui,
-                Icon::Spreadsheet,
-                crate::tl_id!("ui.read_back_from_it_2"),
-                crate::tl_id!("ui.put_what_the_spreadsheet_holds_back_into_this_table"),
-                t,
-            )
-            .clicked()
-            {
-                acts.push(Act::FromGridCraft);
-            }
-        } else {
-            let dim = Tokens { accent: t.muted, text: t.muted, ..*t };
-            let resp = ui
-                .add_enabled_ui(false, |ui| {
-                    big(ui, Icon::Spreadsheet, crate::tl_id!("ui.convert_to_gridcraft_2"), crate::tl_id!("ui.gridcraft_is_not_installed"), &dim)
-                })
-                .inner;
-            resp.on_hover_text(crate::tl_id!("ui.convert_to_gridcraft_gridcraft_is_not_installed"));
+    group(ui, "Image", t, |ui| {
+        let lock_label = if view.lock_images { "Déverrouiller\nle fond" } else { "Verrouiller\nen fond" };
+        let lock_tip = "Verrouiller les PDF et images en fond pour écrire dessus sans les déplacer par erreur";
+        if big_on(ui, Icon::Page, lock_label, lock_tip, view.lock_images, t).clicked() {
+            acts.push(Act::ToggleLockImages);
+        }
+        if compact_delete_btn(ui, "Supprimer l'image sélectionnée", "Supprimer l'image", t).clicked() {
+            acts.push(Act::DeleteSelectedPicture);
         }
     });
 }
@@ -3709,21 +3830,26 @@ mod tests {
     #[test]
     fn the_tabs_are_office_like_and_source_comes_and_goes() {
         // Owner decision, 2026-11-20: View was folded into Home, so only Home and Draw remain.
-        assert_eq!(tabs(false, false), vec!["Home", "Draw"]);
-        assert_eq!(tabs(true, false), vec!["Home", "Draw", "Source"]);
-        assert_eq!(resolve_tab("Insert", false, false), "Home");
-        assert_eq!(resolve_tab("Draw", false, false), "Draw");
-        assert_eq!(resolve_tab("View", false, false), "Home", "the View tab was folded into Home");
-        assert_eq!(resolve_tab("Source", true, false), "Source");
-        assert_eq!(resolve_tab("Source", false, false), "Home", "the Source tab goes when the source pane does");
-        assert_eq!(resolve_tab("Nonsense", false, false), "Home");
-        assert_eq!(resolve_tab("", true, false), "Home");
+        assert_eq!(tabs(false, false, false), vec!["Home", "Draw"]);
+        assert_eq!(tabs(true, false, false), vec!["Home", "Draw", "Source"]);
+        assert_eq!(resolve_tab("Insert", false, false, false), "Home");
+        assert_eq!(resolve_tab("Draw", false, false, false), "Draw");
+        assert_eq!(resolve_tab("View", false, false, false), "Home", "the View tab was folded into Home");
+        assert_eq!(resolve_tab("Source", true, false, false), "Source");
+        assert_eq!(resolve_tab("Source", false, false, false), "Home", "the Source tab goes when the source pane does");
+        assert_eq!(resolve_tab("Nonsense", false, false, false), "Home");
+        assert_eq!(resolve_tab("", true, false, false), "Home");
 
         // The Table tab goes with the caret: it is offered only while the caret is in a
         // table, and leaving one takes the tab and its commands away.
-        assert_eq!(tabs(false, true), vec!["Home", "Draw", "Table"]);
-        assert_eq!(resolve_tab("Table", false, true), "Table");
-        assert_eq!(resolve_tab("Table", false, false), "Home", "out of the table, out of the tab");
+        assert_eq!(tabs(false, true, false), vec!["Home", "Draw", "Table"]);
+        assert_eq!(resolve_tab("Table", false, true, false), "Table");
+        assert_eq!(resolve_tab("Table", false, false, false), "Home", "out of the table, out of the tab");
+
+        // The Image tab appears when an image / PDF is on the page.
+        assert_eq!(tabs(false, false, true), vec!["Home", "Draw", "Image"]);
+        assert_eq!(resolve_tab("Image", false, false, true), "Image");
+        assert_eq!(resolve_tab("Image", false, false, false), "Home");
     }
 
     #[test]
@@ -3758,6 +3884,30 @@ mod tests {
                 assert_eq!(draw(tab, source), Vec::new(), "{tab} asked for something nobody clicked");
             }
         }
+    }
+
+    #[test]
+    fn image_tab_draws_compactly_without_panicking() {
+        let t = Theme::DEFAULT.tokens();
+        let ctx = egui::Context::default();
+        let mut acts = Vec::new();
+        let mut out = ctx.run_ui(egui::RawInput::default(), |ui| {
+            acts = show(ui, IMAGE_TAB, false, &View { has_image: true, zoom_percent: 100, ..View::default() }, Some(PageFormat::Html), &t);
+        });
+        out.textures_delta.clear();
+        assert_eq!(acts, Vec::new());
+    }
+
+    #[test]
+    fn table_tab_draws_compactly_without_panicking() {
+        let t = Theme::DEFAULT.tokens();
+        let ctx = egui::Context::default();
+        let mut acts = Vec::new();
+        let mut out = ctx.run_ui(egui::RawInput::default(), |ui| {
+            acts = show(ui, TABLE_TAB, false, &View { in_table: true, zoom_percent: 100, ..View::default() }, Some(PageFormat::Html), &t);
+        });
+        out.textures_delta.clear();
+        assert_eq!(acts, Vec::new());
     }
 
     /// The acts are plain values, so the window's side of the ribbon is testable on its own.

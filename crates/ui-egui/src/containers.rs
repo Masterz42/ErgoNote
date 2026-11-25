@@ -362,11 +362,9 @@ pub fn show(
     // are made after it, sit on top of it and take their own clicks. A click that reaches it
     // landed on no box at all.
     //
-    // The paper goes on past the page's right edge, as far as the canvas shows (issue #65): boxes
-    // can be dragged out there, and since the canvas scrolls sideways a click there is as much a
-    // click on open paper as one on the page. Only the click target is wider; the page's own
-    // layout, which the space under the boxes is allocated in, keeps the page's width.
-    let open_right = ui.clip_rect().max.x.max(area.max.x);
+    // Keep open-paper clicks inside the sheet itself so clicking empty space to the right of
+    // the sheet does nothing instead of spawning a floating text box outside the page.
+    let open_right = area.max.x;
     // And down as far as the window shows: the page scrolls, and `area` is about one view tall
     // from the top of the scrolled page, so once it was scrolled the paper beside a tall box ran
     // out partway down the window.
@@ -468,6 +466,9 @@ pub fn show(
         }
         if changed.select_object.is_some() {
             out.changed.select_object = changed.select_object;
+        }
+        if changed.delete_table.is_some() {
+            out.changed.delete_table = changed.delete_table;
         }
         if let Some((block, kind)) = object_clicked.as_ref().filter(|(block, _)| range.contains(block)) {
             object_sel = Some((*block, kind.clone()));
@@ -1064,7 +1065,7 @@ pub fn show(
                     // The page's own entries stay reachable from here: a right click on a
                     // box's words used to open the page's menu, and it still offers all of it.
                     floating::menu_separator(menu, t);
-                    picked |= crate::pagemenu::items(menu, &mut out.acts, false, t);
+                    picked |= crate::pagemenu::items(menu, &mut out.acts, false, false, t);
                 });
             })
             .response;
@@ -2449,5 +2450,52 @@ more
         // A box that is only a picture and a line, lifted below a range that starts later.
         let (parts, _) = lift_out(Container::new(0.0, 0.0, 300.0, 2), 3..5, 4, pos2(0.0, 0.0), 1.0, picture, None);
         assert_eq!(parts.iter().map(|c| c.blocks).collect::<Vec<_>>(), vec![1, 1]);
+    }
+
+    #[test]
+    fn clicking_outside_sheet_right_edge_does_not_create_a_box() {
+        let t = Theme::DEFAULT.tokens();
+        let mut blocks = page("hello\n");
+        let mut boxes = vec![Container::new(0.0, 0.0, 360.0, 1)];
+        let mut caret = None;
+        let ctx = egui::Context::default();
+        let viewport = Rect::from_min_size(pos2(0.0, 0.0), vec2(800.0, 600.0));
+        let click_at = pos2(650.0, 40.0);
+
+        for event in [
+            None,
+            Some(egui::Event::PointerMoved(click_at)),
+            Some(egui::Event::PointerButton { pos: click_at, button: egui::PointerButton::Primary, pressed: true, modifiers: Default::default() }),
+            Some(egui::Event::PointerButton { pos: click_at, button: egui::PointerButton::Primary, pressed: false, modifiers: Default::default() }),
+        ] {
+            let mut input = egui::RawInput { screen_rect: Some(viewport), ..Default::default() };
+            if let Some(ev) = event {
+                input.events.push(ev);
+            }
+            let mut frame = ctx.run_ui(input, |ui| {
+                crate::fonts::install_once(ui.ctx());
+                ui.allocate_ui(vec2(400.0, 300.0), |ui| {
+                    let moved = show(
+                        ui,
+                        &mut blocks,
+                        &mut boxes,
+                        &mut caret,
+                        std::path::Path::new("."),
+                        &t,
+                        Some(notecraft_model::Dir::Ltr),
+                        &mut Default::default(),
+                        &mut Default::default(),
+                        &mut None,
+                        "",
+                        1.0,
+                        None,
+                    );
+                    assert!(!moved.boxes, "clicking outside the sheet must not create a new box");
+                });
+            });
+            frame.textures_delta.clear();
+        }
+        assert_eq!(boxes.len(), 1, "box count stays unchanged after clicking right of the sheet");
+        assert!(caret.is_none(), "caret stays unset after clicking right of the sheet");
     }
 }
