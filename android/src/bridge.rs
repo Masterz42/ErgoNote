@@ -14,6 +14,7 @@ use winit::platform::android::activity::AndroidApp;
 /// Events sent asynchronously from Android's UI/binder threads into the next egui frame.
 pub(crate) enum BridgeEvent {
     FilePicked(Option<PathBuf>),
+    FileSaved { ok: bool, name: String },
     VoiceDictated(String),
     ReleaseJson(String),
     TtsDone,
@@ -69,6 +70,54 @@ pub(crate) fn open_file_picker(app: &AndroidApp, mime: &str) {
     with_activity(app, "openFilePicker", |env, activity| {
         let jmime = JString::from_str(env, mime)?;
         env.call_method(activity, jni_str!("openFilePicker"), jni_sig!("(Ljava/lang/String;)V"), &[JValue::Object(&jmime)])?;
+        Ok(())
+    });
+}
+
+pub(crate) fn save_file_with_picker(app: &AndroidApp, temp_path: &std::path::Path, display_name: &str, mime: &str) {
+    let path_str = temp_path.to_string_lossy();
+    with_activity(app, "saveFileWithPicker", |env, activity| {
+        let jpath = JString::from_str(env, path_str.as_ref())?;
+        let jname = JString::from_str(env, display_name)?;
+        let jmime = JString::from_str(env, mime)?;
+        env.call_method(
+            activity,
+            jni_str!("saveFileWithPicker"),
+            jni_sig!("(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V"),
+            &[JValue::Object(&jpath), JValue::Object(&jname), JValue::Object(&jmime)],
+        )?;
+        Ok(())
+    });
+}
+
+pub(crate) fn print_html_document(app: &AndroidApp, title: &str, html_path: &std::path::Path) {
+    let path_str = html_path.to_string_lossy();
+    with_activity(app, "printHtmlDocument", |env, activity| {
+        let jtitle = JString::from_str(env, title)?;
+        let jpath = JString::from_str(env, path_str.as_ref())?;
+        env.call_method(
+            activity,
+            jni_str!("printHtmlDocument"),
+            jni_sig!("(Ljava/lang/String;Ljava/lang/String;)V"),
+            &[JValue::Object(&jtitle), JValue::Object(&jpath)],
+        )?;
+        Ok(())
+    });
+}
+
+pub(crate) fn share_file(app: &AndroidApp, temp_path: &std::path::Path, display_name: &str, mime: &str, subject: &str) {
+    let path_str = temp_path.to_string_lossy();
+    with_activity(app, "shareFile", |env, activity| {
+        let jpath = JString::from_str(env, path_str.as_ref())?;
+        let jname = JString::from_str(env, display_name)?;
+        let jmime = JString::from_str(env, mime)?;
+        let jsubject = JString::from_str(env, subject)?;
+        env.call_method(
+            activity,
+            jni_str!("shareFile"),
+            jni_sig!("(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V"),
+            &[JValue::Object(&jpath), JValue::Object(&jname), JValue::Object(&jmime), JValue::Object(&jsubject)],
+        )?;
         Ok(())
     });
 }
@@ -162,6 +211,22 @@ pub extern "system" fn Java_com_ergonote_app_ErgoNoteActivity_nativeOnFilePickCa
     unowned_env
         .with_env(|_env| -> jni::errors::Result<()> {
             push_event(BridgeEvent::FilePicked(None));
+            Ok(())
+        })
+        .resolve::<LogErrorAndDefault>();
+}
+
+#[unsafe(no_mangle)]
+pub extern "system" fn Java_com_ergonote_app_ErgoNoteActivity_nativeOnFileSaved<'caller>(
+    mut unowned_env: EnvUnowned<'caller>,
+    _class: JClass<'caller>,
+    ok: jni::sys::jboolean,
+    display_name: JString<'caller>,
+) {
+    unowned_env
+        .with_env(|env| -> jni::errors::Result<()> {
+            let name = display_name.try_to_string(env).unwrap_or_default();
+            push_event(BridgeEvent::FileSaved { ok, name });
             Ok(())
         })
         .resolve::<LogErrorAndDefault>();

@@ -92,6 +92,7 @@ fn run(app: AndroidApp) -> Result<(), String> {
             let setup_payload: PathBuf = payload.clone();
             let url_window = window.clone();
             let check_window = window.clone();
+            let app_data = layout.app_data.clone();
             let mut app = ErgoNoteApp::new(session)
                 .with_simple_mobile(false)
                 .with_url_opener(move |url| crate::bridge::open_external_url(&url_window, url))
@@ -99,6 +100,7 @@ fn run(app: AndroidApp) -> Result<(), String> {
                     ergonote_setup::install_edition(&setup_payload, notebooks_root, format).map_err(|error| error.to_string())
                 })
                 .with_clipboard(clipboard);
+            app.enable_file_downloads();
             crate::bridge::check_for_updates(&check_window);
             for (key, message) in alerts.drain(..) {
                 app.alert(key, "ErgoNote", &message);
@@ -110,8 +112,10 @@ fn run(app: AndroidApp) -> Result<(), String> {
             log::info!("window ready");
             Ok(Box::new(Shell {
                 app,
+                app_data,
                 focused: true,
                 window,
+                export_seq: 0,
                 ime_gen: 0,
                 last_ime_synced: (false, false, None, String::new(), 0, 0),
                 pending_ime_rewrite: None,
@@ -182,10 +186,13 @@ impl ApplicationHandler<eframe::UserEvent> for AndroidHandler<'_> {
 /// The egui app inside Android's window.
 struct Shell {
     app: ErgoNoteApp,
+    app_data: PathBuf,
     /// Whether the activity had the input focus last frame.
     focused: bool,
     /// The activity, asked each frame where the system bars are.
     window: AndroidApp,
+    /// Counter for unique temporary export filenames in `app_data/export_tmp`.
+    export_seq: u64,
     /// Generation counter incremented each time Rust pushes a new IME buffer state to Java.
     ime_gen: i64,
     /// Last `(visible, paragraph_mode, block, text, sel_start_utf16, sel_end_utf16)` sent to Java.
@@ -259,6 +266,7 @@ impl eframe::App for Shell {
         for event in crate::bridge::take_events() {
             match event {
                 crate::bridge::BridgeEvent::FilePicked(path) => self.app.complete_android_pick(path),
+                crate::bridge::BridgeEvent::FileSaved { ok, name } => self.app.notify_android_save_result(ok, &name),
                 crate::bridge::BridgeEvent::VoiceDictated(text) => self.app.finish_android_dictation(text),
                 crate::bridge::BridgeEvent::ReleaseJson(json) => self.app.apply_release_json(&json, "android"),
                 crate::bridge::BridgeEvent::TtsDone => self.app.mark_tts_done(),
@@ -308,6 +316,31 @@ impl eframe::App for Shell {
         }
         self.focused = focused;
         self.app.show(ui);
+        for download in self.app.take_file_downloads() {
+            let tmp_dir = self.app_data.join("export_tmp");
+            if let Err(err) = std::fs::create_dir_all(&tmp_dir) {
+                log::error!("cannot create {}: {err}", tmp_dir.display());
+                continue;
+            }
+            self.export_seq = self.export_seq.saturating_add(1);
+            let safe_leaf: String =
+                download.name.chars().map(|c| if c.is_ascii_alphanumeric() || matches!(c, '.' | '-' | '_') { c } else { '_' }).collect();
+            let tmp_path = tmp_dir.join(format!("{}_{}", self.export_seq, safe_leaf));
+            if let Err(err) = std::fs::write(&tmp_path, &download.bytes) {
+                log::error!("cannot write {}: {err}", tmp_path.display());
+                continue;
+            }
+            match download.mime {
+                "application/x-ergonote-print-pdf" => crate::bridge::print_html_document(&self.window, &download.name, &tmp_path),
+                "application/x-ergonote-share-html" => {
+                    crate::bridge::share_file(&self.window, &tmp_path, &download.name, "text/html", &download.name)
+                }
+                "application/x-ergonote-share-text" => {
+                    crate::bridge::share_file(&self.window, &tmp_path, &download.name, "text/plain", &download.name)
+                }
+                mime => crate::bridge::save_file_with_picker(&self.window, &tmp_path, &download.name, mime),
+            }
+        }
         if let Some(mime) = self.app.take_android_pick_request() {
             crate::bridge::open_file_picker(&self.window, &mime);
         }

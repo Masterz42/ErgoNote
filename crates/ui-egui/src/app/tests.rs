@@ -2443,4 +2443,51 @@ mod section_tabs_bar_tests {
             assert_eq!(st.lock_images, before_lock, "keep_bg={keep_bg}: Ctrl+Z must restore lock_images");
         }
     }
+
+    #[test]
+    fn android_file_downloads_handle_zip_html_doc_pdf_and_share() {
+        let t = ergonote_store::testing::TempDir::new("android-downloads");
+        let settings = ergonote_store::Settings::at(t.path().join("settings.toml"));
+        let mut session = Session::new(&t.path().join("notebooks"), settings).expect("session");
+        let sample = ergonote_engine::sample::create_sample(&mut session, None).expect("sample");
+        let mut app = ErgoNoteApp::new(session);
+        app.enable_file_downloads();
+        app.open_path(&sample.html_page.to_string_lossy());
+
+        app.handle_export_page_html();
+        let downloads = app.take_file_downloads();
+        assert_eq!(downloads.len(), 1);
+        assert_eq!(downloads[0].mime, "text/html");
+        assert!(downloads[0].name.ends_with(".html"));
+        assert!(!downloads[0].bytes.is_empty());
+
+        app.handle_export_page_doc();
+        let downloads = app.take_file_downloads();
+        assert_eq!(downloads.len(), 1);
+        assert_eq!(downloads[0].mime, "application/msword");
+        assert!(downloads[0].name.ends_with(".doc"));
+
+        app.handle_export_page_pdf();
+        let downloads = app.take_file_downloads();
+        assert_eq!(downloads.len(), 1);
+        assert_eq!(downloads[0].mime, "application/x-ergonote-print-pdf");
+        assert!(downloads[0].name.ends_with(".pdf"));
+
+        app.handle_share_pdf();
+        let downloads = app.take_file_downloads();
+        assert_eq!(downloads.len(), 1);
+        assert_eq!(downloads[0].mime, "application/x-ergonote-share-html");
+
+        app.handle_share_email();
+        let downloads = app.take_file_downloads();
+        assert_eq!(downloads.len(), 1);
+        assert_eq!(downloads[0].mime, "application/x-ergonote-share-text");
+
+        app.handle_export_notebook_zip();
+        let downloads = app.take_file_downloads();
+        assert_eq!(downloads.len(), 1);
+        assert_eq!(downloads[0].mime, "application/zip");
+        assert_eq!(downloads[0].name, "Mon-Cartable-Sauvegarde.zip");
+        assert!(downloads[0].bytes.starts_with(b"PK"));
+    }
 }

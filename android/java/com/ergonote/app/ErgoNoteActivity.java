@@ -41,11 +41,13 @@ public class ErgoNoteActivity extends NativeActivity {
     private static final int REQ_PICK_FILE = 4201;
     private static final int REQ_TAKE_PHOTO = 4202;
     private static final int REQ_VOICE_DICTATION = 4203;
+    private static final int REQ_SAVE_FILE = 4204;
     private static final int IME_KEY_ENTER = 1;
     private static final int IME_KEY_BACKSPACE = 2;
 
     private static native void nativeOnFilePicked(String path);
     private static native void nativeOnFilePickCancelled();
+    private static native void nativeOnFileSaved(boolean ok, String displayName);
     private static native void nativeOnVoiceDictated(String text);
     private static native void nativeOnReleaseJson(String json);
     private static native void nativeOnImeParagraph(long syncGen, String text, int selStartUtf16, int selEndUtf16);
@@ -56,6 +58,9 @@ public class ErgoNoteActivity extends NativeActivity {
     private ImeProxyView imeView;
     private boolean imeVisible = false;
     private volatile long latestQueuedSyncGen = 0;
+    private volatile String pendingSaveSourcePath;
+    private volatile String pendingSaveDisplayName;
+    private android.webkit.WebView activePrintWebView;
     private TextToSpeech tts;
     private boolean ttsReady = false;
     private String pendingTtsText;
@@ -72,6 +77,10 @@ public class ErgoNoteActivity extends NativeActivity {
 
     @Override
     protected void onDestroy() {
+        if (activePrintWebView != null) {
+            activePrintWebView.destroy();
+            activePrintWebView = null;
+        }
         if (tts != null) {
             tts.stop();
             tts.shutdown();
@@ -175,6 +184,208 @@ public class ErgoNoteActivity extends NativeActivity {
                 }
             }
         });
+    }
+
+    public void saveFileWithPicker(final String tempPath, final String displayName, final String mimeType) {
+        if (tempPath == null || tempPath.isEmpty()) {
+            nativeOnFileSaved(false, "");
+            return;
+        }
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    pendingSaveSourcePath = tempPath;
+                    pendingSaveDisplayName = (displayName != null && !displayName.isEmpty()) ? displayName : "fichier";
+                    Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+                    intent.addCategory(Intent.CATEGORY_OPENABLE);
+                    String type = (mimeType != null && !mimeType.isEmpty()) ? mimeType : "*/*";
+                    intent.setType(type);
+                    intent.putExtra(Intent.EXTRA_TITLE, pendingSaveDisplayName);
+                    startActivityForResult(intent, REQ_SAVE_FILE);
+                } catch (Exception e) {
+                    Log.e(TAG, "Failed to launch Save-As picker", e);
+                    cleanupTempFile(tempPath);
+                    pendingSaveSourcePath = null;
+                    pendingSaveDisplayName = null;
+                    nativeOnFileSaved(false, "");
+                }
+            }
+        });
+    }
+
+    public void printHtmlDocument(final String title, final String htmlPath) {
+        final String jobTitle = (title != null && !title.isEmpty()) ? title : "ErgoNote";
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                final String html = readUtf8FileAndDelete(htmlPath);
+                if (html == null) {
+                    return;
+                }
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            if (activePrintWebView != null) {
+                                activePrintWebView.destroy();
+                                activePrintWebView = null;
+                            }
+                            final android.webkit.WebView webView = new android.webkit.WebView(ErgoNoteActivity.this);
+                            activePrintWebView = webView;
+                            webView.setWebViewClient(new android.webkit.WebViewClient() {
+                                private boolean printed = false;
+
+                                @Override
+                                public void onPageFinished(android.webkit.WebView view, String url) {
+                                    if (printed) {
+                                        return;
+                                    }
+                                    printed = true;
+                                    try {
+                                        android.print.PrintManager pm = (android.print.PrintManager) getSystemService(Context.PRINT_SERVICE);
+                                        if (pm != null) {
+                                            pm.print(
+                                                jobTitle,
+                                                view.createPrintDocumentAdapter(jobTitle),
+                                                new android.print.PrintAttributes.Builder().build()
+                                            );
+                                        }
+                                    } catch (Exception e) {
+                                        Log.e(TAG, "Failed to start PrintManager job", e);
+                                    }
+                                }
+                            });
+                            webView.loadDataWithBaseURL(null, html, "text/html", "UTF-8", null);
+                        } catch (Exception e) {
+                            Log.e(TAG, "Failed to print HTML document", e);
+                        }
+                    }
+                });
+            }
+        }, "ergonote-print-html").start();
+    }
+
+    public void shareFile(final String tempPath, final String displayName, final String mimeType, final String subject) {
+        final String shareSubject = (subject != null && !subject.isEmpty()) ? subject : "ErgoNote";
+        if ("text/plain".equals(mimeType)) {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    final String text = readUtf8FileAndDelete(tempPath);
+                    if (text == null) {
+                        return;
+                    }
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                Intent send = new Intent(Intent.ACTION_SEND);
+                                send.setType("text/plain");
+                                send.putExtra(Intent.EXTRA_SUBJECT, shareSubject);
+                                send.putExtra(Intent.EXTRA_TEXT, text);
+                                startActivity(Intent.createChooser(send, "Partager"));
+                            } catch (Exception e) {
+                                Log.e(TAG, "Failed to share text", e);
+                            }
+                        }
+                    });
+                }
+            }, "ergonote-share-text").start();
+            return;
+        }
+        if (android.os.Build.VERSION.SDK_INT < 29) {
+            saveFileWithPicker(tempPath, displayName, mimeType);
+            return;
+        }
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                String safeDisplay = (displayName != null && !displayName.isEmpty()) ? displayName : "partage.html";
+                String safeMime = (mimeType != null && !mimeType.isEmpty()) ? mimeType : "*/*";
+                try {
+                    android.content.ContentValues values = new android.content.ContentValues();
+                    values.put(android.provider.MediaStore.Downloads.DISPLAY_NAME, safeDisplay);
+                    values.put(android.provider.MediaStore.Downloads.MIME_TYPE, safeMime);
+                    values.put(android.provider.MediaStore.Downloads.RELATIVE_PATH, "Download/ErgoNote");
+                    final Uri uri = getContentResolver().insert(android.provider.MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
+                    if (uri == null) {
+                        throw new IllegalStateException("MediaStore Downloads returned null URI");
+                    }
+                    copyFileToUri(tempPath, uri);
+                    cleanupTempFile(tempPath);
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                Intent send = new Intent(Intent.ACTION_SEND);
+                                send.setType(safeMime);
+                                send.putExtra(Intent.EXTRA_STREAM, uri);
+                                send.putExtra(Intent.EXTRA_SUBJECT, shareSubject);
+                                send.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                                startActivity(Intent.createChooser(send, "Partager"));
+                            } catch (Exception e) {
+                                Log.e(TAG, "Failed to open share chooser", e);
+                            }
+                        }
+                    });
+                } catch (Exception e) {
+                    Log.e(TAG, "Share via MediaStore failed, falling back to Save-As", e);
+                    saveFileWithPicker(tempPath, safeDisplay, safeMime);
+                }
+            }
+        }, "ergonote-share-file").start();
+    }
+
+    private void copyFileToUri(String srcPath, Uri destUri) throws Exception {
+        File src = new File(srcPath);
+        try (java.io.FileInputStream in = new java.io.FileInputStream(src);
+             java.io.OutputStream out = getContentResolver().openOutputStream(destUri, "w")) {
+            if (out == null) {
+                throw new IllegalStateException("openOutputStream returned null for " + destUri);
+            }
+            byte[] buf = new byte[16384];
+            int n;
+            while ((n = in.read(buf)) >= 0) {
+                if (n > 0) {
+                    out.write(buf, 0, n);
+                }
+            }
+        }
+    }
+
+    private static void cleanupTempFile(String path) {
+        if (path != null && !path.isEmpty()) {
+            try {
+                new File(path).delete();
+            } catch (Exception ignored) {
+            }
+        }
+    }
+
+    private String readUtf8FileAndDelete(String path) {
+        if (path == null || path.isEmpty()) {
+            return null;
+        }
+        try {
+            File file = new File(path);
+            java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
+            try (java.io.FileInputStream in = new java.io.FileInputStream(file)) {
+                byte[] buf = new byte[16384];
+                int n;
+                while ((n = in.read(buf)) >= 0) {
+                    if (n > 0) {
+                        out.write(buf, 0, n);
+                    }
+                }
+            }
+            return out.toString("UTF-8");
+        } catch (Exception e) {
+            Log.e(TAG, "Failed reading temporary export file: " + path, e);
+            return null;
+        } finally {
+            cleanupTempFile(path);
+        }
     }
 
     public void openExternalUrl(final String url) {
@@ -321,6 +532,34 @@ public class ErgoNoteActivity extends NativeActivity {
                     copyPickedUriToCache(shot);
                 }
             }, "ergonote-photo-copy").start();
+            return;
+        }
+        if (requestCode == REQ_SAVE_FILE) {
+            final String srcPath = pendingSaveSourcePath;
+            final String displayName = pendingSaveDisplayName != null ? pendingSaveDisplayName : "";
+            pendingSaveSourcePath = null;
+            pendingSaveDisplayName = null;
+            if (resultCode != RESULT_OK || data == null || data.getData() == null || srcPath == null) {
+                cleanupTempFile(srcPath);
+                nativeOnFileSaved(false, displayName);
+                return;
+            }
+            final Uri destUri = data.getData();
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        copyFileToUri(srcPath, destUri);
+                        String chosen = queryDisplayName(getContentResolver(), destUri);
+                        nativeOnFileSaved(true, (chosen != null && !chosen.isEmpty()) ? chosen : displayName);
+                    } catch (Exception e) {
+                        Log.e(TAG, "Failed writing saved URI", e);
+                        nativeOnFileSaved(false, displayName);
+                    } finally {
+                        cleanupTempFile(srcPath);
+                    }
+                }
+            }, "ergonote-save-copy").start();
             return;
         }
         if (requestCode != REQ_PICK_FILE) {

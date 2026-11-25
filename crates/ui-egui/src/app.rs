@@ -1284,6 +1284,15 @@ enum AndroidPickKind {
     BoardPhoto(PathBuf),
     Printout(PathBuf),
     File(PathBuf),
+    ImportZip,
+}
+
+/// Sanitizes a page title into a portable export file stem.
+fn export_safe_title(raw: &str) -> String {
+    let trimmed = if raw.trim().is_empty() { "Cours" } else { raw.trim() };
+    let safe: String = trimmed.chars().map(|c| if c.is_alphanumeric() || c == '-' || c == '_' { c } else { '-' }).collect();
+    let clean = safe.trim_matches('-');
+    if clean.is_empty() { "Cours".to_string() } else { clean.to_string() }
 }
 
 fn char_to_utf16(text: &str, char_idx: usize) -> usize {
@@ -1916,6 +1925,31 @@ impl ErgoNoteApp {
             AndroidPickKind::Printout(dir) => {
                 self.add_file(&dir, &file, FileChoice::Printout);
             }
+            AndroidPickKind::ImportZip => {
+                let root = self.session.root().to_path_buf();
+                match extract_notebooks_zip(&file, &root) {
+                    Ok(count) => {
+                        self.session.refresh();
+                        self.expand_all();
+                        self.backstage = None;
+                        self.say(format!("Récupération réussie ({count} fichiers restaurés) !"));
+                    }
+                    Err(err) => {
+                        self.status = format!("Impossible de récupérer la sauvegarde : {err}");
+                        self.status_is_error = true;
+                    }
+                }
+            }
+        }
+    }
+
+    /// Updates the status bar after an Android native Save-As picker finishes or is cancelled.
+    pub fn notify_android_save_result(&mut self, ok: bool, name: &str) {
+        if ok {
+            let label = if name.trim().is_empty() { "fichier" } else { name };
+            self.say(format!("Fichier enregistré : {label}"));
+        } else {
+            self.say("Enregistrement annulé.");
         }
     }
 
@@ -4775,8 +4809,7 @@ impl ErgoNoteApp {
         let ed = self.editor.as_ref().ok_or_else(|| "Ouvrez d'abord une page pour effectuer cette action.".to_string())?;
         let page_dir = ed.dir.clone();
         let raw_title = if ed.title.trim().is_empty() { "Cours".to_string() } else { ed.title.trim().to_string() };
-        let safe_title: String = raw_title.chars().map(|c| if c.is_alphanumeric() || c == '-' || c == '_' { c } else { '-' }).collect();
-        let safe_title = if safe_title.trim_matches('-').is_empty() { "Cours".to_string() } else { safe_title.trim_matches('-').to_string() };
+        let safe_title = export_safe_title(&raw_title);
         let arrangement = (ed.arranged && !ed.boxes.is_empty()).then_some(ed.boxes.as_slice());
         let html_body = ergonote_formats::boxes::write(ergonote_model::PageFormat::Html, &ed.blocks, arrangement)
             .replace("<p><img src=\"ink.svg\" alt=\"Ink\"></p>", "")
@@ -4914,7 +4947,30 @@ impl ErgoNoteApp {
         }
     }
 
+    fn push_file_download(&mut self, name: String, mime: &'static str, bytes: Vec<u8>) -> bool {
+        if let Some(downloads) = self.file_downloads.as_mut() {
+            downloads.push(FileDownload { name, mime, bytes });
+            true
+        } else {
+            false
+        }
+    }
+
     fn handle_share_pdf(&mut self) {
+        if self.file_downloads.is_some() {
+            match self.build_printable_page_html() {
+                Ok((_, safe_title, full_html)) => {
+                    self.push_file_download(format!("{safe_title}.html"), "application/x-ergonote-share-html", full_html.into_bytes());
+                    self.backstage = None;
+                    self.say("Ouverture du menu de partage…".to_string());
+                }
+                Err(e) => {
+                    self.status = e;
+                    self.status_is_error = true;
+                }
+            }
+            return;
+        }
         let share_dir = self.session.root().parent().unwrap_or(self.session.root()).join("Partages");
         let _ = std::fs::create_dir_all(&share_dir);
         match self.build_printable_page_html() {
@@ -4936,6 +4992,19 @@ impl ErgoNoteApp {
     }
 
     fn handle_share_email(&mut self) {
+        if self.file_downloads.is_some() {
+            if let Some(ed) = self.editor.as_ref() {
+                let safe_title = export_safe_title(&ed.title);
+                let body = ergonote_formats::render::blocks_to_markdown(&ed.blocks);
+                self.push_file_download(safe_title, "application/x-ergonote-share-text", body.into_bytes());
+                self.backstage = None;
+                self.say("Ouverture du menu de partage…".to_string());
+            } else {
+                self.status = "Ouvrez d'abord une page à partager.".to_string();
+                self.status_is_error = true;
+            }
+            return;
+        }
         let share_dir = self.session.root().parent().unwrap_or(self.session.root()).join("Partages");
         let _ = std::fs::create_dir_all(&share_dir);
         match self.build_printable_page_html() {
@@ -4972,7 +5041,17 @@ impl ErgoNoteApp {
 
     fn handle_export_page_pdf(&mut self) {
         match self.build_printable_page_html() {
-            Ok((html_path, safe_title, _)) => {
+            Ok((html_path, safe_title, full_html)) => {
+                if let Some(downloads) = self.file_downloads.as_mut() {
+                    downloads.push(FileDownload {
+                        name: format!("{safe_title}.pdf"),
+                        mime: "application/x-ergonote-print-pdf",
+                        bytes: full_html.into_bytes(),
+                    });
+                    self.backstage = None;
+                    self.say("Ouverture de l'enregistrement / impression PDF…".to_string());
+                    return;
+                }
                 if let Some(dest) = rfd::FileDialog::new()
                     .set_title("Exporter la page en PDF")
                     .set_file_name(format!("{safe_title}.pdf"))
@@ -4999,6 +5078,13 @@ impl ErgoNoteApp {
     fn handle_export_page_doc(&mut self) {
         match self.build_printable_page_html() {
             Ok((html_path, safe_title, full_html)) => {
+                if let Some(downloads) = self.file_downloads.as_mut() {
+                    let name = format!("{safe_title}.doc");
+                    downloads.push(FileDownload { name: name.clone(), mime: "application/msword", bytes: full_html.into_bytes() });
+                    self.backstage = None;
+                    self.say(format!("Enregistrement du document Word : {name}"));
+                    return;
+                }
                 if let Some(dest) = rfd::FileDialog::new()
                     .set_title("Exporter pour Word / LibreOffice")
                     .set_file_name(format!("{safe_title}.doc"))
@@ -5035,6 +5121,13 @@ impl ErgoNoteApp {
     fn handle_export_page_html(&mut self) {
         match self.build_printable_page_html() {
             Ok((_, safe_title, full_html)) => {
+                if let Some(downloads) = self.file_downloads.as_mut() {
+                    let name = format!("{safe_title}.html");
+                    downloads.push(FileDownload { name: name.clone(), mime: "text/html", bytes: full_html.into_bytes() });
+                    self.backstage = None;
+                    self.say(format!("Enregistrement de la page HTML : {name}"));
+                    return;
+                }
                 if let Some(dest) = rfd::FileDialog::new()
                     .set_title("Exporter la page en HTML")
                     .set_file_name(format!("{safe_title}.html"))
@@ -5101,25 +5194,35 @@ impl ErgoNoteApp {
 
     fn handle_import_zip(&mut self) -> Option<String> {
         self.save_now();
-        let root = self.session.root().to_path_buf();
-        if let Some(src) = rfd::FileDialog::new().set_title("Récupérer une sauvegarde (.zip)").add_filter("Archive ZIP", &["zip"]).pick_file() {
-            match extract_notebooks_zip(&src, &root) {
-                Ok(count) => {
-                    self.session.refresh();
-                    self.expand_all();
-                    self.backstage = None;
-                    let msg = format!("Récupération réussie ({count} fichiers restaurés) !");
-                    self.say(msg.clone());
-                    return Some(msg);
-                }
-                Err(err) => {
-                    self.status = format!("Impossible de récupérer la sauvegarde : {err}");
-                    self.status_is_error = true;
-                    return Some(self.status.clone());
+        #[cfg(target_os = "android")]
+        {
+            self.android_pick_pending = Some(AndroidPickKind::ImportZip);
+            self.android_pick_request = Some("application/zip".to_string());
+            self.backstage = None;
+            return None;
+        }
+        #[cfg(not(target_os = "android"))]
+        {
+            let root = self.session.root().to_path_buf();
+            if let Some(src) = rfd::FileDialog::new().set_title("Récupérer une sauvegarde (.zip)").add_filter("Archive ZIP", &["zip"]).pick_file() {
+                match extract_notebooks_zip(&src, &root) {
+                    Ok(count) => {
+                        self.session.refresh();
+                        self.expand_all();
+                        self.backstage = None;
+                        let msg = format!("Récupération réussie ({count} fichiers restaurés) !");
+                        self.say(msg.clone());
+                        return Some(msg);
+                    }
+                    Err(err) => {
+                        self.status = format!("Impossible de récupérer la sauvegarde : {err}");
+                        self.status_is_error = true;
+                        return Some(self.status.clone());
+                    }
                 }
             }
+            None
         }
-        None
     }
 
     fn recent_notebooks(&self) -> Vec<Node> {

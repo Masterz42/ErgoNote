@@ -62,7 +62,7 @@ mkdir -p "$WORK" "$DIST"
 if [[ "$SKIP_BUILD" == 0 ]]; then
     command -v cargo-ndk >/dev/null || { echo "missing cargo-ndk; run SKILLS/nc-devx/scripts/setup.android.sh" >&2; exit 1; }
     if [[ -z "${ANDROID_NDK_HOME:-}" ]]; then
-        NDK_VERSION="${ARTCRAFT_NDK_VERSION:-27.2.12479018}"
+        NDK_VERSION="${ARTCRAFT_NDK_VERSION:-28.2.13676358}"
         export ANDROID_NDK_HOME="$SDK/ndk/$NDK_VERSION"
     fi
     cargo ndk --target "$ABI" --platform "$MIN_SDK" build --release --locked -p ergonote-android
@@ -101,7 +101,7 @@ javac -Xlint:-options -source 8 -target 8 -bootclasspath "$PLATFORM" -d "$WORK/j
 # 4. The library goes in as lib/<abi>/, without its symbol table (a fifth of its size) and
 # deflated: the manifest leaves extractNativeLibs at its default, so Android unpacks it on install
 # and the download stays small. classes.dex goes in stored at the archive root.
-NDK_HOME="${ANDROID_NDK_HOME:-$SDK/ndk/${ARTCRAFT_NDK_VERSION:-27.2.12479018}}"
+NDK_HOME="${ANDROID_NDK_HOME:-$SDK/ndk/${ARTCRAFT_NDK_VERSION:-28.2.13676358}}"
 STRIP="$NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip"
 [[ -x "$STRIP" ]] || { echo "missing $STRIP; set ANDROID_NDK_HOME" >&2; exit 1; }
 mkdir -p "$WORK/apk/lib/$ABI"
