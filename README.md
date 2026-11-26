@@ -5,7 +5,7 @@
 **Cahier numérique scolaire adapté aux élèves TND**  
 *(DYS, TDAH, troubles du graphisme et des apprentissages — 100 % gratuit, hors ligne et sans pub)*
 
-[![Version](https://img.shields.io/badge/Version-v2026.11.25-2f5fb3?style=for-the-badge)](https://github.com/Masterz42/ErgoNote/releases/tag/v2026.11.25)
+[![Version](https://img.shields.io/badge/Version-v2026.11.26-2f5fb3?style=for-the-badge)](https://github.com/Masterz42/ErgoNote/releases/tag/v2026.11.26)
 [![Téléchargements](https://img.shields.io/github/downloads/Masterz42/ErgoNote/total?style=for-the-badge&label=T%C3%A9l%C3%A9chargements&color=2f5fb3)](https://github.com/Masterz42/ErgoNote/releases)
 [![Site officiel](https://img.shields.io/badge/Site-Pr%C3%A9sentation-16a34a?style=for-the-badge)](https://masterz42.github.io/ErgoNote/)
 [![Offrir un café](https://img.shields.io/badge/Soutien-Offrir%20un%20caf%C3%A9%20%E2%98%95-b45309?style=for-the-badge&logo=ko-fi&logoColor=white)](https://ko-fi.com/ergonote)
@@ -16,7 +16,7 @@
 
 ---
 
-## Aperçu en images (`v2026.11.25`)
+## Aperçu en images (`v2026.11.26`)
 
 <div align="center">
   <a href="https://masterz42.github.io/ErgoNote/" title="Ouvrir le site de présentation d'ErgoNote">
@@ -43,16 +43,17 @@
 
 ---
 
-## Téléchargement (`v2026.11.25`)
+## Téléchargement (`v2026.11.26`)
 
 | Plateforme | Téléchargement direct | Notes |
 |---|---|---|
-| **Windows (`x86_64`)** | [ErgoNote-v2026.11.25-Windows-x86_64.exe](https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v2026.11.25-Windows-x86_64.exe) | Exécutable autonome pour PC scolaire |
-| **Android (Smartphone & Tablette)** | [ErgoNote-v2026.11.25-Android.apk](https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v2026.11.25-Android.apk) | Signé `v1+v2+v3` (compatible tablettes Lenovo) |
-| **Linux (`x86_64`)** | [Paquet `.deb`](https://github.com/Masterz42/ErgoNote/releases/latest/download/ergonote_2026.11.25_amd64.deb) · [Archive `.tar.gz`](https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v2026.11.25-Linux-x86_64.tar.gz) · [Binaire natif](https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v2026.11.25-Linux-x86_64) | Paquet Ubuntu/Debian, portable ou exécutable direct |
+| **Windows (`x86_64`)** | [ErgoNote-v2026.11.26-Windows-x86_64.exe](https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v2026.11.26-Windows-x86_64.exe) | Exécutable autonome pour PC scolaire |
+| **macOS (`Apple Silicon`)** | [ErgoNote-v2026.11.26-macOS-arm64.dmg](https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v2026.11.26-macOS-arm64.dmg) | Glisser dans Applications · 1er lancement : clic droit → *Ouvrir* |
+| **Android (Smartphone & Tablette)** | [ErgoNote-v2026.11.26-Android.apk](https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v2026.11.26-Android.apk) | Signé `v1+v2+v3` + Scanner ML Kit + OCR embarqué |
+| **Linux (`x86_64`)** | [Paquet `.deb`](https://github.com/Masterz42/ErgoNote/releases/latest/download/ergonote_2026.11.26_amd64.deb) · [Archive `.tar.gz`](https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v2026.11.26-Linux-x86_64.tar.gz) · [Binaire natif](https://github.com/Masterz42/ErgoNote/releases/latest/download/ErgoNote-v2026.11.26-Linux-x86_64) | Paquet Ubuntu/Debian, portable ou exécutable direct |
 
 <details>
-<summary><b>Versions précédentes (3 dernières conservées : v2026.11.24, v1.7.2, v1.7.1)</b></summary>
+<summary><b>Versions précédentes (3 dernières conservées : v2026.11.25, v2026.11.24, v1.7.2)</b></summary>
 
 <br/>
 
@@ -60,9 +61,9 @@ ErgoNote conserve les **3 versions précédentes** en téléchargement direct po
 
 | Version | Date | Windows (`x86_64`) | Linux (`x86_64`) | Android (`.apk`) | Notes |
 |---|---|---|---|---|---|
+| **`v2026.11.25`** | 25/11/2026 | [Windows .exe](https://github.com/Masterz42/ErgoNote/releases/download/v2026.11.25/ErgoNote-v2026.11.25-Windows-x86_64.exe) | [.deb](https://github.com/Masterz42/ErgoNote/releases/download/v2026.11.25/ergonote_2026.11.25_amd64.deb) · [.tar.gz](https://github.com/Masterz42/ErgoNote/releases/download/v2026.11.25/ErgoNote-v2026.11.25-Linux-x86_64.tar.gz) · [binaire](https://github.com/Masterz42/ErgoNote/releases/download/v2026.11.25/ErgoNote-v2026.11.25-Linux-x86_64) | [Android .apk](https://github.com/Masterz42/ErgoNote/releases/download/v2026.11.25/ErgoNote-v2026.11.25-Android.apk) | [v2026.11.25](https://github.com/Masterz42/ErgoNote/releases/tag/v2026.11.25) |
 | **`v2026.11.24`** | 24/11/2026 | [Windows .exe](https://github.com/Masterz42/ErgoNote/releases/download/v2026.11.24/ErgoNote-v2026.11.24-Windows-x86_64.exe) | [.deb](https://github.com/Masterz42/ErgoNote/releases/download/v2026.11.24/ergonote_2026.11.24_amd64.deb) · [.tar.gz](https://github.com/Masterz42/ErgoNote/releases/download/v2026.11.24/ErgoNote-v2026.11.24-Linux-x86_64.tar.gz) · [binaire](https://github.com/Masterz42/ErgoNote/releases/download/v2026.11.24/ErgoNote-v2026.11.24-Linux-x86_64) | [Android .apk](https://github.com/Masterz42/ErgoNote/releases/download/v2026.11.24/ErgoNote-v2026.11.24-Android.apk) | [v2026.11.24](https://github.com/Masterz42/ErgoNote/releases/tag/v2026.11.24) |
 | **`v1.7.2`** | 23/11/2026 | [Windows .exe](https://github.com/Masterz42/ErgoNote/releases/download/v1.7.2/ErgoNote-v1.7.2-Windows-x86_64.exe) | [.deb](https://github.com/Masterz42/ErgoNote/releases/download/v1.7.2/ergonote_1.7.2_amd64.deb) · [.tar.gz](https://github.com/Masterz42/ErgoNote/releases/download/v1.7.2/ErgoNote-v1.7.2-Linux-x86_64.tar.gz) · [binaire](https://github.com/Masterz42/ErgoNote/releases/download/v1.7.2/ErgoNote-v1.7.2-Linux-x86_64) | [Android .apk](https://github.com/Masterz42/ErgoNote/releases/download/v1.7.2/ErgoNote-v1.7.2-Android.apk) | [v1.7.2](https://github.com/Masterz42/ErgoNote/releases/tag/v1.7.2) |
-| **`v1.7.1`** | 23/11/2026 | [Windows .exe](https://github.com/Masterz42/ErgoNote/releases/download/v1.7.1/ErgoNote-v1.7.1-Windows-x86_64.exe) | [.deb](https://github.com/Masterz42/ErgoNote/releases/download/v1.7.1/ergonote_1.7.1_amd64.deb) · [.tar.gz](https://github.com/Masterz42/ErgoNote/releases/download/v1.7.1/ErgoNote-v1.7.1-Linux-x86_64.tar.gz) · [binaire](https://github.com/Masterz42/ErgoNote/releases/download/v1.7.1/ErgoNote-v1.7.1-Linux-x86_64) | [Android .apk](https://github.com/Masterz42/ErgoNote/releases/download/v1.7.1/ErgoNote-v1.7.1-Android.apk) | [v1.7.1](https://github.com/Masterz42/ErgoNote/releases/tag/v1.7.1) |
 
 > **Astuce Android / Tablette Lenovo** : autorisez *Installer des applis inconnues* pour votre navigateur ou gestionnaire de fichiers ; si *Google Play Protect* affiche un avertissement « Appli non reconnue », touchez **Plus de détails → Installer quand même**. Pour revenir vers une version plus ancienne, exportez d'abord vos classeurs en `.zip` puis désinstallez l'application.
 
@@ -97,15 +98,17 @@ Conçu pour remplacer les interfaces surchargées par un **classeur numérique c
 
 ---
 
-## Nouveautés `v2026.11.25`
+## Nouveautés `v2026.11.26`
 
-- **Onglet contextuel `Image` et retouche directe** : rognage interactif, filtres **Scan N&B** et **Contraste**, rotations/retournements, et verrouillage des images déplacé depuis *Aide TND*.
-- **Extraction PDF & OCR français structurée** : extraction PDF native 100 % accents via Poppler et **PaddleOCR (`oar-ocr`)** pour les scans/photos, avec modes **« Recréer la page modifiable »** (titres H1/H2, puces à 2 niveaux, amorces en gras) et **« Copie fidèle sur fond nettoyé »**.
-- **Ruban `Tableau` compact & suppression directe** : 3 groupes alignés, sélecteur couleur avec pastilles, bouton rouge `×` / clic droit *Supprimer le tableau* avec confirmation, et adaptation automatique des largeurs à la feuille.
-- **Ergonomie & Android** : clic hors feuille sans créer de zone parasite, retrait du nom PDF au-dessus des pages importées, effacement propre de la dernière lettre, `Ctrl+Z` complet après OCR/PDF, et **APK signé `v1+v2+v3` compatible tablettes Lenovo**.
+- **Version macOS (Apple Silicon `.dmg`)** : première distribution directe pour Mac (`ErgoNote.app` native Metal + CoreML).
+- **Scanner intelligent & OCR Google ML Kit sur Android** : le bouton *Photo* détecte automatiquement les 4 coins d'une feuille, redresse la perspective et nettoie les ombres ; l'OCR texte est embarqué 100 % hors ligne (`ML Kit Text Recognition`).
+- **Rognage tactile direct sur l'image** : 8 poignées tactiles directement sur l'image, sans fenêtre modale gênante sur téléphone.
+- **Compteur de mots dynamique & zone de texte directe** : affiche les mots de la page en bas et se met à jour en temps réel sur les mots sélectionnés (`X mots sélectionnés / Y`) ; créer une zone de texte place immédiatement le curseur sans texte à effacer.
 
 <details>
-<summary><b>Historique complet (v1.0 à v2026.11.24)</b></summary>
+<summary><b>Historique complet (v1.0 à v2026.11.25)</b></summary>
+
+- **`v2026.11.25` (25/11/2026)** : onglet contextuel `Image`, extraction PDF Poppler & PaddleOCR (`oar-ocr`), ruban `Tableau` compact avec suppression directe, export PDF/HTML/DOC, sauvegarde `.zip` et partage natifs Android.
 
 - **`v2026.11.24` (24/11/2026)** : nomenclature CalVer `AAAA.MM.JJ`, recherche latérale style Word (`Ctrl+F`), thème sombre complet sur la feuille, barre smartphone revue avec disquette en haut.
 
