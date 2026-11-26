@@ -158,6 +158,59 @@ pub(crate) fn stop_tts(app: &AndroidApp) {
     });
 }
 
+pub(crate) fn run_mlkit_ocr(app: &AndroidApp, tmp_dir: &std::path::Path, image_bytes: &[u8]) -> Result<ergonote_ui_egui::ocr::OcrDocument, String> {
+    let raw_vm = app.vm_as_ptr();
+    let raw_act = app.activity_as_ptr();
+    if raw_vm.is_null() || raw_act.is_null() {
+        return Err("Activité Android indisponible pour Google ML Kit.".to_string());
+    }
+    let _ = std::fs::create_dir_all(tmp_dir);
+    let stamp = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_nanos()).unwrap_or(0);
+    let tmp_img = tmp_dir.join(format!("mlkit_ocr_{stamp}.img"));
+    std::fs::write(&tmp_img, image_bytes).map_err(|e| format!("Écriture image temporaire OCR : {e}"))?;
+    let path_str = tmp_img.to_string_lossy().into_owned();
+
+    let vm = unsafe { JavaVM::from_raw(raw_vm.cast()) };
+    let call_res: Result<String, String> = vm
+        .attach_current_thread(|env| -> jni::errors::Result<String> {
+            let activity = unsafe { JObject::from_raw(env, raw_act.cast()) };
+            let jpath = JString::from_str(env, &path_str)?;
+            let ret = env
+                .call_method(&activity, jni_str!("runMlKitOcr"), jni_sig!("(Ljava/lang/String;)Ljava/lang/String;"), &[JValue::Object(&jpath)])?
+                .l()?;
+            if ret.is_null() {
+                return Ok("ERR|Réponse vide de Google ML Kit".to_string());
+            }
+            let jstr = env.cast_local::<JString>(ret)?;
+            jstr.try_to_string(env)
+        })
+        .map_err(|e| format!("Appel JNI Google ML Kit échoué : {e}"));
+    let _ = std::fs::remove_file(&tmp_img);
+
+    let payload = call_res?;
+    let mut iter = payload.lines();
+    let header = iter.next().ok_or_else(|| "Réponse ML Kit invalide.".to_string())?;
+    if let Some(err) = header.strip_prefix("ERR|") {
+        return Err(err.to_string());
+    }
+    let dims = header.strip_prefix("OK|").ok_or_else(|| "En-tête ML Kit invalide.".to_string())?;
+    let (w_str, h_str) = dims.split_once('|').ok_or_else(|| "Dimensions ML Kit invalides.".to_string())?;
+    let img_w: f32 = w_str.parse().map_err(|_| "Largeur ML Kit invalide.".to_string())?;
+    let img_h: f32 = h_str.parse().map_err(|_| "Hauteur ML Kit invalide.".to_string())?;
+
+    let mut lines = Vec::new();
+    for row in iter {
+        let mut cols = row.splitn(5, '\t');
+        let (Some(x0), Some(y0), Some(x1), Some(y1), Some(text)) = (cols.next(), cols.next(), cols.next(), cols.next(), cols.next()) else {
+            continue;
+        };
+        if let (Ok(x0), Ok(y0), Ok(x1), Ok(y1)) = (x0.parse::<f32>(), y0.parse::<f32>(), x1.parse::<f32>(), y1.parse::<f32>()) {
+            lines.push((x0, y0, x1, y1, text.to_string()));
+        }
+    }
+    ergonote_ui_egui::ocr::document_from_lines("Google ML Kit (Français)", img_w, img_h, lines)
+}
+
 pub(crate) fn sync_ime_state(
     app: &AndroidApp,
     sync_gen: i64,

@@ -14,7 +14,7 @@
 
 // Android has no `arboard`: a stand-in under the same name says the clipboard is not
 // connected there (see clipboard.android.rs).
-#[cfg(any(target_os = "android", target_arch = "wasm32"))]
+#[cfg(any(target_os = "android", target_os = "ios", target_arch = "wasm32"))]
 #[path = "clipboard.android.rs"]
 mod arboard;
 

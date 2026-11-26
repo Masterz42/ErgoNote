@@ -6,7 +6,7 @@
 use crate::backstage;
 use crate::control::{ControlRequest, ControlServer, base64};
 // The file dialogs: `rfd` everywhere it has a backend, and a stand-in on Android and Web that says so.
-#[cfg(any(target_os = "android", target_arch = "wasm32"))]
+#[cfg(any(target_os = "android", target_os = "ios", target_arch = "wasm32"))]
 use crate::filepicker as rfd;
 use crate::floating;
 use crate::icons::{self, Icon};
@@ -1129,13 +1129,6 @@ enum Dialog {
     DeleteTable {
         block: usize,
     },
-    CropPicture {
-        block: usize,
-        src: String,
-        bytes: Vec<u8>,
-        dims: (u32, u32),
-        rect: [f32; 4],
-    },
     OcrResult {
         block: usize,
         doc: crate::ocr::OcrDocument,
@@ -1313,6 +1306,17 @@ fn utf16_to_char(text: &str, utf16_idx: usize) -> usize {
     chars
 }
 
+#[derive(Clone)]
+struct InlineCropState {
+    page_dir: PathBuf,
+    block: usize,
+    src: String,
+    bytes: Vec<u8>,
+    dims: (u32, u32),
+    rect: [f32; 4],
+    sync_pending: bool,
+}
+
 pub struct ErgoNoteApp {
     session: Session,
     /// Writes autosaves off the window's thread (see [`crate::saver`]).
@@ -1385,6 +1389,7 @@ pub struct ErgoNoteApp {
     ocr_job: Option<Receiver<OcrDone>>,
     selected_image_block: Option<usize>,
     last_selected_image: Option<usize>,
+    inline_crop: Option<InlineCropState>,
     status: String,
     status_is_error: bool,
     /// The host keeps notebook files only for this session, rather than on durable storage.
@@ -1658,6 +1663,7 @@ impl ErgoNoteApp {
             ocr_job: None,
             selected_image_block: None,
             last_selected_image: None,
+            inline_crop: None,
             status: crate::tl_id!("ui.ready_2").into(),
             status_is_error: false,
             session_only_storage: false,
@@ -5621,6 +5627,7 @@ impl ErgoNoteApp {
             nib: self.nib,
             in_table: self.caret_in_table(),
             has_image: self.page_has_image(),
+            image_cropping: self.inline_crop.is_some(),
             ocr_busy: self.ocr_job.is_some(),
             space_tool: self.space_tool,
             textbox_tool: self.textbox_tool,
@@ -6304,6 +6311,9 @@ impl ErgoNoteApp {
             ribbon::Act::SavePictureAs(src) => self.save_picture_as(&src),
             ribbon::Act::TurnPicture(src, how) => self.turn_picture(&src, how),
             ribbon::Act::CropPicture => self.open_crop_picture(),
+            ribbon::Act::ApplyCrop => self.apply_inline_crop(),
+            ribbon::Act::ResetCrop => self.reset_inline_crop(),
+            ribbon::Act::CancelCrop => self.cancel_inline_crop(),
             ribbon::Act::TurnSelectedPicture(how) => {
                 if let Some((_, src)) = self.active_image_target() {
                     self.turn_picture(&src, how);
@@ -6337,22 +6347,20 @@ impl ErgoNoteApp {
     fn place_textbox_at(&mut self, x: f32, y: f32) {
         let Some(ed) = self.editor.as_mut() else { return };
         Self::remember_step(ed);
-        let starter = crate::tl_id!("ui.student_textbox_label").replace('\n', " ");
-        let starter_len = starter.chars().count();
         let block_idx = ed.blocks.len();
-        ed.blocks.push(ergonote_formats::Block::Paragraph(vec![ergonote_formats::Span { text: starter.clone(), ..Default::default() }]));
+        ed.blocks.push(ergonote_formats::Block::Paragraph(Vec::new()));
         ed.boxes.push(ergonote_model::Container { x: x.max(0.0), y: y.max(0.0), width: 260.0, blocks: 1 });
         ed.caret = Some(pageedit::Caret {
             block: block_idx,
-            text: starter,
+            text: String::new(),
             focus: true,
-            selection: (0, starter_len),
-            place: None,
+            selection: (0, 0),
+            place: Some(0),
             cell: None,
             span: None,
             inline: None,
         });
-        ed.restore_format_selection = Some((block_idx, 0, starter_len));
+        ed.restore_format_selection = None;
         ed.arranged = true;
         ed.rebuild_body();
         Self::mark_dirty_from_blocks(ed);
@@ -7754,7 +7762,27 @@ impl ErgoNoteApp {
             self.complain("Ce format d'image ne peut pas être rogné ici.");
             return;
         };
-        self.dialog = Some(Dialog::CropPicture { block, src, bytes, dims, rect: [0.0, 0.0, 1.0, 1.0] });
+        self.selected_image_block = Some(block);
+        self.inline_crop =
+            Some(InlineCropState { page_dir: ed.dir.clone(), block, src, bytes, dims, rect: [0.0, 0.0, 1.0, 1.0], sync_pending: true });
+        self.say("Déplacez les poignées bleues directement sur l'image puis validez.");
+    }
+
+    fn apply_inline_crop(&mut self) {
+        let Some(crop) = self.inline_crop.take() else { return };
+        self.apply_crop_picture(crop.block, &crop.src, &crop.bytes, crop.rect);
+    }
+
+    fn reset_inline_crop(&mut self) {
+        if let Some(crop) = self.inline_crop.as_mut() {
+            crop.rect = [0.0, 0.0, 1.0, 1.0];
+            crop.sync_pending = true;
+        }
+    }
+
+    fn cancel_inline_crop(&mut self) {
+        self.inline_crop = None;
+        self.say("Rognage annulé.");
     }
 
     fn apply_crop_picture(&mut self, block: usize, src: &str, bytes: &[u8], rect: [f32; 4]) {
@@ -7866,6 +7894,7 @@ impl ErgoNoteApp {
         }
     }
 
+    #[allow(dead_code)]
     fn reconstruct_page_from_ocr(&mut self, block_idx: usize, doc: &crate::ocr::OcrDocument, keep_image_bg: bool) {
         use ergonote_formats::markdown::{Block, Span};
         use ergonote_model::container;
@@ -7880,30 +7909,131 @@ impl ErgoNoteApp {
             step.lock_images = Some(prev_locked);
         }
 
+        let target_paper = ed.paper_size.unwrap_or_else(|| ergonote_model::paper::Paper {
+            landscape: doc.aspect_ratio < 0.95,
+            ..ergonote_model::paper::Paper::new(ergonote_model::paper::Size::A4)
+        });
+        let target_sheet = crate::paper::Sheet::of(target_paper, 1.0);
+        let a4_col_w = target_sheet.column().max(420.0);
         let explicit_img_w = ed.blocks.get(block_idx).and_then(|b| match b {
             Block::Image { width: Some(w), .. } if w.is_finite() => Some(*w),
             _ => None,
         });
-        let (origin_x, origin_y, box_w) = container::place(&ed.boxes, block_idx)
-            .and_then(|(owner, _)| ed.boxes.get(owner))
-            .map(|c| (c.x, c.y, c.width.max(420.0)))
-            .unwrap_or((0.0, 0.0, 700.0));
-        let target_w = explicit_img_w.unwrap_or(box_w).max(420.0);
-        let target_h = (target_w * doc.aspect_ratio).max(240.0);
+
+        let mut set_a4_paper: Option<ergonote_model::paper::Paper> = None;
+        if keep_image_bg && ed.paper_size.is_none() {
+            ed.paper_size = Some(target_paper);
+            set_a4_paper = Some(target_paper);
+        }
 
         let mut cols_changed = false;
         let mut just_changed = false;
+        let mut work_block_idx = block_idx;
+        if keep_image_bg && work_block_idx < ed.blocks.len() && Self::is_user_image_block(&ed.blocks[work_block_idx]).is_some() {
+            // Give the background image its own container; drop leading blank lines or place onto a fresh A4 sheet.
+            if ed.boxes.is_empty() {
+                ed.boxes.push(ergonote_model::Container::new(0.0, 0.0, a4_col_w, ed.blocks.len()));
+            }
+            while work_block_idx > 0
+                && matches!(
+                    ed.blocks.get(work_block_idx - 1),
+                    Some(Block::Paragraph(spans)) if spans.iter().all(|s| s.text.trim().is_empty())
+                )
+                && let Some((owner, _)) = container::place(&ed.boxes, work_block_idx)
+                && let Some((prev_owner, _)) = container::place(&ed.boxes, work_block_idx - 1)
+                && (prev_owner == owner || ed.boxes[prev_owner].blocks == 1)
+            {
+                let rm = work_block_idx - 1;
+                ed.blocks.remove(rm);
+                cols_changed |= ed.columns.remove_blocks(rm..rm + 1);
+                just_changed |= ed.justified.remove_blocks(rm..rm + 1);
+                ed.boxes[prev_owner].blocks = ed.boxes[prev_owner].blocks.saturating_sub(1);
+                if ed.boxes[prev_owner].blocks == 0 {
+                    ed.boxes.remove(prev_owner);
+                }
+                work_block_idx -= 1;
+            }
+            let only_stamp_before = work_block_idx == 0 || (work_block_idx == 1 && pageedit::is_page_stamp(&ed.blocks, 0));
+            let doc_aspect = doc.aspect_ratio.max(0.25);
+            if let Some((owner, offset)) = container::place(&ed.boxes, work_block_idx) {
+                let sheet_h = target_sheet.size.y.max(400.0);
+                // Measure only preceding content, never `ed.content_bottom` (which includes this printout).
+                let mut preceding_bottom = 0.0_f32;
+                if !only_stamp_before {
+                    for ci in 0..=owner {
+                        let c = ed.boxes[ci];
+                        let r = container::blocks_of(&ed.boxes, ci);
+                        let end = if ci == owner { work_block_idx } else { r.end };
+                        if end <= r.start {
+                            continue;
+                        }
+                        let mut est_h = 20.0_f32;
+                        for bi in r.start..end {
+                            est_h += match ed.blocks.get(bi) {
+                                Some(Block::Image { height: Some(h), .. }) => *h + 24.0,
+                                Some(Block::Image { width: Some(w), .. }) => *w * 1.2 + 24.0,
+                                Some(Block::Image { .. }) => 260.0,
+                                _ => 26.0,
+                            };
+                        }
+                        preceding_bottom = preceding_bottom.max(c.y + est_h);
+                    }
+                }
+                let bg_y = if only_stamp_before {
+                    if work_block_idx == 0 { 0.0 } else { 20.0 }
+                } else {
+                    (preceding_bottom.max(40.0) / sheet_h).ceil().max(1.0) * sheet_h
+                };
+                let max_bg_h = if only_stamp_before { (sheet_h - bg_y - 115.0).max(480.0) } else { (sheet_h - 96.0).max(480.0) };
+                let fit_w = explicit_img_w.unwrap_or(a4_col_w).min(a4_col_w).min(max_bg_h / doc_aspect).max(380.0);
+                let fit_h = (fit_w * doc_aspect).max(240.0);
+
+                let total = ed.boxes[owner].blocks;
+                let tail_after = total.saturating_sub(offset + 1);
+                if offset > 0 {
+                    ed.boxes[owner].blocks = offset;
+                    ed.boxes.insert(owner + 1, ergonote_model::Container::new(0.0, bg_y, fit_w, 1));
+                    if tail_after > 0 {
+                        ed.boxes.insert(owner + 2, ergonote_model::Container::new(0.0, bg_y + fit_h + 32.0, a4_col_w, tail_after));
+                    }
+                } else {
+                    ed.boxes[owner].x = 0.0;
+                    ed.boxes[owner].y = bg_y;
+                    ed.boxes[owner].width = fit_w;
+                    if tail_after > 0 {
+                        ed.boxes[owner].blocks = 1;
+                        ed.boxes.insert(owner + 1, ergonote_model::Container::new(0.0, bg_y + fit_h + 32.0, a4_col_w, tail_after));
+                    }
+                }
+            }
+        }
+
+        let (origin_x, origin_y, box_w) = container::place(&ed.boxes, work_block_idx)
+            .and_then(|(owner, _)| ed.boxes.get(owner))
+            .map(|c| (c.x, c.y, c.width.max(380.0)))
+            .unwrap_or((0.0, 0.0, a4_col_w));
+        let sheet_h = target_sheet.size.y.max(400.0);
+        let y_in_sheet = origin_y % sheet_h;
+        let max_bg_h = if y_in_sheet > 1.0 { (sheet_h - y_in_sheet - 115.0).max(480.0) } else { (sheet_h - 96.0).max(480.0) };
+        let target_w = if keep_image_bg {
+            box_w.min(a4_col_w).min(max_bg_h / doc.aspect_ratio.max(0.25)).max(380.0)
+        } else {
+            explicit_img_w.unwrap_or(box_w).max(420.0)
+        };
+        let target_h = (target_w * doc.aspect_ratio).max(240.0);
+
         if keep_image_bg
-            && block_idx < ed.blocks.len()
-            && let Some(orig_src) = Self::is_user_image_block(&ed.blocks[block_idx]).map(str::to_string)
+            && work_block_idx < ed.blocks.len()
+            && let Some(orig_src) = Self::is_user_image_block(&ed.blocks[work_block_idx]).map(str::to_string)
         {
             let dir = ed.dir.clone();
-            let regions: Vec<(f32, f32, f32, f32)> = doc.blocks.iter().map(|b| (b.x, b.y, b.width, b.height)).collect();
+            let regions: Vec<(f32, f32, f32, f32)> =
+                doc.blocks.iter().filter(|b| b.font_scale >= 0.72).map(|b| (b.x, b.y, b.width, b.height)).collect();
             if let Ok((_, _, orig_bytes)) = crate::imagemenu::validate_and_read_image(&dir, &orig_src)
                 && let Ok(cleaned) = crate::turn::erase_text_regions(&orig_bytes, &regions)
                 && let Ok(bg_link) = ergonote_store::assets::attach_bytes(&dir, &crate::turn::edited_name(&orig_src, "bg", "png"), &cleaned)
             {
-                if let Some(Block::Image { src, width, height, .. }) = ed.blocks.get_mut(block_idx) {
+                if let Some(Block::Image { src, width, height, .. }) = ed.blocks.get_mut(work_block_idx) {
                     *src = bg_link;
                     *width = Some(target_w);
                     *height = Some(target_h);
@@ -7912,12 +8042,16 @@ impl ErgoNoteApp {
             }
             if ed.boxes.is_empty() && !ed.blocks.is_empty() {
                 ed.boxes.push(ergonote_model::Container::new(0.0, 0.0, target_w, ed.blocks.len()));
+            } else if let Some((owner, _)) = container::place(&ed.boxes, work_block_idx)
+                && let Some(bg_box) = ed.boxes.get_mut(owner)
+            {
+                bg_box.width = target_w;
             }
-        } else if !keep_image_bg && block_idx < ed.blocks.len() && Self::is_user_image_block(&ed.blocks[block_idx]).is_some() {
-            ed.blocks.remove(block_idx);
-            cols_changed |= ed.columns.remove_blocks(block_idx..block_idx + 1);
-            just_changed |= ed.justified.remove_blocks(block_idx..block_idx + 1);
-            if let Some((owner, _)) = container::place(&ed.boxes, block_idx) {
+        } else if !keep_image_bg && work_block_idx < ed.blocks.len() && Self::is_user_image_block(&ed.blocks[work_block_idx]).is_some() {
+            ed.blocks.remove(work_block_idx);
+            cols_changed |= ed.columns.remove_blocks(work_block_idx..work_block_idx + 1);
+            just_changed |= ed.justified.remove_blocks(work_block_idx..work_block_idx + 1);
+            if let Some((owner, _)) = container::place(&ed.boxes, work_block_idx) {
                 if ed.boxes[owner].blocks <= 1 {
                     ed.boxes.remove(owner);
                 } else {
@@ -7951,7 +8085,7 @@ impl ErgoNoteApp {
         }
 
         let first_new_block = ed.blocks.len();
-        let single_container = !keep_image_bg && doc.is_single_column();
+        let single_container = doc.is_single_column();
         let mut total_single_count = 0_usize;
         let mut placed_rects: Vec<(f32, f32, f32, f32)> = Vec::new();
         for blk in &doc.blocks {
@@ -7986,31 +8120,59 @@ impl ErgoNoteApp {
             if single_container {
                 total_single_count += count;
             } else {
-                // Align overlaid boxes with the background image rectangle (containers have 6px pad and 14px handle).
-                let pad_off = if keep_image_bg { 6.0 } else { 0.0 };
-                let handle_off = if keep_image_bg { 14.0 } else { 0.0 };
-                let box_x = if blk.x.is_finite() { (origin_x + blk.x * target_w - pad_off).max(0.0) } else { origin_x.max(0.0) };
-                let mut box_y = if blk.y.is_finite() { (origin_y + blk.y * target_h - handle_off).max(0.0) } else { origin_y.max(0.0) };
-                let raw_w = if blk.width.is_finite() { blk.width * target_w + if keep_image_bg { 18.0 } else { 0.0 } } else { 240.0 };
-                let box_w = raw_w.clamp(140.0_f32.min(target_w), target_w.max(140.0));
-                let est_h = (blk.height.max(0.02) * target_h).max(count as f32 * 20.0);
+                let mut box_x = if blk.x.is_finite() { (origin_x + blk.x * target_w).max(0.0) } else { origin_x.max(0.0) };
+                let mut box_y = if blk.y.is_finite() { (origin_y + blk.y * target_h).max(0.0) } else { origin_y.max(0.0) };
+                let right_limit = origin_x.max(0.0) + target_w;
+                let avail_from_x = (right_limit - box_x).max(140.0);
+                let char_px = if is_heading { 12.5 } else { 7.8 };
+                let max_chars = blk.lines.iter().map(|l| l.chars().count()).max().unwrap_or(1) as f32;
+                let min_line_w = max_chars * char_px + 24.0;
+                let desired_w = (if blk.width.is_finite() { blk.width * target_w * 1.15 + 20.0 } else { 240.0 }).max(min_line_w);
+                let box_w = if blk.x > 0.50 {
+                    let max_w = target_w.max(180.0);
+                    let clamped = desired_w.clamp(140.0_f32.min(max_w), max_w);
+                    if box_x + clamped > right_limit {
+                        box_x = (right_limit - clamped).max(0.0);
+                    }
+                    clamped
+                } else {
+                    desired_w.clamp(140.0_f32.min(avail_from_x), avail_from_x)
+                };
+                let inner_w = (box_w - 16.0).max(80.0);
+                let wrapped_lines: f32 = blk.lines.iter().map(|l| ((l.chars().count() as f32 * char_px) / inner_w).ceil().max(1.0)).sum();
+                let line_h = if is_heading { 30.0 } else { 21.0 };
+                let est_h = (blk.height * target_h).max(wrapped_lines * line_h + 12.0);
                 for &(px, py, pw, ph) in &placed_rects {
-                    if box_x < px + pw && box_x + box_w > px && box_y >= py && box_y < py + ph {
+                    if box_x < px + pw + 6.0 && box_x + box_w > px && box_y < py + ph + 4.0 && box_y + est_h > py {
                         box_y = py + ph + 4.0;
                     }
+                }
+                if keep_image_bg {
+                    box_y = box_y.min(origin_y.max(0.0) + target_h - 32.0).max(origin_y.max(0.0));
                 }
                 placed_rects.push((box_x, box_y, box_w, est_h));
                 ed.boxes.push(ergonote_model::Container::new(box_x, box_y, box_w, count));
             }
         }
         if single_container && total_single_count > 0 {
-            ed.boxes.push(ergonote_model::Container::new(origin_x.max(0.0), origin_y.max(0.0), target_w, total_single_count));
+            if keep_image_bg {
+                let min_x = doc.blocks.iter().map(|b| b.x).fold(0.08_f32, f32::min).clamp(0.0, 0.35);
+                let min_y = doc.blocks.iter().map(|b| b.y).fold(0.05_f32, f32::min).clamp(0.0, 0.35);
+                let sc_x = origin_x.max(0.0) + min_x * target_w;
+                let sc_y = origin_y.max(0.0) + min_y * target_h;
+                let sc_w = (target_w * (1.0 - min_x * 1.4)).clamp(260.0, target_w);
+                ed.boxes.push(ergonote_model::Container::new(sc_x, sc_y, sc_w, total_single_count));
+            } else {
+                ed.boxes.push(ergonote_model::Container::new(origin_x.max(0.0), origin_y.max(0.0), target_w, total_single_count));
+            }
         }
 
         ed.arranged = true;
         pageedit::renumber(&mut ed.blocks);
         ed.rebuild_body();
-        if let Some(first) = ed.blocks.get(first_new_block) {
+        if keep_image_bg {
+            ed.caret = None;
+        } else if let Some(first) = ed.blocks.get(first_new_block) {
             let caret_text = pageedit::caret_text(first);
             ed.caret = Some(pageedit::Caret {
                 block: first_new_block,
@@ -8033,9 +8195,15 @@ impl ErgoNoteApp {
         if let Some(step) = ed.history.here_mut() {
             step.lock_images = Some(new_locked);
         }
+        let ed_dir = ed.dir.clone();
         self.selected_image_block = None;
         self.last_selected_image = None;
         self.save_block_marks((cols_changed, just_changed));
+        if let Some(paper) = set_a4_paper {
+            let path = path_str(&ed_dir);
+            let line = paper.write();
+            self.run("page.paper_size", &params(&[("path", &path), ("size", &line)]));
+        }
         self.say(format!("{} zone(s) modifiable(s) créée(s) ({}).", doc.blocks.len(), doc.source_label));
     }
 
@@ -10336,9 +10504,9 @@ impl ErgoNoteApp {
             } else {
                 let ink_owns_canvas = self.pointer != ribbon::Pointer::Write;
                 let touch_nav = pageedit::touch_navigation(ui.ctx());
-                let dragging_handle = pageedit::is_dragging_selection_handle(ui.ctx());
+                let dragging_handle = pageedit::is_dragging_selection_handle(ui.ctx()) || crate::containers::is_crop_drag_active(ui.ctx());
                 let scroll = egui::containers::scroll_area::ScrollSource {
-                    drag: if ink_owns_canvas || dragging_handle {
+                    drag: if ink_owns_canvas || dragging_handle || self.inline_crop.is_some() {
                         egui::containers::scroll_area::DragScroll::Never
                     } else if touch_nav {
                         egui::containers::scroll_area::DragScroll::Always
@@ -10613,7 +10781,109 @@ impl ErgoNoteApp {
         }
     }
 
+    fn count_plain_words(text: &str) -> usize {
+        text.replace('\u{fffc}', " ").split_whitespace().filter(|tok| tok.chars().any(char::is_alphanumeric)).count()
+    }
+
+    fn count_inline_markup_words(text: &str) -> usize {
+        ergonote_formats::markdown::parse_inline(text)
+            .iter()
+            .filter(|span| span.image.is_none())
+            .map(|span| Self::count_plain_words(&span.text))
+            .sum()
+    }
+
+    fn count_block_words(block: &ergonote_formats::Block) -> usize {
+        match block {
+            ergonote_formats::Block::Heading { spans, .. }
+            | ergonote_formats::Block::Paragraph(spans)
+            | ergonote_formats::Block::Quote(spans)
+            | ergonote_formats::Block::Item { spans, .. } => {
+                spans.iter().filter(|s| s.image.is_none()).map(|s| Self::count_plain_words(&s.text)).sum()
+            }
+            ergonote_formats::Block::Table { head, rows } => {
+                head.iter().chain(rows.iter().flatten()).flatten().filter(|s| s.image.is_none()).map(|s| Self::count_plain_words(&s.text)).sum()
+            }
+            ergonote_formats::Block::Code { text, .. } | ergonote_formats::Block::MathBlock(text) => Self::count_plain_words(text),
+            ergonote_formats::Block::Rule | ergonote_formats::Block::Image { .. } => 0,
+        }
+    }
+
+    fn page_word_counts(&self, ctx: &Context) -> Option<(usize, usize)> {
+        let ed = self.editor.as_ref()?;
+        let live_caret = ed.caret.as_ref().filter(|c| c.cell.is_none() && c.span.is_none());
+        let mut total = 0usize;
+        for (i, block) in ed.blocks.iter().enumerate() {
+            if pageedit::is_page_stamp(&ed.blocks, i) || pageedit::is_title_echo(&ed.blocks, i, &ed.title) {
+                continue;
+            }
+            total += match live_caret {
+                Some(caret) if caret.block == i => match block {
+                    ergonote_formats::Block::Code { .. } | ergonote_formats::Block::MathBlock(_) => Self::count_plain_words(&caret.text),
+                    _ => Self::count_inline_markup_words(&caret.text),
+                },
+                _ => Self::count_block_words(block),
+            };
+        }
+
+        let mut selected = 0usize;
+        if let Some(across) = ed.across
+            && !across.inside_one_block()
+        {
+            for i in across.blocks() {
+                if pageedit::is_page_stamp(&ed.blocks, i) || pageedit::is_title_echo(&ed.blocks, i, &ed.title) {
+                    continue;
+                }
+                let Some(block) = ed.blocks.get(i) else { continue };
+                let whole = pageedit::block_text(block);
+                let Some((a, b)) = across.covering(i, whole.len()) else { continue };
+                let Some(slice) = whole.get(a..b) else { continue };
+                selected += match block {
+                    ergonote_formats::Block::Code { .. } | ergonote_formats::Block::MathBlock(_) => Self::count_plain_words(slice),
+                    _ => Self::count_inline_markup_words(slice),
+                };
+            }
+        } else if let Some(caret) = ed.caret.as_ref() {
+            let lo = caret.selection.0.min(caret.selection.1);
+            let hi = caret.selection.0.max(caret.selection.1);
+            if lo < hi {
+                let slice: String = caret.text.chars().skip(lo).take(hi - lo).collect();
+                let is_raw = caret.cell.is_none()
+                    && ed
+                        .blocks
+                        .get(caret.block)
+                        .is_some_and(|b| matches!(b, ergonote_formats::Block::Code { .. } | ergonote_formats::Block::MathBlock(_)));
+                selected = if is_raw { Self::count_plain_words(&slice) } else { Self::count_inline_markup_words(&slice) };
+            }
+        }
+        if selected == 0 {
+            let picked_boxes = crate::containers::selected_boxes(ctx, &ed.dir);
+            for ci in picked_boxes {
+                for bi in ergonote_model::container::blocks_of(&ed.boxes, ci) {
+                    if pageedit::is_page_stamp(&ed.blocks, bi) || pageedit::is_title_echo(&ed.blocks, bi, &ed.title) {
+                        continue;
+                    }
+                    if let Some(block) = ed.blocks.get(bi) {
+                        selected += Self::count_block_words(block);
+                    }
+                }
+            }
+        }
+        Some((selected, total))
+    }
+
+    fn format_word_counter(selected: usize, total: usize) -> String {
+        if selected > 0 {
+            let word = if selected == 1 { "mot sélectionné" } else { "mots sélectionnés" };
+            format!("{selected} {word} / {total}")
+        } else {
+            let word = if total <= 1 { "mot" } else { "mots" };
+            format!("{total} {word}")
+        }
+    }
+
     fn status_bar(&mut self, ui: &mut Ui) {
+        let word_counts = self.page_word_counts(ui.ctx());
         if self.is_simple_mobile() {
             let in_page = !self.compact_list_fills() && self.editor.is_some();
             if self.status_is_error && !self.status.trim().is_empty() {
@@ -10631,6 +10901,15 @@ impl ErgoNoteApp {
                 egui::Panel::bottom("status").show(ui, |ui| {
                     ui.horizontal(|ui| {
                         ui.label(egui::RichText::new(caption).small().color(self.tokens.muted));
+                        if let Some((selected, total)) = word_counts {
+                            ui.separator();
+                            let color = if selected > 0 { self.tokens.accent } else { self.tokens.muted };
+                            let mut text = egui::RichText::new(Self::format_word_counter(selected, total)).small().color(color);
+                            if selected > 0 {
+                                text = text.strong();
+                            }
+                            ui.label(text);
+                        }
                     });
                 });
             }
@@ -10660,6 +10939,15 @@ impl ErgoNoteApp {
                         self.remember_extra_sheets();
                         self.scroll_to_sheet = Some(total_sheets + 1);
                         ui.ctx().request_repaint();
+                    }
+                    if let Some((selected, total)) = word_counts {
+                        ui.separator();
+                        let word_color = if selected > 0 { self.tokens.accent } else { self.tokens.muted };
+                        let mut word_text = egui::RichText::new(Self::format_word_counter(selected, total)).small().color(word_color);
+                        if selected > 0 {
+                            word_text = word_text.strong();
+                        }
+                        ui.label(word_text);
                     }
                 }
                 ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
@@ -10894,7 +11182,7 @@ impl ErgoNoteApp {
             self.paste_here();
         }
         // A button whose file dialog Android or Web cannot show says so (filepicker.android.rs).
-        #[cfg(any(target_os = "android", target_arch = "wasm32"))]
+        #[cfg(any(target_os = "android", target_os = "ios", target_arch = "wasm32"))]
         if let Some(notice) = crate::filepicker::take_notice() {
             self.say(notice);
         }
@@ -10907,6 +11195,40 @@ impl ErgoNoteApp {
                 self.ribbon_tab = ribbon::IMAGE_TAB.to_string();
             }
             self.last_selected_image = self.selected_image_block;
+        }
+        if let Some(mut crop) = self.inline_crop.take() {
+            let valid = self.dialog.is_none()
+                && self.editor.as_ref().is_some_and(|ed| {
+                    ed.writable
+                        && ed.dir == crop.page_dir
+                        && ed.blocks.get(crop.block).and_then(Self::is_user_image_block).is_some_and(|s| s == crop.src)
+                });
+            if valid {
+                crate::containers::select_image_object(ctx, &crop.page_dir, crop.block);
+                self.selected_image_block = Some(crop.block);
+                self.last_selected_image = Some(crop.block);
+                if crop.sync_pending {
+                    crate::containers::set_active_crop(ctx, &crop.page_dir, crop.block, crop.rect);
+                    crop.sync_pending = false;
+                } else if let Some(live) = crate::containers::active_crop_rect(ctx, &crop.page_dir, crop.block) {
+                    crop.rect = live;
+                } else {
+                    crate::containers::set_active_crop(ctx, &crop.page_dir, crop.block, crop.rect);
+                }
+                if ctx.input_mut(|i| i.consume_key(Modifiers::NONE, Key::Escape)) {
+                    crate::containers::clear_active_crop(ctx);
+                    self.say("Rognage annulé.");
+                } else if ctx.input_mut(|i| i.consume_key(Modifiers::NONE, Key::Enter)) {
+                    crate::containers::clear_active_crop(ctx);
+                    self.apply_crop_picture(crop.block, &crop.src, &crop.bytes, crop.rect);
+                } else {
+                    self.inline_crop = Some(crop);
+                }
+            } else {
+                crate::containers::clear_active_crop(ctx);
+            }
+        } else {
+            crate::containers::clear_active_crop(ctx);
         }
         if !self.event_frames.is_empty() {
             ctx.request_repaint();
@@ -10988,6 +11310,50 @@ impl ErgoNoteApp {
         self.show_word_prediction_popup(ctx);
         self.tts_overlay(ctx);
         self.dictation_overlay(ctx);
+        if !self.is_simple_mobile()
+            && self.dialog.is_none()
+            && let Some(crop) = self.inline_crop.as_ref()
+        {
+            let cw = ((crop.rect[2] - crop.rect[0]) * crop.dims.0 as f32).round().max(1.0) as u32;
+            let ch = ((crop.rect[3] - crop.rect[1]) * crop.dims.1 as f32).round().max(1.0) as u32;
+            let mut action = None;
+            egui::Area::new(egui::Id::new("inline-crop-bar"))
+                .order(egui::Order::Foreground)
+                .anchor(egui::Align2::CENTER_BOTTOM, vec2(0.0, -44.0))
+                .show(ctx, |ui| {
+                    egui::Frame::new()
+                        .fill(self.tokens.panel)
+                        .stroke(egui::Stroke::new(1.5, self.tokens.accent))
+                        .corner_radius(10.0)
+                        .inner_margin(egui::Margin::symmetric(12, 8))
+                        .show(ui, |ui| {
+                            ui.horizontal(|ui| {
+                                ui.spacing_mut().item_spacing = vec2(8.0, 0.0);
+                                ui.label(egui::RichText::new(format!("Rognage : {cw} × {ch} px")).small().color(self.tokens.muted));
+                                if ui
+                                    .add(
+                                        egui::Button::new(egui::RichText::new("\u{2713} Valider").strong().color(self.tokens.text))
+                                            .fill(self.tokens.row_selected)
+                                            .stroke(egui::Stroke::new(1.5, self.tokens.accent))
+                                            .corner_radius(6.0),
+                                    )
+                                    .clicked()
+                                {
+                                    action = Some(ribbon::Act::ApplyCrop);
+                                }
+                                if ui.button("Réinitialiser").clicked() {
+                                    action = Some(ribbon::Act::ResetCrop);
+                                }
+                                if ui.button("\u{2715} Annuler").clicked() {
+                                    action = Some(ribbon::Act::CancelCrop);
+                                }
+                            });
+                        });
+                });
+            if let Some(act) = action {
+                self.ribbon_act(act);
+            }
+        }
         self.import_progress(ctx);
         self.frame_edges(ctx);
         // Closing the window writes the page first, and waits for an autosave still being

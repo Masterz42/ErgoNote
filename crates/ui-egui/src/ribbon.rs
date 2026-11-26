@@ -68,8 +68,14 @@ pub enum Act {
     SavePictureAs(String),
     /// Rotate or flip the picture with this source (issue #273).
     TurnPicture(String, crate::turn::Turn),
-    /// Open interactive crop modal for the selected or active picture on the page.
+    /// Open interactive crop mode directly on the selected or active picture on the page.
     CropPicture,
+    /// Apply the current inline crop selection onto the image asset.
+    ApplyCrop,
+    /// Reset the inline crop rectangle back to the full image.
+    ResetCrop,
+    /// Cancel inline image cropping without modifying the image.
+    CancelCrop,
     /// Rotate or flip the selected or active picture on the page from the Image ribbon tab.
     TurnSelectedPicture(crate::turn::Turn),
     /// Enhance contrast / convert a scan into clean greyscale on the selected or active picture.
@@ -559,6 +565,8 @@ pub struct View<'a> {
     pub in_table: bool,
     /// True while an image / PDF printout is on the page (selected or locked in background).
     pub has_image: bool,
+    /// True while direct on-image touch/mouse cropping handles are active.
+    pub image_cropping: bool,
     /// True while an offline OCR worker is analyzing an image.
     pub ocr_busy: bool,
     /// Whether the table the caret is in is drawn with lines round its cells.
@@ -3533,14 +3541,26 @@ fn image_tab(ui: &mut Ui, view: &View<'_>, t: &Tokens, acts: &mut Vec<Act>) {
             ui.add_space(6.0);
             ui.spacing_mut().item_spacing = vec2(5.0, 6.0);
             ui.horizontal(|ui| {
-                if table_grid_btn(ui, 96.0, Some(Icon::Picture), None, "Rogner", "Rogner l'image", false, t).clicked() {
-                    acts.push(Act::CropPicture);
-                }
-                if table_grid_btn(ui, 96.0, Some(Icon::Redo), None, "Pivoter ↻", "Pivoter de 90° à droite", false, t).clicked() {
-                    acts.push(Act::TurnSelectedPicture(Turn::Right));
-                }
-                if table_grid_btn(ui, 96.0, Some(Icon::Undo), None, "Pivoter ↺", "Pivoter de 90° à gauche", false, t).clicked() {
-                    acts.push(Act::TurnSelectedPicture(Turn::Left));
+                if view.image_cropping {
+                    if table_grid_btn(ui, 108.0, Some(Icon::Picture), None, "\u{2713} Valider", "Appliquer le rognage", true, t).clicked() {
+                        acts.push(Act::ApplyCrop);
+                    }
+                    if table_grid_btn(ui, 96.0, None, None, "R\u{00E9}initialiser", "Revenir au cadrage complet", false, t).clicked() {
+                        acts.push(Act::ResetCrop);
+                    }
+                    if table_grid_btn(ui, 90.0, None, None, "\u{2715} Annuler", "Annuler le rognage (Échap)", false, t).clicked() {
+                        acts.push(Act::CancelCrop);
+                    }
+                } else {
+                    if table_grid_btn(ui, 96.0, Some(Icon::Picture), None, "Rogner", "Rogner l'image directement sur la page", false, t).clicked() {
+                        acts.push(Act::CropPicture);
+                    }
+                    if table_grid_btn(ui, 96.0, Some(Icon::Redo), None, "Pivoter \u{21BB}", "Pivoter de 90° à droite", false, t).clicked() {
+                        acts.push(Act::TurnSelectedPicture(Turn::Right));
+                    }
+                    if table_grid_btn(ui, 96.0, Some(Icon::Undo), None, "Pivoter \u{21BA}", "Pivoter de 90° à gauche", false, t).clicked() {
+                        acts.push(Act::TurnSelectedPicture(Turn::Left));
+                    }
                 }
             });
             ui.horizontal(|ui| {

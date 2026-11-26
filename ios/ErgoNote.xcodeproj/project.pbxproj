@@ -1,0 +1,287 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		E46000010000000000000001 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = E46000020000000000000001 /* main.m */; };
+		E46000010000000000000002 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E46000020000000000000002 /* Assets.xcassets */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		E46000020000000000000001 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		E46000020000000000000002 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		E46000020000000000000003 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		E46000020000000000000004 /* ErgoNote.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ErgoNote.app; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		E46000030000000000000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		E46000040000000000000001 = {
+			isa = PBXGroup;
+			children = (
+				E46000040000000000000002 /* App */,
+				E46000040000000000000003 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		E46000040000000000000002 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				E46000020000000000000001 /* main.m */,
+				E46000020000000000000002 /* Assets.xcassets */,
+				E46000020000000000000003 /* Info.plist */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		E46000040000000000000003 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				E46000020000000000000004 /* ErgoNote.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		E46000050000000000000001 /* ErgoNote */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E46000080000000000000002 /* Build configuration list for PBXNativeTarget "ErgoNote" */;
+			buildPhases = (
+				E46000060000000000000001 /* Sources */,
+				E46000030000000000000001 /* Frameworks */,
+				E46000070000000000000001 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = ErgoNote;
+			productName = ErgoNote;
+			productReference = E46000020000000000000004 /* ErgoNote.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		E46000090000000000000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastUpgradeCheck = 1600;
+			};
+			buildConfigurationList = E46000080000000000000001 /* Build configuration list for PBXProject "ErgoNote" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = fr;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				fr,
+				en,
+				Base,
+			);
+			mainGroup = E46000040000000000000001;
+			productRefGroup = E46000040000000000000003 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				E46000050000000000000001 /* ErgoNote */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		E46000070000000000000001 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E46000010000000000000002 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		E46000060000000000000001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E46000010000000000000001 /* main.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		E460000A0000000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		E460000A0000000000000002 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		E460000A0000000000000003 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				ENABLE_BITCODE = NO;
+				INFOPLIST_FILE = App/Info.plist;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/../target/aarch64-apple-ios/debug",
+				);
+				OTHER_LDFLAGS = (
+					"-lergonote_ios",
+					"-framework",
+					UIKit,
+					"-framework",
+					Metal,
+					"-framework",
+					QuartzCore,
+					"-framework",
+					CoreGraphics,
+					"-framework",
+					Foundation,
+					"-framework",
+					CoreText,
+					"-framework",
+					Security,
+					"-framework",
+					CoreFoundation,
+					"-framework",
+					UniformTypeIdentifiers,
+					"-framework",
+					AVFoundation,
+					"-framework",
+					AudioToolbox,
+					"-framework",
+					GameController,
+					"-framework",
+					CoreHaptics,
+					"-framework",
+					CoreMotion,
+					"-framework",
+					CoreVideo,
+					"-framework",
+					IOSurface,
+					"-liconv",
+					"-lc++",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.ergonote.app.dev;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = iphoneos;
+				SUPPORTS_MACCATALYST = NO;
+			};
+			name = Debug;
+		};
+		E460000A0000000000000004 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				ENABLE_BITCODE = NO;
+				INFOPLIST_FILE = App/Info.plist;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/../target/aarch64-apple-ios/release",
+				);
+				OTHER_LDFLAGS = (
+					"-lergonote_ios",
+					"-framework",
+					UIKit,
+					"-framework",
+					Metal,
+					"-framework",
+					QuartzCore,
+					"-framework",
+					CoreGraphics,
+					"-framework",
+					Foundation,
+					"-framework",
+					CoreText,
+					"-framework",
+					Security,
+					"-framework",
+					CoreFoundation,
+					"-framework",
+					UniformTypeIdentifiers,
+					"-framework",
+					AVFoundation,
+					"-framework",
+					AudioToolbox,
+					"-framework",
+					GameController,
+					"-framework",
+					CoreHaptics,
+					"-framework",
+					CoreMotion,
+					"-framework",
+					CoreVideo,
+					"-framework",
+					IOSurface,
+					"-liconv",
+					"-lc++",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.ergonote.app.dev;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = iphoneos;
+				SUPPORTS_MACCATALYST = NO;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		E46000080000000000000001 /* Build configuration list for PBXProject "ErgoNote" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E460000A0000000000000001 /* Debug */,
+				E460000A0000000000000002 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		E46000080000000000000002 /* Build configuration list for PBXNativeTarget "ErgoNote" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E460000A0000000000000003 /* Debug */,
+				E460000A0000000000000004 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = E46000090000000000000001 /* Project object */;
+}

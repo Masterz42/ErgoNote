@@ -70,9 +70,13 @@ fi
 LIB="$ROOT/target/$TARGET/release/libergonote_android.so"
 [[ -s "$LIB" ]] || { echo "missing $LIB; build without --skip-build" >&2; exit 1; }
 
-# 2. Keep empty assets directory (ErgoNote creates the French school binder directly; skipping
-# the 14 MB multilingual welcome-to-ergonote.zip trims APK size substantially).
+# 2. Fetch Google ML Kit Text Recognition (Latin/French bundled offline) & stage its assets.
+MLKIT="$WORK/mlkit"
+python3 "$ROOT/android/fetch_mlkit.py" "$MLKIT"
 mkdir -p "$WORK/assets"
+if [[ -d "$MLKIT/assets" ]] && [[ -n "$(ls -A "$MLKIT/assets" 2>/dev/null)" ]]; then
+    cp -R "$MLKIT/assets/." "$WORK/assets/"
+fi
 
 # 3. Resources: the theme and the launcher icon (the app icon, assets/brand/ergonote-256.png).
 mkdir -p "$WORK/res"
@@ -88,30 +92,36 @@ cp "$ROOT/assets/brand/ergonote-256.png" "$WORK/res/mipmap-xxxhdpi/ic_launcher.p
     --target-sdk-version "$TARGET_SDK" \
     --version-code "$VERSION_CODE" \
     --version-name "$VERSION" \
+    -0 fb -0 binarypb -0 pb -0 tflite \
     -A "$WORK/assets" \
     "$WORK/resources.zip"
 
-# 3b. The thin Java NativeActivity subclass (SAF image/file picker + Gboard IME proxy).
+# 3b. Java NativeActivity subclass (SAF, camera EXIF, TTS, Google ML Kit OCR, Gboard IME).
 mkdir -p "$WORK/java-classes" "$WORK/dex"
-javac -Xlint:-options -source 8 -target 8 -bootclasspath "$PLATFORM" -d "$WORK/java-classes" \
+MLKIT_CP="$(printf '%s:' "$MLKIT/jars"/*.jar)"
+javac -Xlint:-options -source 8 -target 8 -bootclasspath "$PLATFORM" -cp "$MLKIT_CP" -d "$WORK/java-classes" \
     "$ROOT/android/java/com/ergonote/app/ErgoNoteActivity.java"
 "$BUILD_TOOLS/d8" --release --min-api "$MIN_SDK" --lib "$PLATFORM" \
-    --output "$WORK/dex" "$WORK/java-classes"/com/ergonote/app/*.class
+    --output "$WORK/dex" "$WORK/java-classes"/com/ergonote/app/*.class "$MLKIT/jars"/*.jar
 
-# 4. The library goes in as lib/<abi>/, without its symbol table (a fifth of its size) and
-# deflated: the manifest leaves extractNativeLibs at its default, so Android unpacks it on install
-# and the download stays small. classes.dex goes in stored at the archive root.
+# 4. Native shared libraries (`libergonote_android.so` + `libmlkit_google_ocr_pipeline.so`) + dex files.
 NDK_HOME="${ANDROID_NDK_HOME:-$SDK/ndk/${ARTCRAFT_NDK_VERSION:-28.2.13676358}}"
 STRIP="$NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip"
 [[ -x "$STRIP" ]] || { echo "missing $STRIP; set ANDROID_NDK_HOME" >&2; exit 1; }
 mkdir -p "$WORK/apk/lib/$ABI"
 "$STRIP" --strip-all -o "$WORK/apk/lib/$ABI/libergonote_android.so" "$LIB"
-(cd "$WORK/apk" && python3 - "$WORK/unaligned.apk" "lib/$ABI/libergonote_android.so" "$WORK/dex/classes.dex" <<'PY'
-import sys, zipfile
-apk, lib, dex = sys.argv[1], sys.argv[2], sys.argv[3]
+for extra_so in "$MLKIT/jni/$ABI"/*.so; do
+    [[ -f "$extra_so" ]] && cp "$extra_so" "$WORK/apk/lib/$ABI/"
+done
+(cd "$WORK/apk" && python3 - "$WORK/unaligned.apk" "$WORK/apk/lib/$ABI" "$WORK/dex" <<'PY'
+import glob, os, sys, zipfile
+apk, lib_dir, dex_dir = sys.argv[1], sys.argv[2], sys.argv[3]
+abi = os.path.basename(lib_dir)
 with zipfile.ZipFile(apk, "a") as archive:
-    archive.write(dex, "classes.dex", compress_type=zipfile.ZIP_STORED)
-    archive.write(lib, lib, compress_type=zipfile.ZIP_DEFLATED, compresslevel=9)
+    for dex in sorted(glob.glob(os.path.join(dex_dir, "classes*.dex"))):
+        archive.write(dex, os.path.basename(dex), compress_type=zipfile.ZIP_STORED)
+    for so in sorted(glob.glob(os.path.join(lib_dir, "*.so"))):
+        archive.write(so, f"lib/{abi}/{os.path.basename(so)}", compress_type=zipfile.ZIP_DEFLATED, compresslevel=9)
 PY
 )
 

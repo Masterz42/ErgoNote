@@ -731,7 +731,7 @@ asyncio.run(main())";
                 sync.playback_started_at = Some(Instant::now());
             }
         }
-        #[cfg(any(test, target_arch = "wasm32"))]
+        #[cfg(any(test, target_arch = "wasm32", target_os = "ios"))]
         {
             let _ = (&clean, speed, lang, pid_slot, done_slot, stop_flag, paused_flag, sync_arc, initial_cues);
         }
@@ -913,7 +913,7 @@ asyncio.run(main())";
                 preview_pid.store(0, std::sync::atomic::Ordering::SeqCst);
             });
         }
-        #[cfg(any(test, target_arch = "wasm32", target_os = "android"))]
+        #[cfg(any(test, target_arch = "wasm32", target_os = "android", target_os = "ios"))]
         {
             let _ = (&word, lang, speed, seq, preview_pid);
         }
@@ -1169,7 +1169,7 @@ asyncio.run(main())";
         self.prediction_selected = None;
     }
 
-    #[cfg(all(not(test), not(target_arch = "wasm32"), not(target_os = "android")))]
+    #[cfg(all(not(test), not(target_arch = "wasm32"), not(any(target_os = "android", target_os = "ios"))))]
     pub(super) fn query_languagetool_online(text: &str, lang: crate::spellcheck::SpellLang) -> Option<String> {
         let lt_lang = match lang {
             crate::spellcheck::SpellLang::Fr => "fr",
@@ -1385,9 +1385,9 @@ asyncio.run(main())";
             }
         }
 
-        #[cfg_attr(any(test, target_arch = "wasm32", target_os = "android"), allow(unused_mut))]
+        #[cfg_attr(any(test, target_arch = "wasm32", target_os = "android", target_os = "ios"), allow(unused_mut))]
         let mut online_checked = false;
-        #[cfg(all(not(test), not(target_arch = "wasm32"), not(target_os = "android")))]
+        #[cfg(all(not(test), not(target_arch = "wasm32"), not(any(target_os = "android", target_os = "ios"))))]
         {
             let total_chars: usize = targets.iter().map(|(_, _, s)| s.chars().count()).sum();
             if (2..=4000).contains(&total_chars) {
@@ -1437,6 +1437,8 @@ asyncio.run(main())";
     pub(super) fn feedback_platform_label() -> &'static str {
         if cfg!(target_os = "android") {
             "Android"
+        } else if cfg!(target_os = "ios") {
+            "iOS / iPadOS"
         } else if cfg!(target_os = "windows") {
             "Windows"
         } else if cfg!(target_os = "macos") {
@@ -1755,11 +1757,16 @@ asyncio.run(main())";
             self.say("Dictée vocale Android lancée...");
             return;
         }
-        #[cfg(not(target_os = "android"))]
+        #[cfg(target_os = "ios")]
+        {
+            self.say("La dictée vocale iOS n'est pas encore connectée (utilisez le micro du clavier iPadOS).");
+            return;
+        }
+        #[cfg(not(any(target_os = "android", target_os = "ios")))]
         self.start_desktop_dictation();
     }
 
-    #[cfg(not(target_os = "android"))]
+    #[cfg(not(any(target_os = "android", target_os = "ios")))]
     pub(super) fn start_desktop_dictation(&mut self) {
         use std::sync::atomic::Ordering;
         self.dictation_stop_flag.store(false, Ordering::SeqCst);

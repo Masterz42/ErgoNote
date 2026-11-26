@@ -25,7 +25,7 @@ pub mod datetime;
 pub mod update;
 // Android has no `rfd`: app.rs reaches this stand-in under that name there.
 pub mod diagramview;
-#[cfg(any(target_os = "android", target_arch = "wasm32"))]
+#[cfg(any(target_os = "android", target_os = "ios", target_arch = "wasm32"))]
 #[path = "filepicker.android.rs"]
 pub(crate) mod filepicker;
 pub mod floating;

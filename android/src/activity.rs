@@ -42,6 +42,12 @@ fn run(app: AndroidApp) -> Result<(), String> {
     }
     let layout = storage::layout(app.internal_data_path().as_deref(), app.external_data_path().as_deref())
         .ok_or("Android reported no internal storage for the app")?;
+    if let Some(internal) = app.internal_data_path() {
+        ergonote_ui_egui::ocr::set_cache_dir(internal.join("ocr_cache"));
+        let mlkit_app = app.clone();
+        let mlkit_tmp = internal.join("ocr_tmp");
+        ergonote_ui_egui::ocr::set_native_ocr(move |bytes| crate::bridge::run_mlkit_ocr(&mlkit_app, &mlkit_tmp, bytes));
+    }
     log::info!("start: ErgoNote {} notebooks={} settings={}", env!("CARGO_PKG_VERSION"), layout.notebooks.display(), layout.settings.display());
     let mut alerts: Vec<(&str, String)> = Vec::new();
 

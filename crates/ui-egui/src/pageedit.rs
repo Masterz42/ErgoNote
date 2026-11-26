@@ -64,7 +64,7 @@ pub fn word_prediction_enabled_id() -> egui::Id {
 /// One finger scrolls the page; double-tap enters writing mode (selecting a word when over text)
 /// and centers the active text area in the viewport.
 pub fn touch_navigation(ctx: &egui::Context) -> bool {
-    cfg!(target_os = "android") || ctx.input(|i| i.any_touches())
+    cfg!(any(target_os = "android", target_os = "ios")) || ctx.input(|i| i.any_touches())
 }
 
 fn center_on_caret_id() -> egui::Id {

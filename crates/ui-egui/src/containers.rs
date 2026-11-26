@@ -53,6 +53,14 @@ fn selected_object_id() -> Id {
     Id::new("embedded-object-selected")
 }
 
+fn active_crop_id() -> Id {
+    Id::new("image-active-crop")
+}
+
+fn crop_drag_active_id() -> Id {
+    Id::new("image-crop-drag-active")
+}
+
 pub fn selected_image(ctx: &egui::Context, page: &std::path::Path) -> Option<usize> {
     selected_object(ctx, page).and_then(|(i, kind)| (kind == "image").then_some(i))
 }
@@ -60,6 +68,49 @@ pub fn selected_image(ctx: &egui::Context, page: &std::path::Path) -> Option<usi
 pub fn selected_object(ctx: &egui::Context, page: &std::path::Path) -> Option<(usize, String)> {
     let key = page.to_string_lossy();
     ctx.data(|d| d.get_temp::<(usize, String, String)>(selected_object_id())).filter(|(_, _, on)| *on == key).map(|(i, kind, _)| (i, kind))
+}
+
+/// Selects an embedded image block cleanly so its inline tools and handles activate right away.
+pub fn select_image_object(ctx: &egui::Context, page: &std::path::Path, block: usize) {
+    let key = page.to_string_lossy().into_owned();
+    ctx.data_mut(|d| {
+        d.insert_temp(selected_object_id(), (block, "image".to_string(), key.clone()));
+        d.insert_temp(selected_image_id(), (block, key));
+    });
+}
+
+/// Activates or updates the inline normalized crop rectangle `[x0, y0, x1, y1]` for `block`.
+pub fn set_active_crop(ctx: &egui::Context, page: &std::path::Path, block: usize, rect: [f32; 4]) {
+    let key = page.to_string_lossy().into_owned();
+    ctx.data_mut(|d| d.insert_temp(active_crop_id(), (block, key, rect)));
+}
+
+/// Returns the active normalized crop rectangle if `block` on `page` is currently being cropped.
+pub fn active_crop_rect(ctx: &egui::Context, page: &std::path::Path, block: usize) -> Option<[f32; 4]> {
+    let key = page.to_string_lossy();
+    ctx.data(|d| d.get_temp::<(usize, String, [f32; 4])>(active_crop_id())).filter(|(b, on, _)| *b == block && *on == key).map(|(_, _, rect)| rect)
+}
+
+/// Exits inline image cropping mode and clears any active crop drag flag.
+pub fn clear_active_crop(ctx: &egui::Context) {
+    ctx.data_mut(|d| {
+        d.remove::<(usize, String, [f32; 4])>(active_crop_id());
+        d.remove::<bool>(crop_drag_active_id());
+    });
+}
+
+/// True while the user is actively dragging an inline crop handle or crop window.
+pub fn is_crop_drag_active(ctx: &egui::Context) -> bool {
+    ctx.data(|d| d.get_temp::<bool>(crop_drag_active_id()).unwrap_or(false))
+}
+
+/// Clears any selected embedded object / picture across containers.
+pub fn clear_selected_object(ctx: &egui::Context) {
+    ctx.data_mut(|d| {
+        d.remove::<(usize, String, String)>(selected_object_id());
+        d.remove::<(usize, String)>(selected_image_id());
+    });
+    clear_active_crop(ctx);
 }
 
 /// Where the selected container's menu is open, if it is.
@@ -490,10 +541,14 @@ pub fn show(
                 }
             }
         }
-        if let Some((block, _)) = object_double_clicked.as_ref().filter(|(block, _)| range.contains(block))
-            && let Some(href) = blocks.get(*block).and_then(|block| crate::preview::object_link(block, page_dir))
-        {
-            out.changed.link = Some(href);
+        if let Some((block, kind)) = object_double_clicked.as_ref().filter(|(block, _)| range.contains(block)) {
+            object_sel = Some((*block, kind.clone()));
+            sel = None;
+            *caret = None;
+            out.changed.caret = true;
+            if let Some(href) = blocks.get(*block).and_then(|block| crate::preview::object_link(block, page_dir)) {
+                out.changed.link = Some(href);
+            }
         }
         let used = container_content_height(blocks, &range, child.min_rect().height().max(18.0), zoom);
         // Words wrap to the box, but a table keeps its columns' widths. The box is drawn wide
@@ -596,7 +651,8 @@ pub fn show(
             })
         });
         let lock_images = ui.data(|d| d.get_temp::<bool>(egui::Id::new("ergonote-lock-images")).unwrap_or(false));
-        let image_hit = (image_object && !lock_images && !pointer_in_other_text_box).then(|| {
+        let cropping_standalone = image_object && active_crop_rect(ui.ctx(), page_dir, range.start).is_some();
+        let image_hit = (image_object && !lock_images && !cropping_standalone && !pointer_in_other_text_box).then(|| {
             ui.interact(image_rect, ui.id().with(("image-object", range.start)), Sense::click_and_drag()).on_hover_cursor(egui::CursorIcon::Move)
         });
         // A picture among other blocks in one box (a page that was never arranged is one box
@@ -608,6 +664,9 @@ pub fn show(
                 .iter()
                 .filter(|(block, _, kind)| kind == "image" && range.contains(block) && matches!(blocks.get(*block), Some(Block::Image { .. })))
             {
+                if active_crop_rect(ui.ctx(), page_dir, *block).is_some() {
+                    continue;
+                }
                 let on_handle = object_sel.as_ref().is_some_and(|(selected, _)| selected == block)
                     && pointer.is_some_and(|p| resize_handle_rects(*rect, resize_handle_size).iter().any(|handle| handle.contains(p)));
                 let body =
@@ -698,145 +757,264 @@ pub fn show(
             claim_right_click(ui.ctx());
         }
         let is_sel = sel == Some(i);
+        let mut crop_drag_active = false;
         if let Some((block, kind)) = object_sel.as_ref().filter(|(block, _)| range.contains(block)) {
             let hits = ui.data(|d| d.get_temp::<Vec<(usize, Rect, String)>>(crate::preview::object_hits_id())).unwrap_or_default();
             let object_rect = hits.iter().find(|(at, _, _)| at == block).map(|(_, rect, _)| *rect).unwrap_or(image_rect);
             log::debug!("embedded object affordance: block={block} kind={kind} rect={object_rect:?}");
-            ui.painter().rect_stroke(object_rect, 1.0 * zoom, egui::Stroke::new(1.5 * zoom, t.accent), egui::StrokeKind::Inside);
-            let image_rect = object_rect;
-            let size = resize_handle_size;
+            if let Some(mut crop) = active_crop_rect(ui.ctx(), page_dir, *block) {
+                let w = object_rect.width().max(1.0);
+                let h = object_rect.height().max(1.0);
+                let crop_rect = Rect::from_min_max(
+                    pos2(object_rect.min.x + crop[0] * w, object_rect.min.y + crop[1] * h),
+                    pos2(object_rect.min.x + crop[2] * w, object_rect.min.y + crop[3] * h),
+                );
+                let shade = egui::Color32::from_black_alpha(135);
+                let painter = ui.painter();
+                painter.rect_filled(Rect::from_min_max(object_rect.min, pos2(object_rect.max.x, crop_rect.min.y)), 0.0, shade);
+                painter.rect_filled(Rect::from_min_max(pos2(object_rect.min.x, crop_rect.max.y), object_rect.max), 0.0, shade);
+                painter.rect_filled(Rect::from_min_max(pos2(object_rect.min.x, crop_rect.min.y), pos2(crop_rect.min.x, crop_rect.max.y)), 0.0, shade);
+                painter.rect_filled(Rect::from_min_max(pos2(crop_rect.max.x, crop_rect.min.y), pos2(object_rect.max.x, crop_rect.max.y)), 0.0, shade);
+                painter.rect_stroke(crop_rect, 1.0, egui::Stroke::new(2.5, t.accent), egui::StrokeKind::Inside);
+                let guide = egui::Stroke::new(1.0, egui::Color32::from_white_alpha(110));
+                for frac in [1.0 / 3.0, 2.0 / 3.0] {
+                    let gx = crop_rect.min.x + crop_rect.width() * frac;
+                    let gy = crop_rect.min.y + crop_rect.height() * frac;
+                    painter.vline(gx, crop_rect.y_range(), guide);
+                    painter.hline(crop_rect.x_range(), gy, guide);
+                }
 
-            // Create interactive handle widgets for images (every frame, not just when hovered)
-            if image_can_resize(kind) {
-                let handle_positions = [
-                    image_rect.left_top(),
-                    image_rect.center_top(),
-                    image_rect.right_top(),
-                    image_rect.left_center(),
-                    image_rect.right_center(),
-                    image_rect.left_bottom(),
-                    image_rect.center_bottom(),
-                    image_rect.right_bottom(),
+                const MIN_SPAN: f32 = 0.05;
+                let handle_points = [
+                    crop_rect.left_top(),
+                    crop_rect.center_top(),
+                    crop_rect.right_top(),
+                    crop_rect.left_center(),
+                    crop_rect.right_center(),
+                    crop_rect.left_bottom(),
+                    crop_rect.center_bottom(),
+                    crop_rect.right_bottom(),
                 ];
-
-                let stroke = egui::Stroke::new(1.5 * zoom, t.accent);
-
-                for (idx, point) in handle_positions.iter().enumerate() {
-                    let handle_rect = Rect::from_center_size(*point, vec2(size * 2.0, size * 2.0));
-                    let handle_response = ui.interact(handle_rect, ui.id().with(("image-resize", i, idx)), Sense::click_and_drag());
-
-                    // Set cursor icon on hover
+                let mut handle_interacted = false;
+                for (idx, point) in handle_points.iter().enumerate() {
+                    let hit_rect = Rect::from_center_size(*point, vec2(44.0, 44.0));
+                    let handle_resp = ui.interact(hit_rect, ui.id().with(("image-crop", i, idx)), Sense::click_and_drag());
                     let cursor = match idx {
-                        0 => egui::CursorIcon::ResizeNwSe,       // left_top
-                        1 => egui::CursorIcon::ResizeVertical,   // center_top
-                        2 => egui::CursorIcon::ResizeNeSw,       // right_top
-                        3 => egui::CursorIcon::ResizeHorizontal, // left_center
-                        4 => egui::CursorIcon::ResizeHorizontal, // right_center
-                        5 => egui::CursorIcon::ResizeNeSw,       // left_bottom
-                        6 => egui::CursorIcon::ResizeVertical,   // center_bottom
-                        7 => egui::CursorIcon::ResizeNwSe,       // right_bottom
-                        _ => egui::CursorIcon::Default,
+                        0 | 7 => egui::CursorIcon::ResizeNwSe,
+                        1 | 6 => egui::CursorIcon::ResizeVertical,
+                        2 | 5 => egui::CursorIcon::ResizeNeSw,
+                        _ => egui::CursorIcon::ResizeHorizontal,
                     };
-
-                    if handle_response.hovered() {
+                    if handle_resp.hovered() || handle_resp.dragged() {
                         ui.ctx().set_cursor_icon(cursor);
                     }
-
-                    if handle_response.hovered() || handle_response.drag_started() || handle_response.dragged() || handle_response.drag_stopped() {
-                        log::debug!(
-                            "image resize handle: container={} block={} idx={} rect={:?} pointer={:?} hovered={} pressed={} drag_started={} dragged={} drag_stopped={} delta={:?} standalone={} selected={:?}",
-                            i,
-                            *block,
-                            idx,
-                            handle_rect,
-                            pointer,
-                            handle_response.hovered(),
-                            handle_response.is_pointer_button_down_on(),
-                            handle_response.drag_started(),
-                            handle_response.dragged(),
-                            handle_response.drag_stopped(),
-                            handle_response.drag_delta(),
-                            standalone_image,
-                            object_sel,
-                        );
-                    }
-                    resize_drag_active |= handle_response.drag_started() || handle_response.dragged();
-
-                    let resize_state_id = ui.id().with(("image-resize-state", i, idx));
-                    if handle_response.drag_started() {
-                        let width = blocks
-                            .get(*block)
-                            .and_then(|block| match block {
-                                Block::Image { width, .. } => *width,
-                                _ => None,
-                            })
-                            .unwrap_or(image_rect.width() / zoom);
-                        let height = blocks
-                            .get(*block)
-                            .and_then(|block| match block {
-                                Block::Image { height, .. } => *height,
-                                _ => None,
-                            })
-                            .unwrap_or(image_rect.height() / zoom);
-                        if let (Some(container), Some(pointer)) = (boxes.get(i), pointer) {
-                            // Drag detection can begin on the first moved frame. Keep the
-                            // original press so that even a single motion resizes the picture.
-                            let pointer = ui.input(|input| input.pointer.press_origin()).unwrap_or(pointer);
-                            ui.data_mut(|data| {
-                                data.insert_temp(resize_state_id, ImageResizeStart { x: container.x, y: container.y, width, height, pointer });
-                            });
-                        }
-                    }
-
-                    // Handle resize drag
-                    if handle_response.dragged() && matches!(blocks.get(*block), Some(Block::Image { .. })) {
-                        let frame_delta = handle_response.drag_delta();
-                        let block_idx = *block;
-                        let shift = ui.input(|input| input.modifiers.shift);
-                        let Some(start) = ui.data(|data| data.get_temp::<ImageResizeStart>(resize_state_id)) else {
-                            continue;
-                        };
-                        let delta = pointer.map_or(frame_delta, |current| current - start.pointer);
-                        log::debug!(
-                            "resize drag: idx={} frame_delta={:?} total_delta={:?} start_pointer={:?} pointer={:?} zoom={}",
-                            idx,
-                            frame_delta,
-                            delta,
-                            start.pointer,
-                            pointer,
-                            zoom
-                        );
-                        let geometry = resize_image(start.width, start.height, delta / zoom, idx, shift);
-                        // A picture sharing its box with other blocks (a printout page under its
-                        // attachment card) keeps the box in place and only widens it to hold the
-                        // picture. The height follows the content.
-                        if let Some(c) = boxes.get_mut(i) {
-                            if standalone_image {
-                                c.x = start.x + geometry.offset.x;
-                                c.y = start.y + geometry.offset.y;
-                                c.width = geometry.width;
-                            } else {
-                                c.width = c.width.max(geometry.width);
+                    let active = handle_resp.drag_started() || handle_resp.dragged();
+                    handle_interacted |= active;
+                    crop_drag_active |= active;
+                    resize_drag_active |= active;
+                    if handle_resp.dragged()
+                        && let Some(p) = handle_resp.interact_pointer_pos().or_else(|| ui.ctx().pointer_latest_pos())
+                    {
+                        let nx = ((p.x - object_rect.min.x) / w).clamp(0.0, 1.0);
+                        let ny = ((p.y - object_rect.min.y) / h).clamp(0.0, 1.0);
+                        match idx {
+                            0 => {
+                                crop[0] = nx.min(crop[2] - MIN_SPAN);
+                                crop[1] = ny.min(crop[3] - MIN_SPAN);
+                            }
+                            1 => crop[1] = ny.min(crop[3] - MIN_SPAN),
+                            2 => {
+                                crop[2] = nx.max(crop[0] + MIN_SPAN);
+                                crop[1] = ny.min(crop[3] - MIN_SPAN);
+                            }
+                            3 => crop[0] = nx.min(crop[2] - MIN_SPAN),
+                            4 => crop[2] = nx.max(crop[0] + MIN_SPAN),
+                            5 => {
+                                crop[0] = nx.min(crop[2] - MIN_SPAN);
+                                crop[3] = ny.max(crop[1] + MIN_SPAN);
+                            }
+                            6 => crop[3] = ny.max(crop[1] + MIN_SPAN),
+                            _ => {
+                                crop[2] = nx.max(crop[0] + MIN_SPAN);
+                                crop[3] = ny.max(crop[1] + MIN_SPAN);
                             }
                         }
-                        if let Some(Block::Image { width, height, .. }) = blocks.get_mut(block_idx) {
-                            *width = Some(geometry.width);
-                            *height = Some(geometry.height);
-                            log::debug!("image resize: block={block_idx} width={} height={}", geometry.width, geometry.height);
+                    }
+                    let stroke = egui::Stroke::new(2.0, egui::Color32::WHITE);
+                    match idx {
+                        1 | 6 => {
+                            let bar = Rect::from_center_size(*point, vec2(22.0, 8.0));
+                            ui.painter().rect_filled(bar, 4.0, t.accent);
+                            ui.painter().rect_stroke(bar, 4.0, stroke, egui::StrokeKind::Inside);
                         }
-                        out.boxes = true;
-                        out.changed.blocks = true;
+                        3 | 4 => {
+                            let bar = Rect::from_center_size(*point, vec2(8.0, 22.0));
+                            ui.painter().rect_filled(bar, 4.0, t.accent);
+                            ui.painter().rect_stroke(bar, 4.0, stroke, egui::StrokeKind::Inside);
+                        }
+                        _ => {
+                            ui.painter().circle(*point, 7.0, t.accent, stroke);
+                        }
                     }
-                    if handle_response.drag_stopped() {
-                        ui.data_mut(|data| data.remove::<ImageResizeStart>(resize_state_id));
+                }
+                let pan_rect = crop_rect.shrink(14.0);
+                if !handle_interacted && pan_rect.is_positive() {
+                    let pan_resp = ui.interact(pan_rect, ui.id().with(("image-crop-pan", i)), Sense::drag());
+                    if pan_resp.hovered() || pan_resp.dragged() {
+                        ui.ctx().set_cursor_icon(egui::CursorIcon::Move);
                     }
+                    if pan_resp.dragged() {
+                        crop_drag_active = true;
+                        resize_drag_active = true;
+                        let delta = pan_resp.drag_delta();
+                        let dx = (delta.x / w).clamp(-crop[0], 1.0 - crop[2]);
+                        let dy = (delta.y / h).clamp(-crop[1], 1.0 - crop[3]);
+                        crop[0] += dx;
+                        crop[2] += dx;
+                        crop[1] += dy;
+                        crop[3] += dy;
+                    }
+                }
+                set_active_crop(ui.ctx(), page_dir, *block, crop);
+            } else {
+                ui.painter().rect_stroke(object_rect, 1.0 * zoom, egui::Stroke::new(1.5 * zoom, t.accent), egui::StrokeKind::Inside);
+                let image_rect = object_rect;
+                let size = resize_handle_size;
 
-                    // Draw handle
-                    ui.painter().rect_filled(Rect::from_center_size(*point, vec2(size, size)), 1.0, t.editor);
-                    ui.painter().rect_stroke(Rect::from_center_size(*point, vec2(size, size)), 1.0, stroke, egui::StrokeKind::Inside);
+                // Create interactive handle widgets for images (every frame, not just when hovered)
+                if image_can_resize(kind) {
+                    let handle_positions = [
+                        image_rect.left_top(),
+                        image_rect.center_top(),
+                        image_rect.right_top(),
+                        image_rect.left_center(),
+                        image_rect.right_center(),
+                        image_rect.left_bottom(),
+                        image_rect.center_bottom(),
+                        image_rect.right_bottom(),
+                    ];
+
+                    let stroke = egui::Stroke::new(1.5 * zoom, t.accent);
+
+                    for (idx, point) in handle_positions.iter().enumerate() {
+                        let handle_rect = Rect::from_center_size(*point, vec2(size * 2.0, size * 2.0));
+                        let handle_response = ui.interact(handle_rect, ui.id().with(("image-resize", i, idx)), Sense::click_and_drag());
+
+                        // Set cursor icon on hover
+                        let cursor = match idx {
+                            0 => egui::CursorIcon::ResizeNwSe,       // left_top
+                            1 => egui::CursorIcon::ResizeVertical,   // center_top
+                            2 => egui::CursorIcon::ResizeNeSw,       // right_top
+                            3 => egui::CursorIcon::ResizeHorizontal, // left_center
+                            4 => egui::CursorIcon::ResizeHorizontal, // right_center
+                            5 => egui::CursorIcon::ResizeNeSw,       // left_bottom
+                            6 => egui::CursorIcon::ResizeVertical,   // center_bottom
+                            7 => egui::CursorIcon::ResizeNwSe,       // right_bottom
+                            _ => egui::CursorIcon::Default,
+                        };
+
+                        if handle_response.hovered() {
+                            ui.ctx().set_cursor_icon(cursor);
+                        }
+
+                        if handle_response.hovered() || handle_response.drag_started() || handle_response.dragged() || handle_response.drag_stopped()
+                        {
+                            log::debug!(
+                                "image resize handle: container={} block={} idx={} rect={:?} pointer={:?} hovered={} pressed={} drag_started={} dragged={} drag_stopped={} delta={:?} standalone={} selected={:?}",
+                                i,
+                                *block,
+                                idx,
+                                handle_rect,
+                                pointer,
+                                handle_response.hovered(),
+                                handle_response.is_pointer_button_down_on(),
+                                handle_response.drag_started(),
+                                handle_response.dragged(),
+                                handle_response.drag_stopped(),
+                                handle_response.drag_delta(),
+                                standalone_image,
+                                object_sel,
+                            );
+                        }
+                        resize_drag_active |= handle_response.drag_started() || handle_response.dragged();
+
+                        let resize_state_id = ui.id().with(("image-resize-state", i, idx));
+                        if handle_response.drag_started() {
+                            let width = blocks
+                                .get(*block)
+                                .and_then(|block| match block {
+                                    Block::Image { width, .. } => *width,
+                                    _ => None,
+                                })
+                                .unwrap_or(image_rect.width() / zoom);
+                            let height = blocks
+                                .get(*block)
+                                .and_then(|block| match block {
+                                    Block::Image { height, .. } => *height,
+                                    _ => None,
+                                })
+                                .unwrap_or(image_rect.height() / zoom);
+                            if let (Some(container), Some(pointer)) = (boxes.get(i), pointer) {
+                                // Drag detection can begin on the first moved frame. Keep the
+                                // original press so that even a single motion resizes the picture.
+                                let pointer = ui.input(|input| input.pointer.press_origin()).unwrap_or(pointer);
+                                ui.data_mut(|data| {
+                                    data.insert_temp(resize_state_id, ImageResizeStart { x: container.x, y: container.y, width, height, pointer });
+                                });
+                            }
+                        }
+
+                        // Handle resize drag
+                        if handle_response.dragged() && matches!(blocks.get(*block), Some(Block::Image { .. })) {
+                            let frame_delta = handle_response.drag_delta();
+                            let block_idx = *block;
+                            let shift = ui.input(|input| input.modifiers.shift);
+                            let Some(start) = ui.data(|data| data.get_temp::<ImageResizeStart>(resize_state_id)) else {
+                                continue;
+                            };
+                            let delta = pointer.map_or(frame_delta, |current| current - start.pointer);
+                            log::debug!(
+                                "resize drag: idx={} frame_delta={:?} total_delta={:?} start_pointer={:?} pointer={:?} zoom={}",
+                                idx,
+                                frame_delta,
+                                delta,
+                                start.pointer,
+                                pointer,
+                                zoom
+                            );
+                            let geometry = resize_image(start.width, start.height, delta / zoom, idx, shift);
+                            // A picture sharing its box with other blocks (a printout page under its
+                            // attachment card) keeps the box in place and only widens it to hold the
+                            // picture. The height follows the content.
+                            if let Some(c) = boxes.get_mut(i) {
+                                if standalone_image {
+                                    c.x = start.x + geometry.offset.x;
+                                    c.y = start.y + geometry.offset.y;
+                                    c.width = geometry.width;
+                                } else {
+                                    c.width = c.width.max(geometry.width);
+                                }
+                            }
+                            if let Some(Block::Image { width, height, .. }) = blocks.get_mut(block_idx) {
+                                *width = Some(geometry.width);
+                                *height = Some(geometry.height);
+                                log::debug!("image resize: block={block_idx} width={} height={}", geometry.width, geometry.height);
+                            }
+                            out.boxes = true;
+                            out.changed.blocks = true;
+                        }
+                        if handle_response.drag_stopped() {
+                            ui.data_mut(|data| data.remove::<ImageResizeStart>(resize_state_id));
+                        }
+
+                        // Draw handle
+                        ui.painter().rect_filled(Rect::from_center_size(*point, vec2(size, size)), 1.0, t.editor);
+                        ui.painter().rect_stroke(Rect::from_center_size(*point, vec2(size, size)), 1.0, stroke, egui::StrokeKind::Inside);
+                    }
                 }
             }
         }
+        ui.data_mut(|d| d.insert_temp(crop_drag_active_id(), crop_drag_active));
         if let Some(response) = &image_hit
             && response.dragged()
             && !resize_drag_active
@@ -865,7 +1043,13 @@ pub fn show(
                 delete_at = Some(i);
             }
         } else if !primary_sheet_box && !image_object && !contains_image && (!holds_nothing || editing) {
-            ui.painter().set(shading, egui::Shape::rect_filled(frame, 3.0, box_tokens.editor));
+            let over_bg_image = (0..i).any(|j| {
+                frames.get(j).is_some_and(|fj| fj.intersects(frame))
+                    && blocks.get(container::blocks_of(boxes, j)).is_some_and(|held| held.iter().any(block_has_image))
+            });
+            if !over_bg_image {
+                ui.painter().set(shading, egui::Shape::rect_filled(frame, 3.0, box_tokens.editor));
+            }
         }
 
         // Drawn only when the pointer is in the container, the caret is in it, or it is
@@ -1112,8 +1296,11 @@ pub fn show(
     }
     if object_sel.is_some() && (caret.is_some() || ui.input(|i| i.key_pressed(Key::Escape))) {
         object_sel = None;
+        clear_active_crop(ui.ctx());
     }
-    if let Some((block, _)) = object_sel {
+    if let Some((block, _)) = object_sel
+        && active_crop_rect(ui.ctx(), page_dir, block).is_none()
+    {
         let direction = ui.input(|i| {
             if i.key_pressed(Key::ArrowLeft) || i.key_pressed(Key::ArrowUp) {
                 Some(false)
@@ -1221,6 +1408,7 @@ pub fn show(
     // Both keys should remove the selected object, just as they remove selected text.
     if let Some((block, _)) = object_sel
         && caret.is_none()
+        && active_crop_rect(ui.ctx(), page_dir, block).is_none()
         && !ui.ctx().egui_wants_keyboard_input()
         && ui.input(|i| i.key_pressed(Key::Delete) || i.key_pressed(Key::Backspace))
     {
@@ -1238,6 +1426,8 @@ pub fn show(
         } else {
             d.remove::<(usize, String, String)>(selected_object_id());
             d.remove::<(usize, String)>(selected_image_id());
+            d.remove::<(usize, String, [f32; 4])>(active_crop_id());
+            d.remove::<bool>(crop_drag_active_id());
         }
     });
 
@@ -1509,6 +1699,13 @@ pub fn show(
                 && b >= gone.end
             {
                 d.insert_temp(selected_image_id(), (b - n, on));
+            }
+            if let Some((b, on, rect)) = d.get_temp::<(usize, String, [f32; 4])>(active_crop_id()) {
+                if gone.contains(&b) {
+                    d.remove::<(usize, String, [f32; 4])>(active_crop_id());
+                } else if b >= gone.end {
+                    d.insert_temp(active_crop_id(), (b - n, on, rect));
+                }
             }
             // Measured again on the next frame with no button down.
             d.remove::<(usize, usize, usize, usize)>(words_id());

@@ -1541,13 +1541,14 @@ mod picture_turn_tests {
         settle(&mut h);
         assert_eq!(picture(&h).0, src);
 
-        // 2. Crop opens modal and applies crop cleanly.
+        // 2. Crop enters inline touch/pointer crop mode cleanly and applies crop.
         h.state_mut().ribbon_act(ribbon::Act::CropPicture);
-        settle(&mut h);
-        assert!(matches!(h.state().dialog, Some(Dialog::CropPicture { dims: (40, 20), .. })));
+        h.step();
+        assert!(h.state().dialog.is_none());
+        assert!(h.state().inline_crop.is_some());
         let img_idx = h.state().active_image_target().expect("img").0;
         h.state_mut().apply_crop_picture(img_idx, &src, &raw_bytes, [0.25, 0.25, 0.75, 0.75]);
-        h.state_mut().dialog = None;
+        h.state_mut().ribbon_act(ribbon::Act::CancelCrop);
         settle(&mut h);
         let (cropped, _, _) = picture(&h);
         assert_eq!(cropped, "assets/scan-cropped.png");
@@ -2489,5 +2490,352 @@ mod section_tabs_bar_tests {
         assert_eq!(downloads[0].mime, "application/zip");
         assert_eq!(downloads[0].name, "Mon-Cartable-Sauvegarde.zip");
         assert!(downloads[0].bytes.starts_with(b"PK"));
+    }
+
+    #[test]
+    fn the_phone_image_bar_opens_below_formatting_bar_when_image_selected() {
+        use egui_kittest::kittest::Queryable;
+        let t = ergonote_store::testing::TempDir::new("phone-image-bar");
+        let settings = ergonote_store::Settings::at(t.path().join("settings.toml"));
+        let _ = settings.set("privacy_welcome_seen", "true");
+        let mut session = Session::new(&t.path().join("notebooks"), settings).expect("session");
+        let sample = ergonote_engine::sample::create_sample(&mut session, None).expect("sample");
+        let mut img_bytes = Vec::new();
+        let rgba = image::RgbaImage::from_pixel(120, 80, image::Rgba([45, 110, 210, 255]));
+        image::DynamicImage::ImageRgba8(rgba).write_to(&mut std::io::Cursor::new(&mut img_bytes), image::ImageFormat::Png).expect("png");
+        let img_file = t.path().join("photo.png");
+        std::fs::write(&img_file, &img_bytes).expect("write photo");
+
+        let mut app = ErgoNoteApp::new(session).with_simple_mobile(true);
+        app.open_path(&sample.html_page.to_string_lossy());
+        app.compact_full_page = true;
+        let mut h: H = egui_kittest::Harness::builder()
+            .with_size(vec2(390.0, 844.0))
+            .with_accessibility_check(false)
+            .build_ui_state(|ui, app: &mut ErgoNoteApp| app.show(ui), app);
+        for _ in 0..3 {
+            h.step();
+        }
+        h.state_mut().add_file(&sample.html_page, &img_file, FileChoice::Copy);
+        for _ in 0..3 {
+            h.step();
+        }
+        let (page_dir, img_idx) = {
+            let ed = h.state().editor.as_ref().expect("editor");
+            let idx = ed.blocks.iter().position(|b| matches!(b, ergonote_formats::Block::Image { .. })).expect("image block");
+            (ed.dir.clone(), idx)
+        };
+        let key = page_dir.to_string_lossy().to_string();
+        h.ctx.data_mut(|d| {
+            d.insert_temp(egui::Id::new("embedded-object-selected"), (img_idx, "image".to_string(), key.clone()));
+            d.insert_temp(egui::Id::new("image-selected"), (img_idx, key));
+        });
+        for _ in 0..3 {
+            h.step();
+        }
+        assert_eq!(h.state().selected_image_block, Some(img_idx));
+        let crop_rect = h.get_by_label("Rogner").rect();
+        let bold_rect = h.get_by_label("Gras").rect();
+        assert!(crop_rect.min.y > bold_rect.max.y, "image bar ({crop_rect:?}) sits below formatting bar ({bold_rect:?})");
+        h.get_by_label("Scan N&B");
+        h.get_by_label("Texte / OCR");
+        if let Ok(out) = std::env::var("ERGONOTE_DUMP_MOBILE_IMAGE_PNG")
+            && let Ok(img) = h.render()
+        {
+            let _ = img.save(&out);
+        }
+    }
+
+    #[test]
+    fn inline_crop_mode_selects_and_crops_image_without_modal() {
+        use egui_kittest::kittest::Queryable;
+        let t = ergonote_store::testing::TempDir::new("mobile-inline-crop");
+        let settings = ergonote_store::Settings::at(t.path().join("settings.toml"));
+        let _ = settings.set("privacy_welcome_seen", "true");
+        let mut session = Session::new(&t.path().join("notebooks"), settings).expect("session");
+        let sample = ergonote_engine::sample::create_sample(&mut session, None).expect("sample");
+        let photo_path = t.path().join("photo.png");
+        let rgba = image::RgbaImage::from_fn(240, 180, |x, y| {
+            let border = x < 24 || y < 24 || x >= 216 || y >= 156;
+            if border { image::Rgba([210, 220, 235, 255]) } else { image::Rgba([35, 95, 195, 255]) }
+        });
+        image::DynamicImage::ImageRgba8(rgba).save(&photo_path).expect("save photo");
+
+        let mut app = ErgoNoteApp::new(session).with_simple_mobile(true);
+        app.open_path(&sample.html_page.to_string_lossy());
+        app.compact_full_page = true;
+        let mut h: H = egui_kittest::Harness::builder()
+            .with_size(vec2(390.0, 844.0))
+            .with_accessibility_check(false)
+            .build_ui_state(|ui, app: &mut ErgoNoteApp| app.show(ui), app);
+        for _ in 0..3 {
+            h.step();
+        }
+        h.state_mut().add_file(&sample.html_page, &photo_path, FileChoice::Copy);
+        for _ in 0..3 {
+            h.step();
+        }
+        h.state_mut().ribbon_act(ribbon::Act::CropPicture);
+        for _ in 0..4 {
+            h.step();
+        }
+        assert!(h.state().dialog.is_none());
+        assert!(h.state().inline_crop.is_some());
+        let (page_dir, block, src) = {
+            let st = h.state();
+            let crop = st.inline_crop.as_ref().expect("crop");
+            (crop.page_dir.clone(), crop.block, crop.src.clone())
+        };
+        assert_eq!(crate::containers::active_crop_rect(&h.ctx, &page_dir, block), Some([0.0, 0.0, 1.0, 1.0]));
+        h.get_by_label("✓ Valider");
+        h.get_by_label("Réinitialiser");
+        h.get_by_label("✕ Annuler");
+        crate::containers::set_active_crop(&h.ctx, &page_dir, block, [0.1, 0.1, 0.6, 0.6]);
+        for _ in 0..2 {
+            h.step();
+        }
+        if let Ok(out) = std::env::var("ERGONOTE_DUMP_MOBILE_CROP_PNG")
+            && let Ok(img) = h.render()
+        {
+            let _ = img.save(&out);
+        }
+        h.state_mut().ribbon_act(ribbon::Act::ApplyCrop);
+        for _ in 0..3 {
+            h.step();
+        }
+        assert!(h.state().inline_crop.is_none());
+        let after_src = h.state().active_image_target().expect("cropped image").1;
+        assert_ne!(after_src, src);
+    }
+
+    #[test]
+    fn pdf_faithful_copy_on_a4_aligns_without_overlapping_boxes() {
+        let t = ergonote_store::testing::TempDir::new("pdf-faithful-a4");
+        let settings = ergonote_store::Settings::at(t.path().join("settings.toml"));
+        let _ = settings.set("privacy_welcome_seen", "true");
+        let mut session = Session::new(&t.path().join("notebooks"), settings).expect("session");
+        let sample = ergonote_engine::sample::create_sample(&mut session, None).expect("sample");
+        let section_dir = sample.html_page.parent().expect("section");
+        let sec_str = section_dir.to_string_lossy().into_owned();
+        let blank_page = match session.run("node.create", &params(&[("parent", &sec_str), ("kind", "page"), ("title", "PDF Fidele")])) {
+            Ok(ergonote_engine::Output::Path(p)) => p,
+            other => panic!("expected blank page path, got {other:?}"),
+        };
+        let pdf_path = if let Ok(real_pdf) = std::env::var("ERGONOTE_CHECK_PDF_PATH") {
+            PathBuf::from(real_pdf)
+        } else {
+            let p = t.path().join("doc.pdf");
+            std::fs::write(
+                &p,
+                "%PDF-1.4\n1 0 obj\n<</Type/Catalog/Pages 2 0 R>>\nendobj\n2 0 obj\n<</Type/Pages/Kids[3 0 R]/Count 1>>\nendobj\n3 0 obj\n<</Type/Page/Parent 2 0 R/MediaBox[0 0 595.28 841.89]/Contents 4 0 R/Resources<<>>>>\nendobj\n4 0 obj\n<</Length 33>>\nstream\n0.8 0.1 0.1 rg 20 20 100 100 re f\nendstream\nendobj\nxref\n0 5\n0000000000 65535 f \n0000000009 00000 n \n0000000054 00000 n \n0000000105 00000 n \n0000000199 00000 n \ntrailer\n<</Root 1 0 R/Size 5>>\nstartxref\n280\n%%EOF\n",
+            )
+            .expect("pdf");
+            p
+        };
+        let mut app = ErgoNoteApp::new(session);
+        app.open_path(&blank_page.to_string_lossy());
+        app.full_page = true;
+        let mut h: H = egui_kittest::Harness::builder()
+            .with_size(vec2(1024.0, 1240.0))
+            .with_accessibility_check(false)
+            .build_ui_state(|ui, app: &mut ErgoNoteApp| app.show(ui), app);
+        for _ in 0..3 {
+            h.step();
+        }
+        // Reproduce real-world Android/desktop insertion when caret is cleared (`None`) before printout import.
+        if let Some(ed) = h.state_mut().editor.as_mut() {
+            ed.caret = None;
+        }
+        h.state_mut().add_file(&blank_page, &pdf_path, FileChoice::Printout);
+        for _ in 0..3 {
+            h.step();
+        }
+        let (img_idx, img_src) = {
+            let ed = h.state().editor.as_ref().expect("editor");
+            ed.blocks
+                .iter()
+                .enumerate()
+                .find_map(|(i, b)| match b {
+                    ergonote_formats::Block::Image { src, .. } => Some((i, src.clone())),
+                    _ => None,
+                })
+                .expect("printout image")
+        };
+        let printout_count =
+            h.state().editor.as_ref().expect("editor").blocks.iter().filter(|b| matches!(b, ergonote_formats::Block::Image { .. })).count();
+        let doc = if std::env::var_os("ERGONOTE_CHECK_PDF_PATH").is_some()
+            && let Ok((_, _, img_bytes)) = crate::imagemenu::validate_and_read_image(&blank_page, &img_src)
+        {
+            crate::ocr::extract_document(&blank_page, &img_src, &img_bytes).expect("real OCR/Poppler extract")
+        } else {
+            let pdf_bytes = std::fs::read(&pdf_path).expect("read pdf");
+            crate::ocr::extract_pdf_page_layout(&pdf_bytes, 0).ok().flatten().unwrap_or_else(|| crate::ocr::OcrDocument {
+                source_label: "Test",
+                aspect_ratio: 841.89 / 595.28,
+                blocks: vec![
+                    crate::ocr::OcrBlock {
+                        x: 0.16,
+                        y: 0.078,
+                        width: 0.26,
+                        height: 0.025,
+                        font_scale: 1.54,
+                        lines: vec!["Dr Mélanie PECOUL".to_string()],
+                    },
+                    crate::ocr::OcrBlock {
+                        x: 0.148,
+                        y: 0.103,
+                        width: 0.30,
+                        height: 0.068,
+                        font_scale: 1.0,
+                        lines: vec![
+                            "MÉDECIN GÉNÉRALISTE".to_string(),
+                            "12 G Rue Gambetta".to_string(),
+                            "42400 Saint-Chamond".to_string(),
+                            "Tel: 04 77 22 31 77 - Fax : 09 70 63 05 94".to_string(),
+                        ],
+                    },
+                    crate::ocr::OcrBlock {
+                        x: 0.15,
+                        y: 0.275,
+                        width: 0.72,
+                        height: 0.032,
+                        font_scale: 1.0,
+                        lines: vec!["- Bilan psychomoteur (accent sur la gestion des émotions/agitation) et rééducation si nécessaire.".to_string()],
+                    },
+                ],
+                plain_text: String::new(),
+            })
+        };
+        h.state_mut().reconstruct_page_from_ocr(img_idx, &doc, true);
+        for _ in 0..4 {
+            h.step();
+        }
+        if let Ok(out) = std::env::var("ERGONOTE_DUMP_PDF_COPY_PNG")
+            && let Ok(img) = h.render()
+        {
+            let _ = img.save(&out);
+        }
+        {
+            let st = h.state();
+            let ed = st.editor.as_ref().expect("editor");
+            assert_eq!(ed.paper_size.map(|p| p.size), Some(ergonote_model::paper::Size::A4), "PDF copy defaults page sheet to A4");
+            assert_eq!(
+                st.page_sheets.1,
+                printout_count.max(1),
+                "PDF faithful copy sheet count ({:?}) must match PDF page count ({printout_count})",
+                st.page_sheets
+            );
+            // Verify overlaid text boxes fit inside sheet width and do not collapse vertically on top of one another.
+            let text_boxes: Vec<&ergonote_model::Container> = ed
+                .boxes
+                .iter()
+                .enumerate()
+                .skip(1)
+                .filter(|(ci, _)| {
+                    let r = ergonote_model::container::blocks_of(&ed.boxes, *ci);
+                    !ed.blocks.get(r).is_some_and(|held| held.iter().any(|b| matches!(b, ergonote_formats::Block::Image { .. })))
+                })
+                .map(|(_, c)| c)
+                .collect();
+            assert!(!text_boxes.is_empty());
+            for pair in text_boxes.windows(2) {
+                let (a, b) = (pair[0], pair[1]);
+                let overlap_x = a.x < b.x + b.width && b.x < a.x + a.width;
+                assert!(!overlap_x || b.y >= a.y + 20.0, "text boxes overlap vertically: a={a:?}, b={b:?}");
+            }
+        }
+    }
+
+    #[test]
+    fn status_bar_word_counter_shows_total_and_updates_on_selection() {
+        use egui_kittest::kittest::Queryable as _;
+        let t = ergonote_store::testing::TempDir::new("status-bar-word-counter");
+        let settings = ergonote_store::Settings::at(t.path().join("settings.toml"));
+        let _ = settings.set("privacy_welcome_seen", "true");
+        let mut session = Session::new(&t.path().join("notebooks"), settings).expect("session");
+        let sample = ergonote_engine::sample::create_sample(&mut session, None).expect("sample");
+        let section_dir = sample.html_page.parent().expect("section");
+        let sec_str = section_dir.to_string_lossy().into_owned();
+        let blank_page = match session.run("node.create", &params(&[("parent", &sec_str), ("kind", "page"), ("title", "Essai")])) {
+            Ok(ergonote_engine::Output::Path(p)) => p,
+            other => panic!("expected blank page path, got {other:?}"),
+        };
+
+        let mut app = ErgoNoteApp::new(session);
+        app.open_path(&blank_page.to_string_lossy());
+        let mut h: H = egui_kittest::Harness::builder()
+            .with_size(vec2(1024.0, 768.0))
+            .with_accessibility_check(false)
+            .build_ui_state(|ui, app: &mut ErgoNoteApp| app.show(ui), app);
+        for _ in 0..3 {
+            h.step();
+        }
+        {
+            let plain = |s: &str| ergonote_formats::Span { text: s.to_owned(), ..Default::default() };
+            let ed = h.state_mut().editor.as_mut().expect("editor");
+            ed.blocks = vec![
+                ergonote_formats::Block::Heading { level: 1, spans: vec![plain("Essai")] },
+                ergonote_formats::Block::Paragraph(vec![plain("mercredi 1 janvier 2025")]),
+                ergonote_formats::Block::Paragraph(vec![plain("Bonjour le monde")]),
+                ergonote_formats::Block::Paragraph(vec![
+                    plain("Deuxième "),
+                    ergonote_formats::Span { text: "paragraphe".to_owned(), bold: true, ..Default::default() },
+                    plain(" ici"),
+                ]),
+            ];
+            ed.caret = None;
+            ed.across = None;
+        }
+        h.step();
+        assert!(h.query_by_label("6 mots").is_some(), "expected total 6 words in status bar");
+
+        // Single-block selection via caret.selection.
+        {
+            let ed = h.state_mut().editor.as_mut().expect("editor");
+            let text = crate::pageedit::block_text(&ed.blocks[2]);
+            ed.caret =
+                Some(crate::pageedit::Caret { block: 2, text, selection: (0, 10), place: None, cell: None, span: None, focus: false, inline: None });
+        }
+        h.step();
+        assert!(h.query_by_label("2 mots sélectionnés / 6").is_some(), "expected 2 selected words out of 6 in status bar");
+
+        // Multi-block selection via ed.across.
+        {
+            let ed = h.state_mut().editor.as_mut().expect("editor");
+            let end_b3 = crate::pageedit::block_text(&ed.blocks[3]).len();
+            ed.caret = None;
+            ed.across = Some(crate::pageedit::Across { from: (2, 8), to: (3, end_b3) });
+        }
+        h.step();
+        assert!(h.query_by_label("5 mots sélectionnés / 6").is_some(), "expected 5 selected words across blocks out of 6");
+    }
+
+    #[test]
+    fn place_textbox_starts_empty_and_focused() {
+        let t = ergonote_store::testing::TempDir::new("place-textbox-empty");
+        let settings = ergonote_store::Settings::at(t.path().join("settings.toml"));
+        let _ = settings.set("privacy_welcome_seen", "true");
+        let mut session = Session::new(&t.path().join("notebooks"), settings).expect("session");
+        let sample = ergonote_engine::sample::create_sample(&mut session, None).expect("sample");
+        let section_dir = sample.html_page.parent().expect("section");
+        let sec_str = section_dir.to_string_lossy().into_owned();
+        let blank_page = match session.run("node.create", &params(&[("parent", &sec_str), ("kind", "page"), ("title", "Zone")])) {
+            Ok(ergonote_engine::Output::Path(p)) => p,
+            other => panic!("expected blank page path, got {other:?}"),
+        };
+
+        let mut app = ErgoNoteApp::new(session);
+        app.open_path(&blank_page.to_string_lossy());
+        let before_boxes = app.editor.as_ref().expect("editor").boxes.len();
+        app.place_textbox_at(120.0, 140.0);
+
+        let ed = app.editor.as_ref().expect("editor");
+        assert_eq!(ed.boxes.len(), before_boxes + 1);
+        let caret = ed.caret.as_ref().expect("caret focused in new textbox");
+        assert_eq!(caret.text, "");
+        assert_eq!(caret.selection, (0, 0));
+        assert_eq!(caret.place, Some(0));
+        assert!(caret.focus);
+        assert_eq!(crate::pageedit::block_text(&ed.blocks[caret.block]), "");
     }
 }

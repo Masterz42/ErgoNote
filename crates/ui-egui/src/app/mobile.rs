@@ -381,6 +381,66 @@ impl ErgoNoteApp {
                         }
                     });
                 });
+        } else if self.selected_image_block.is_some() || self.inline_crop.is_some() {
+            let mut dismiss_image_bar = false;
+            let cropping_now = self.inline_crop.is_some();
+            egui::Panel::top("mobile-image-bar")
+                .frame(
+                    egui::Frame::new().fill(t.panel).inner_margin(egui::Margin::symmetric(8, 3)).stroke(egui::Stroke::new(1.0, t.container_border)),
+                )
+                .show_separator_line(false)
+                .show(ui, |ui| {
+                    use crate::turn::{Enhance, Turn};
+                    ui.horizontal_wrapped(|ui| {
+                        ui.spacing_mut().item_spacing = vec2(6.0, 6.0);
+                        if cropping_now {
+                            ui.label(egui::RichText::new("Tirez les poign\u{00E9}es sur l'image").small().color(t.muted));
+                            if pill(ui, "\u{2713} Valider", true).clicked() {
+                                acts.push(ribbon::Act::ApplyCrop);
+                            }
+                            if pill(ui, "R\u{00E9}initialiser", false).clicked() {
+                                acts.push(ribbon::Act::ResetCrop);
+                            }
+                            if pill(ui, "\u{2715} Annuler", false).clicked() {
+                                acts.push(ribbon::Act::CancelCrop);
+                            }
+                        } else {
+                            if pill(ui, "Rogner", false).clicked() {
+                                acts.push(ribbon::Act::CropPicture);
+                            }
+                            if pill(ui, "Pivoter \u{21BB}", false).clicked() {
+                                acts.push(ribbon::Act::TurnSelectedPicture(Turn::Right));
+                            }
+                            if pill(ui, "Pivoter \u{21BA}", false).clicked() {
+                                acts.push(ribbon::Act::TurnSelectedPicture(Turn::Left));
+                            }
+                            if pill(ui, "Scan N&B", false).clicked() {
+                                acts.push(ribbon::Act::EnhancePicture(Enhance::ScanBw));
+                            }
+                            if pill(ui, "Contraste +", false).clicked() {
+                                acts.push(ribbon::Act::EnhancePicture(Enhance::Contrast));
+                            }
+                            let ocr_label = if self.ocr_job.is_some() { "OCR..." } else { "Texte / OCR" };
+                            if pill(ui, ocr_label, self.ocr_job.is_some()).clicked() && self.ocr_job.is_none() {
+                                acts.push(ribbon::Act::OcrPicture { speak: false });
+                            }
+                            if pill(ui, "Lire", false).clicked() && self.ocr_job.is_none() {
+                                acts.push(ribbon::Act::OcrPicture { speak: true });
+                            }
+                            if pill(ui, if self.lock_images { "Verrouill\u{00E9}" } else { "Verrouiller" }, self.lock_images).clicked() {
+                                acts.push(ribbon::Act::ToggleLockImages);
+                            }
+                            if pill(ui, "\u{2715}", false).clicked() {
+                                dismiss_image_bar = true;
+                            }
+                        }
+                    });
+                });
+            if dismiss_image_bar {
+                self.selected_image_block = None;
+                self.last_selected_image = None;
+                crate::containers::clear_selected_object(ui.ctx());
+            }
         } else if self.caret_in_table() {
             egui::Panel::top("mobile-table-bar")
                 .frame(

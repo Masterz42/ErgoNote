@@ -57,8 +57,11 @@ pub struct OcrDocument {
 }
 
 impl OcrDocument {
-    /// Returns true when no two detected blocks sit side-by-side horizontally on the page.
+    /// Returns true when no block is offset into a right column and no two blocks sit side-by-side.
     pub fn is_single_column(&self) -> bool {
+        if self.blocks.iter().any(|b| b.x > 0.42) {
+            return false;
+        }
         for (i, a) in self.blocks.iter().enumerate() {
             for b in self.blocks.iter().skip(i + 1) {
                 let overlap_y = (a.y + a.height).min(b.y + b.height) - a.y.max(b.y);
@@ -82,8 +85,66 @@ struct PositionedLine {
     text: String,
 }
 
+#[cfg(not(target_arch = "wasm32"))]
+static CUSTOM_CACHE_DIR: std::sync::OnceLock<PathBuf> = std::sync::OnceLock::new();
+
+#[cfg(not(target_arch = "wasm32"))]
+type NativeOcrBackend = Box<dyn Fn(&[u8]) -> Result<OcrDocument, String> + Send + Sync>;
+
+#[cfg(not(target_arch = "wasm32"))]
+static NATIVE_OCR: std::sync::OnceLock<NativeOcrBackend> = std::sync::OnceLock::new();
+
+/// Sets the writable OCR model cache directory (used on Android via `internal_data_path`).
+#[cfg(not(target_arch = "wasm32"))]
+pub fn set_cache_dir(dir: PathBuf) {
+    let _ = CUSTOM_CACHE_DIR.set(dir);
+}
+
+/// Registers a platform-native OCR backend (used on Android for Google ML Kit Text Recognition).
+#[cfg(not(target_arch = "wasm32"))]
+pub fn set_native_ocr<F>(backend: F)
+where
+    F: Fn(&[u8]) -> Result<OcrDocument, String> + Send + Sync + 'static,
+{
+    let _ = NATIVE_OCR.set(Box::new(backend));
+}
+
+/// Builds a structured [`OcrDocument`] from positioned text lines `(x0, y0, x1, y1, text)`.
+#[cfg(not(target_arch = "wasm32"))]
+pub fn document_from_lines(
+    source_label: &'static str,
+    img_w: f32,
+    img_h: f32,
+    raw_lines: Vec<(f32, f32, f32, f32, String)>,
+) -> Result<OcrDocument, String> {
+    if !img_w.is_finite() || !img_h.is_finite() || img_w < 4.0 || img_h < 4.0 {
+        return Err("Dimensions d'image invalides pour l'OCR.".to_string());
+    }
+    let mut lines = Vec::new();
+    for (x0, y0, x1, y1, text) in raw_lines {
+        let trimmed = text.trim();
+        if trimmed.is_empty() || !x0.is_finite() || !y0.is_finite() || !x1.is_finite() || !y1.is_finite() || x1 <= x0 || y1 <= y0 {
+            continue;
+        }
+        lines.push(PositionedLine { x0, y0, x1, y1, font_size: (y1 - y0).max(10.0), text: trimmed.to_string() });
+    }
+    if lines.is_empty() {
+        return Err("Aucun texte lisible n'a été détecté sur cette image.".to_string());
+    }
+    let blocks = cluster_lines_into_blocks(lines, img_w, img_h);
+    if blocks.is_empty() {
+        return Err("Aucun bloc de texte détecté sur cette image.".to_string());
+    }
+    let plain_text = blocks.iter().map(|b| b.lines.join("\n")).collect::<Vec<_>>().join("\n\n");
+    Ok(OcrDocument { source_label, aspect_ratio: safe_aspect_ratio(img_w, img_h), blocks, plain_text })
+}
+
 /// User-writable cache directory where downloaded `.rten` / `.traineddata` OCR models live.
 pub fn cache_dir() -> PathBuf {
+    #[cfg(not(target_arch = "wasm32"))]
+    if let Some(dir) = CUSTOM_CACHE_DIR.get() {
+        return dir.clone();
+    }
     #[cfg(target_os = "windows")]
     if let Ok(local) = std::env::var("LOCALAPPDATA")
         && !local.is_empty()
@@ -119,7 +180,7 @@ pub fn resolve_pdf_printout(page_dir: &Path, image_src: &str) -> Option<(PathBuf
     ergonote_store::vfs::is_file(&pdf_path).then_some((pdf_path, page_one_based - 1))
 }
 
-#[cfg(any(target_os = "linux", target_os = "windows", target_os = "macos", target_os = "android"))]
+#[cfg(any(target_os = "linux", target_os = "windows", target_os = "macos", target_os = "android", target_os = "ios"))]
 fn download_if_missing(url: &str, dest: &Path, min_bytes: u64) -> Result<(), String> {
     use std::io::Read;
     if dest.exists() && std::fs::metadata(dest).is_ok_and(|m| m.len() > min_bytes) {
@@ -147,13 +208,13 @@ pub fn ensure_models() -> Result<(PathBuf, PathBuf), String> {
     let dir = cache_dir();
     let det = dir.join(DETECTION_FILE);
     let rec = dir.join(RECOGNITION_FILE);
-    #[cfg(any(target_os = "linux", target_os = "windows", target_os = "macos", target_os = "android"))]
+    #[cfg(any(target_os = "linux", target_os = "windows", target_os = "macos", target_os = "android", target_os = "ios"))]
     {
         download_if_missing(DETECTION_URL, &det, 1024)?;
         download_if_missing(RECOGNITION_URL, &rec, 1024)?;
         Ok((det, rec))
     }
-    #[cfg(not(any(target_os = "linux", target_os = "windows", target_os = "macos", target_os = "android")))]
+    #[cfg(not(any(target_os = "linux", target_os = "windows", target_os = "macos", target_os = "android", target_os = "ios")))]
     {
         if det.exists() && rec.exists() {
             Ok((det, rec))
@@ -694,7 +755,7 @@ pub(crate) fn parse_pdftotext_bbox_layout(xml: &str) -> Option<OcrDocument> {
     Some(OcrDocument { source_label: "PDF natif exact (Poppler)", aspect_ratio: safe_aspect_ratio(page_w, page_h), blocks, plain_text })
 }
 
-#[cfg(all(not(target_arch = "wasm32"), not(target_os = "android")))]
+#[cfg(all(not(target_arch = "wasm32"), not(any(target_os = "android", target_os = "ios"))))]
 fn pdftotext_extract_page(pdf_bytes: &[u8], page_index: usize) -> Option<OcrDocument> {
     let page_num = (page_index + 1).to_string();
     let tmp_pdf = std::env::temp_dir().join(format!("ergonote_pdftotext_{}.pdf", std::process::id()));
@@ -784,6 +845,47 @@ pub fn restore_french_accents(text: &str) -> String {
         ("aout", "août"),
         ("fevrier", "février"),
         ("decembre", "décembre"),
+        ("medecin", "médecin"),
+        ("medecins", "médecins"),
+        ("generaliste", "généraliste"),
+        ("reeducation", "rééducation"),
+        ("seance", "séance"),
+        ("seances", "séances"),
+        ("necessaire", "nécessaire"),
+        ("ergotherapeute", "ergothérapeute"),
+        ("disponibilites", "disponibilités"),
+        ("definition", "définition"),
+        ("epidemiologie", "épidémiologie"),
+        ("semiologie", "sémiologie"),
+        ("therapeutique", "thérapeutique"),
+        ("anxiete", "anxiété"),
+        ("anxieux", "anxieux"),
+        ("symptome", "symptôme"),
+        ("symptomes", "symptômes"),
+        ("prevalence", "prévalence"),
+        ("frequence", "fréquence"),
+        ("evolution", "évolution"),
+        ("entite", "entité"),
+        ("criteres", "critères"),
+        ("societe", "société"),
+        ("securite", "sécurité"),
+        ("realite", "réalité"),
+        ("devenir", "devenir"),
+        ("capacite", "capacité"),
+        ("capacites", "capacités"),
+        ("difficile", "difficile"),
+        ("differentiel", "différentiel"),
+        ("differentiels", "différentiels"),
+        ("parental", "parental"),
+        ("pere", "père"),
+        ("peres", "pères"),
+        ("mere", "mère"),
+        ("meres", "mères"),
+        ("frere", "frère"),
+        ("soeur", "soeur"),
+        ("reprise", "reprise"),
+        ("echec", "échec"),
+        ("eleve", "élève"),
     ];
 
     let mut out = String::with_capacity(text.len());
@@ -884,7 +986,7 @@ fn parse_tesseract_tsv(tsv: &str, img_w: f32, img_h: f32) -> Vec<OcrBlock> {
     cluster_lines_into_blocks(lines, img_w.max(1.0), img_h.max(1.0))
 }
 
-#[cfg(all(not(target_arch = "wasm32"), not(target_os = "android")))]
+#[cfg(all(not(target_arch = "wasm32"), not(any(target_os = "android", target_os = "ios"))))]
 fn tesseract_extract(bytes: &[u8]) -> Option<OcrDocument> {
     let check = std::process::Command::new("tesseract").arg("--version").output().ok()?;
     if !check.status.success() {
@@ -937,12 +1039,125 @@ fn tesseract_extract(bytes: &[u8]) -> Option<OcrDocument> {
     Some(OcrDocument { source_label: "Tesseract Français", aspect_ratio: safe_aspect_ratio(img_w, img_h), blocks, plain_text })
 }
 
+/// Reads EXIF orientation (`1..=8`) from raw JPEG bytes; returns `1` for non-JPEG or absent tag.
+pub(crate) fn jpeg_exif_orientation(bytes: &[u8]) -> u8 {
+    if bytes.len() < 12 || bytes.get(..2) != Some(&[0xFF, 0xD8]) {
+        return 1;
+    }
+    let mut pos = 2usize;
+    while pos + 4 <= bytes.len() {
+        if bytes[pos] != 0xFF {
+            break;
+        }
+        while pos < bytes.len() && bytes[pos] == 0xFF {
+            pos += 1;
+        }
+        let Some(&marker) = bytes.get(pos) else { break };
+        pos += 1;
+        if marker == 0xD9 || marker == 0xDA {
+            break;
+        }
+        if matches!(marker, 0x01 | 0xD0..=0xD8) {
+            continue;
+        }
+        let Some(len_bytes) = bytes.get(pos..pos + 2) else { break };
+        let seg_len = u16::from_be_bytes([len_bytes[0], len_bytes[1]]) as usize;
+        if seg_len < 2 || pos + seg_len > bytes.len() {
+            break;
+        }
+        if marker == 0xE1 && bytes.get(pos + 2..pos + 8) == Some(b"Exif\0\0") {
+            let tiff = &bytes[pos + 8..pos + seg_len];
+            let little = match tiff.get(..4) {
+                Some([b'I', b'I', 0x2A, 0x00]) => true,
+                Some([b'M', b'M', 0x00, 0x2A]) => false,
+                _ => return 1,
+            };
+            let u16_at = |off: usize| -> Option<u16> {
+                let s = tiff.get(off..off + 2)?;
+                Some(if little { u16::from_le_bytes([s[0], s[1]]) } else { u16::from_be_bytes([s[0], s[1]]) })
+            };
+            let u32_at = |off: usize| -> Option<u32> {
+                let s = tiff.get(off..off + 4)?;
+                Some(if little { u32::from_le_bytes([s[0], s[1], s[2], s[3]]) } else { u32::from_be_bytes([s[0], s[1], s[2], s[3]]) })
+            };
+            let Some(ifd0) = u32_at(4).map(|v| v as usize) else { return 1 };
+            let Some(entries) = u16_at(ifd0).map(|v| v as usize) else { return 1 };
+            for i in 0..entries.min(64) {
+                let entry = ifd0 + 2 + i * 12;
+                if u16_at(entry) == Some(0x0112) {
+                    let val = u16_at(entry + 8).unwrap_or(1);
+                    return if (1..=8).contains(&val) { val as u8 } else { 1 };
+                }
+            }
+            return 1;
+        }
+        pos += seg_len;
+    }
+    1
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+pub(crate) fn prepare_image_for_ocr(bytes: &[u8]) -> Result<image::RgbImage, String> {
+    let orientation = jpeg_exif_orientation(bytes);
+    let loaded = image::load_from_memory(bytes).map_err(|e| format!("Image illisible pour l'OCR : {e}"))?;
+    let oriented = match orientation {
+        2 => loaded.fliph(),
+        3 => loaded.rotate180(),
+        4 => loaded.flipv(),
+        5 => loaded.rotate90().fliph(),
+        6 => loaded.rotate90(),
+        7 => loaded.rotate270().fliph(),
+        8 => loaded.rotate270(),
+        _ => loaded,
+    };
+    let (w, h) = (oriented.width(), oriented.height());
+    let scaled = if w.max(h) > 2000 { oriented.resize(2000, 2000, image::imageops::FilterType::Triangle) } else { oriented };
+    let mut rgb = scaled.into_rgb8();
+    let raw = rgb.as_raw();
+    let mut hist = [0u32; 256];
+    let mut samples = 0u32;
+    for px in raw.as_chunks::<3>().0.iter().step_by(8) {
+        let luma = ((u32::from(px[0]) * 77 + u32::from(px[1]) * 150 + u32::from(px[2]) * 29) >> 8) as usize;
+        hist[luma.min(255)] += 1;
+        samples += 1;
+    }
+    if samples >= 64 {
+        let low_target = (samples / 50).max(1);
+        let high_target = (samples * 49 / 50).max(low_target + 1);
+        let mut acc = 0u32;
+        let (mut lo, mut hi) = (0u8, 255u8);
+        for (val, &cnt) in hist.iter().enumerate() {
+            acc += cnt;
+            if acc >= low_target {
+                lo = val as u8;
+                break;
+            }
+        }
+        acc = 0;
+        for (val, &cnt) in hist.iter().enumerate() {
+            acc += cnt;
+            if acc >= high_target {
+                hi = val as u8;
+                break;
+            }
+        }
+        let span = hi.saturating_sub(lo);
+        if (24..120).contains(&span) {
+            let scale = 255.0 / f32::from(span);
+            for c in rgb.as_mut() {
+                *c = ((*c).saturating_sub(lo) as f32 * scale).round().clamp(0.0, 255.0) as u8;
+            }
+        }
+    }
+    Ok(rgb)
+}
+
 /// Pure-Rust `ocrs` extraction keeping bounding boxes so layout can still be reconstructed on
 /// every platform (Android, Windows without Tesseract, etc.).
 #[cfg(not(target_arch = "wasm32"))]
 fn ocrs_extract_document(bytes: &[u8]) -> Result<OcrDocument, String> {
     use ocrs::TextItem;
-    let rgb = image::load_from_memory(bytes).map_err(|e| format!("Image illisible pour l'OCR : {e}"))?.into_rgb8();
+    let rgb = prepare_image_for_ocr(bytes)?;
     let (img_w, img_h) = (rgb.width() as f32, rgb.height() as f32);
     let (det_path, rec_path) = ensure_models()?;
     let detection_model = rten::Model::load_file(&det_path).map_err(|e| format!("Chargement détection OCR : {e}"))?;
@@ -1001,7 +1216,7 @@ fn paddle_oar_extract(bytes: &[u8]) -> Option<OcrDocument> {
         return None;
     }
 
-    let rgb = image::load_from_memory(bytes).ok()?.into_rgb8();
+    let rgb = prepare_image_for_ocr(bytes).ok()?;
     let (img_w, img_h) = (rgb.width() as f32, rgb.height() as f32);
     if img_w < 4.0 || img_h < 4.0 {
         return None;
@@ -1059,7 +1274,7 @@ pub fn extract_document(page_dir: &Path, image_src: &str, image_bytes: &[u8]) ->
     if let Some((pdf_path, page_index)) = resolve_pdf_printout(page_dir, image_src)
         && let Ok(pdf_bytes) = ergonote_store::vfs::read(&pdf_path)
     {
-        #[cfg(not(target_os = "android"))]
+        #[cfg(not(any(target_os = "android", target_os = "ios")))]
         if let Some(doc) = pdftotext_extract_page(&pdf_bytes, page_index) {
             return Ok(doc);
         }
@@ -1067,11 +1282,17 @@ pub fn extract_document(page_dir: &Path, image_src: &str, image_bytes: &[u8]) ->
             return Ok(doc);
         }
     }
+    if let Some(native) = NATIVE_OCR.get() {
+        match native(image_bytes) {
+            Ok(doc) => return Ok(doc),
+            Err(err) => log::warn!("Native OCR failed, falling back: {err}"),
+        }
+    }
     #[cfg(any(target_os = "linux", target_os = "windows", target_os = "macos"))]
     if let Some(doc) = paddle_oar_extract(image_bytes) {
         return Ok(doc);
     }
-    #[cfg(not(target_os = "android"))]
+    #[cfg(not(any(target_os = "android", target_os = "ios")))]
     if let Some(doc) = tesseract_extract(image_bytes) {
         return Ok(doc);
     }
@@ -1086,11 +1307,17 @@ pub fn extract_document(_page_dir: &Path, _image_src: &str, _image_bytes: &[u8])
 /// Extracts recognized text from raw image bytes (without PDF printout resolution).
 #[cfg(not(target_arch = "wasm32"))]
 pub fn recognize_bytes(bytes: &[u8]) -> Result<String, String> {
+    if let Some(native) = NATIVE_OCR.get() {
+        match native(bytes) {
+            Ok(doc) => return Ok(doc.plain_text),
+            Err(err) => log::warn!("Native OCR failed, falling back: {err}"),
+        }
+    }
     #[cfg(any(target_os = "linux", target_os = "windows", target_os = "macos"))]
     if let Some(doc) = paddle_oar_extract(bytes) {
         return Ok(doc.plain_text);
     }
-    #[cfg(not(target_os = "android"))]
+    #[cfg(not(any(target_os = "android", target_os = "ios")))]
     if let Some(doc) = tesseract_extract(bytes) {
         return Ok(doc.plain_text);
     }
@@ -1296,5 +1523,46 @@ mod tests {
         assert_eq!(doc.blocks.len(), 2, "4 stacked header lines should merge into 1 block: {:?}", doc.blocks);
         assert_eq!(doc.blocks[0].lines, vec!["MÉDECIN GÉNÉRALISTE", "12 G Rue Gambetta", "42400 Saint-Chamond", "Tel: 04 77 22 31 77"]);
         assert_eq!(doc.blocks[1].lines, vec!["Le 09 juil. 2026"]);
+    }
+
+    #[test]
+    fn jpeg_exif_orientation_rotates_upright_for_ocr() {
+        let img = image::RgbImage::from_fn(20, 10, |x, _y| if x < 10 { image::Rgb([255, 0, 0]) } else { image::Rgb([0, 0, 255]) });
+        let mut jpeg = Vec::new();
+        image::DynamicImage::ImageRgb8(img).write_to(&mut std::io::Cursor::new(&mut jpeg), image::ImageFormat::Jpeg).expect("encode jpeg");
+        // Inject minimal APP1 Exif header with little-endian IFD0 Orientation = 6 (90 deg CW).
+        let mut tiff_app1 = vec![
+            0xFF, 0xE1, 0x00, 34, b'E', b'x', b'i', b'f', 0, 0, b'I', b'I', 0x2A, 0x00, 8, 0, 0, 0, // IFD0 offset 8
+            1, 0, // 1 entry
+            0x12, 0x01, // Tag 0x0112 Orientation
+            3, 0, // SHORT
+            1, 0, 0, 0, // count 1
+            6, 0, 0, 0, // value = 6
+            0, 0, 0, 0, // next IFD
+        ];
+        tiff_app1[3] = (tiff_app1.len() - 2) as u8;
+        let mut with_exif = Vec::with_capacity(jpeg.len() + tiff_app1.len());
+        with_exif.extend_from_slice(&jpeg[..2]);
+        with_exif.extend_from_slice(&tiff_app1);
+        with_exif.extend_from_slice(&jpeg[2..]);
+        assert_eq!(jpeg_exif_orientation(&with_exif), 6);
+        let prepared = prepare_image_for_ocr(&with_exif).expect("prepare");
+        assert_eq!(prepared.dimensions(), (10, 20));
+    }
+
+    #[test]
+    fn document_from_lines_clusters_positioned_text_and_validates_empty() {
+        assert!(document_from_lines("ML Kit", 600.0, 800.0, Vec::new()).is_err());
+        let doc = document_from_lines(
+            "ML Kit",
+            600.0,
+            800.0,
+            vec![(40.0, 40.0, 280.0, 70.0, "Titre principal".to_string()), (40.0, 140.0, 520.0, 158.0, "Ligne accentuée en français".to_string())],
+        )
+        .expect("doc");
+        assert_eq!(doc.source_label, "ML Kit");
+        assert_eq!(doc.blocks.len(), 2);
+        assert!(doc.plain_text.contains("Titre principal"));
+        assert!(doc.plain_text.contains("français"));
     }
 }

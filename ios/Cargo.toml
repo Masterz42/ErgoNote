@@ -1,0 +1,36 @@
+[package]
+name = "ergonote-ios"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+description = "ErgoNote for iOS and iPadOS: the static library embedded in the iOS app bundle"
+
+[lib]
+name = "ergonote_ios"
+crate-type = ["staticlib", "rlib"]
+
+# The iOS C entrypoint jumps into Rust through an exported `ergonote_ios_main` symbol, and
+# `#[unsafe(no_mangle)]` is an unsafe attribute. The workspace forbids unsafe code, which cannot be
+# relaxed for one item, so this crate denies it instead and allows it on that single function.
+[lints.rust]
+unsafe_code = "deny"
+
+[lints.clippy]
+dbg_macro = "warn"
+todo = "warn"
+too_many_arguments = "allow"
+type_complexity = "allow"
+
+[dependencies]
+log = { workspace = true }
+
+[target.'cfg(target_os = "ios")'.dependencies]
+ergonote-engine = { workspace = true }
+ergonote-model = { workspace = true }
+ergonote-store = { workspace = true }
+ergonote-ui-egui = { workspace = true }
+egui = { workspace = true }
+eframe = { workspace = true, default-features = false, features = ["default_fonts", "wgpu"] }
+time = { workspace = true }

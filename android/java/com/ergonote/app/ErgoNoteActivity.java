@@ -42,6 +42,7 @@ public class ErgoNoteActivity extends NativeActivity {
     private static final int REQ_TAKE_PHOTO = 4202;
     private static final int REQ_VOICE_DICTATION = 4203;
     private static final int REQ_SAVE_FILE = 4204;
+    private static final int REQ_SCAN_DOCUMENT = 4205;
     private static final int IME_KEY_ENTER = 1;
     private static final int IME_KEY_BACKSPACE = 2;
 
@@ -453,27 +454,63 @@ public class ErgoNoteActivity extends NativeActivity {
             @Override
             public void run() {
                 try {
-                    android.content.ContentValues values = new android.content.ContentValues();
-                    values.put(android.provider.MediaStore.Images.Media.DISPLAY_NAME, "ErgoNote-" + System.currentTimeMillis() + ".jpg");
-                    values.put(android.provider.MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
-                    if (android.os.Build.VERSION.SDK_INT >= 29) {
-                        values.put(android.provider.MediaStore.Images.Media.RELATIVE_PATH, "Pictures/ErgoNote");
-                    }
-                    cameraUri = getContentResolver().insert(android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
-                    if (cameraUri == null) {
-                        nativeOnFilePickCancelled();
-                        return;
-                    }
-                    Intent intent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-                    intent.putExtra(android.provider.MediaStore.EXTRA_OUTPUT, cameraUri);
-                    intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                    startActivityForResult(intent, REQ_TAKE_PHOTO);
-                } catch (Exception e) {
-                    Log.e(TAG, "Failed to launch camera", e);
-                    nativeOnFilePickCancelled();
+                    com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions options =
+                        new com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions.Builder()
+                            .setGalleryImportAllowed(true)
+                            .setPageLimit(1)
+                            .setResultFormats(com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions.RESULT_FORMAT_JPEG)
+                            .setScannerMode(com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions.SCANNER_MODE_FULL)
+                            .build();
+                    com.google.mlkit.vision.documentscanner.GmsDocumentScanner scanner =
+                        com.google.mlkit.vision.documentscanner.GmsDocumentScanning.getClient(options);
+                    scanner.getStartScanIntent(ErgoNoteActivity.this)
+                        .addOnSuccessListener(new com.google.android.gms.tasks.OnSuccessListener<android.content.IntentSender>() {
+                            @Override
+                            public void onSuccess(android.content.IntentSender intentSender) {
+                                try {
+                                    startIntentSenderForResult(intentSender, REQ_SCAN_DOCUMENT, null, 0, 0, 0);
+                                } catch (Exception e) {
+                                    Log.w(TAG, "Document scanner intent failed, falling back to camera", e);
+                                    launchFallbackCamera();
+                                }
+                            }
+                        })
+                        .addOnFailureListener(new com.google.android.gms.tasks.OnFailureListener() {
+                            @Override
+                            public void onFailure(Exception e) {
+                                Log.w(TAG, "ML Kit Document Scanner unavailable, falling back to camera", e);
+                                launchFallbackCamera();
+                            }
+                        });
+                } catch (Throwable t) {
+                    Log.w(TAG, "Failed to initialize ML Kit Document Scanner, falling back to camera", t);
+                    launchFallbackCamera();
                 }
             }
         });
+    }
+
+    private void launchFallbackCamera() {
+        try {
+            android.content.ContentValues values = new android.content.ContentValues();
+            values.put(android.provider.MediaStore.Images.Media.DISPLAY_NAME, "ErgoNote-" + System.currentTimeMillis() + ".jpg");
+            values.put(android.provider.MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
+            if (android.os.Build.VERSION.SDK_INT >= 29) {
+                values.put(android.provider.MediaStore.Images.Media.RELATIVE_PATH, "Pictures/ErgoNote");
+            }
+            cameraUri = getContentResolver().insert(android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+            if (cameraUri == null) {
+                nativeOnFilePickCancelled();
+                return;
+            }
+            Intent intent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+            intent.putExtra(android.provider.MediaStore.EXTRA_OUTPUT, cameraUri);
+            intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            startActivityForResult(intent, REQ_TAKE_PHOTO);
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to launch camera", e);
+            nativeOnFilePickCancelled();
+        }
     }
 
     private void openVoiceDictation(final String locale) {
@@ -511,6 +548,27 @@ public class ErgoNoteActivity extends NativeActivity {
                 }
             }
             nativeOnVoiceDictated(recognized);
+            return;
+        }
+        if (requestCode == REQ_SCAN_DOCUMENT) {
+            com.google.mlkit.vision.documentscanner.GmsDocumentScanningResult result =
+                resultCode == RESULT_OK && data != null
+                    ? com.google.mlkit.vision.documentscanner.GmsDocumentScanningResult.fromActivityResultIntent(data)
+                    : null;
+            final Uri scanned =
+                result != null && result.getPages() != null && !result.getPages().isEmpty()
+                    ? result.getPages().get(0).getImageUri()
+                    : null;
+            if (scanned == null) {
+                nativeOnFilePickCancelled();
+                return;
+            }
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    copyPickedUriToCache(scanned);
+                }
+            }, "ergonote-scan-copy").start();
             return;
         }
         if (requestCode == REQ_TAKE_PHOTO) {
@@ -617,10 +675,163 @@ public class ErgoNoteActivity extends NativeActivity {
                     }
                 }
             }
+            normalizeJpegFileIfNeeded(outFile);
             nativeOnFilePicked(outFile.getAbsolutePath());
         } catch (Exception e) {
             Log.e(TAG, "Failed to copy picked URI", e);
             nativeOnFilePickCancelled();
+        }
+    }
+
+    private static void normalizeJpegFileIfNeeded(File file) {
+        String lower = file.getName().toLowerCase(Locale.ROOT);
+        if (!lower.endsWith(".jpg") && !lower.endsWith(".jpeg")) {
+            return;
+        }
+        try {
+            android.media.ExifInterface exif = new android.media.ExifInterface(file.getAbsolutePath());
+            int orientation = exif.getAttributeInt(
+                android.media.ExifInterface.TAG_ORIENTATION,
+                android.media.ExifInterface.ORIENTATION_NORMAL
+            );
+            android.graphics.BitmapFactory.Options bounds = new android.graphics.BitmapFactory.Options();
+            bounds.inJustDecodeBounds = true;
+            android.graphics.BitmapFactory.decodeFile(file.getAbsolutePath(), bounds);
+            int maxDim = Math.max(bounds.outWidth, bounds.outHeight);
+            boolean needsScale = maxDim > 2800;
+            boolean needsRotate = orientation != android.media.ExifInterface.ORIENTATION_NORMAL
+                && orientation != android.media.ExifInterface.ORIENTATION_UNDEFINED;
+            if (!needsScale && !needsRotate) {
+                return;
+            }
+            android.graphics.BitmapFactory.Options opts = new android.graphics.BitmapFactory.Options();
+            int sample = 1;
+            while (maxDim / sample > 3600) {
+                sample *= 2;
+            }
+            opts.inSampleSize = sample;
+            android.graphics.Bitmap decoded = android.graphics.BitmapFactory.decodeFile(file.getAbsolutePath(), opts);
+            if (decoded == null) {
+                return;
+            }
+            android.graphics.Matrix matrix = new android.graphics.Matrix();
+            switch (orientation) {
+                case android.media.ExifInterface.ORIENTATION_FLIP_HORIZONTAL:
+                    matrix.postScale(-1f, 1f);
+                    break;
+                case android.media.ExifInterface.ORIENTATION_ROTATE_180:
+                    matrix.postRotate(180f);
+                    break;
+                case android.media.ExifInterface.ORIENTATION_FLIP_VERTICAL:
+                    matrix.postScale(1f, -1f);
+                    break;
+                case android.media.ExifInterface.ORIENTATION_TRANSPOSE:
+                    matrix.postRotate(90f);
+                    matrix.postScale(-1f, 1f);
+                    break;
+                case android.media.ExifInterface.ORIENTATION_ROTATE_90:
+                    matrix.postRotate(90f);
+                    break;
+                case android.media.ExifInterface.ORIENTATION_TRANSVERSE:
+                    matrix.postRotate(270f);
+                    matrix.postScale(-1f, 1f);
+                    break;
+                case android.media.ExifInterface.ORIENTATION_ROTATE_270:
+                    matrix.postRotate(270f);
+                    break;
+                default:
+                    break;
+            }
+            int curMax = Math.max(decoded.getWidth(), decoded.getHeight());
+            if (curMax > 2800) {
+                float factor = 2800f / (float) curMax;
+                matrix.postScale(factor, factor);
+            }
+            android.graphics.Bitmap transformed = android.graphics.Bitmap.createBitmap(
+                decoded, 0, 0, decoded.getWidth(), decoded.getHeight(), matrix, true
+            );
+            if (transformed != decoded) {
+                decoded.recycle();
+            }
+            File tmp = new File(file.getParentFile(), file.getName() + ".norm");
+            try (FileOutputStream fos = new FileOutputStream(tmp)) {
+                transformed.compress(android.graphics.Bitmap.CompressFormat.JPEG, 92, fos);
+            } finally {
+                transformed.recycle();
+            }
+            if (tmp.exists() && tmp.length() > 0 && file.delete()) {
+                if (!tmp.renameTo(file)) {
+                    Log.w(TAG, "Failed to rename normalized JPEG " + tmp.getAbsolutePath());
+                }
+            } else if (tmp.exists()) {
+                tmp.delete();
+            }
+        } catch (Exception e) {
+            Log.w(TAG, "JPEG EXIF normalization skipped", e);
+        }
+    }
+
+    public String runMlKitOcr(final String imagePath) {
+        if (imagePath == null || imagePath.isEmpty()) {
+            return "ERR|Chemin image vide";
+        }
+        android.graphics.Bitmap bitmap = null;
+        com.google.mlkit.vision.text.TextRecognizer recognizer = null;
+        try {
+            com.google.mlkit.common.sdkinternal.MlKitContext.initializeIfNeeded(getApplicationContext());
+            bitmap = android.graphics.BitmapFactory.decodeFile(imagePath);
+            if (bitmap == null) {
+                return "ERR|Image illisible pour Google ML Kit";
+            }
+            int w = bitmap.getWidth();
+            int h = bitmap.getHeight();
+            recognizer = com.google.mlkit.vision.text.TextRecognition.getClient(
+                com.google.mlkit.vision.text.latin.TextRecognizerOptions.DEFAULT_OPTIONS
+            );
+            com.google.mlkit.vision.common.InputImage image =
+                com.google.mlkit.vision.common.InputImage.fromBitmap(bitmap, 0);
+            com.google.mlkit.vision.text.Text result = com.google.android.gms.tasks.Tasks.await(
+                recognizer.process(image),
+                30,
+                java.util.concurrent.TimeUnit.SECONDS
+            );
+            StringBuilder out = new StringBuilder();
+            out.append("OK|").append(w).append('|').append(h).append('\n');
+            if (result != null) {
+                for (com.google.mlkit.vision.text.Text.TextBlock block : result.getTextBlocks()) {
+                    for (com.google.mlkit.vision.text.Text.Line line : block.getLines()) {
+                        android.graphics.Rect box = line.getBoundingBox();
+                        String txt = line.getText();
+                        if (box == null || txt == null) {
+                            continue;
+                        }
+                        String clean = txt.replace('\t', ' ').replace('\n', ' ').replace('\r', ' ').trim();
+                        if (clean.isEmpty()) {
+                            continue;
+                        }
+                        out.append(box.left).append('\t')
+                            .append(box.top).append('\t')
+                            .append(box.right).append('\t')
+                            .append(box.bottom).append('\t')
+                            .append(clean).append('\n');
+                    }
+                }
+            }
+            return out.toString();
+        } catch (Throwable e) {
+            Log.e(TAG, "ML Kit OCR failed", e);
+            String msg = e.getMessage();
+            return "ERR|" + (msg != null && !msg.isEmpty() ? msg : e.getClass().getSimpleName());
+        } finally {
+            if (recognizer != null) {
+                try {
+                    recognizer.close();
+                } catch (Exception ignored) {
+                }
+            }
+            if (bitmap != null && !bitmap.isRecycled()) {
+                bitmap.recycle();
+            }
         }
     }
 
