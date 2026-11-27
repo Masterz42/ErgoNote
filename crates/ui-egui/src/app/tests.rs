@@ -3127,4 +3127,16 @@ mod section_tabs_bar_tests {
             assert!(blank_page.join("assets").join(format!("{id}.svg")).is_file(), "expected svg asset for {id}");
         }
     }
+
+    #[test]
+    fn release_notes_dialog_lists_current_workspace_version_first() {
+        let notes = super::dialogs::RELEASE_NOTES;
+        assert!(!notes.is_empty(), "RELEASE_NOTES must not be empty");
+        let expected_tag = format!("v{}", crate::backstage::VERSION);
+        assert!(
+            notes[0].0.contains(&expected_tag),
+            "first RELEASE_NOTES entry ({:?}) must document the current workspace version {expected_tag}",
+            notes[0].0
+        );
+    }
 }

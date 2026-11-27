@@ -1,5 +1,84 @@
 use super::*;
 
+pub(crate) const RELEASE_NOTES: &[(&str, &str)] = &[
+    (
+        "Nouveau en v2026.11.27 (27/11/2026) — Zones de texte personnalisables, ruban Accueil unifié, Émojis saisonniers & Labo",
+        "Onglets matières agrandis (suppression au clic droit, réorganisation par glisser-déposer, page vierge auto) ; zones de texte encadrées, personnalisables (contour couleur/épaisseur, fond, suppression rapide) et redimensionnables par les bords ; ruban Accueil unifié (Styles à gauche, Texte de base aligné avec bouton Écrire clignotant pendant le dessin, bloc Dessin & Formes dans Insérer, gros boutons Émojis saisonniers (36 smileys, 42 émojis) et Labo chimie 2D (18 schémas), Mise en page optimisée) ; correctif gomme en mode portrait smartphone.",
+    ),
+    (
+        "v2026.11.26 (26/11/2026) — Scanner de documents ML Kit, rognage tactile direct, compteur de mots & macOS/iPadOS",
+        "Scanner automatique de documents Google ML Kit sur Android (détection des 4 coins et redressage depuis le bouton Photo), rognage tactile direct à 8 poignées sur l'image, compteur de mots dynamique dans la barre d'état, zones de texte vides directement prêtes à écrire, déploiement macOS (.app / .dmg) et application native iPadOS.",
+    ),
+    (
+        "v2026.11.25 (25/11/2026) — Onglet Image & retouche, OCR français, ruban Tableau & exports Android",
+        "Nouvel onglet Image (rognage, contraste / Scan N&B, rotations, verrouillage et OCR français hors-ligne + lecture à voix haute), ruban Tableau réorganisé avec couleur des cellules, renommage complet en ErgoNote et exports natifs sur Android (PDF, HTML, DOC, sauvegarde ZIP et Partager).",
+    ),
+    (
+        "v2026.11.24 (24/11/2026) — Mode simple en tuiles, navigation tactile & Mise en page compacte",
+        "Passage à la numérotation par date (AAAA.MM.JJ), interface ultra simple en tuiles colorées façon Windows (en portrait smartphone et via Accueil > Mise en page > Simple sur PC), défilement naturel à 1 doigt + double-tap tolérant / appui long avec centrage automatique sur Android, icônes ergonomiques Image/Photo/Stylo, barre du bas épurée et groupe Mise en page compacté.",
+    ),
+    (
+        "v1.7.2 (23/11/2026) — Notifications automatiques de mise à jour & signalement de bug",
+        "Vérification discrète des nouvelles versions sur GitHub au démarrage et dans Fichier > À propos (bandeau non bloquant sans jamais écraser vos carnets), bouton Signaler un bug (?) avec formulaire anonyme et conservation permanente des 3 versions précédentes.",
+    ),
+    (
+        "v1.7.1 (23/11/2026) — Correcteur Hunspell complet (spellbook), effacement propre du gras & Offrir un café",
+        "Intégration pure Rust de spellbook 0.4.2 lisant toutes les règles flexionnelles (.aff + .dic) des dictionnaires Hunspell du système pour éliminer les faux positifs sur les conjugaisons, accords, noms invariables en -s et noms propres ; suppression des astérisques résiduels (**) lors de l'effacement d'un mot en gras ; et bouton Offrir un café dédié (don ponctuel Ko-fi).",
+    ),
+    (
+        "v1.7.0 (23/11/2026) — Prédiction contextuelle, Correcteur & syntaxe, Dictée vocale & Lecture synchronisée",
+        "Prédiction intelligente à 3 mots dès la 1re lettre et mot suivant (navigation par flèches + lecture vocale + Entrée pour valider, désactivable pour les dictées), bouton Corriger orthographe (ruban & clic droit) analysant fautes, homophones (a/à, et/est, son/sont, ce/se, ou/où), accords et -er/-é avec appui optionnel LanguageTool au clic, dictée vocale multi-OS, lecture à voix haute synchronisée directement sur la page (0,75× / 1× / 1,25×), export PDF direct, Tout sélectionner à 2 niveaux, pose d'opérations M/C/D/U et mise en forme dans les tableaux.",
+    ),
+    (
+        "v1.6 (20/11/2026) — Interface bleu clair, ruban compact & zoom façon Word",
+        "Thème bleu clair et onglets matières actifs par défaut, onglet Affichage fusionné dans Accueil, Presse-papiers et Texte de base compactés avec sélecteur de couleur de soulignage (16 couleurs), zoom déplacé en bas à droite façon Word, 134 symboles en 5 catégories, icônes couleur dédiées et installation Linux simplifiée (.deb et archive portable).",
+    ),
+    (
+        "v1.5 (19/11/2026) — Lisibilité, saisie et langue",
+        "Titre et date enfin lisibles en thème sombre, texte tapé après une coupe au milieu d'un mot gras qui reste en gras, feuilles ajoutées conservées avec leur page, date de page dans la langue de l'interface et interface limitée au français et à l'anglais.",
+    ),
+    (
+        "v1.4 (19/11/2026) — Gras/Italique fiabilisé, touche Entrée corrigée & améliorations mobile",
+        "Séparation propre des lignes au clavier sans étoiles résiduelles ni plantage, prise de photo directe et barre d'état sans chevauchement sur smartphone.",
+    ),
+    (
+        "v1.3 (19/11/2026) — Feuilles A4 entières, pagination & ErgoNote",
+        "Écriture sur toute la hauteur de la feuille A4 sans ligne de blocage au milieu, ajout automatique d'une 2ᵉ feuille dès dépassement, compteur < Feuille 1 / 2 > en bas, barre d'état épurée sans jargon technique et nouvelle identité ErgoNote.",
+    ),
+    (
+        "v1.2 (19/11/2026) — Ruban simplifié & fusion Accueil / Insérer",
+        "Fusion des onglets Accueil et Insérer en un seul onglet clair, suppression des doublons, barre flottante Play/Pause/Fin pour la lecture à voix haute et mode écriture facilité sur tablette.",
+    ),
+    (
+        "v1.1 (18/11/2026) — Verrouillage PDF / Images en fond",
+        "Bouton Verrouiller PDF / Images dans Accueil (et au clic droit sur une image) pour écrire par-dessus un exercice sans jamais le déplacer par erreur.",
+    ),
+    (
+        "v1.1 (18/11/2026) — Police OpenDyslexic & Texte aéré TND",
+        "Police OpenDyslexic intégrée sur toutes les plateformes et bouton Texte aéré TND (espacement élargi des lettres et des lignes).",
+    ),
+    (
+        "v1.1 (18/11/2026) — Règle de lecture visuelle",
+        "Guide-ligne horizontal coloré qui suit le curseur pour aider les élèves avec TND à ne pas sauter de ligne.",
+    ),
+    (
+        "v1.1 (18/11/2026) — Lecture à voix haute",
+        "Bouton Lire à voix haute dans Accueil, au clic droit et sur mobile pour écouter la sélection ou toute la page.",
+    ),
+    (
+        "v1.1 (18/11/2026) — Exposant (x²), Indice (x₂) et Retrait",
+        "Boutons directs dans le ruban Accueil pour les cours de Maths/Sciences et l'indentation des listes.",
+    ),
+    (
+        "v1.1 (18/11/2026) — Gabarits scolaires TND en 1 clic",
+        "Tableaux de conversion (km -> mm), de numération (Mille / Unités / Décimales) et de proportionnalité dans Insertion -> Tableau et Modèles de page.",
+    ),
+    (
+        "v1.0 (18/11/2026) — Onglets matières & Palette 16 couleurs",
+        "Barre d'onglets matières sous le ruban (masquant le bloc-notes à gauche) et palette de 16 couleurs avec vrai Jaune vif.",
+    ),
+];
+
 impl ErgoNoteApp {
     // ---------- dialogs ----------
 
@@ -641,32 +720,13 @@ impl ErgoNoteApp {
                         modal_title(ui, &self.tokens, &title);
                         ui.set_width(width);
                         ui.label(
-                            egui::RichText::new(format!("Version complète : v{}", crate::backstage::VERSION))
-                                .size(12.5)
-                                .color(self.tokens.muted),
+                            egui::RichText::new(format!("Version complète : v{}", crate::backstage::VERSION)).size(12.5).color(self.tokens.muted),
                         );
                         ui.add_space(8.0);
                         egui::ScrollArea::vertical().max_height(320.0).show(ui, |ui| {
-                            for (heading, desc) in [
-                                ("Nouveau en v2026.11.24 (24/11/2026) — Mode simple en tuiles, navigation tactile & Mise en page compacte", "Passage à la numérotation par date (AAAA.MM.JJ), interface ultra simple en tuiles colorées façon Windows (en portrait smartphone et via Accueil > Mise en page > Simple sur PC), défilement naturel à 1 doigt + double-tap tolérant / appui long avec centrage automatique sur Android, icônes ergonomiques Image/Photo/Stylo, barre du bas épurée et groupe Mise en page compacté."),
-                                ("v1.7.2 (23/11/2026) — Notifications automatiques de mise à jour & signalement de bug", "Vérification discrète des nouvelles versions sur GitHub au démarrage et dans Fichier > À propos (bandeau non bloquant sans jamais écraser vos carnets), bouton Signaler un bug (?) avec formulaire anonyme et conservation permanente des 3 versions précédentes."),
-                                ("v1.7.1 (23/11/2026) — Correcteur Hunspell complet (spellbook), effacement propre du gras & Offrir un café", "Intégration pure Rust de spellbook 0.4.2 lisant toutes les règles flexionnelles (.aff + .dic) des dictionnaires Hunspell du système pour éliminer les faux positifs sur les conjugaisons, accords, noms invariables en -s et noms propres ; suppression des astérisques résiduels (**) lors de l'effacement d'un mot en gras ; et bouton Offrir un café dédié (don ponctuel Ko-fi)."),
-                                ("v1.7.0 (23/11/2026) — Prédiction contextuelle, Correcteur & syntaxe, Dictée vocale & Lecture synchronisée", "Prédiction intelligente à 3 mots dès la 1re lettre et mot suivant (navigation par flèches + lecture vocale + Entrée pour valider, désactivable pour les dictées), bouton Corriger orthographe (ruban & clic droit) analysant fautes, homophones (a/à, et/est, son/sont, ce/se, ou/où), accords et -er/-é avec appui optionnel LanguageTool au clic, dictée vocale multi-OS, lecture à voix haute synchronisée directement sur la page (0,75× / 1× / 1,25×), export PDF direct, Tout sélectionner à 2 niveaux, pose d'opérations M/C/D/U et mise en forme dans les tableaux."),
-                                ("v1.6 (20/11/2026) — Interface bleu clair, ruban compact & zoom façon Word", "Thème bleu clair et onglets matières actifs par défaut, onglet Affichage fusionné dans Accueil, Presse-papiers et Texte de base compactés avec sélecteur de couleur de soulignage (16 couleurs), zoom déplacé en bas à droite façon Word, 134 symboles en 5 catégories, icônes couleur dédiées et installation Linux simplifiée (.deb et archive portable)."),
-                                ("v1.5 (19/11/2026) — Lisibilité, saisie et langue", "Titre et date enfin lisibles en thème sombre, texte tapé après une coupe au milieu d'un mot gras qui reste en gras, feuilles ajoutées conservées avec leur page, date de page dans la langue de l'interface et interface limitée au français et à l'anglais."),
-                                ("v1.4 (19/11/2026) — Gras/Italique fiabilisé, touche Entrée corrigée & améliorations mobile", "Séparation propre des lignes au clavier sans étoiles résiduelles ni plantage, prise de photo directe et barre d'état sans chevauchement sur smartphone."),
-                                ("v1.3 (19/11/2026) — Feuilles A4 entières, pagination & ErgoNote", "Écriture sur toute la hauteur de la feuille A4 sans ligne de blocage au milieu, ajout automatique d'une 2ᵉ feuille dès dépassement, compteur < Feuille 1 / 2 > en bas, barre d'état épurée sans jargon technique et nouvelle identité ErgoNote."),
-                                ("v1.2 (19/11/2026) — Ruban simplifié & fusion Accueil / Insérer", "Fusion des onglets Accueil et Insérer en un seul onglet clair, suppression des doublons, barre flottante Play/Pause/Fin pour la lecture à voix haute et mode écriture facilité sur tablette."),
-                                ("v1.1 (18/11/2026) — Verrouillage PDF / Images en fond", "Bouton Verrouiller PDF / Images dans Accueil (et au clic droit sur une image) pour écrire par-dessus un exercice sans jamais le déplacer par erreur."),
-                                ("v1.1 (18/11/2026) — Police OpenDyslexic & Texte aéré TND", "Police OpenDyslexic intégrée sur toutes les plateformes et bouton Texte aéré TND (espacement élargi des lettres et des lignes)."),
-                                ("v1.1 (18/11/2026) — Règle de lecture visuelle", "Guide-ligne horizontal coloré qui suit le curseur pour aider les élèves avec TND à ne pas sauter de ligne."),
-                                ("v1.1 (18/11/2026) — Lecture à voix haute", "Bouton Lire à voix haute dans Accueil, au clic droit et sur mobile pour écouter la sélection ou toute la page."),
-                                ("v1.1 (18/11/2026) — Exposant (x²), Indice (x₂) et Retrait", "Boutons directs dans le ruban Accueil pour les cours de Maths/Sciences et l'indentation des listes."),
-                                ("v1.1 (18/11/2026) — Gabarits scolaires TND en 1 clic", "Tableaux de conversion (km -> mm), de numération (Mille / Unités / Décimales) et de proportionnalité dans Insertion -> Tableau et Modèles de page."),
-                                ("v1.0 (18/11/2026) — Onglets matières & Palette 16 couleurs", "Barre d'onglets matières sous le ruban (masquant le bloc-notes à gauche) et palette de 16 couleurs avec vrai Jaune vif."),
-                            ] {
+                            for (heading, desc) in RELEASE_NOTES {
                                 ui.label(egui::RichText::new(format!("• {heading}")).strong().size(13.5).color(self.tokens.text));
-                                ui.label(egui::RichText::new(desc).size(12.5).color(self.tokens.muted));
+                                ui.label(egui::RichText::new(*desc).size(12.5).color(self.tokens.muted));
                                 ui.add_space(6.0);
                             }
                         });
