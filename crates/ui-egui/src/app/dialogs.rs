@@ -235,11 +235,7 @@ impl ErgoNoteApp {
                         stay_above(ui, backdrop);
                         modal_title(ui, &self.tokens, crate::tl_id!("ui.backup_recovery"));
                         ui.set_width(width);
-                        ui.label(
-                            egui::RichText::new("Vos cours sont enregistrés automatiquement en continu sur cet appareil.")
-                                .size(14.0)
-                                .color(self.tokens.text),
-                        );
+                        ui.label(egui::RichText::new(crate::tl_id!("ui.student_autosave_notice")).size(14.0).color(self.tokens.text));
                         ui.add_space(4.0);
                         ui.label(
                             egui::RichText::new(format!("Dossier des classeurs : {}", self.session.root().display()))
@@ -336,12 +332,14 @@ impl ErgoNoteApp {
                                 .inner_margin(egui::Margin::same(8))
                                 .show(ui, |ui| {
                                     ui.set_width((width - 20.0).max(220.0));
-                                    ui.label(egui::RichText::new("Texte analysé :").strong().size(11.5).color(self.tokens.muted));
+                                    ui.label(
+                                        egui::RichText::new(crate::tl_id!("ui.student_spell_analysed")).strong().size(11.5).color(self.tokens.muted),
+                                    );
                                     ui.label(egui::RichText::new(analyzed_text.trim()).size(12.5).color(self.tokens.text));
                                     if !issues.is_empty() && corrected_preview.trim() != analyzed_text.trim() {
                                         ui.add_space(4.0);
                                         ui.label(
-                                            egui::RichText::new("Aperçu après correction :")
+                                            egui::RichText::new(crate::tl_id!("ui.student_spell_preview"))
                                                 .strong()
                                                 .size(11.5)
                                                 .color(Color32::from_rgb(24, 128, 60)),
@@ -357,11 +355,7 @@ impl ErgoNoteApp {
                                 .corner_radius(8.0)
                                 .inner_margin(egui::Margin::same(12))
                                 .show(ui, |ui| {
-                                    ui.label(
-                                        egui::RichText::new("Aucune faute d'orthographe, d'homophone ou d'accord détectée.")
-                                            .strong()
-                                            .color(self.tokens.strong),
-                                    );
+                                    ui.label(egui::RichText::new(crate::tl_id!("ui.student_spell_none")).strong().color(self.tokens.strong));
                                 });
                         } else {
                             egui::ScrollArea::vertical().max_height(280.0).show(ui, |ui| {
@@ -405,16 +399,20 @@ impl ErgoNoteApp {
                                                         },
                                                     );
                                                     icons::paint(&sp, sr.shrink(4.0), Icon::ReadAloud, self.tokens.accent);
-                                                    if sresp.on_hover_text("Écouter cette correction").clicked() {
+                                                    if sresp.on_hover_text(crate::tl_id!("ui.student_listen_correction")).clicked() {
                                                         speak_one = Some(sugg.clone());
                                                     }
                                                 }
                                                 if ui
                                                     .add(
-                                                        egui::Button::new(egui::RichText::new("Ignorer").size(12.0).color(self.tokens.muted))
-                                                            .fill(self.tokens.panel)
-                                                            .corner_radius(5.0)
-                                                            .min_size(vec2(0.0, 24.0)),
+                                                        egui::Button::new(
+                                                            egui::RichText::new(crate::tl_id!("ui.student_ignore"))
+                                                                .size(12.0)
+                                                                .color(self.tokens.muted),
+                                                        )
+                                                        .fill(self.tokens.panel)
+                                                        .corner_radius(5.0)
+                                                        .min_size(vec2(0.0, 24.0)),
                                                     )
                                                     .clicked()
                                                 {
@@ -504,26 +502,14 @@ impl ErgoNoteApp {
                         stay_above(ui, backdrop);
                         modal_title(ui, &self.tokens, title);
                         ui.set_width(width);
-                        ui.label(
-                            egui::RichText::new(
-                                "ErgoNote est 100 % gratuit, libre, sans publicité et respectueux des élèves DYS / TND sur Windows, Linux, macOS et Android.",
-                            )
-                            .size(13.0)
-                            .color(self.tokens.text),
-                        );
+                        ui.label(egui::RichText::new(crate::tl_id!("ui.student_support_about")).size(13.0).color(self.tokens.text));
                         ui.add_space(6.0);
-                        ui.label(
-                            egui::RichText::new(
-                                "Si l'application vous est utile au quotidien, vous pouvez offrir un café (don libre) ou soutenir les prochaines versions :",
-                            )
-                            .size(12.5)
-                            .color(self.tokens.muted),
-                        );
+                        ui.label(egui::RichText::new(crate::tl_id!("ui.student_support_ask")).size(12.5).color(self.tokens.muted));
                         ui.add_space(10.0);
                         let warm = Color32::from_rgb(180, 95, 20);
                         if ui
                             .add(
-                                egui::Button::new(egui::RichText::new("Ouvrir la page de soutien ErgoNote").strong().color(Color32::WHITE))
+                                egui::Button::new(egui::RichText::new(crate::tl_id!("ui.student_open_support")).strong().color(Color32::WHITE))
                                     .fill(warm)
                                     .corner_radius(7.0)
                                     .min_size(vec2(width, 32.0)),
@@ -535,7 +521,7 @@ impl ErgoNoteApp {
                         ui.add_space(6.0);
                         if ui
                             .add(
-                                egui::Button::new(egui::RichText::new("Offrir un café (Ko-fi)").color(self.tokens.strong))
+                                egui::Button::new(egui::RichText::new(crate::tl_id!("ui.student_buy_coffee")).color(self.tokens.strong))
                                     .fill(crate::theme::mix(self.tokens.panel, self.tokens.accent, 0.14))
                                     .corner_radius(7.0)
                                     .min_size(vec2(width, 28.0)),
@@ -600,11 +586,7 @@ impl ErgoNoteApp {
                         stay_above(ui, backdrop);
                         modal_title(ui, &self.tokens, title);
                         ui.set_width(width);
-                        ui.label(
-                            egui::RichText::new("Un problème en cours, un affichage gênant ou une suggestion pour les élèves ?")
-                                .size(13.0)
-                                .color(self.tokens.text),
-                        );
+                        ui.label(egui::RichText::new(crate::tl_id!("ui.student_feedback_prompt")).size(13.0).color(self.tokens.text));
                         ui.add_space(6.0);
                         ui.label(
                             egui::RichText::new(format!(
@@ -618,7 +600,7 @@ impl ErgoNoteApp {
                         ui.add_space(10.0);
                         if ui
                             .add(
-                                egui::Button::new(egui::RichText::new("Ouvrir le formulaire de retour").strong().color(Color32::WHITE))
+                                egui::Button::new(egui::RichText::new(crate::tl_id!("ui.student_open_feedback")).strong().color(Color32::WHITE))
                                     .fill(self.tokens.accent)
                                     .corner_radius(7.0)
                                     .min_size(vec2(width, 32.0)),
@@ -1094,11 +1076,13 @@ impl ErgoNoteApp {
                         if *kind == NodeKind::Page {
                             self.open_page(&dir);
                         } else if *kind == NodeKind::Section {
-                            // The new section is the one chosen, so its pages (none yet, with
-                            // the Add page button above them) are what the page list shows next
-                            // (issue #139).
+                            self.open.insert(dir.clone());
                             self.selected = Some(dir.clone());
                             if let Some(page) = first_page(self.session.tree(), &dir) {
+                                self.open_page(&page);
+                            } else if let Some(Output::Path(page)) =
+                                self.run("node.create", &params(&[("parent", &path_str(&dir)), ("kind", "page")]))
+                            {
                                 self.open_page(&page);
                             }
                         }
@@ -1564,7 +1548,7 @@ impl ErgoNoteApp {
                     .show(ctx, |ui| {
                         ui.set_min_width(360.0);
                         modal_title(ui, &self.tokens, "Supprimer le tableau");
-                        ui.label("Voulez-vous supprimer le tableau ?");
+                        ui.label(crate::tl_id!("ui.student_delete_table_confirm"));
                         ui.add_space(6.0);
                         ui.horizontal(|ui| {
                             if modal_button(ui, &self.tokens, crate::tl_id!("ui.cancel"), false).clicked()
@@ -1940,7 +1924,7 @@ impl ErgoNoteApp {
                         ui.set_max_width(box_w);
                         modal_title(ui, &self.tokens, "Texte extrait de la page");
                         ui.label(egui::RichText::new(format!("Source : {source_label}")).small().color(self.tokens.accent));
-                        ui.label("Vérifiez ou modifiez le texte extrait avant de l'insérer, de le copier ou de l'écouter :");
+                        ui.label(crate::tl_id!("ui.student_ocr_edit_hint"));
                         ui.add_space(4.0);
                         egui::ScrollArea::vertical().max_height(240.0).show(ui, |ui| {
                             ui.add_sized([box_w, 200.0], egui::TextEdit::multiline(text).desired_width(box_w));

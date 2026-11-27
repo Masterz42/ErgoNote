@@ -118,23 +118,25 @@ pub fn check_branch(root: &Path, options: &[String]) -> Result<(), String> {
         return Ok(());
     };
     let on_main = branch == "main" || branch == "master";
+    let (base_name, base_ref) = if branch == "source" { ("source", "origin/source") } else { ("main", "origin/main") };
     if on_main && !push {
         problems.push("you are on main. Work on a branch: git switch -c feat/<what> (AGENTS.md)".into());
-    } else if !on_main && !branch_name_ok(&branch) {
+    } else if !on_main && branch != "source" && !branch_name_ok(&branch) {
         warnings.push(format!("the branch '{branch}' does not start with one of: {}", PREFIXES.join(" ")));
     }
 
-    if push && git(root, &["fetch", "--quiet", "origin", "main"]).is_none() {
-        problems.push("could not fetch origin/main; refusing to validate a push against stale history".into());
+    if push && git(root, &["fetch", "--quiet", "origin", base_name]).is_none() {
+        problems.push(format!("could not fetch {base_ref}; refusing to validate a push against stale history"));
     }
-    if git(root, &["rev-parse", "--verify", "--quiet", "origin/main"]).is_some() {
-        let behind: u32 = git(root, &["rev-list", "--count", "HEAD..origin/main"]).and_then(|n| n.parse().ok()).unwrap_or(0);
+    if git(root, &["rev-parse", "--verify", "--quiet", base_ref]).is_some() {
+        let range = format!("HEAD..{base_ref}");
+        let behind: u32 = git(root, &["rev-list", "--count", &range]).and_then(|n| n.parse().ok()).unwrap_or(0);
         if behind > 0 {
-            let msg = format!("{behind} commit(s) on origin/main are not in '{branch}'. Rebase: git fetch origin && git rebase origin/main");
+            let msg = format!("{behind} commit(s) on {base_ref} are not in '{branch}'. Rebase: git fetch origin && git rebase {base_ref}");
             if push { problems.push(msg) } else { warnings.push(msg) }
         }
     } else {
-        warnings.push("there is no origin/main to compare with".into());
+        warnings.push(format!("there is no {base_ref} to compare with"));
     }
 
     if !push {

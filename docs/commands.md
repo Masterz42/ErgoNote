@@ -115,6 +115,15 @@ Parameters:
 
 - path (required): the page to move down
 
+## `node.reorder`
+
+Move a section, group or page to a new zero-based position among siblings of the same kind (changes the tree).
+
+Parameters:
+
+- path (required): the node to move
+- index (required): target zero-based index among same-kind siblings
+
 ## `node.color`
 
 Colour a notebook, section group or section (changes the tree).

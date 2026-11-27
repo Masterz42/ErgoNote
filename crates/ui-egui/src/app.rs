@@ -1335,6 +1335,8 @@ pub struct ErgoNoteApp {
     split_panes: bool,
     /// Show a horizontal bar of section tabs (Français, Maths...) below the ribbon.
     section_tabs_bar: bool,
+    /// Section currently being dragged horizontally in the section tabs bar.
+    dragging_section_tab: Option<PathBuf>,
     /// Lock PDF / image containers in background against accidental drag/resize.
     lock_images: bool,
     /// Enable wider letter and line spacing for dyslexic readers.
@@ -1619,6 +1621,7 @@ impl ErgoNoteApp {
             selected: None,
             split_panes: session_split || session_section_tabs,
             section_tabs_bar: session_section_tabs,
+            dragging_section_tab: None,
             lock_images: session_lock_images,
             dys_spaced: session_dys_spaced,
             reading_ruler: session_reading_ruler,
@@ -4176,12 +4179,19 @@ impl ErgoNoteApp {
             title: String,
             colour: Option<NodeColor>,
             first_page: Option<PathBuf>,
+            count: usize,
         }
         fn collect_sections(nodes: &[Node], out: &mut Vec<SectionTabItem>) {
             for n in nodes {
                 if n.info.kind == NodeKind::Section {
                     let first_page = n.children.iter().find(|c| c.info.kind == NodeKind::Page).map(|c| c.path.clone());
-                    out.push(SectionTabItem { path: n.path.clone(), title: n.info.title.clone(), colour: n.info.color, first_page });
+                    out.push(SectionTabItem {
+                        path: n.path.clone(),
+                        title: n.info.title.clone(),
+                        colour: n.info.color,
+                        first_page,
+                        count: n.count(),
+                    });
                 } else {
                     collect_sections(&n.children, out);
                 }
@@ -4190,6 +4200,7 @@ impl ErgoNoteApp {
         let mut tabs = Vec::new();
         collect_sections(self.session.tree(), &mut tabs);
         if tabs.is_empty() {
+            self.dragging_section_tab = None;
             return;
         }
         let active_section = self.current_section(self.session.tree()).map(|n| n.path.clone());
@@ -4198,16 +4209,20 @@ impl ErgoNoteApp {
         let mut clicked_section: Option<(PathBuf, Option<PathBuf>)> = None;
         let mut add_section_parent: Option<(PathBuf, NodeKind)> = None;
         let mut tab_acts: Vec<Act> = Vec::new();
+        let mut tab_rects: Vec<(PathBuf, egui::Rect)> = Vec::with_capacity(tabs.len());
+        let mut start_drag_tab: Option<PathBuf> = None;
+        let held_long = ui.ctx().input(|i| i.pointer.primary_down() && i.pointer.press_start_time().is_some_and(|t0| i.time - t0 >= 0.28));
         let new_target = self.new_section_parent();
         egui::Panel::top("section-tabs")
-            .frame(egui::Frame::new().fill(tokens.band).inner_margin(egui::Margin { left: 8, right: 8, top: 4, bottom: 0 }))
+            .frame(egui::Frame::new().fill(tokens.band).inner_margin(egui::Margin { left: 8, right: 8, top: 5, bottom: 0 }))
             .show_separator_line(false)
             .show(ui, |ui| {
                 egui::ScrollArea::horizontal().id_salt("section-tabs-scroll").show(ui, |ui| {
                     ui.horizontal(|ui| {
-                        ui.spacing_mut().item_spacing = vec2(4.0, 0.0);
+                        ui.spacing_mut().item_spacing = vec2(5.0, 0.0);
                         for tab in &tabs {
                             let is_active = active_section.as_ref() == Some(&tab.path);
+                            let is_dragging = self.dragging_section_tab.as_ref() == Some(&tab.path);
                             let accent = tab
                                 .colour
                                 .map(|c| {
@@ -4215,40 +4230,67 @@ impl ErgoNoteApp {
                                     Color32::from_rgb(r, g, b)
                                 })
                                 .unwrap_or(tokens.accent);
-                            let font = egui::FontId::proportional(13.5);
+                            let font = egui::FontId::proportional(15.0);
                             let text_col = if is_active { tokens.strong } else { tokens.on_band().text };
                             let galley = ui.painter().layout_no_wrap(tab.title.clone(), font.clone(), text_col);
-                            let width = (galley.size().x + 26.0).clamp(72.0, 220.0);
-                            let (rect, resp) = ui.allocate_exact_size(vec2(width, 28.0), Sense::click());
+                            let width = (galley.size().x + 34.0).clamp(92.0, 250.0);
+                            let (rect, resp) = ui.allocate_exact_size(vec2(width, 36.0), Sense::click_and_drag());
+                            tab_rects.push((tab.path.clone(), rect));
+                            if resp.drag_started_by(egui::PointerButton::Primary) || (held_long && resp.is_pointer_button_down_on()) {
+                                start_drag_tab = Some(tab.path.clone());
+                            }
+                            if is_dragging {
+                                ui.ctx().set_cursor_icon(egui::CursorIcon::Grabbing);
+                            }
                             let painter = ui.painter_at(rect);
                             let fill = if is_active {
                                 tokens.editor
-                            } else if resp.hovered() {
+                            } else if resp.hovered() || is_dragging {
                                 crate::theme::mix(tokens.band, accent, 0.35)
                             } else {
                                 crate::theme::mix(tokens.band, accent, 0.18)
                             };
-                            painter.rect_filled(rect, egui::CornerRadius { nw: 6, ne: 6, sw: 0, se: 0 }, fill);
+                            painter.rect_filled(rect, egui::CornerRadius { nw: 7, ne: 7, sw: 0, se: 0 }, fill);
                             // Signature OneNote coloured strip along the top edge of the section tab.
-                            let stripe = egui::Rect::from_min_max(rect.min, egui::pos2(rect.max.x, rect.min.y + 3.5));
-                            painter.rect_filled(stripe, egui::CornerRadius { nw: 6, ne: 6, sw: 0, se: 0 }, accent);
-                            painter.text(rect.center() + vec2(0.0, 1.5), Align2::CENTER_CENTER, &tab.title, font, text_col);
+                            let stripe = egui::Rect::from_min_max(rect.min, egui::pos2(rect.max.x, rect.min.y + 4.5));
+                            painter.rect_filled(stripe, egui::CornerRadius { nw: 7, ne: 7, sw: 0, se: 0 }, accent);
+                            if is_dragging {
+                                painter.rect_stroke(
+                                    rect.shrink(1.0),
+                                    egui::CornerRadius { nw: 7, ne: 7, sw: 0, se: 0 },
+                                    egui::Stroke::new(2.0, tokens.accent),
+                                    egui::StrokeKind::Inside,
+                                );
+                            }
+                            painter.text(rect.center() + vec2(0.0, 2.0), Align2::CENTER_CENTER, &tab.title, font, text_col);
                             let label = tab.title.clone();
                             resp.widget_info(move || egui::WidgetInfo::selected(egui::WidgetType::Button, true, is_active, label.clone()));
                             resp.context_menu(|ui| {
                                 draw_node_color_menu(ui, &tab.path, tab.colour, dark, &mut tab_acts);
+                                floating::menu_separator(ui, &tokens);
+                                if floating::menu_row(
+                                    ui,
+                                    Some(floating::Glyph::Mark(crate::ribbon_icons::Mark::Delete)),
+                                    "Supprimer la matière…",
+                                    &tokens,
+                                )
+                                .clicked()
+                                {
+                                    tab_acts.push(Act::Delete(tab.path.clone(), tab.title.clone(), tab.count));
+                                    ui.close();
+                                }
                             });
-                            if resp.on_hover_text(&tab.title).clicked() {
+                            if resp.on_hover_text(&tab.title).clicked() && self.dragging_section_tab.is_none() && start_drag_tab.is_none() {
                                 clicked_section = Some((tab.path.clone(), tab.first_page.clone()));
                             }
                         }
                         if let Some((parent, kind)) = new_target.clone() {
-                            let (rect, resp) = ui.allocate_exact_size(vec2(26.0, 26.0), Sense::click());
+                            let (rect, resp) = ui.allocate_exact_size(vec2(34.0, 34.0), Sense::click());
                             let painter = ui.painter_at(rect);
                             if resp.hovered() {
-                                painter.rect_filled(rect, 5.0, tokens.on_band().panel);
+                                painter.rect_filled(rect, 6.0, tokens.on_band().panel);
                             }
-                            painter.text(rect.center(), Align2::CENTER_CENTER, "+", egui::FontId::proportional(16.0), tokens.on_band().text);
+                            painter.text(rect.center(), Align2::CENTER_CENTER, "+", egui::FontId::proportional(19.0), tokens.on_band().text);
                             if resp.on_hover_text(crate::tl_id!("ui.new_section_button")).clicked() {
                                 add_section_parent = Some((parent, kind));
                             }
@@ -4256,6 +4298,53 @@ impl ErgoNoteApp {
                     });
                 });
             });
+        if self.dragging_section_tab.is_none()
+            && let Some(path) = start_drag_tab
+        {
+            self.dragging_section_tab = Some(path);
+        }
+        if let Some(dragged) = self.dragging_section_tab.clone() {
+            let parent = dragged.parent();
+            let sibling_rects: Vec<(PathBuf, egui::Rect)> = tab_rects.into_iter().filter(|(p, _)| p.parent() == parent).collect();
+            let mut reorder_target: Option<usize> = None;
+            if let Some(cur_pos) = sibling_rects.iter().position(|(p, _)| p == &dragged)
+                && let Some(pointer) = ui.ctx().pointer_interact_pos()
+            {
+                let insert_slot = sibling_rects.iter().filter(|(_, r)| pointer.x > r.center().x).count();
+                let target_idx = if insert_slot > cur_pos { insert_slot.saturating_sub(1) } else { insert_slot };
+                if let Some((_, first_rect)) = sibling_rects.first()
+                    && let Some((_, last_rect)) = sibling_rects.last()
+                {
+                    let marker_x = if insert_slot == 0 {
+                        first_rect.left() - 2.0
+                    } else if insert_slot < sibling_rects.len() {
+                        (sibling_rects[insert_slot - 1].1.right() + sibling_rects[insert_slot].1.left()) * 0.5
+                    } else {
+                        last_rect.right() + 2.0
+                    };
+                    let fg = ui.ctx().layer_painter(egui::LayerId::new(egui::Order::Foreground, Id::new("section-tab-drop")));
+                    fg.line_segment(
+                        [egui::pos2(marker_x, first_rect.top()), egui::pos2(marker_x, first_rect.bottom())],
+                        egui::Stroke::new(3.0, tokens.accent),
+                    );
+                }
+                if target_idx != cur_pos {
+                    reorder_target = Some(target_idx);
+                }
+            }
+            let primary_down = ui.ctx().input(|i| i.pointer.primary_down());
+            if !primary_down {
+                self.dragging_section_tab = None;
+                if let Some(target_idx) = reorder_target
+                    && self.run("node.reorder", &params(&[("path", &path_str(&dragged)), ("index", &target_idx.to_string())])).is_some()
+                {
+                    self.session.refresh();
+                    self.say("Onglet déplacé.");
+                }
+            } else {
+                ui.ctx().request_repaint();
+            }
+        }
         for a in tab_acts {
             self.apply(a);
         }
@@ -4271,8 +4360,12 @@ impl ErgoNoteApp {
             self.open.insert(sec_path.clone());
             self.selected = Some(sec_path.clone());
             let already_in_section = self.editor.as_ref().is_some_and(|e| e.dir.starts_with(&sec_path));
-            if !already_in_section && let Some(page) = first_page {
-                self.open_page(&page);
+            if !already_in_section {
+                if let Some(page) = first_page {
+                    self.open_page(&page);
+                } else if let Some(Output::Path(page)) = self.run("node.create", &params(&[("parent", &path_str(&sec_path)), ("kind", "page")])) {
+                    self.open_page(&page);
+                }
             }
         }
         if let Some((parent, kind)) = add_section_parent {
@@ -4437,7 +4530,7 @@ impl ErgoNoteApp {
         let ico_r = egui::Rect::from_center_size(rect.center(), vec2(14.0, 14.0));
         icons::paint(&painter, ico_r, Icon::Coffee, warm);
         let _ = (label, font);
-        resp.on_hover_text("Offrir un café pour soutenir ErgoNote (Ko-fi)").clicked()
+        resp.on_hover_text(crate::tl_id!("ui.student_kofi_tip")).clicked()
     }
 
     /// Discreet button in the top-right bar opening the bug-report / feedback dialog.
@@ -4453,7 +4546,7 @@ impl ErgoNoteApp {
         painter.rect_stroke(rect, 6.0, egui::Stroke::new(1.0, on.container_border), egui::StrokeKind::Inside);
         let ico_r = egui::Rect::from_center_size(rect.center(), vec2(13.0, 13.0));
         icons::paint(&painter, ico_r, Icon::Help, on.text);
-        resp.on_hover_text("Signaler un bug ou proposer une amélioration (formulaire sans compte)").clicked()
+        resp.on_hover_text(crate::tl_id!("ui.student_feedback_tip")).clicked()
     }
 
     /// Discreet green pill shown next to the version badge when a newer release is available on GitHub.
@@ -4511,10 +4604,22 @@ impl ErgoNoteApp {
                     {
                         download_clicked = true;
                     }
-                    if ui.add(egui::Button::new(egui::RichText::new("Notes").size(12.0).color(tokens.text)).corner_radius(6.0)).clicked() {
+                    if ui
+                        .add(
+                            egui::Button::new(egui::RichText::new(crate::tl_id!("ui.student_update_notes")).size(12.0).color(tokens.text))
+                                .corner_radius(6.0),
+                        )
+                        .clicked()
+                    {
                         notes_clicked = true;
                     }
-                    if ui.add(egui::Button::new(egui::RichText::new("Plus tard").size(12.0).color(tokens.muted)).corner_radius(6.0)).clicked() {
+                    if ui
+                        .add(
+                            egui::Button::new(egui::RichText::new(crate::tl_id!("ui.student_later")).size(12.0).color(tokens.muted))
+                                .corner_radius(6.0),
+                        )
+                        .clicked()
+                    {
                         later_clicked = true;
                     }
                 });
@@ -5950,6 +6055,7 @@ impl ErgoNoteApp {
                 }
             }
             ribbon::Act::Symbols => self.dialog = Some(Dialog::Symbols),
+            ribbon::Act::InsertSticker(id) => self.insert_sticker(id),
             ribbon::Act::Equation(tex) => self.insert_in_page(&format!("${tex}$")),
             ribbon::Act::Tab(name) => {
                 // Folded, a tab shows its commands over the page; the same tab again hides them.
@@ -6277,6 +6383,7 @@ impl ErgoNoteApp {
             }
             ribbon::Act::InkUndo => self.ink_undo(),
             ribbon::Act::InkRedo => self.ink_redo(),
+            ribbon::Act::InkClear => self.ink_clear(),
             ribbon::Act::InkInsert => self.ink_insert(),
             ribbon::Act::InkExportPlain => self.ink_export_plain(),
             ribbon::Act::BoardPhoto => self.insert_board_photo(),
@@ -6349,7 +6456,7 @@ impl ErgoNoteApp {
         Self::remember_step(ed);
         let block_idx = ed.blocks.len();
         ed.blocks.push(ergonote_formats::Block::Paragraph(Vec::new()));
-        ed.boxes.push(ergonote_model::Container { x: x.max(0.0), y: y.max(0.0), width: 260.0, blocks: 1 });
+        ed.boxes.push(ergonote_model::Container::new(x, y, 260.0, 1).with_frame(true));
         ed.caret = Some(pageedit::Caret {
             block: block_idx,
             text: String::new(),
@@ -6512,7 +6619,7 @@ impl ErgoNoteApp {
         let note_block = ed.blocks.len();
         ed.blocks.push(ergonote_formats::Block::Paragraph(Vec::new()));
         let photo_y = ed.boxes.last().map_or(below, |c| c.y);
-        ed.boxes.push(ergonote_model::Container { x: 380.0, y: photo_y, width: 340.0, blocks: 1 });
+        ed.boxes.push(ergonote_model::Container::new(380.0, photo_y, 340.0, 1));
         ed.caret = Some(pageedit::Caret {
             block: note_block,
             text: String::new(),
@@ -6867,6 +6974,24 @@ impl ErgoNoteApp {
         }
         self.tell_kept_ink();
         // The page stops naming ink it no longer has.
+        self.sync_ink_reference();
+    }
+
+    /// Removes every ink stroke on this page as a single undoable step.
+    fn ink_clear(&mut self) {
+        let Some(pad) = self.pad.as_mut() else {
+            self.say(crate::tl_id!("ui.there_is_no_drawing_on_this_page"));
+            return;
+        };
+        if !pad.clear_all() {
+            self.say(crate::tl_id!("ui.there_is_no_drawing_on_this_page"));
+            return;
+        }
+        match pad.save() {
+            Ok(()) => self.say("Dessin effac\u{00E9}"),
+            Err(e) => self.complain(&crate::i18n::format_message_id("ui.cannot_write_the_drawing_error", &[("error", &e.to_string())])),
+        }
+        self.tell_kept_ink();
         self.sync_ink_reference();
     }
 
@@ -7541,13 +7666,55 @@ impl ErgoNoteApp {
 
     /// Picks up a pen, which is all it takes: the whole page is the ink's, so there is no
     /// sheet to put anywhere first.
+    fn insert_sticker(&mut self, id: &str) {
+        let Some(sticker) = crate::stickers::find(id) else { return };
+        let Some(dir) = self.editor.as_ref().map(|e| e.dir.clone()) else {
+            self.say(crate::tl_id!("ui.open_a_page_first"));
+            return;
+        };
+        if self.editor.as_ref().is_some_and(|e| !e.writable) {
+            self.say(crate::tl_id!("ui.this_page_holds_markup_ergonote_does_not_edit_yet_s_bc3b3b6a92"));
+            return;
+        }
+        let filename = format!("{}.svg", sticker.id);
+        let link = match ergonote_store::assets::attach_bytes(&dir, &filename, sticker.svg.as_bytes()) {
+            Ok(link) => link,
+            Err(e) => {
+                self.complain(&format!("Impossible d'ins\u{00E9}rer {} : {e}", sticker.label));
+                return;
+            }
+        };
+        let Some(ed) = self.editor.as_mut() else { return };
+        Self::remember_step(ed);
+        let before = ed.blocks.len();
+        let below = ed.content_bottom.unwrap_or_else(|| ed.boxes.iter().map(|c| c.y + 60.0).fold(0.0, f32::max));
+        let (x, y) =
+            if matches!(sticker.category, crate::stickers::Category::Labo) { (40.0, below.max(24.0)) } else { (320.0, (below - 30.0).max(24.0)) };
+        ed.blocks.push(ergonote_formats::Block::Image {
+            alt: sticker.label.to_string(),
+            src: link,
+            width: Some(sticker.width),
+            height: Some(sticker.height),
+        });
+        let box_w = sticker.width.max(ergonote_model::container::MIN_WIDTH);
+        ed.boxes = ergonote_model::container::fit(&ed.boxes, before, 360.0);
+        ed.boxes.push(ergonote_model::Container::new(x, y, box_w, 1));
+        ed.arranged = true;
+        ed.caret = None;
+        ed.rebuild_body();
+        Self::mark_dirty_from_blocks(ed);
+        Self::remember_edit(ed);
+        ed.attachments = ergonote_store::assets::list(&ed.dir);
+        self.say(format!("Ins\u{00E9}r\u{00E9} : {}", sticker.label));
+    }
+
     fn ink_insert(&mut self) {
         if self.editor.is_none() {
             self.say(crate::tl_id!("ui.open_a_page_first"));
             return;
         }
         self.pointer = ribbon::Pointer::Draw;
-        self.ribbon_tab = "Draw".to_string();
+        self.ribbon_tab = "Home".to_string();
         self.say(crate::tl_id!("ui.write_anywhere_on_the_page"));
     }
 
@@ -10301,7 +10468,7 @@ impl ErgoNoteApp {
                                     if let Some(b) = ed.boxes.get_mut(i)
                                         && *d != egui::Vec2::ZERO
                                     {
-                                        *b = ergonote_model::container::Container::new(b.x + d.x, b.y + d.y, b.width, b.blocks);
+                                        *b = b.with_geometry(b.x + d.x, b.y + d.y, b.width);
                                         moved.boxes = true;
                                     }
                                 }
@@ -10334,7 +10501,7 @@ impl ErgoNoteApp {
                                     let by = if by < 0.0 && highest.is_finite() { by.max(-highest) } else { by };
                                     for i in &below {
                                         if let Some(b) = ed.boxes.get_mut(*i) {
-                                            *b = ergonote_model::container::Container::new(b.x, b.y + by, b.width, b.blocks);
+                                            *b = b.with_geometry(b.x, b.y + by, b.width);
                                         }
                                     }
                                     if !below.is_empty() && by != 0.0 {
@@ -10380,7 +10547,7 @@ impl ErgoNoteApp {
                                 if let Some((dx, dy)) = pad.take_shift() {
                                     for i in crate::containers::selected_boxes(ui.ctx(), &ed.dir) {
                                         if let Some(c) = ed.boxes.get_mut(i) {
-                                            *c = ergonote_model::container::Container::new(c.x + dx, c.y + dy, c.width, c.blocks);
+                                            *c = c.with_geometry(c.x + dx, c.y + dy, c.width);
                                             moved.boxes = true;
                                         }
                                     }
@@ -10504,7 +10671,9 @@ impl ErgoNoteApp {
             } else {
                 let ink_owns_canvas = self.pointer != ribbon::Pointer::Write;
                 let touch_nav = pageedit::touch_navigation(ui.ctx());
-                let dragging_handle = pageedit::is_dragging_selection_handle(ui.ctx()) || crate::containers::is_crop_drag_active(ui.ctx());
+                let dragging_handle = pageedit::is_dragging_selection_handle(ui.ctx())
+                    || crate::containers::is_crop_drag_active(ui.ctx())
+                    || crate::containers::is_container_drag_active(ui.ctx());
                 let scroll = egui::containers::scroll_area::ScrollSource {
                     drag: if ink_owns_canvas || dragging_handle || self.inline_crop.is_some() {
                         egui::containers::scroll_area::DragScroll::Never
@@ -10925,16 +11094,21 @@ impl ErgoNoteApp {
                     ui.label(egui::RichText::new(state).small().color(self.tokens.muted));
                     ui.separator();
                     let (cur_sheet, total_sheets) = self.page_sheets;
-                    if ui.add_enabled(cur_sheet > 1, egui::Button::new("<").small()).on_hover_text("Feuille précédente").clicked() {
+                    // i18n-exempt: "<" is a compact arrow glyph for the previous sheet button.
+                    if ui.add_enabled(cur_sheet > 1, egui::Button::new("<").small()).on_hover_text(crate::tl_id!("ui.student_prev_sheet")).clicked() {
                         self.scroll_to_sheet = Some(cur_sheet - 1);
                         ui.ctx().request_repaint();
                     }
                     ui.label(egui::RichText::new(format!("Feuille {cur_sheet} / {total_sheets}")).small().strong().color(self.tokens.text));
-                    if ui.add_enabled(cur_sheet < total_sheets, egui::Button::new(">").small()).on_hover_text("Feuille suivante").clicked() {
+                    if ui
+                        .add_enabled(cur_sheet < total_sheets, egui::Button::new(">").small()) // i18n-exempt: ">" is a compact arrow glyph for the next sheet button.
+                        .on_hover_text(crate::tl_id!("ui.student_next_sheet"))
+                        .clicked()
+                    {
                         self.scroll_to_sheet = Some(cur_sheet + 1);
                         ui.ctx().request_repaint();
                     }
-                    if ui.small_button("+ Feuille").on_hover_text("Ajouter une feuille supplémentaire en dessous").clicked() {
+                    if ui.small_button(crate::tl_id!("ui.student_add_sheet")).on_hover_text(crate::tl_id!("ui.student_add_sheet_tip")).clicked() {
                         self.extra_sheets = total_sheets;
                         self.remember_extra_sheets();
                         self.scroll_to_sheet = Some(total_sheets + 1);
@@ -10964,7 +11138,6 @@ impl ErgoNoteApp {
         ui.spacing_mut().item_spacing.x = 3.0;
 
         // 1. Farthest right: percentage button (resets to 100%).
-        // i18n-exempt: percentage is a numeric zoom value, not translated copy.
         let pct_text = format!("{}%", self.zoom_percent);
         let (pct_rect, pct_resp) = ui.allocate_exact_size(vec2(46.0, 20.0), Sense::click());
         let pct_painter = ui.painter_at(pct_rect);
@@ -11332,19 +11505,21 @@ impl ErgoNoteApp {
                                 ui.label(egui::RichText::new(format!("Rognage : {cw} × {ch} px")).small().color(self.tokens.muted));
                                 if ui
                                     .add(
-                                        egui::Button::new(egui::RichText::new("\u{2713} Valider").strong().color(self.tokens.text))
-                                            .fill(self.tokens.row_selected)
-                                            .stroke(egui::Stroke::new(1.5, self.tokens.accent))
-                                            .corner_radius(6.0),
+                                        egui::Button::new(
+                                            egui::RichText::new(crate::tl_id!("ui.student_crop_apply")).strong().color(self.tokens.text),
+                                        )
+                                        .fill(self.tokens.row_selected)
+                                        .stroke(egui::Stroke::new(1.5, self.tokens.accent))
+                                        .corner_radius(6.0),
                                     )
                                     .clicked()
                                 {
                                     action = Some(ribbon::Act::ApplyCrop);
                                 }
-                                if ui.button("Réinitialiser").clicked() {
+                                if ui.button(crate::tl_id!("ui.student_reset")).clicked() {
                                     action = Some(ribbon::Act::ResetCrop);
                                 }
-                                if ui.button("\u{2715} Annuler").clicked() {
+                                if ui.button(crate::tl_id!("ui.student_cancel_crop")).clicked() {
                                     action = Some(ribbon::Act::CancelCrop);
                                 }
                             });

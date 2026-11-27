@@ -82,12 +82,13 @@ impl ErgoNoteApp {
                     ui.spacing_mut().item_spacing = vec2(6.0, 0.0);
                     let total_w = ui.available_width();
                     if can_go_up {
+                        // i18n-exempt: arrow glyph for navigating up one folder.
                         let back = egui::Button::new(egui::RichText::new("←").size(18.0).strong().color(on.text))
                             .fill(on.panel)
                             .stroke(egui::Stroke::new(1.0, on.container_border))
                             .corner_radius(8.0)
                             .min_size(vec2(36.0, 32.0));
-                        if ui.add(back).on_hover_text("Remonter dans le dossier").clicked() {
+                        if ui.add(back).on_hover_text(crate::tl_id!("ui.student_mobile_up")).clicked() {
                             go_up = true;
                         }
                     } else {
@@ -249,7 +250,7 @@ impl ErgoNoteApp {
             );
             let enabled = ui.is_enabled();
             resp.widget_info(move || egui::WidgetInfo::selected(egui::WidgetType::Button, enabled, active, "Titre".to_string()));
-            resp.on_hover_text("Titre (H1)")
+            resp.on_hover_text(crate::tl_id!("ui.student_heading1_tip"))
         };
 
         let icon_pill = |ui: &mut Ui, icon: Icon, active: bool, tint: Option<(Color32, Color32)>, use_color_svg: bool, tip: &str| -> egui::Response {
@@ -334,12 +335,12 @@ impl ErgoNoteApp {
         if self.pointer != ribbon::Pointer::Write {
             egui::Panel::top("mobile-draw-bar")
                 .frame(
-                    egui::Frame::new().fill(t.panel).inner_margin(egui::Margin::symmetric(8, 3)).stroke(egui::Stroke::new(1.0, t.container_border)),
+                    egui::Frame::new().fill(t.panel).inner_margin(egui::Margin::symmetric(6, 3)).stroke(egui::Stroke::new(1.0, t.container_border)),
                 )
                 .show_separator_line(false)
                 .show(ui, |ui| {
                     ui.horizontal_wrapped(|ui| {
-                        ui.spacing_mut().item_spacing = vec2(6.0, 6.0);
+                        ui.spacing_mut().item_spacing = vec2(4.0, 4.0);
                         if pill(ui, "Écrire", false).clicked() {
                             acts.push(ribbon::Act::InkPointer(ribbon::Pointer::Write));
                         }
@@ -355,14 +356,14 @@ impl ErgoNoteApp {
                             ergonote_ink::Rgb(205, 48, 48),
                             ergonote_ink::Rgb(34, 139, 76),
                         ] {
-                            let (rect, resp) = ui.allocate_exact_size(vec2(28.0, 30.0), Sense::click());
+                            let (rect, resp) = ui.allocate_exact_size(vec2(24.0, 28.0), Sense::click());
                             let chosen = active_nib.colour == rgb && self.pointer == ribbon::Pointer::Draw;
                             let c = Color32::from_rgb(rgb.0, rgb.1, rgb.2);
                             let painter = ui.painter_at(rect);
                             if chosen {
-                                painter.circle_stroke(rect.center(), 12.0, egui::Stroke::new(2.0, t.accent));
+                                painter.circle_stroke(rect.center(), 10.5, egui::Stroke::new(2.0, t.accent));
                             }
-                            painter.circle_filled(rect.center(), 9.0, c);
+                            painter.circle_filled(rect.center(), 8.0, c);
                             if resp.clicked() {
                                 acts.push(ribbon::Act::InkRack(ribbon::RackEdit::Set(
                                     self.nib,
@@ -371,13 +372,33 @@ impl ErgoNoteApp {
                                 acts.push(ribbon::Act::InkPointer(ribbon::Pointer::Draw));
                             }
                         }
-                        let (u_rect, u_resp) = ui.allocate_exact_size(vec2(32.0, 30.0), Sense::click());
+                        let (u_rect, u_resp) = ui.allocate_exact_size(vec2(30.0, 28.0), Sense::click());
                         let u_painter = ui.painter_at(u_rect);
                         u_painter.rect_filled(u_rect, 8.0, t.editor);
                         u_painter.rect_stroke(u_rect, 8.0, egui::Stroke::new(1.0, t.container_border), egui::StrokeKind::Inside);
-                        icons::paint(&u_painter, egui::Rect::from_center_size(u_rect.center(), vec2(16.0, 16.0)), Icon::Undo, t.text);
+                        icons::paint(&u_painter, egui::Rect::from_center_size(u_rect.center(), vec2(15.0, 15.0)), Icon::Undo, t.text);
                         if u_resp.clicked() {
                             acts.push(ribbon::Act::InkUndo);
+                        }
+                        let has_ink = self.pad.as_ref().is_some_and(|p| p.strokes() > 0);
+                        let (c_rect, c_resp) = ui.allocate_exact_size(vec2(30.0, 28.0), Sense::click());
+                        let c_painter = ui.painter_at(c_rect);
+                        c_painter.rect_filled(c_rect, 8.0, t.editor);
+                        c_painter.rect_stroke(
+                            c_rect,
+                            8.0,
+                            egui::Stroke::new(1.0, if has_ink { t.warn } else { t.container_border }),
+                            egui::StrokeKind::Inside,
+                        );
+                        crate::ribbon_icons::paint(
+                            &c_painter,
+                            egui::Rect::from_center_size(c_rect.center(), vec2(15.0, 15.0)),
+                            crate::ribbon_icons::Mark::Delete,
+                            if has_ink { t.warn } else { t.muted },
+                        );
+                        c_resp.widget_info(move || egui::WidgetInfo::labeled(egui::WidgetType::Button, has_ink, "Effacer"));
+                        if c_resp.on_hover_text(crate::tl_id!("ui.student_clear_ink_tip")).clicked() && has_ink {
+                            acts.push(ribbon::Act::InkClear);
                         }
                     });
                 });
@@ -394,7 +415,7 @@ impl ErgoNoteApp {
                     ui.horizontal_wrapped(|ui| {
                         ui.spacing_mut().item_spacing = vec2(6.0, 6.0);
                         if cropping_now {
-                            ui.label(egui::RichText::new("Tirez les poign\u{00E9}es sur l'image").small().color(t.muted));
+                            ui.label(egui::RichText::new(crate::tl_id!("ui.student_crop_handles_hint")).small().color(t.muted));
                             if pill(ui, "\u{2713} Valider", true).clicked() {
                                 acts.push(ribbon::Act::ApplyCrop);
                             }
@@ -541,7 +562,7 @@ impl ErgoNoteApp {
             ui.spacing_mut().item_spacing = vec2(8.0, 6.0);
             let on_band = tokens.on_band();
             if let Some(sec) = current_section_path.clone() {
-                let btn = egui::Button::new(egui::RichText::new("+ Nouvelle page").size(14.0).strong().color(on_band.text))
+                let btn = egui::Button::new(egui::RichText::new(crate::tl_id!("ui.student_mobile_new_page")).size(14.0).strong().color(on_band.text))
                     .fill(tokens.accent)
                     .corner_radius(10.0)
                     .min_size(vec2(0.0, 36.0));
@@ -563,7 +584,7 @@ impl ErgoNoteApp {
         egui::ScrollArea::vertical().id_salt("mobile-tiles-scroll").auto_shrink([false, false]).scroll_source(scroll).show(ui, |ui| {
             if items.is_empty() {
                 ui.add_space(16.0);
-                ui.label(egui::RichText::new("Ce dossier est vide.").size(14.5).color(tokens.muted));
+                ui.label(egui::RichText::new(crate::tl_id!("ui.student_empty_folder")).size(14.5).color(tokens.muted));
                 return;
             }
             let gap = 10.0;

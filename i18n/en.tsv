@@ -1177,4 +1177,97 @@
 @id	ui.navy	Navy
 @id	ui.lavender	Lavender
 @id	ui.pink	Pink
-
+@id	ui.student_kofi_tip	Buy a coffee to support ErgoNote (Ko-fi)
+@id	ui.student_feedback_tip	Report a bug or suggest an improvement (no account needed)
+@id	ui.student_update_notes	Notes
+@id	ui.student_later	Later
+@id	ui.student_prev_sheet	Previous sheet
+@id	ui.student_next_sheet	Next sheet
+@id	ui.student_add_sheet	+ Sheet
+@id	ui.student_add_sheet_tip	Add an extra sheet below
+@id	ui.student_crop_apply	✓ Apply
+@id	ui.student_reset	Reset
+@id	ui.student_cancel_crop	✕ Cancel
+@id	ui.student_autosave_notice	Your notes are saved automatically on this device.
+@id	ui.student_spell_analysed	Analysed text:
+@id	ui.student_spell_preview	Preview after correction:
+@id	ui.student_spell_none	No spelling, homophone, or agreement errors found.
+@id	ui.student_listen_correction	Listen to this correction
+@id	ui.student_ignore	Ignore
+@id	ui.student_support_about	ErgoNote is 100% free, ad-free, and built for neurodivergent (DYS / ADHD) students on Windows, Linux, macOS, and Android.
+@id	ui.student_support_ask	If the app helps you every day, you can buy a coffee (voluntary tip) to support upcoming releases:
+@id	ui.student_open_support	Open the ErgoNote support page
+@id	ui.student_buy_coffee	Buy a coffee (Ko-fi)
+@id	ui.student_feedback_prompt	Found an issue, a layout glitch, or a suggestion for students?
+@id	ui.student_open_feedback	Open feedback form
+@id	ui.student_delete_table_confirm	Delete this table?
+@id	ui.student_ocr_edit_hint	Review or edit the extracted text before inserting, copying, or reading aloud:
+@id	ui.student_mobile_up	Go up in folder
+@id	ui.student_heading1_tip	Heading (H1)
+@id	ui.student_clear_ink_tip	Clear all drawings
+@id	ui.student_crop_handles_hint	Drag the handles on the image
+@id	ui.student_mobile_new_page	+ New page
+@id	ui.student_empty_folder	This folder is empty.
+@id	ui.student_tts_stop	Stop
+@id	ui.student_tts_speed	Speed:
+@id	ui.student_tts_read_line	Read this line
+@id	ui.student_listen_word	Listen to this word
+@id	ui.student_dictation_finish	Finish and write
+@id	ui.student_cancel	Cancel
+@id	ui.student_update_browser_note	Nothing is replaced automatically: this button simply opens the download in your browser.
+@id	ui.student_about_title	About ErgoNote
+@id	ui.student_about_subtitle	ErgoNote - School notebook adapted for DYS/TND
+@id	ui.student_about_features	Built-in adaptations: Horizontal subject tabs, 16-colour palette (including bright yellow), DYS/TND font and spacing, reading ruler, read aloud, locked PDF background sheets, and school templates (conversion, place value, proportionality).
+@id	ui.student_border	Border
+@id	ui.student_default	Default
+@id	ui.student_none	None
+@id	ui.student_normal	Normal
+@id	ui.student_fill	Fill
+@id	ui.student_transparent	Transparent
+@id	ui.student_read_aloud_inline	Read aloud
+@id	ui.student_read_aloud_inline_tip	Read the selected text or page aloud
+@id	ui.student_delete_table	Delete table
+@id	ui.student_insert_menu	Insert
+@id	ui.student_insert_menu_tip	Insert a photo, PDF, or other file
+@id	ui.student_photo_file	Photo / Image (file)
+@id	ui.student_pdf_doc	PDF document
+@id	ui.student_other_file	Other file (attachment)
+@id	ui.student_more	More
+@id	ui.student_more_tip	Page templates, symbols, equations, links, tags...
+@id	ui.student_templates_row	Page templates (cards)
+@id	ui.student_symbol_row	Symbol (±, ×, ÷, °, €...)
+@id	ui.student_equation_row	Math equation
+@id	ui.student_todo_row	To-Do box
+@id	ui.student_important_row	Important (!)
+@id	ui.student_question_row	Question (?)
+@id	ui.student_insert_group	Insert
+@id	ui.student_photo	Photo
+@id	ui.student_photo_tip	Take or insert a photo (board, exercise, camera)
+@id	ui.student_aid_tnd_group	TND Help
+@id	ui.student_read_aloud	Read\naloud
+@id	ui.student_read_aloud_tip	Read the selected text or whole page aloud (speech synthesis)
+@id	ui.student_dictate	Dictate\n(Voice)
+@id	ui.student_dictate_tip	Dictate text by voice at the cursor
+@id	ui.student_reading_ruler	Reading\nruler
+@id	ui.student_reading_ruler_tip	Show a horizontal visual guide following the cursor
+@id	ui.student_word_prediction	Word\nprediction
+@id	ui.student_word_prediction_tip	Enable or disable word prediction and spellchecking (turn off during dictation)
+@id	ui.student_spellcheck	Check\nspelling
+@id	ui.student_spellcheck_tip	Check spelling, homophones, and grammar for the selection or page
+@id	ui.student_cell_bg_tip	Cell background colour
+@id	ui.student_fill_label	Background colour
+@id	ui.student_school_templates_hdr	School templates (1 click)
+@id	ui.student_tool	Tool
+@id	ui.student_shapes	Shapes
+@id	ui.student_shape_color_label	Shape colour
+@id	ui.student_rows_and_cols_group	Rows & columns
+@id	ui.student_appearance_group	Appearance
+@id	ui.student_table_group	Table
+@id	ui.student_edit_group	Edit
+@id	ui.student_ocr_group	Text (OCR)
+@id	ui.student_ocr_extract_tip	Recognize text from the image (offline OCR)
+@id	ui.student_ocr_read	Read\nimage
+@id	ui.student_ocr_read_tip	Recognize text from the image and read it aloud
+@id	ui.student_image_group	Image
+@id	ui.student_section_tabs	Tabs
+@id	ui.student_section_tabs_tip	Show subject tabs in a horizontal bar under the ribbon

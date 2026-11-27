@@ -12,6 +12,8 @@
 //! the blocks ever disagree, [`fit`] puts everything in one container rather than losing a
 //! word.
 
+use crate::NodeColor;
+
 /// One box on the page.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Container {
@@ -23,6 +25,14 @@ pub struct Container {
     pub width: f32,
     /// How many of the page's blocks, in order, are in this box.
     pub blocks: usize,
+    /// Whether the box always draws a visible border even when not hovered.
+    pub framed: bool,
+    /// Optional custom border colour (`None` uses the theme's border colour).
+    pub border_color: Option<NodeColor>,
+    /// Border stroke thickness in points (`1..=3`).
+    pub border_width: u8,
+    /// Optional custom background fill colour (`None` uses the page paper).
+    pub fill_color: Option<NodeColor>,
 }
 
 /// The narrowest a container may be, so one cannot be dragged into nothing.
@@ -30,12 +40,38 @@ pub const MIN_WIDTH: f32 = 120.0;
 
 impl Container {
     pub fn new(x: f32, y: f32, width: f32, blocks: usize) -> Container {
-        Container { x: x.max(0.0), y: y.max(0.0), width: width.max(MIN_WIDTH), blocks }
+        Container {
+            x: x.max(0.0),
+            y: y.max(0.0),
+            width: width.max(MIN_WIDTH),
+            blocks,
+            framed: false,
+            border_color: None,
+            border_width: 1,
+            fill_color: None,
+        }
+    }
+
+    pub fn with_frame(mut self, framed: bool) -> Self {
+        self.framed = framed;
+        self
+    }
+
+    pub fn has_style(&self) -> bool {
+        self.framed || self.border_color.is_some() || self.fill_color.is_some() || self.border_width > 1
+    }
+
+    pub fn with_geometry(mut self, x: f32, y: f32, width: f32) -> Self {
+        self.x = x.max(0.0);
+        self.y = y.max(0.0);
+        self.width = width.max(MIN_WIDTH);
+        self
     }
 }
 
-/// Reads the line a page keeps its containers on: `x,y,width,blocks` per box, separated by
-/// semicolons. Anything that does not parse is skipped rather than guessed at.
+/// Reads the line a page keeps its containers on: `x,y,width,blocks` per box (with optional
+/// `key=value` style tokens), separated by semicolons. Anything that does not parse is skipped
+/// rather than guessed at.
 pub fn parse(text: &str) -> Vec<Container> {
     text.split(';')
         .filter_map(|part| {
@@ -44,10 +80,31 @@ pub fn parse(text: &str) -> Vec<Container> {
             let y: f32 = fields.next()?.parse().ok()?;
             let width: f32 = fields.next()?.parse().ok()?;
             let blocks: usize = fields.next()?.parse().ok()?;
-            if fields.next().is_some() || !x.is_finite() || !y.is_finite() || !width.is_finite() {
+            if !x.is_finite() || !y.is_finite() || !width.is_finite() {
                 return None;
             }
-            Some(Container::new(x, y, width, blocks))
+            let mut c = Container::new(x, y, width, blocks);
+            for tok in fields {
+                let (key, val) = tok.split_once('=')?;
+                match key.trim() {
+                    "frame" => match val.trim() {
+                        "1" => c.framed = true,
+                        "0" => c.framed = false,
+                        _ => return None,
+                    },
+                    "border" => c.border_color = Some(NodeColor::parse(val)?),
+                    "bw" => {
+                        let bw: u8 = val.trim().parse().ok()?;
+                        if !(1..=3).contains(&bw) {
+                            return None;
+                        }
+                        c.border_width = bw;
+                    }
+                    "fill" => c.fill_color = Some(NodeColor::parse(val)?),
+                    _ => return None,
+                }
+            }
+            Some(c)
         })
         .collect()
 }
@@ -57,7 +114,24 @@ pub fn parse(text: &str) -> Vec<Container> {
 pub fn write(containers: &[Container]) -> String {
     containers
         .iter()
-        .map(|c| format!("{},{},{},{}", c.x.round() as i64, c.y.round() as i64, c.width.round() as i64, c.blocks))
+        .map(|c| {
+            let mut out = format!("{},{},{},{}", c.x.round() as i64, c.y.round() as i64, c.width.round() as i64, c.blocks);
+            if c.framed {
+                out.push_str(",frame=1");
+            }
+            if let Some(bc) = c.border_color {
+                out.push_str(",border=");
+                out.push_str(bc.id());
+            }
+            if c.border_width > 1 {
+                out.push_str(&format!(",bw={}", c.border_width.clamp(1, 3)));
+            }
+            if let Some(fc) = c.fill_color {
+                out.push_str(",fill=");
+                out.push_str(fc.id());
+            }
+            out
+        })
         .collect::<Vec<_>>()
         .join("; ")
 }
@@ -193,5 +267,39 @@ mod tests {
         assert_eq!(blocks_of(&boxes, 0), 0..2);
         assert_eq!(blocks_of(&boxes, 1), 2..5);
         assert_eq!(blocks_of(&boxes, 9), 5..5);
+    }
+
+    #[test]
+    fn styled_containers_round_trip_and_invalid_tokens_are_rejected() {
+        let styled = Container {
+            border_color: Some(NodeColor::Blue),
+            border_width: 2,
+            fill_color: Some(NodeColor::Yellow),
+            ..Container::new(120.0, 40.0, 280.0, 1).with_frame(true)
+        };
+        let plain = Container::new(0.0, 0.0, 400.0, 2);
+        let written = write(&[plain, styled]);
+        assert_eq!(written, "0,0,400,2; 120,40,280,1,frame=1,border=blue,bw=2,fill=yellow");
+        assert_eq!(parse(&written), vec![plain, styled]);
+
+        // Unstyled stays short
+        assert_eq!(write(&[plain]), "0,0,400,2");
+
+        // Geometry update preserves style
+        let moved = styled.with_geometry(50.0, 60.0, 320.0);
+        assert_eq!(moved.x, 50.0);
+        assert_eq!(moved.y, 60.0);
+        assert_eq!(moved.width, 320.0);
+        assert!(moved.framed);
+        assert_eq!(moved.border_color, Some(NodeColor::Blue));
+        assert_eq!(moved.border_width, 2);
+        assert_eq!(moved.fill_color, Some(NodeColor::Yellow));
+
+        // Invalid extra tokens are still rejected
+        assert!(parse("1,2,3,4,5").is_empty());
+        assert!(parse("1,2,3,4,border=invalid").is_empty());
+        assert!(parse("1,2,3,4,fill=nope").is_empty());
+        assert!(parse("1,2,3,4,bw=9").is_empty());
+        assert!(parse("1,2,3,4,frame=yes").is_empty());
     }
 }

@@ -17,9 +17,9 @@ use ergonote_model::{PageFormat, Tag};
 /// The tabs, in order. "Source" only appears while the page source is shown, the way Office
 /// shows a tab for what is selected.
 ///
-/// Owner decision, 2026-11-20: the View tab was folded into Home, so the whole page view,
-/// page setup and zoom sit with the other everyday controls.
-pub const TABS: [&str; 2] = ["Home", "Draw"];
+/// Owner decision, 2026-11-27: the Draw tab was folded into Home > Insérer, so there is one
+/// main tab alongside contextual tabs (`Table`, `Image`, `Source`).
+pub const TABS: [&str; 1] = ["Home"];
 pub const SOURCE_TAB: &str = "Source";
 pub const FONT_SIZES: [u8; 16] = [8, 9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 26, 28, 36, 48, 72];
 /// Shown only while the caret is in a table, the way Office shows a tab for the thing in
@@ -45,6 +45,8 @@ pub enum Act {
     RecycleBin,
     /// Open the built-in symbol picker.
     Symbols,
+    /// Insert an embedded vector sticker or school chemistry diagram (`stickers.rs`).
+    InsertSticker(&'static str),
     /// Put marks around the selection, or at the caret: bold, italic, strikethrough, code.
     Mark(&'static str),
     /// Apply a point size to the selected text.
@@ -227,6 +229,8 @@ pub enum Act {
     InkUndo,
     /// Put back the stroke Undo stroke last took back.
     InkRedo,
+    /// Clear every ink stroke on the page.
+    InkClear,
     /// Put a drawing on the page at the caret.
     InkInsert,
     /// Save the drawing beside the page as a plain picture, with no pen readings in it.
@@ -629,12 +633,10 @@ const LINE_H: f32 = 15.5;
 /// The narrowest a big button may be, and the room its writing gets either side.
 const BIG: f32 = 56.0;
 const BIG_PAD: f32 = 14.0;
-const SMALL_W: f32 = 30.0;
+const SMALL_W: f32 = 32.0;
 const SMALL_H: f32 = 25.0;
 /// Where the group's name sits above the ribbon's bottom edge.
 const GROUP_NAME_Y: f32 = 11.0;
-/// How far the tool in use sinks into the rack.
-const DROP: f32 = 4.0;
 
 /// Draws the ribbon. `tab` is the chosen tab, `source` whether the page source is shown.
 /// Returns every act the user asked for this frame (usually none or one).
@@ -670,7 +672,6 @@ pub fn show(ui: &mut Ui, tab: &str, source: bool, view: &View<'_>, format: Optio
                 ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Extend);
                 ui.add_space(4.0);
                 match chosen {
-                    "Draw" => draw_tab(ui, view, t, &mut acts),
                     TABLE_TAB => table_tab(ui, view, t, &mut acts),
                     IMAGE_TAB => image_tab(ui, view, t, &mut acts),
                     SOURCE_TAB => source_tab(ui, format, t, &mut acts),
@@ -915,19 +916,19 @@ fn big_menu(ui: &mut Ui, icon: Icon, label: &str, tip: &str, t: &Tokens) -> egui
 }
 
 fn pictures_menu(ui: &mut Ui, t: &Tokens, acts: &mut Vec<Act>) {
-    let response = big_menu(ui, Icon::InsertFile, "Insérer", "Insérer une photo, un PDF ou un autre fichier", t);
+    let response = big_menu(ui, Icon::InsertFile, crate::tl_id!("ui.student_insert_menu"), crate::tl_id!("ui.student_insert_menu_tip"), t);
     egui::Popup::menu(&response).show(|ui| {
         egui::Frame::popup(ui.style()).corner_radius(8.0).inner_margin(egui::Margin::same(8)).show(ui, |ui| {
             ui.set_min_width(228.0);
-            if picture_menu_row(ui, Icon::Picture, "Photo / Image (fichier)", t, true).clicked() {
+            if picture_menu_row(ui, Icon::Picture, crate::tl_id!("ui.student_photo_file"), t, true).clicked() {
                 acts.push(Act::AddPicture);
                 ui.close();
             }
-            if picture_menu_row(ui, Icon::Page, "Document PDF", t, true).clicked() {
+            if picture_menu_row(ui, Icon::Page, crate::tl_id!("ui.student_pdf_doc"), t, true).clicked() {
                 acts.push(Act::AddPrintout);
                 ui.close();
             }
-            if picture_menu_row(ui, Icon::Attach, "Autre fichier (pièce jointe)", t, true).clicked() {
+            if picture_menu_row(ui, Icon::Attach, crate::tl_id!("ui.student_other_file"), t, true).clicked() {
                 acts.push(Act::AddFile);
                 ui.close();
             }
@@ -936,47 +937,35 @@ fn pictures_menu(ui: &mut Ui, t: &Tokens, acts: &mut Vec<Act>) {
 }
 
 fn more_insert_menu(ui: &mut Ui, t: &Tokens, acts: &mut Vec<Act>) {
-    let response = big_menu(ui, Icon::PageStack, "Plus", "Modèles de pages, date, symboles, équations, indicateurs, lien...", t);
+    let response = big_menu(ui, Icon::PageStack, crate::tl_id!("ui.student_more"), crate::tl_id!("ui.student_more_tip"), t);
     egui::Popup::menu(&response).show(|ui| {
         egui::Frame::popup(ui.style()).corner_radius(8.0).inner_margin(egui::Margin::same(8)).show(ui, |ui| {
             ui.set_min_width(244.0);
-            if picture_menu_row(ui, Icon::PageStack, "Modèles de pages (fiches)", t, true).clicked() {
+            if picture_menu_row(ui, Icon::PageStack, crate::tl_id!("ui.student_templates_row"), t, true).clicked() {
                 acts.push(Act::PageTemplates);
                 ui.close();
             }
-            if picture_menu_row(ui, Icon::Symbol, "Symbole (±, ×, ÷, °, €...)", t, true).clicked() {
+            if picture_menu_row(ui, Icon::Symbol, crate::tl_id!("ui.student_symbol_row"), t, true).clicked() {
                 acts.push(Act::Symbols);
                 ui.close();
             }
-            if picture_menu_row(ui, Icon::Equation, "Équation mathématique", t, true).clicked() {
+            if picture_menu_row(ui, Icon::Equation, crate::tl_id!("ui.student_equation_row"), t, true).clicked() {
                 acts.push(Act::Insert("equation"));
                 ui.close();
             }
-            if picture_menu_row(ui, Icon::Calendar, "Date du jour", t, true).clicked() {
-                acts.push(Act::Insert("date"));
-                ui.close();
-            }
-            if picture_menu_row(ui, Icon::Clock, "Date et heure", t, true).clicked() {
-                acts.push(Act::Insert("datetime"));
-                ui.close();
-            }
-            if picture_menu_row(ui, Icon::Link, "Lien", t, true).clicked() {
+            if picture_menu_row(ui, Icon::Link, crate::tl_id!("ui.link"), t, true).clicked() {
                 acts.push(Act::Insert("link"));
                 ui.close();
             }
-            if picture_menu_row(ui, Icon::InsertSpace, "Insérer un espace", t, true).clicked() {
-                acts.push(Act::InsertSpaceTool);
-                ui.close();
-            }
-            if picture_menu_row(ui, Icon::Todo, "Case À faire", t, true).clicked() {
+            if picture_menu_row(ui, Icon::Todo, crate::tl_id!("ui.student_todo_row"), t, true).clicked() {
                 acts.push(Act::Block("todo"));
                 ui.close();
             }
-            if menu_row_glyph(ui, Glyph::Mark(Mark::Important), "Important (!)", t, true).clicked() {
+            if menu_row_glyph(ui, Glyph::Mark(Mark::Important), crate::tl_id!("ui.student_important_row"), t, true).clicked() {
                 acts.push(Act::Tag(Tag::Important));
                 ui.close();
             }
-            if menu_row_glyph(ui, Glyph::Mark(Mark::Question), "Question (?)", t, true).clicked() {
+            if menu_row_glyph(ui, Glyph::Mark(Mark::Question), crate::tl_id!("ui.student_question_row"), t, true).clicked() {
                 acts.push(Act::Tag(Tag::Question));
                 ui.close();
             }
@@ -1123,38 +1112,55 @@ fn small(ui: &mut Ui, icon: Option<Icon>, letter: &str, label: &str, tip: &str, 
     resp.on_hover_text(tip)
 }
 
-/// A compact Office-style row control with an icon, visible label, and active toggle state.
-// i18n-ui-text: label,tip
-fn small_toggle_labeled_icon(ui: &mut Ui, icon: Icon, label: &str, tip: &str, on: bool, t: &Tokens) -> egui::Response {
-    let label = crate::tl!(label);
-    let tip = crate::tl!(tip);
-    let font = egui::FontId::proportional(12.5);
-    let text = ui.painter().layout_no_wrap(label.to_string(), font.clone(), t.text).size();
-    let (rect, resp) = ui.allocate_exact_size(vec2(text.x + 30.0, SMALL_H), Sense::click());
-    let painter = ui.painter_at(rect);
-    if on {
-        painter.rect_filled(rect, 6.0, t.row_selected);
-        painter.rect_stroke(rect, 6.0, egui::Stroke::new(1.0, t.accent), egui::StrokeKind::Inside);
-    } else if resp.hovered() {
-        painter.rect_filled(rect, 4.0, t.row_hover);
-    } else {
-        painter.rect_filled(rect, 6.0, t.editor);
-        painter.rect_stroke(rect, 6.0, egui::Stroke::new(1.0, t.faint), egui::StrokeKind::Inside);
-    }
-    icons::paint_ribbon(ui, Rect::from_center_size(egui::pos2(rect.min.x + 12.0, rect.center().y), vec2(18.0, 18.0)), icon, t.accent);
-    painter.text(egui::pos2(rect.min.x + 24.0, rect.center().y), Align2::LEFT_CENTER, label, font, t.text);
-    let enabled = ui.is_enabled();
-    let name = label.to_string();
-    resp.widget_info(move || egui::WidgetInfo::selected(egui::WidgetType::Button, enabled, on, name.clone()));
-    resp.on_hover_text(tip)
+fn ribbon_row_sep(ui: &mut Ui, t: &Tokens) {
+    let (rect, _) = ui.allocate_exact_size(vec2(2.0, SMALL_H), Sense::hover());
+    let x = rect.center().x;
+    ui.painter().line_segment([egui::pos2(x, rect.min.y + 4.0), egui::pos2(x, rect.max.y - 4.0)], egui::Stroke::new(1.0, t.faint));
 }
 
-/// Rows of small buttons inside a group.
-fn rows(ui: &mut Ui, add: impl FnOnce(&mut Ui)) {
-    ui.vertical(|ui| {
-        ui.spacing_mut().item_spacing = vec2(3.0, 4.0);
-        add(ui);
-    });
+fn write_mode_pill(ui: &mut Ui, width: f32, pointer: Pointer, t: &Tokens) -> egui::Response {
+    let is_write = pointer == Pointer::Write;
+    let (rect, resp) = ui.allocate_exact_size(vec2(width, SMALL_H), Sense::click());
+    let enabled = ui.is_enabled();
+    let painter = ui.painter_at(rect);
+
+    let (fill, edge, stroke_w, pulse) = if is_write {
+        (if resp.hovered() { t.row_hover } else { t.row_selected }, t.accent, 1.3, 0.0_f32)
+    } else {
+        let time = ui.input(|i| i.time);
+        let p = ((time * std::f64::consts::TAU * 0.75).sin() * 0.5 + 0.5) as f32;
+        ui.ctx().request_repaint_after(std::time::Duration::from_millis(60));
+        let amber = Color32::from_rgb(0xF5, 0x9E, 0x0B);
+        let orange = Color32::from_rgb(0xEA, 0x58, 0x0C);
+        let base_fill = crate::theme::mix(t.editor, amber, 0.10 + 0.24 * p);
+        (if resp.hovered() { crate::theme::mix(t.row_hover, amber, 0.28) } else { base_fill }, orange, 1.2 + 1.0 * p, p)
+    };
+    painter.rect_filled(rect, 6.0, fill);
+    painter.rect_stroke(rect, 6.0, egui::Stroke::new(stroke_w, edge), egui::StrokeKind::Inside);
+
+    // Intuitive mini-keyboard icon on the left.
+    let kb_rect = Rect::from_center_size(egui::pos2(rect.min.x + 16.0, rect.center().y), vec2(18.0, 12.0));
+    let kb_frame = if is_write { t.accent } else { Color32::from_rgb(0xC2, 0x41, 0x0C) };
+    painter.rect_filled(kb_rect, 2.5, crate::theme::mix(t.editor, kb_frame, 0.16));
+    painter.rect_stroke(kb_rect, 2.5, egui::Stroke::new(1.2, kb_frame), egui::StrokeKind::Inside);
+    for col_i in 0..3 {
+        let x = kb_rect.min.x + 3.0 + (col_i as f32) * 4.5;
+        painter.rect_filled(Rect::from_min_size(egui::pos2(x, kb_rect.min.y + 2.5), vec2(3.0, 2.2)), 0.5, kb_frame);
+        painter.rect_filled(Rect::from_min_size(egui::pos2(x, kb_rect.min.y + 5.7), vec2(3.0, 2.2)), 0.5, kb_frame);
+    }
+    painter.rect_filled(Rect::from_min_size(egui::pos2(kb_rect.min.x + 4.5, kb_rect.max.y - 3.2), vec2(9.0, 1.8)), 0.6, kb_frame);
+
+    let text_col = if enabled { t.text } else { t.muted };
+    painter.text(egui::pos2(rect.min.x + 31.0, rect.center().y), Align2::LEFT_CENTER, "Écrire", egui::FontId::proportional(12.5), text_col);
+    if !is_write {
+        let dot_col = crate::theme::mix(Color32::from_rgb(0xEA, 0x58, 0x0C), Color32::from_rgb(0xFB, 0xBF, 0x24), pulse);
+        painter.circle_filled(egui::pos2(rect.max.x - 10.0, rect.center().y), 3.0 + 1.2 * pulse, dot_col);
+    }
+
+    let name = "Écrire".to_string();
+    resp.widget_info(move || egui::WidgetInfo::selected(egui::WidgetType::Button, enabled, is_write, name.clone()));
+    let tip = if is_write { "Mode écriture au clavier actif" } else { "Cliquez ici pour revenir à l'écriture au clavier" };
+    resp.on_hover_text(tip)
 }
 
 /// The styles OneNote lists in its Styles gallery, and what each one is here.
@@ -1184,39 +1190,48 @@ pub fn tag_label(tag: Tag) -> String {
 }
 
 fn home_tab(ui: &mut Ui, view: &View<'_>, t: &Tokens, acts: &mut Vec<Act>) {
-    group(ui, crate::tl_id!("ui.clipboard"), t, |ui| {
-        if big_mark_compact(ui, Mark::Paste, crate::tl_id!("ui.paste"), crate::tl_id!("ui.ctrl_v_pastes_into_the_page"), t).clicked() {
-            acts.push(Act::Paste);
-        }
+    group(ui, crate::tl_id!("ui.styles"), t, |ui| {
         ui.vertical(|ui| {
-            ui.spacing_mut().item_spacing = vec2(2.0, 2.0);
-            if compact_mark_row(ui, Mark::Cut, crate::tl_id!("ui.cut"), crate::tl_id!("ui.cut"), crate::tl_id!("ui.cut_the_selection"), false, t)
-                .clicked()
+            ui.add_space(2.0);
+            ui.spacing_mut().item_spacing = vec2(4.0, 5.0);
+            for (title, kind, col, sz) in
+                [("Grand Titre", "h1", t.accent, 14.0), ("Sous-titre", "h2", t.section, 13.0), ("Texte normal", "p", t.text, 12.5)]
             {
-                acts.push(Act::Clipboard("cut"));
-            }
-            if compact_mark_row(ui, Mark::Copy, crate::tl_id!("ui.copy"), crate::tl_id!("ui.copy"), crate::tl_id!("ui.copy_the_selection"), false, t)
-                .clicked()
-            {
-                acts.push(Act::Clipboard("copy"));
-            }
-            let format_resp = compact_mark_row(
-                ui,
-                Mark::Painter,
-                crate::tl_id!("ui.format"),
-                crate::tl_id!("ui.format_painter"),
-                crate::tl_id!("ui.format_painter_tip"),
-                view.painting,
-                t,
-            );
-            if format_resp.clicked() || format_resp.double_clicked() {
-                acts.push(Act::FormatPainter(format_resp.double_clicked()));
+                let on = view.style == kind;
+                let (rect, resp) = ui.allocate_exact_size(vec2(106.0, SMALL_H), Sense::click());
+                let painter = ui.painter_at(rect);
+                let bg = if on {
+                    crate::theme::mix(t.editor, col, 0.18)
+                } else if resp.hovered() {
+                    t.row_hover
+                } else {
+                    t.editor
+                };
+                painter.rect_filled(rect, 6.0, bg);
+                painter.rect_stroke(
+                    rect,
+                    6.0,
+                    egui::Stroke::new(if on { 1.5 } else { 1.0 }, if on { col } else { t.faint }),
+                    egui::StrokeKind::Inside,
+                );
+                let bar_rect = Rect::from_min_size(egui::pos2(rect.min.x + 3.0, rect.min.y + 4.0), vec2(3.5, rect.height() - 8.0));
+                painter.rect_filled(bar_rect, 2.0, col);
+                painter.text(egui::pos2(rect.min.x + 11.0, rect.center().y), Align2::LEFT_CENTER, title, egui::FontId::proportional(sz), col);
+                let enabled = ui.is_enabled();
+                let spoken = title.to_string();
+                resp.widget_info(move || egui::WidgetInfo::selected(egui::WidgetType::Button, enabled, on, &spoken));
+                if resp.on_hover_text(title).clicked() {
+                    acts.push(Act::Block(kind));
+                }
             }
         });
     });
     group(ui, crate::tl_id!("ui.basic_text"), t, |ui| {
-        rows(ui, |ui| {
+        ui.vertical(|ui| {
+            ui.add_space(2.0);
+            ui.spacing_mut().item_spacing = vec2(4.0, 5.0);
             ui.horizontal(|ui| {
+                ui.spacing_mut().item_spacing.x = 4.0;
                 // The font name: the same combo box as the size, listing the installed fonts.
                 // The font list is read in the background. While it is not ready the list says so,
                 // and the window asks to be drawn again until it is.
@@ -1254,7 +1269,7 @@ fn home_tab(ui: &mut Ui, view: &View<'_>, t: &Tokens, acts: &mut Vec<Act>) {
                         box_label: crate::tl_id!("ui.font_family_box"),
                         arrow_label: crate::tl_id!("ui.font_family"),
                         shown: view.font_family.unwrap_or(""),
-                        width: 114.0,
+                        width: 136.0,
                         items: &families,
                         empty_note: families_note.as_deref(),
                         accept: &|typed| ergonote_formats::markdown::valid_font_family(typed),
@@ -1298,9 +1313,12 @@ fn home_tab(ui: &mut Ui, view: &View<'_>, t: &Tokens, acts: &mut Vec<Act>) {
                 if let Some(size) = size_out.chosen.and_then(|typed| typed.parse::<u8>().ok()) {
                     acts.push(Act::FontSize(size));
                 }
+                ribbon_row_sep(ui, t);
+                // i18n-exempt: superscript mathematical notation glyph.
                 if small(ui, None, "x²", crate::tl_id!("ui.superscript"), crate::tl_id!("ui.superscript"), view.marks.superscript, t).clicked() {
                     acts.push(Act::Mark("superscript"));
                 }
+                // i18n-exempt: subscript mathematical notation glyph.
                 if small(ui, None, "x₂", crate::tl_id!("ui.subscript"), crate::tl_id!("ui.subscript"), view.marks.subscript, t).clicked() {
                     acts.push(Act::Mark("subscript"));
                 }
@@ -1311,6 +1329,7 @@ fn home_tab(ui: &mut Ui, view: &View<'_>, t: &Tokens, acts: &mut Vec<Act>) {
                 }
             });
             ui.horizontal(|ui| {
+                ui.spacing_mut().item_spacing.x = 4.0;
                 if mark_button(ui, Mark::Bold, crate::tl_id!("ui.bold"), crate::tl_id!("ui.bold_ctrl_b"), view.marks.bold, t).clicked() {
                     acts.push(Act::Mark("bold"));
                 }
@@ -1320,11 +1339,11 @@ fn home_tab(ui: &mut Ui, view: &View<'_>, t: &Tokens, acts: &mut Vec<Act>) {
                 if mark_button(ui, Mark::Underline, crate::tl_id!("ui.underline"), crate::tl_id!("ui.underline"), view.marks.underline, t).clicked() {
                     acts.push(Act::Mark("underline"));
                 }
-                ui.add_space(4.0);
+                ribbon_row_sep(ui, t);
                 text_color_picker_button(ui, t, acts);
                 highlight_color_picker_button(ui, t, acts);
                 underline_color_picker_button(ui, t, acts);
-                ui.add_space(4.0);
+                ribbon_row_sep(ui, t);
                 if small(
                     ui,
                     Some(Icon::AlignLeft),
@@ -1366,81 +1385,48 @@ fn home_tab(ui: &mut Ui, view: &View<'_>, t: &Tokens, acts: &mut Vec<Act>) {
                 }
             });
             ui.horizontal(|ui| {
-                if small_toggle_labeled_icon(
+                ui.spacing_mut().item_spacing.x = 4.0;
+                if ribbon_selector_pill(
                     ui,
-                    Icon::ListBullet,
-                    crate::tl_id!("ui.bullets"),
-                    crate::tl_id!("ui.a_bullet_list"),
+                    119.0,
+                    SMALL_H,
+                    PillGlyph::Icon(Icon::ListBullet),
+                    None,
+                    "Puces",
+                    false,
                     view.style == "bullet",
+                    crate::tl_id!("ui.a_bullet_list"),
                     t,
                 )
                 .clicked()
                 {
                     acts.push(Act::Block("bullet"));
                 }
-                if small_toggle_labeled_icon(
+                if ribbon_selector_pill(
                     ui,
-                    Icon::ListNumber,
-                    crate::tl_id!("ui.numbering"),
-                    crate::tl_id!("ui.a_numbered_list"),
+                    119.0,
+                    SMALL_H,
+                    PillGlyph::Icon(Icon::ListNumber),
+                    None,
+                    "Numéros",
+                    false,
                     view.style == "number",
+                    crate::tl_id!("ui.a_numbered_list"),
                     t,
                 )
                 .clicked()
                 {
                     acts.push(Act::Block("number"));
                 }
-                if mark_button(ui, Mark::IndentLess, "Retrait -", "Diminuer le retrait de liste (Maj+Tab)", false, t).clicked() {
-                    acts.push(Act::Indent(false));
-                }
-                if mark_button(ui, Mark::IndentMore, "Retrait +", "Augmenter le retrait de liste (Tab)", false, t).clicked() {
-                    acts.push(Act::Indent(true));
-                }
-                ui.add_space(4.0);
-                if small_toggle_labeled_icon(ui, Icon::DirLtr, "Écrire", "Remettre en mode écriture / clavier", view.pointer == Pointer::Write, t)
-                    .clicked()
-                {
+                ribbon_row_sep(ui, t);
+                if write_mode_pill(ui, 104.0, view.pointer, t).clicked() {
                     acts.push(Act::InkPointer(Pointer::Write));
                 }
             });
         });
     });
-    group(ui, crate::tl_id!("ui.styles"), t, |ui| {
-        rows(ui, |ui| {
-            for (title, kind, col, sz) in
-                [("Grand Titre", "h1", t.accent, 14.5), ("Sous-titre", "h2", t.section, 13.5), ("Texte normal", "p", t.text, 13.0)]
-            {
-                let on = view.style == kind;
-                let (rect, resp) = ui.allocate_exact_size(vec2(116.0, SMALL_H), Sense::click());
-                let painter = ui.painter_at(rect);
-                let bg = if on {
-                    crate::theme::mix(t.editor, col, 0.18)
-                } else if resp.hovered() {
-                    t.row_hover
-                } else {
-                    t.editor
-                };
-                painter.rect_filled(rect, 6.0, bg);
-                painter.rect_stroke(
-                    rect,
-                    6.0,
-                    egui::Stroke::new(if on { 1.5 } else { 1.0 }, if on { col } else { t.faint }),
-                    egui::StrokeKind::Inside,
-                );
-                let bar_rect = Rect::from_min_size(egui::pos2(rect.min.x + 3.0, rect.min.y + 4.0), vec2(3.5, rect.height() - 8.0));
-                painter.rect_filled(bar_rect, 2.0, col);
-                painter.text(egui::pos2(rect.min.x + 12.0, rect.center().y), Align2::LEFT_CENTER, title, egui::FontId::proportional(sz), col);
-                let enabled = ui.is_enabled();
-                let spoken = title.to_string();
-                resp.widget_info(move || egui::WidgetInfo::selected(egui::WidgetType::Button, enabled, on, &spoken));
-                if resp.on_hover_text(title).clicked() {
-                    acts.push(Act::Block(kind));
-                }
-            }
-        });
-    });
-    group(ui, "Insérer", t, |ui| {
-        if big(ui, Icon::Picture, "Photo", "Prendre ou insérer une photo (tableau, exercice, caméra)", t).clicked() {
+    group(ui, crate::tl_id!("ui.student_insert_group"), t, |ui| {
+        if big(ui, Icon::Picture, crate::tl_id!("ui.student_photo"), crate::tl_id!("ui.student_photo_tip"), t).clicked() {
             acts.push(Act::BoardPhoto);
         }
         pictures_menu(ui, t, acts);
@@ -1450,39 +1436,27 @@ fn home_tab(ui: &mut Ui, view: &View<'_>, t: &Tokens, acts: &mut Vec<Act>) {
         {
             acts.push(Act::InsertTextBox);
         }
-        if big(ui, Icon::Symbol, crate::tl_id!("ui.symbol"), crate::tl_id!("ui.insert_a_common_symbol"), t).clicked() {
-            acts.push(Act::Symbols);
-        }
+        insert_draw_controls(ui, view, t, acts);
+        insert_stickers_controls(ui, t, acts);
         more_insert_menu(ui, t, acts);
     });
-    group(ui, "Aide TND", t, |ui| {
-        if big(ui, Icon::ReadAloud, "Lire à\nvoix haute", "Lire à voix haute le texte sélectionné ou la page entière (synthèse vocale TND)", t)
-            .clicked()
-        {
+    group(ui, crate::tl_id!("ui.student_aid_tnd_group"), t, |ui| {
+        if big(ui, Icon::ReadAloud, crate::tl_id!("ui.student_read_aloud"), crate::tl_id!("ui.student_read_aloud_tip"), t).clicked() {
             acts.push(Act::ReadAloud);
         }
-        if big_on(ui, Icon::Mic, "Dicter\n(Voix)", "Dicter un texte à voix haute au curseur (reconnaissance vocale multi-OS)", view.dictating, t)
-            .clicked()
-        {
+        if big_on(ui, Icon::Mic, crate::tl_id!("ui.student_dictate"), crate::tl_id!("ui.student_dictate_tip"), view.dictating, t).clicked() {
             acts.push(Act::VoiceDictation);
         }
-        if big_on(
-            ui,
-            Icon::Ruler,
-            "Règle de\nlecture",
-            "Afficher un guide-ligne visuel horizontal qui suit le curseur pour ne pas sauter de ligne",
-            view.reading_ruler,
-            t,
-        )
-        .clicked()
+        if big_on(ui, Icon::Ruler, crate::tl_id!("ui.student_reading_ruler"), crate::tl_id!("ui.student_reading_ruler_tip"), view.reading_ruler, t)
+            .clicked()
         {
             acts.push(Act::ToggleReadingRuler);
         }
         if big_on(
             ui,
             Icon::InkToText,
-            "Prédiction\nde mots",
-            "Activer ou désactiver la prédiction de mots et le correcteur orthographique (à désactiver pendant une dictée)",
+            crate::tl_id!("ui.student_word_prediction"),
+            crate::tl_id!("ui.student_word_prediction_tip"),
             view.word_prediction,
             t,
         )
@@ -1490,15 +1464,7 @@ fn home_tab(ui: &mut Ui, view: &View<'_>, t: &Tokens, acts: &mut Vec<Act>) {
         {
             acts.push(Act::ToggleWordPrediction);
         }
-        if big(
-            ui,
-            Icon::SpellCheck,
-            "Corriger\northographe",
-            "Analyser les fautes d'orthographe, les homophones et la syntaxe de la sélection ou de la page",
-            t,
-        )
-        .clicked()
-        {
+        if big(ui, Icon::SpellCheck, crate::tl_id!("ui.student_spellcheck"), crate::tl_id!("ui.student_spellcheck_tip"), t).clicked() {
             acts.push(Act::CheckOrthography);
         }
     });
@@ -1586,100 +1552,6 @@ fn mm_field(ui: &mut Ui, value: &mut f32, range: std::ops::RangeInclusive<f32>, 
     });
 }
 
-/// A static name for a style, so an act can carry it.
-fn leak(kind: &str) -> &'static str {
-    STYLES.iter().find(|(_, k)| *k == kind).map(|(_, k)| *k).unwrap_or("p")
-}
-
-/// A gallery like OneNote's: a bordered box with the first entries, and an arrow that opens
-/// the whole list beside it.
-#[allow(dead_code)]
-fn gallery(ui: &mut Ui, which: &'static str, current: &str, t: &Tokens, acts: &mut Vec<Act>, rows_in_box: impl FnOnce(&mut Ui, &mut Vec<Act>)) {
-    let height = GROUP_H - 20.0;
-    let box_rect = egui::Frame::NONE
-        .stroke(egui::Stroke::new(1.0, t.faint))
-        .corner_radius(3.0)
-        .inner_margin(4.0)
-        .show(ui, |ui| {
-            ui.set_min_size(vec2(130.0, height));
-            ui.set_max_width(190.0);
-            ui.vertical(|ui| {
-                ui.spacing_mut().item_spacing = vec2(2.0, 2.0);
-                rows_in_box(ui, acts);
-            });
-        })
-        .response
-        .rect;
-    // The arrow that opens the whole gallery.
-    let (rect, resp) = ui.allocate_exact_size(vec2(16.0, height), Sense::click());
-    let painter = ui.painter_at(rect);
-    if resp.hovered() {
-        painter.rect_filled(rect, 3.0, t.row_hover);
-    }
-    let c = egui::pos2(rect.center().x, rect.max.y - 8.0);
-    painter.line_segment([egui::pos2(c.x - 4.0, c.y - 2.0), c], egui::Stroke::new(1.4, t.text));
-    painter.line_segment([c, egui::pos2(c.x + 4.0, c.y - 2.0)], egui::Stroke::new(1.4, t.text));
-    let enabled = ui.is_enabled();
-    let name = if which == crate::tl_id!("ui.styles_2") { crate::tl_id!("ui.more_styles") } else { crate::tl_id!("ui.more_tags") };
-    resp.widget_info(move || egui::WidgetInfo::labeled(egui::WidgetType::Button, enabled, name));
-    let resp = resp.on_hover_text(name);
-    // The list opens over the box it belongs to, as OneNote's galleries do: same left edge,
-    // same top, so the two rows in the box are the first two rows of the list.
-    let open_id = egui::Id::new(("ribbon-gallery", which));
-    let mut open = ui.data(|d| d.get_temp::<bool>(open_id).unwrap_or(false));
-    if resp.clicked() {
-        open = !open;
-    }
-    if open {
-        let mut picked = false;
-        let area = egui::Area::new(open_id.with("area"))
-            .order(egui::Order::Foreground)
-            .fixed_pos(box_rect.min)
-            .show(ui.ctx(), |ui| {
-                egui::Frame::popup(ui.style()).show(ui, |ui| {
-                    ui.set_min_width(box_rect.width().max(210.0));
-                    ui.spacing_mut().item_spacing = vec2(2.0, 1.0);
-                    if which == "styles" {
-                        for (label, kind) in STYLES {
-                            if style_row(ui, label, kind, kind == current, t).clicked() {
-                                acts.push(Act::Block(leak(kind)));
-                                picked = true;
-                            }
-                        }
-                        ui.separator();
-                        if ui.button(crate::tl_id!("ui.clear_formatting_2")).clicked() {
-                            acts.push(Act::ClearFormatting);
-                            picked = true;
-                        }
-                    } else {
-                        ui.label(egui::RichText::new(crate::tl_id!("ui.tags")).strong());
-                        for tag in Tag::all() {
-                            if tag_row(ui, tag, t).clicked() {
-                                acts.push(Act::Tag(tag));
-                                picked = true;
-                            }
-                        }
-                        ui.separator();
-                        if ui
-                            .button(crate::tl_id!("ui.customize_tags"))
-                            .on_hover_text(crate::tl_id!("ui.make_your_own_tags_with_a_name_symbol_and_colour"))
-                            .clicked()
-                        {
-                            acts.push(Act::CustomizeTags);
-                            picked = true;
-                        }
-                    }
-                });
-            })
-            .response;
-        // A click anywhere else closes it, the way a menu does.
-        if picked || away(ui, &area, &resp) {
-            open = false;
-        }
-    }
-    ui.data_mut(|d| d.insert_temp(open_id, open));
-}
-
 /// The equations the Equation button offers, each a name and the TeX it puts in the page. They are
 /// drawn in the list, so a person picks by looking. Every one of them is something the engine
 /// draws in full; a test checks it.
@@ -1701,252 +1573,6 @@ pub const EQUATIONS: &[(&str, &str)] = &[
     ("Pythagorean theorem", r"a^2 + b^2 = c^2"),
     ("Euler's identity", r"e^{i\pi} + 1 = 0"),
 ];
-
-/// The Equation button: a list of equations to start from, each drawn as it will look.
-#[allow(dead_code)]
-fn equation_gallery(ui: &mut Ui, t: &Tokens, acts: &mut Vec<Act>) {
-    let resp = big_menu(ui, Icon::Equation, crate::tl_id!("ui.equation"), crate::tl_id!("ui.an_equation_written_in_tex_pick_one_to_start_from"), t);
-    let open_id = egui::Id::new("ribbon-equation-gallery");
-    let mut open = ui.data(|d| d.get_temp::<bool>(open_id).unwrap_or(false));
-    if resp.clicked() {
-        open = !open;
-    }
-    if open {
-        let mut picked = false;
-        // Under the button, but kept inside the window: the button is far to the right.
-        const WIDTH: f32 = 330.0;
-        let at = egui::pos2(resp.rect.left().min(ui.ctx().content_rect().right() - WIDTH - 6.0).max(4.0), resp.rect.bottom());
-        let area = egui::Area::new(open_id.with("area"))
-            .order(egui::Order::Foreground)
-            .fixed_pos(at)
-            .show(ui.ctx(), |ui| {
-                egui::Frame::popup(ui.style()).show(ui, |ui| {
-                    ui.set_min_width(WIDTH - 20.0);
-                    ui.spacing_mut().item_spacing = vec2(2.0, 2.0);
-                    for (name, tex) in EQUATIONS {
-                        // The row is the name and the formula; the whole of it is the button.
-                        let inner = ui.horizontal(|ui| {
-                            ui.allocate_ui_with_layout(vec2(150.0, 20.0), egui::Layout::left_to_right(egui::Align::Center), |ui| {
-                                ui.add(egui::Label::new(egui::RichText::new(crate::tl!(name)).color(t.text)).selectable(false));
-                            });
-                            crate::mathview::inline(ui, tex, 15.0, t.text);
-                        });
-                        let row = ui.interact(inner.response.rect, open_id.with(("row", *name)), Sense::click());
-                        if row.hovered() {
-                            ui.painter().rect_filled(inner.response.rect.expand(2.0), 3.0, t.row_hover.gamma_multiply(0.6));
-                        }
-                        let label = crate::i18n::format_message_id("ui.equation_name", &[("name", crate::tl!(name))]);
-                        let (enabled, label) = (ui.is_enabled(), label);
-                        row.widget_info(move || egui::WidgetInfo::labeled(egui::WidgetType::Button, enabled, &label));
-                        if row.clicked() {
-                            acts.push(Act::Equation(tex));
-                            picked = true;
-                        }
-                    }
-                });
-            })
-            .response;
-        if picked || away(ui, &area, &resp) {
-            open = false;
-        }
-    }
-    ui.data_mut(|d| d.insert_temp(open_id, open));
-}
-
-/// OneNote's alignment button: a menu of alignment, then the paragraph's direction under a
-/// separator, in that order. Left, centre and right are not built and say so; Justify is,
-/// and is the one of the four ErgoNote has an answer for that no other note taking
-/// application does (see `ergonote_text::kashida`).
-#[allow(dead_code)]
-fn align_menu(ui: &mut Ui, t: &Tokens, acts: &mut Vec<Act>) {
-    let resp = small(
-        ui,
-        Some(Icon::ParaLtr),
-        "",
-        crate::tl_id!("ui.alignment_and_direction"),
-        crate::tl_id!("ui.alignment_and_which_way_this_paragraph_reads"),
-        false,
-        t,
-    );
-    let open_id = egui::Id::new("ribbon-align-menu");
-    let mut open = ui.data(|d| d.get_temp::<bool>(open_id).unwrap_or(false));
-    if resp.clicked() {
-        open = !open;
-    }
-    if open {
-        let mut picked = false;
-        let area = egui::Area::new(open_id.with("area"))
-            .order(egui::Order::Foreground)
-            .fixed_pos(resp.rect.left_bottom())
-            .show(ui.ctx(), |ui| {
-                egui::Frame::popup(ui.style()).show(ui, |ui| {
-                    ui.set_min_width(200.0);
-                    ui.spacing_mut().item_spacing = vec2(2.0, 1.0);
-                    for (icon, label, align) in [
-                        (Icon::AlignLeft, crate::tl_id!("ui.align_left_ctrl_l"), ergonote_model::justify::Align::Left),
-                        (Icon::AlignCenter, crate::tl_id!("ui.center"), ergonote_model::justify::Align::Center),
-                        (Icon::AlignRight, crate::tl_id!("ui.align_right_ctrl_r"), ergonote_model::justify::Align::Right),
-                    ] {
-                        if floating::menu_row(ui, Some(Glyph::Icon(icon)), label, t).clicked() {
-                            acts.push(Act::Align(align));
-                            picked = true;
-                        }
-                    }
-                    // Word's three, under the names Word gives them, so a writer of Arabic
-                    // meets what they already know. They decide how many kashidas a line
-                    // may take; `docs/rtl-in-word-and-onenote.md` has the comparison.
-                    for (strength, icon, label) in [
-                        (ergonote_model::justify::Strength::Low, Icon::JustifyLow, "Justify Low"),
-                        (ergonote_model::justify::Strength::Medium, Icon::JustifyMedium, "Justify Medium"),
-                        (ergonote_model::justify::Strength::High, Icon::JustifyHigh, "Justify High"),
-                    ] {
-                        if floating::menu_row(ui, Some(Glyph::Icon(icon)), label, t).clicked() {
-                            acts.push(Act::Justify(strength));
-                            picked = true;
-                        }
-                    }
-                    ui.separator();
-                    if floating::menu_row(ui, None, crate::tl_id!("ui.paragraph_spacing_options"), t).clicked() {
-                        acts.push(Act::ParagraphSpacing);
-                        picked = true;
-                    }
-                    ui.separator();
-                    if direction_row(ui, Some(Icon::ParaLtr), crate::tl_id!("ui.left_to_right"), t).clicked() {
-                        acts.push(Act::Direction(Some(ergonote_model::Dir::Ltr)));
-                        picked = true;
-                    }
-                    if direction_row(ui, Some(Icon::ParaRtl), crate::tl_id!("ui.right_to_left"), t).clicked() {
-                        acts.push(Act::Direction(Some(ergonote_model::Dir::Rtl)));
-                        picked = true;
-                    }
-                    if direction_row(ui, None, crate::tl_id!("ui.direction_from_the_words"), t).clicked() {
-                        acts.push(Act::Direction(None));
-                        picked = true;
-                    }
-                });
-            })
-            .response;
-        let clicked_away =
-            ui.input(|i| i.pointer.any_click()) && !area.rect.contains(ui.ctx().pointer_latest_pos().unwrap_or_default()) && !resp.clicked();
-        if picked || clicked_away || ui.input(|i| i.key_pressed(egui::Key::Escape)) {
-            open = false;
-        }
-    }
-    ui.data_mut(|d| d.insert_temp(open_id, open));
-}
-
-/// One direction choice in a menu, with the icon that identifies its scope: paragraph mark
-/// for paragraph flow or caret-and-triangle for the direction of a text run.
-// i18n-ui-text: label
-#[allow(dead_code)]
-fn direction_row(ui: &mut Ui, icon: Option<Icon>, label: &str, t: &Tokens) -> egui::Response {
-    floating::menu_row(ui, icon.map(Glyph::Icon), crate::tl!(label), t)
-}
-
-/// The less common direction for a selected or newly typed run, kept in a compact menu like
-/// the paragraph direction entries in OneNote's alignment menu.
-#[allow(dead_code)]
-fn run_direction_menu(ui: &mut Ui, t: &Tokens, acts: &mut Vec<Act>) {
-    let resp = small(
-        ui,
-        None,
-        crate::tl_id!("ui.more"),
-        crate::tl_id!("ui.text_run_direction"),
-        crate::tl_id!("ui.set_the_direction_of_selected_text_or_the_text_typed_next"),
-        false,
-        t,
-    );
-    let open_id = egui::Id::new("ribbon-run-direction-menu");
-    let mut open = ui.data(|d| d.get_temp::<bool>(open_id).unwrap_or(false));
-    if resp.clicked() {
-        open = !open;
-    }
-    if open {
-        let mut picked = false;
-        let area = egui::Area::new(open_id.with("area"))
-            .order(egui::Order::Foreground)
-            .fixed_pos(resp.rect.left_bottom())
-            .show(ui.ctx(), |ui| {
-                egui::Frame::popup(ui.style()).inner_margin(egui::Margin::same(6)).show(ui, |ui| {
-                    ui.set_width(220.0);
-                    ui.spacing_mut().item_spacing = vec2(2.0, 2.0);
-                    ui.label(egui::RichText::new(crate::tl_id!("ui.selected_text_next_typing")).small().color(t.muted));
-                    ui.separator();
-                    if direction_row(ui, Some(Icon::CaretLtr), crate::tl_id!("ui.left_to_right"), t).clicked() {
-                        acts.push(Act::Embedding(ergonote_model::Dir::Ltr));
-                        picked = true;
-                    }
-                    if direction_row(ui, Some(Icon::CaretRtl), crate::tl_id!("ui.right_to_left"), t).clicked() {
-                        acts.push(Act::Embedding(ergonote_model::Dir::Rtl));
-                        picked = true;
-                    }
-                });
-            })
-            .response;
-        let clicked_away =
-            ui.input(|i| i.pointer.any_click()) && !area.rect.contains(ui.ctx().pointer_latest_pos().unwrap_or_default()) && !resp.clicked();
-        if picked || clicked_away || ui.input(|i| i.key_pressed(egui::Key::Escape)) {
-            open = false;
-        }
-    }
-    ui.data_mut(|d| d.insert_temp(open_id, open));
-}
-
-/// One line of the Styles gallery, drawn the way the style looks.
-// i18n-ui-text: label
-#[allow(dead_code)]
-fn style_row(ui: &mut Ui, label: &str, kind: &str, current: bool, t: &Tokens) -> egui::Response {
-    let label = crate::tl!(label);
-    let (size, color, italics) = match kind {
-        "h1" | "title" => (17.0, t.accent, false),
-        "h2" => (15.0, t.accent, false),
-        "h3" | "h4" => (13.5, t.muted, kind == "h4"),
-        "h5" | "h6" => (12.5, t.accent, kind == "h6"),
-        "quote" | "citation" => (12.5, t.muted, true),
-        "codeblock" | "codenumbers" => (12.5, t.text, false),
-        _ => (13.0, t.text, false),
-    };
-    let mut text = egui::RichText::new(label).size(size).color(color);
-    if italics {
-        text = text.italics();
-    }
-    if matches!(kind, "codeblock" | "codenumbers") {
-        text = text.monospace();
-    }
-    let galley = egui::WidgetText::from(text).into_galley(ui, Some(egui::TextWrapMode::Extend), f32::INFINITY, egui::TextStyle::Button);
-    let width = ui.available_width().max(130.0).min(galley.size().x + 16.0).max(130.0);
-    let (rect, resp) = ui.allocate_exact_size(vec2(width, 30.0), Sense::click());
-    // The style the caret is in is boxed, as OneNote boxes it; the one under the pointer is shaded.
-    if current {
-        ui.painter().rect_filled(rect, 3.0, t.row_selected);
-        ui.painter().rect_stroke(rect, 3.0, egui::Stroke::new(1.0, t.text), egui::StrokeKind::Inside);
-    } else if resp.hovered() {
-        ui.painter().rect_filled(rect, 3.0, t.row_hover);
-    }
-    let at = egui::pos2(rect.left() + 6.0, rect.center().y - galley.size().y / 2.0);
-    ui.painter().galley(at, galley, color);
-    let enabled = ui.is_enabled();
-    let name = label.to_string();
-    resp.widget_info(move || egui::WidgetInfo::selected(egui::WidgetType::Button, enabled, current, name.clone()));
-    resp
-}
-
-/// One line of the Tags gallery: OneNote's own mark and the name, with its shortcut.
-fn tag_row(ui: &mut Ui, tag: Tag, t: &Tokens) -> egui::Response {
-    // A fixed width: the gallery box is as wide as its rows, not as wide as the ribbon.
-    let (rect, resp) = ui.allocate_exact_size(vec2(ui.available_width().clamp(150.0, 230.0), 24.0), Sense::click());
-    let painter = ui.painter_at(rect);
-    if resp.hovered() {
-        painter.rect_filled(rect, 3.0, t.row_hover);
-    }
-    paint_tag(&painter, Rect::from_min_size(egui::pos2(rect.min.x + 2.0, rect.center().y - 9.0), vec2(18.0, 18.0)), tag, t.text, t.accent);
-    let label = tag_label(tag);
-    painter.text(egui::pos2(rect.min.x + 26.0, rect.center().y), Align2::LEFT_CENTER, &label, egui::FontId::proportional(12.5), t.text);
-    let enabled = ui.is_enabled();
-    let name = label;
-    resp.widget_info(move || egui::WidgetInfo::labeled(egui::WidgetType::Button, enabled, name.clone()));
-    resp
-}
 
 /// OneNote's mark for a tag. A custom tag has no mark of its own; it shows its symbol.
 pub fn mark_for(tag: Tag) -> Option<Mark> {
@@ -1988,58 +1614,7 @@ pub fn paint_symbol(painter: &egui::Painter, rect: Rect, symbol: &str, colour: e
     }
 }
 
-/// Compact Clipboard row with mark icon, visible label, and separate spoken accessibility name.
-// i18n-ui-text: label,spoken_label,tip
-fn compact_mark_row(ui: &mut Ui, mark: Mark, label: &str, spoken_label: &str, tip: &str, on: bool, t: &Tokens) -> egui::Response {
-    let label = crate::tl!(label);
-    let spoken = crate::tl!(spoken_label);
-    let tip = crate::tl!(tip);
-    let font = egui::FontId::proportional(12.0);
-    let text = ui.painter().layout_no_wrap(label.to_string(), font.clone(), t.text).size();
-    let (rect, resp) = ui.allocate_exact_size(vec2(text.x + 27.0, 23.0), Sense::click());
-    let painter = ui.painter_at(rect);
-    if on {
-        painter.rect_filled(rect, 4.0, t.row_selected);
-        painter.rect_stroke(rect, 4.0, egui::Stroke::new(1.0, t.accent), egui::StrokeKind::Inside);
-    } else if resp.hovered() {
-        painter.rect_filled(rect, 4.0, t.row_hover);
-    }
-    let left = Rect::from_center_size(egui::pos2(rect.min.x + 10.0, rect.center().y), vec2(16.0, 16.0));
-    ribbon_icons::paint(&painter, left, mark, mark.color(t.text, t.accent));
-    painter.text(egui::pos2(rect.min.x + 22.0, rect.center().y), Align2::LEFT_CENTER, label, font, t.text);
-    let enabled = ui.is_enabled();
-    let name = spoken.to_string();
-    resp.widget_info(move || egui::WidgetInfo::selected(egui::WidgetType::Button, enabled, on, name.clone()));
-    resp.on_hover_text(tip)
-}
-
 /// Compact toggle control with icon, visible label, and separate spoken accessibility name.
-// i18n-ui-text: label,spoken_label,tip
-fn compact_toggle_icon(ui: &mut Ui, icon: Icon, label: &str, spoken_label: &str, tip: &str, on: bool, t: &Tokens) -> egui::Response {
-    let label = crate::tl!(label);
-    let spoken = crate::tl!(spoken_label);
-    let tip = crate::tl!(tip);
-    let font = egui::FontId::proportional(12.0);
-    let text = ui.painter().layout_no_wrap(label.to_string(), font.clone(), t.text).size();
-    let (rect, resp) = ui.allocate_exact_size(vec2(text.x + 29.0, 23.0), Sense::click());
-    let painter = ui.painter_at(rect);
-    if on {
-        painter.rect_filled(rect, 5.0, t.row_selected);
-        painter.rect_stroke(rect, 5.0, egui::Stroke::new(1.0, t.accent), egui::StrokeKind::Inside);
-    } else if resp.hovered() {
-        painter.rect_filled(rect, 5.0, t.row_hover);
-    } else {
-        painter.rect_filled(rect, 5.0, t.editor);
-        painter.rect_stroke(rect, 5.0, egui::Stroke::new(1.0, t.faint), egui::StrokeKind::Inside);
-    }
-    icons::paint_ribbon(ui, Rect::from_center_size(egui::pos2(rect.min.x + 11.0, rect.center().y), vec2(16.0, 16.0)), icon, t.accent);
-    painter.text(egui::pos2(rect.min.x + 23.0, rect.center().y), Align2::LEFT_CENTER, label, font, t.text);
-    let enabled = ui.is_enabled();
-    let name = spoken.to_string();
-    resp.widget_info(move || egui::WidgetInfo::selected(egui::WidgetType::Button, enabled, on, name.clone()));
-    resp.on_hover_text(tip)
-}
-
 // i18n-ui-text: label,tip
 fn mark_button(ui: &mut Ui, mark: Mark, label: &str, tip: &str, on: bool, t: &Tokens) -> egui::Response {
     let label = crate::tl!(label);
@@ -2090,12 +1665,12 @@ fn color_picker_popup(ui: &mut Ui, id: &str, tip: &str, label_text: &str, kind: 
     };
     let bar_color = swatch_for(active_color);
 
-    let (rect, resp) = ui.allocate_exact_size(vec2(42.0, SMALL_H), Sense::click());
+    let (rect, resp) = ui.allocate_exact_size(vec2(40.0, SMALL_H), Sense::click());
     let painter = ui.painter_at(rect);
     let bg = if resp.hovered() { t.row_hover } else { t.editor };
     painter.rect_filled(rect, 6.0, bg);
     painter.rect_stroke(rect, 6.0, egui::Stroke::new(1.0, t.faint), egui::StrokeKind::Inside);
-    let glyph_pos = egui::pos2(rect.min.x + 14.5, rect.center().y - 3.0);
+    let glyph_pos = egui::pos2(rect.min.x + 13.5, rect.center().y - 3.0);
     if kind == ColorPickerKind::Highlight {
         let mark_rect = Rect::from_center_size(glyph_pos, vec2(20.0, 14.0));
         painter.rect_filled(mark_rect, 2.0, bar_color);
@@ -2104,11 +1679,11 @@ fn color_picker_popup(ui: &mut Ui, id: &str, tip: &str, label_text: &str, kind: 
         painter.text(glyph_pos, Align2::CENTER_CENTER, label_text, egui::FontId::proportional(14.5), t.strong);
     }
     painter.line_segment(
-        [egui::pos2(rect.min.x + 5.0, rect.max.y - 4.0), egui::pos2(rect.min.x + 24.0, rect.max.y - 4.0)],
+        [egui::pos2(rect.min.x + 4.0, rect.max.y - 4.0), egui::pos2(rect.min.x + 23.0, rect.max.y - 4.0)],
         egui::Stroke::new(3.5, bar_color),
     );
     // Small dropdown chevron on the right.
-    let cx = rect.max.x - 8.0;
+    let cx = rect.max.x - 7.5;
     let cy = rect.center().y + 1.0;
     painter.add(egui::Shape::line(
         vec![egui::pos2(cx - 3.0, cy - 1.5), egui::pos2(cx, cy + 2.0), egui::pos2(cx + 3.0, cy - 1.5)],
@@ -2124,26 +1699,26 @@ fn color_picker_popup(ui: &mut Ui, id: &str, tip: &str, label_text: &str, kind: 
             ui.add_space(4.0);
             ui.horizontal(|ui| match kind {
                 ColorPickerKind::Text => {
-                    if ui.small_button("Défaut").clicked() {
+                    if ui.small_button(crate::tl_id!("ui.student_default")).clicked() {
                         ui.data_mut(|d| d.remove::<Option<ergonote_model::NodeColor>>(mem_id));
                         acts.push(Act::TextColor(None));
                         ui.close();
                     }
                 }
                 ColorPickerKind::Highlight => {
-                    if ui.small_button("Aucun").clicked() {
+                    if ui.small_button(crate::tl_id!("ui.student_none")).clicked() {
                         ui.data_mut(|d| d.remove::<Option<ergonote_model::NodeColor>>(mem_id));
                         acts.push(Act::HighlightColor(None));
                         ui.close();
                     }
                 }
                 ColorPickerKind::Underline => {
-                    if ui.small_button("Normal").clicked() {
+                    if ui.small_button(crate::tl_id!("ui.student_normal")).clicked() {
                         ui.data_mut(|d| d.remove::<Option<ergonote_model::NodeColor>>(mem_id));
                         acts.push(Act::Mark("underline"));
                         ui.close();
                     }
-                    if ui.small_button("Aucun").clicked() {
+                    if ui.small_button(crate::tl_id!("ui.student_none")).clicked() {
                         ui.data_mut(|d| d.remove::<Option<ergonote_model::NodeColor>>(mem_id));
                         acts.push(Act::UnderlineColor(None));
                         ui.close();
@@ -2193,60 +1768,6 @@ fn highlight_color_picker_button(ui: &mut Ui, t: &Tokens, acts: &mut Vec<Act>) {
 
 fn underline_color_picker_button(ui: &mut Ui, t: &Tokens, acts: &mut Vec<Act>) {
     color_picker_popup(ui, "underline-color-picker", "Couleur du soulignage", "S", ColorPickerKind::Underline, t, acts);
-}
-
-/// OneNote's Insert tab, group for group and in its order. What ErgoNote can do is
-/// wired; what it cannot is greyed and says so, so the tab is an honest map of where the
-/// work is rather than a short list of what happens to exist.
-#[allow(dead_code)]
-fn insert_tab(ui: &mut Ui, view: &View<'_>, t: &Tokens, acts: &mut Vec<Act>) {
-    group(ui, crate::tl_id!("ui.insert"), t, |ui| {
-        if big_on(ui, Icon::TextBox, crate::tl_id!("ui.student_textbox_label"), crate::tl_id!("ui.student_textbox_tip"), view.textbox_tool, t)
-            .clicked()
-        {
-            acts.push(Act::InsertTextBox);
-        }
-        // OneNote's tool: a drag on the page adds room there, or takes it away (issue #164).
-        if big_on(ui, Icon::InsertSpace, crate::tl_id!("ui.insert_space_2"), crate::tl_id!("ui.insert_space_tip"), view.space_tool, t).clicked() {
-            acts.push(Act::InsertSpaceTool);
-        }
-    });
-    group(ui, crate::tl_id!("ui.tables"), t, |ui| {
-        table_menu(ui, view, t, acts);
-    });
-    group(ui, "Fichiers & photos", t, |ui| {
-        if big(ui, Icon::Picture, "Photo", "Prendre ou insérer une photo (tableau, exercice, caméra)", t).clicked() {
-            acts.push(Act::BoardPhoto);
-        }
-        pictures_menu(ui, t, acts);
-    });
-    group(ui, crate::tl_id!("ui.links"), t, |ui| {
-        if big(ui, Icon::Link, crate::tl_id!("ui.link"), crate::tl_id!("ui.a_link_to_a_page_or_an_address"), t).clicked() {
-            acts.push(Act::Insert("link"));
-        }
-    });
-    group(ui, crate::tl_id!("ui.time_stamp"), t, |ui| {
-        if big(ui, Icon::Calendar, crate::tl_id!("ui.date"), crate::tl_id!("ui.today_s_date"), t).clicked() {
-            acts.push(Act::Insert("date"));
-        }
-        if big(ui, Icon::Clock, crate::tl_id!("ui.time"), crate::tl_id!("ui.the_time_now"), t).clicked() {
-            acts.push(Act::Insert("time"));
-        }
-        if big(ui, Icon::Calendar, crate::tl_id!("ui.date_time_2"), crate::tl_id!("ui.both_as_the_page_s_own_stamp_is_written"), t).clicked() {
-            acts.push(Act::Insert("datetime"));
-        }
-    });
-    group(ui, crate::tl_id!("ui.pages"), t, |ui| {
-        if big(ui, Icon::PageStack, crate::tl_id!("ui.page_templates"), crate::tl_id!("ui.page_templates_tip"), t).clicked() {
-            acts.push(Act::PageTemplates);
-        }
-    });
-    group(ui, crate::tl_id!("ui.symbols"), t, |ui| {
-        equation_gallery(ui, t, acts);
-        if big_menu(ui, Icon::Symbol, crate::tl_id!("ui.symbol"), crate::tl_id!("ui.insert_a_common_symbol"), t).clicked() {
-            acts.push(Act::Symbols);
-        }
-    });
 }
 
 /// One paper in the gallery: the paper itself, drawn small, with its name under it. Picking
@@ -2403,7 +1924,7 @@ fn shading_menu(ui: &mut Ui, view: &View<'_>, t: &Tokens, acts: &mut Vec<Act>) {
     ));
     let enabled = ui.is_enabled();
     resp.widget_info(move || egui::WidgetInfo::labeled(egui::WidgetType::Button, enabled, "Couleur"));
-    let resp = resp.on_hover_text("Couleur de fond des cellules");
+    let resp = resp.on_hover_text(crate::tl_id!("ui.student_cell_bg_tip"));
 
     let open_id = egui::Id::new("ribbon-table-shading");
     let mut open = ui.data(|d| d.get_temp::<bool>(open_id).unwrap_or(false));
@@ -2420,7 +1941,7 @@ fn shading_menu(ui: &mut Ui, view: &View<'_>, t: &Tokens, acts: &mut Vec<Act>) {
         .fixed_pos(resp.rect.left_bottom())
         .show(ui.ctx(), |ui| {
             egui::Frame::popup(ui.style()).show(ui, |ui| {
-                ui.label(egui::RichText::new("Couleur de fond").strong().color(t.text));
+                ui.label(egui::RichText::new(crate::tl_id!("ui.student_fill_label")).strong().color(t.text));
                 ui.horizontal(|ui| {
                     let now = view.table_shade;
                     if shade_swatch(ui, None, now == Some(None), t).clicked() {
@@ -2545,7 +2066,7 @@ fn table_menu(ui: &mut Ui, view: &View<'_>, t: &Tokens, acts: &mut Vec<Act>) {
                     picked = true;
                 }
                 ui.separator();
-                ui.label(egui::RichText::new("Gabarits scolaires TND (1 clic)").small().strong().color(t.muted));
+                ui.label(egui::RichText::new(crate::tl_id!("ui.student_school_templates_hdr")).small().strong().color(t.muted));
                 for (label, kind) in [
                     ("Tableau de conversion (km -> mm)", "conversion"),
                     ("Tableau de numération (Mille / Unités)", "numeration"),
@@ -2580,17 +2101,21 @@ fn table_menu(ui: &mut Ui, view: &View<'_>, t: &Tokens, acts: &mut Vec<Act>) {
     ui.data_mut(|d| d.insert_temp(open_id, open));
 }
 
-/// OneNote's Rule Lines button: the paper now, and a gallery of every paper under it.
-fn rule_lines_menu(ui: &mut Ui, view: &View<'_>, t: &Tokens, acts: &mut Vec<Act>) {
+/// Compact rule-lines and page background gallery button inside Mise en page.
+fn compact_rule_lines_button(ui: &mut Ui, view: &View<'_>, t: &Tokens, acts: &mut Vec<Act>) {
     let open_id = egui::Id::new("ribbon-rule-lines");
     let mut open = ui.data(|d| d.get_temp::<bool>(open_id).unwrap_or(false));
-    let resp = big_inner(
+    let active = open || view.rules != RuleLines::None;
+    let resp = ribbon_selector_pill(
         ui,
-        Icon::Ruler,
-        crate::tl_id!("ui.format_background_2"),
-        crate::tl_id!("ui.lines_or_squares_behind_the_page_as_on_paper"),
+        98.0,
+        33.0,
+        PillGlyph::Icon(Icon::Ruler),
+        None,
+        "Lignes",
         true,
-        open,
+        active,
+        crate::tl_id!("ui.lines_or_squares_behind_the_page_as_on_paper"),
         t,
     );
     if resp.clicked() {
@@ -2639,614 +2164,451 @@ fn rule_lines_menu(ui: &mut Ui, view: &View<'_>, t: &Tokens, acts: &mut Vec<Act>
     ui.data_mut(|d| d.insert_temp(open_id, open));
 }
 
-/// How readily the pen answers pressure, drawn as the wedge a volume control uses: thin
-/// at the quiet end, thick at the loud one, so which way is "more ink" needs no label.
-///
-/// This is not thickness. Thickness is how wide the tool is at a full press; this is how
-/// hard you have to press to get there. Turned up, a light hand already lays down a broad
-/// line; turned down, it takes a firm press. The pen's own readings are kept as they came
-/// either way, so a stroke drawn at one setting can be re-weighted later.
-#[allow(dead_code)]
-fn sensitivity(ui: &mut Ui, now: u8, pressure_available: bool, t: &Tokens, acts: &mut Vec<Act>) {
-    rows(ui, |ui| {
-        ui.add_space(4.0);
-        let label = if pressure_available { "Sensitivity" } else { "Pressure off" };
-        ui.label(egui::RichText::new(label).size(10.0).color(if pressure_available { t.muted } else { t.warn }));
-        let (rect, resp) = ui.allocate_exact_size(vec2(96.0, 20.0), Sense::click_and_drag());
-        let share = f32::from(now.min(100)) / 100.0;
-        let painter = ui.painter_at(rect);
-        let track = rect.shrink2(vec2(6.0, 3.0));
-        let accent = if pressure_available { t.accent } else { t.muted };
-        // The wedge: nothing at the left, full at the right.
-        let wedge = vec![egui::pos2(track.min.x, track.max.y), egui::pos2(track.max.x, track.max.y), egui::pos2(track.max.x, track.min.y)];
-        painter.add(egui::Shape::convex_polygon(wedge, crate::theme::mix(t.panel, t.text, 0.14), egui::Stroke::NONE));
-        // The part that is turned on is filled in the accent, cut at the handle.
-        let x = track.min.x + track.width() * share;
-        let h = track.max.y - track.height() * share;
-        painter.add(egui::Shape::convex_polygon(
-            vec![egui::pos2(track.min.x, track.max.y), egui::pos2(x, track.max.y), egui::pos2(x, h)],
-            accent,
-            egui::Stroke::NONE,
-        ));
-        painter.circle(egui::pos2(x, rect.center().y), 5.0, t.panel, egui::Stroke::new(1.4, accent));
+const DRAW_COLOURS: [(Rgb, &str); 8] = [
+    (Rgb(0x20, 0x20, 0x20), "Noir"),
+    (Rgb(0xd0, 0x21, 0x21), "Rouge"),
+    (Rgb(0x18, 0x55, 0xc4), "Bleu"),
+    (Rgb(0x16, 0x7f, 0x3d), "Vert"),
+    (Rgb(0xe6, 0x77, 0x00), "Orange"),
+    (Rgb(0x70, 0x48, 0xe8), "Violet"),
+    (Rgb(0xf5, 0x9f, 0x00), "Jaune"),
+    (Rgb(0xd6, 0x33, 0x6c), "Rose"),
+];
 
-        if pressure_available
-            && (resp.dragged() || resp.clicked())
-            && let Some(at) = resp.interact_pointer_pos()
-        {
-            #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
-            let picked = (((at.x - track.min.x) / track.width().max(1.0)).clamp(0.0, 1.0) * 100.0).round() as u8;
-            if picked != now {
-                acts.push(Act::InkSensitivity(picked));
-            }
-        }
-        let enabled = pressure_available && ui.is_enabled();
-        let said = if pressure_available {
-            crate::i18n::format_message_id("ui.pressure_sensitivity_now_of_100", &[("now", &now.to_string())])
-        } else {
-            crate::tl_id!("ui.pressure_sensitivity_unavailable").to_owned()
-        };
-        resp.widget_info(move || egui::WidgetInfo::slider(enabled, f64::from(now), &said));
-        let tip = if pressure_available {
-            "How readily the pen answers pressure: turned up, a light hand lays down more ink"
-        } else {
-            "No pen pressure readings have reached this window yet. Use a pressure-capable pen with Windows Ink enabled."
-        };
-        resp.on_hover_text(crate::tl!(tip));
-        ui.label(
-            egui::RichText::new(if pressure_available { format!("{now}") } else { crate::tl_id!("ui.off").to_owned() })
-                .size(11.5)
-                .color(if pressure_available { t.text } else { t.warn }),
-        );
-    });
+#[derive(Clone, Copy)]
+enum PillGlyph {
+    Icon(Icon),
+    Eraser,
+    ColourDot(Option<ergonote_model::NodeColor>),
 }
 
-/// OneNote's Add button: a new tool of whatever kind, put on the end of the rack.
-fn add_menu(ui: &mut Ui, t: &Tokens, acts: &mut Vec<Act>) {
-    let resp = big_menu(ui, Icon::Plus, crate::tl_id!("ui.add"), crate::tl_id!("ui.put_another_tool_on_the_rack"), t);
-    let id = egui::Id::new("ribbon-add-pen");
-    let mut open = ui.data(|d| d.get_temp::<bool>(id).unwrap_or(false));
-    if resp.clicked() {
-        open = !open;
-    }
-    if open {
-        let mut picked = false;
-        let area = egui::Area::new(id.with("area"))
-            .order(egui::Order::Foreground)
-            .fixed_pos(resp.rect.left_bottom())
-            .show(ui.ctx(), |ui| {
-                egui::Frame::popup(ui.style()).show(ui, |ui| {
-                    ui.set_min_width(170.0);
-                    ui.spacing_mut().item_spacing.y = 1.0;
-                    for tool in Tool::ALL {
-                        let (row, hit) = ui.allocate_exact_size(vec2(162.0, 28.0), Sense::click());
-                        let painter = ui.painter_at(row);
-                        if hit.hovered() {
-                            painter.rect_filled(row, 4.0, t.row_hover);
-                        }
-                        // The tool itself beside its name, drawn by the code the rack
-                        // uses, so a menu cannot show one thing and the rack another.
-                        let glyph = Rect::from_min_size(row.min, vec2(26.0, row.height()));
-                        paint_tool(&painter, glyph, tool, rack::new_nib(tool).colour, 0.0);
-                        painter.text(
-                            egui::pos2(row.min.x + 32.0, row.center().y),
-                            Align2::LEFT_CENTER,
-                            crate::tl!(tool.label()),
-                            egui::FontId::proportional(12.5),
-                            t.text,
-                        );
-                        let enabled = ui.is_enabled();
-                        let tool_label = crate::tl!(tool.label());
-                        let name = crate::i18n::format_message_id("ui.add_tool", &[("tool", tool_label)]);
-                        hit.widget_info(move || egui::WidgetInfo::labeled(egui::WidgetType::Button, enabled, name.clone()));
-                        if hit.clicked() {
-                            acts.push(Act::InkRack(RackEdit::Add(tool)));
-                            picked = true;
-                        }
-                    }
-                    ui.separator();
-                    // Not a tool for the rack: it draws nothing, so it is picked up here and put
-                    // down with Escape or any other tool (issue #289).
-                    let (row, hit) = ui.allocate_exact_size(vec2(162.0, 28.0), Sense::click());
-                    let painter = ui.painter_at(row);
-                    if hit.hovered() {
-                        painter.rect_filled(row, 4.0, t.row_hover);
-                    }
-                    let dot = egui::pos2(row.min.x + 13.0, row.center().y);
-                    painter.circle_filled(dot, 7.0, crate::inkpad::LASER.gamma_multiply(0.3));
-                    painter.circle_filled(dot, 4.0, crate::inkpad::LASER);
-                    painter.text(
-                        egui::pos2(row.min.x + 32.0, row.center().y),
-                        Align2::LEFT_CENTER,
-                        crate::tl_id!("ui.laser_pointer"),
-                        egui::FontId::proportional(12.5),
-                        t.text,
-                    );
-                    let enabled = ui.is_enabled();
-                    hit.widget_info(move || egui::WidgetInfo::labeled(egui::WidgetType::Button, enabled, crate::tl_id!("ui.laser_pointer")));
-                    if hit.on_hover_text(crate::tl_id!("ui.point_at_the_page_without_drawing_on_it")).clicked() {
-                        acts.push(Act::InkPointer(Pointer::Laser));
-                        picked = true;
-                    }
-                });
-            })
-            .response;
-        if picked || away(ui, &area, &resp) {
-            open = false;
-        }
-    }
-    ui.data_mut(|d| d.insert_temp(id, open));
-}
-
-/// True when the pointer was clicked anywhere but in this popup or on the button that
-/// opened it, or Escape was pressed: either way the popup should close.
-///
-/// The button is tested by where it is, not by whether it reported a click this frame. A
-/// press and its release land on different frames, so on the release the button has not
-/// "clicked" and the popup it had just opened closed itself again.
-fn away(ui: &Ui, area: &egui::Response, button: &egui::Response) -> bool {
-    let at = ui.ctx().pointer_latest_pos().unwrap_or_default();
-    let out = ui.input(|i| i.pointer.any_click()) && !area.rect.contains(at) && !button.rect.contains(at);
-    out || ui.input(|i| i.key_pressed(egui::Key::Escape))
-}
-
-/// One tool on the rack, drawn as the tool: a pen standing on its nib, the way OneNote
-/// racks them. The barrel is the colour it writes in, so the rack is read by looking.
-///
-/// Each is built the same way - a tapered silhouette, a darker grip, a bright band where
-/// the two meet, one soft highlight down the left, and a thin outline - so seven of them
-/// in a row look like one set of pens rather than seven drawings. The nib is what tells
-/// them apart: a cone for a pen, bare wood and lead for a pencil, a long slit nib for a
-/// fountain pen, a soft bulb for a brush, a slanted chisel for a highlighter.
-fn pen_on_rack(ui: &mut Ui, i: usize, nib: Nib, chosen: bool, rack_len: usize, t: &Tokens, acts: &mut Vec<Act>) -> bool {
-    let (rect, resp) = ui.allocate_exact_size(vec2(27.0, GROUP_H - 20.0), Sense::click());
-    let enabled = ui.is_enabled();
-    let name =
-        crate::i18n::format_message_id("ui.tool_colour", &[("tool", crate::tl!(nib.tool.label())), ("colour", crate::tl!(swatch_name(nib.colour)))]);
-    let label = name.clone();
-    resp.widget_info(move || egui::WidgetInfo::selected(egui::WidgetType::Button, enabled, chosen, label.clone()));
-    let painter = ui.painter_at(rect);
-    if chosen {
-        painter.rect_filled(rect, 4.0, crate::theme::mix(t.panel, t.accent, 0.10));
-        painter.rect_stroke(rect, 4.0, egui::Stroke::new(1.0, t.accent), egui::StrokeKind::Inside);
-    } else if resp.hovered() {
-        painter.rect_filled(rect, 4.0, t.row_hover);
-    }
-    // The one in use sinks into the rack, the way a pen lifted out of a tray sits lower
-    // than its neighbours, and it eases down rather than jumping.
-    let drop = ui.ctx().animate_bool_with_time(resp.id.with("picked"), chosen, 0.12) * DROP;
-    paint_tool(&painter, rect, nib.tool, nib.colour, drop);
-
-    // The chevron on the tool in hand opens its editor, as OneNote's does; a right click
-    // opens the same editor and the rest of the rack's own menu.
-    let mut picked_up = resp.clicked();
-    let chev = egui::Rect::from_center_size(egui::pos2(rect.center().x, rect.max.y - 5.0), vec2(14.0, 11.0));
-    let mut modify = false;
-    if chosen {
-        let hit = ui.interact(chev, resp.id.with("chevron"), Sense::click());
-        chevron(&painter, chev.center(), if hit.hovered() { t.accent } else { t.muted });
-        if hit.clicked() {
-            modify = true;
-            picked_up = false;
-        }
-    }
-    // The menu hangs off the pen's own response. A second interact over the same
-    // rectangle looked harmless and was not: later widgets win in egui, so it swallowed
-    // every left click and only the eraser, which had no such overlay, could be picked up.
-    resp.context_menu(|ui| {
-        if ui.button(crate::tl_id!("ui.modify_tool")).clicked() {
-            modify = true;
-            ui.close();
-        }
-        ui.separator();
-        if ui.add_enabled(i > 0, egui::Button::new(crate::tl_id!("ui.move_left"))).clicked() {
-            acts.push(Act::InkRack(RackEdit::Move(i, true)));
-            ui.close();
-        }
-        if ui.add_enabled(i + 1 < rack_len, egui::Button::new(crate::tl_id!("ui.move_right"))).clicked() {
-            acts.push(Act::InkRack(RackEdit::Move(i, false)));
-            ui.close();
-        }
-        ui.separator();
-        let tool = crate::tl!(nib.tool.label());
-        let label = crate::i18n::format_message_id("ui.add_another_tool", &[("tool", tool)]);
-        if ui.button(label).clicked() {
-            acts.push(Act::InkRack(RackEdit::Add(nib.tool)));
-            ui.close();
-        }
-        let label = crate::i18n::format_message_id("ui.delete_tool_2", &[("tool", crate::tl!(nib.tool.label()))]);
-        if ui.add_enabled(rack_len > 1, egui::Button::new(label)).clicked() {
-            acts.push(Act::InkRack(RackEdit::Remove(i)));
-            ui.close();
-        }
-    });
-
-    let open_id = egui::Id::new(("modify-tool", i));
-    let mut open = ui.data(|d| d.get_temp::<bool>(open_id).unwrap_or(false));
-    if modify {
-        open = true;
-        picked_up = true;
-    }
-    // The click that opened it (Modify Tool in the right-click menu lies outside the popup)
-    // must not count as a click away from it, or it closed the moment it opened.
-    if open && modify_tool(ui, open_id, rect, i, nib, rack_len, t, acts) && !modify {
-        open = false;
-    }
-    ui.data_mut(|d| d.insert_temp(open_id, open));
-    // The first nine pens answer Alt and their number (issue #44).
-    let name = if i < 9 { format!("{name} (Alt+{})", i + 1) } else { name };
-    resp.on_hover_text(name);
-    picked_up
-}
-
-/// OneNote's Modify Tool popup: the stroke this tool makes, the thicknesses as dots, the
-/// colours as a grid, and a way to take the tool off the rack. Returns true when it should
-/// close.
 #[allow(clippy::too_many_arguments)]
-fn modify_tool(ui: &mut Ui, id: egui::Id, under: Rect, i: usize, nib: Nib, rack_len: usize, t: &Tokens, acts: &mut Vec<Act>) -> bool {
-    let mut done = false;
-    let more_colours_id = id.with("more-colours-open");
-    let mut more_colours = ui.data(|d| d.get_temp::<bool>(more_colours_id)).unwrap_or(false);
-    let area = egui::Area::new(id.with("area"))
-        .order(egui::Order::Foreground)
-        .fixed_pos(under.left_bottom())
-        .show(ui.ctx(), |ui| {
-            egui::Frame::popup(ui.style()).show(ui, |ui| {
-                const POPUP_WIDTH: f32 = 196.0;
-                ui.set_min_width(POPUP_WIDTH);
-                // The stroke this tool makes, drawn by the code that draws the page's ink,
-                // so the sample cannot say one thing and the page another.
-                let (sample, _) = ui.allocate_exact_size(vec2(180.0, 26.0), Sense::hover());
-                let mut stroke = ergonote_ink::Stroke::new(nib.tool, nib.colour, nib.width());
-                for (at, press) in [(0.04, 0.12), (0.3, 0.55), (0.62, 1.0), (0.96, 0.3)] {
-                    stroke.dabs.push(ergonote_ink::Dab::new(sample.width() * at, 13.0 + (at * 9.0).sin() * 3.0, press));
-                }
-                crate::inkpad::paint_stroke(&ui.painter_at(sample), sample.min, &stroke);
-                ui.separator();
-
-                ui.label(egui::RichText::new(crate::tl_id!("ui.thickness")).size(11.5).color(t.muted));
-                ui.horizontal(|ui| {
-                    for tenths in rack::THICKNESSES {
-                        let here = nib.tenths == tenths;
-                        let (dot, resp) = ui.allocate_exact_size(vec2(22.0, 22.0), Sense::click());
-                        let painter = ui.painter_at(dot);
-                        if here {
-                            painter.circle_stroke(dot.center(), 10.0, egui::Stroke::new(1.3, t.accent));
-                        } else if resp.hovered() {
-                            painter.circle_filled(dot.center(), 10.0, t.row_hover);
-                        }
-                        // Each dot is the width it stands for, so the choice is made by eye.
-                        let r = (f32::from(tenths) / 10.0 / 2.0).clamp(1.0, 7.0);
-                        painter.circle_filled(dot.center(), r, t.text);
-                        let enabled = ui.is_enabled();
-                        let size = format!("{:.1}", f32::from(tenths) / 10.0);
-                        let name = crate::i18n::format_message_id("ui.size_pt", &[("size", &size)]);
-                        let tip = name.clone();
-                        resp.widget_info(move || egui::WidgetInfo::selected(egui::WidgetType::RadioButton, enabled, here, name.clone()));
-                        if resp.on_hover_text(tip).clicked() {
-                            acts.push(Act::InkRack(RackEdit::Set(i, Nib::new(nib.tool, nib.colour, tenths))));
-                        }
-                    }
-                });
-
-                ui.add_space(2.0);
-                ui.label(egui::RichText::new(crate::tl_id!("ui.colours")).size(11.5).color(t.muted));
-                for row in rack::PALETTE {
-                    ui.horizontal(|ui| {
-                        for colour in row {
-                            let here = nib.colour == colour;
-                            let (cell, resp) = ui.allocate_exact_size(vec2(26.0, 20.0), Sense::click());
-                            let painter = ui.painter_at(cell);
-                            painter.rect_filled(cell.shrink(2.0), 3.0, egui::Color32::from_rgb(colour.0, colour.1, colour.2));
-                            let edge = if here { t.accent } else { crate::theme::mix(t.panel, t.text, 0.25) };
-                            painter.rect_stroke(
-                                cell.shrink(2.0),
-                                3.0,
-                                egui::Stroke::new(if here { 2.0 } else { 0.8 }, edge),
-                                egui::StrokeKind::Outside,
-                            );
-                            let enabled = ui.is_enabled();
-                            let name = crate::i18n::format_message_id(
-                                "ui.colour_hex",
-                                &[("colour", crate::tl!(swatch_name(colour))), ("hex", &colour.hex())],
-                            );
-                            resp.widget_info(move || egui::WidgetInfo::selected(egui::WidgetType::RadioButton, enabled, here, name.clone()));
-                            if resp.on_hover_text(colour.hex()).clicked() {
-                                acts.push(Act::InkRack(RackEdit::Set(i, Nib::new(nib.tool, colour, nib.tenths))));
-                            }
-                        }
-                    });
-                }
-                ui.separator();
-                if popup_action_button(ui, crate::tl_id!("ui.more_colours"), true, t.accent, crate::tl_id!("ui.choose_a_custom_ink_colour")).clicked()
-                {
-                    more_colours = !more_colours;
-                }
-                if more_colours {
-                    let mut colour = egui::Color32::from_rgb(nib.colour.0, nib.colour.1, nib.colour.2);
-                    if egui::color_picker::color_picker_color32(ui, &mut colour, egui::color_picker::Alpha::Opaque) {
-                        acts.push(Act::InkRack(RackEdit::Set(
-                            i,
-                            Nib::new(nib.tool, ergonote_ink::Rgb(colour.r(), colour.g(), colour.b()), nib.tenths),
-                        )));
-                        more_colours = false;
-                        done = true;
-                    }
-                }
-                if popup_action_button(ui, crate::tl_id!("ui.eyedropper"), true, t.accent, crate::tl_id!("ui.take_a_colour_from_ink_on_the_page"))
-                    .clicked()
-                {
-                    acts.push(Act::InkPointer(Pointer::Eyedropper(i)));
-                    done = true;
-                }
-                if popup_action_button(ui, crate::tl_id!("ui.delete_tool"), rack_len > 1, t.warn, crate::tl_id!("ui.remove_this_tool_from_the_rack"))
-                    .clicked()
-                {
-                    acts.push(Act::InkRack(RackEdit::Remove(i)));
-                    done = true;
-                }
-            });
-        })
-        .response;
-    ui.data_mut(|d| d.insert_temp(more_colours_id, more_colours));
-    let at = ui.ctx().pointer_latest_pos().unwrap_or_default();
-    let outside = ui.input(|i| i.pointer.any_click()) && !area.rect.contains(at) && !under.contains(at);
-    done || outside || ui.input(|i| i.key_pressed(egui::Key::Escape))
-}
-
-/// The eraser, racked beside the pens because that is where a hand reaches for it, and
-/// drawn like them: a pale sleeve a hand holds, and the worn rubber below it.
-fn eraser_on_rack(ui: &mut Ui, chosen: bool, t: &Tokens) -> egui::Response {
-    let (rect, resp) = ui.allocate_exact_size(vec2(27.0, GROUP_H - 20.0), Sense::click());
+fn ribbon_selector_pill(
+    ui: &mut Ui,
+    width: f32,
+    height: f32,
+    glyph: PillGlyph,
+    dot: Option<Color32>,
+    label: &str,
+    dropdown: bool,
+    on: bool,
+    tip: &str,
+    t: &Tokens,
+) -> egui::Response {
+    let (rect, resp) = ui.allocate_exact_size(vec2(width, height), Sense::click());
     let enabled = ui.is_enabled();
-    resp.widget_info(move || egui::WidgetInfo::selected(egui::WidgetType::Button, enabled, chosen, crate::tl_id!("ui.eraser")));
     let painter = ui.painter_at(rect);
-    if chosen {
-        painter.rect_filled(rect, 4.0, crate::theme::mix(t.panel, t.accent, 0.10));
-        painter.rect_stroke(rect, 4.0, egui::Stroke::new(1.0, t.accent), egui::StrokeKind::Inside);
-    } else if resp.hovered() {
-        painter.rect_filled(rect, 4.0, t.row_hover);
-    }
-
-    let drop = ui.ctx().animate_bool_with_time(resp.id.with("picked"), chosen, 0.12) * DROP;
-    let cx = rect.center().x;
-    let tall = 38.0;
-    let top = rect.center().y - tall / 2.0 - 2.0 + drop;
-    let foot = top + tall;
-    // A block rubber seen square on: a pale grey body with a flat foot, and the band of
-    // rubber at the bottom in the lilac OneNote gives it. No dome and no wedge; the
-    // shape's whole job is to say "block" where the pens say "nib".
-    let body = egui::Color32::from_rgb(0xdf, 0xe1, 0xe5);
-    let body_edge = egui::Color32::from_rgb(0x8f, 0x94, 0x9d);
-    let rubber = egui::Color32::from_rgb(0xe4, 0xc4, 0xee);
-    let rubber_edge = egui::Color32::from_rgb(0xa9, 0x84, 0xb8);
-    let w = 6.4;
-    let band = foot - 10.0;
-    let whole = egui::Rect::from_min_max(egui::pos2(cx - w, top), egui::pos2(cx + w, foot));
-    painter.rect_filled(egui::Rect::from_min_max(whole.min, egui::pos2(whole.max.x, band)), 2.0, body);
-    painter.rect_filled(egui::Rect::from_min_max(egui::pos2(whole.min.x, band - 2.0), whole.max), 2.0, rubber);
-    painter.line_segment([egui::pos2(whole.min.x, band), egui::pos2(whole.max.x, band)], egui::Stroke::new(1.0, rubber_edge));
-    painter.line_segment(
-        [egui::pos2(cx - w * 0.45, top + 3.0), egui::pos2(cx - w * 0.45, band - 3.0)],
-        egui::Stroke::new(1.2, egui::Color32::from_white_alpha(120)),
-    );
-    painter.rect_stroke(whole, 2.0, egui::Stroke::new(0.9, body_edge), egui::StrokeKind::Inside);
-    if chosen {
-        chevron(&painter, egui::pos2(rect.center().x, rect.max.y - 5.0), t.muted);
-    }
-    resp.on_hover_text(crate::tl_id!("ui.rub_out_whatever_the_pointer_passes_over"))
-}
-
-/// Draws one drawing tool upright inside `rect`, the way OneNote draws its rack.
-///
-/// The rack shares a visual language, but each tool must be recognisable before its colour is
-/// read: the marker stays broad and squared, the pencil shows wood and lead, the fountain pen
-/// shows a metal nib and breather hole, the brush has a flexible bristle point, and the pen has
-/// a small ball tip. Keeping these silhouettes distinct prevents the rack from reading as a row
-/// of crayons while preserving the marker treatment users already recognise.
-fn paint_tool(painter: &egui::Painter, rect: Rect, tool: Tool, colour: Rgb, drop: f32) {
-    let ink = egui::Color32::from_rgb(colour.0, colour.1, colour.2);
-    let mix = crate::theme::mix;
-    let darker = |c: egui::Color32, amount: f32| mix(c, egui::Color32::BLACK, amount);
-    let body = egui::Color32::from_rgb(0xee, 0xf0, 0xf3);
-    let body_edge = egui::Color32::from_rgb(0x6f, 0x76, 0x81);
-    let collar = egui::Color32::from_rgb(0x8d, 0x94, 0x9f);
-    let shine = egui::Color32::from_white_alpha(130);
-
-    let cx = rect.center().x;
-    // Short and wide rather than long and thin, so the nib is a good third of the whole
-    // and the eye lands on it: the tip is what says what mark the tool makes.
-    let tall = (rect.height() - 14.0).clamp(16.0, 38.0);
-    let top = rect.center().y - tall / 2.0 - 2.0 + drop;
-    let foot = top + tall;
-    let at = |x: f32, y: f32| egui::pos2(cx + x, y);
-    let shape = |pts: Vec<egui::Pos2>, fill: egui::Color32, edge: egui::Color32| egui::Shape::convex_polygon(pts, fill, egui::Stroke::new(0.8, edge));
-
-    // The pale part a hand holds, down to `to`, tapering from `w` to `lw`.
-    let hold = |painter: &egui::Painter, w: f32, lw: f32, to: f32| {
-        let at_to = w + (lw - w) * ((to - top) / (foot - top));
-        painter.add(shape(vec![at(-w, top), at(w, top), at(at_to, to), at(-at_to, to)], body, body_edge));
-        painter.line_segment([at(-w * 0.42, top + 3.0), at(-at_to * 0.42, to - 2.0)], egui::Stroke::new(1.2, shine));
-        // The clip, down the right of the part a hand holds.
-        painter.rect_filled(egui::Rect::from_min_max(at(w * 0.34, top + 2.5), at(w * 0.78, to - 3.0)), 1.0, collar);
-        painter.line_segment([at(-at_to, to), at(at_to, to)], egui::Stroke::new(2.0, collar));
-        at_to
+    let fill = if on {
+        t.row_selected
+    } else if resp.hovered() && enabled {
+        t.row_hover
+    } else {
+        t.editor
     };
+    let edge = if on { t.accent } else { t.faint };
+    let radius = if height >= 30.0 { 7.0 } else { 6.0 };
+    painter.rect_filled(rect, radius, fill);
+    painter.rect_stroke(rect, radius, egui::Stroke::new(if on { 1.4 } else { 1.0 }, edge), egui::StrokeKind::Inside);
 
-    match tool {
-        Tool::Highlighter => {
-            // Fatter and squarer than a pen, with a chisel cut across the bottom.
-            let (w, lw) = (7.4, 6.9);
-            let grip = top + 9.0;
-            let nib = foot - 13.0;
-            let g = hold(painter, w, lw, grip);
-            let _ = g;
-            painter.add(shape(vec![at(-lw, grip), at(lw, grip), at(lw, nib), at(-lw, nib)], ink, darker(ink, 0.35)));
-            painter.add(shape(vec![at(-lw, nib), at(lw, nib), at(lw, foot - 6.0), at(-lw, foot)], darker(ink, 0.12), darker(ink, 0.4)));
+    let g_side = if height >= 30.0 { 17.0 } else { 14.0 };
+    let g_cx = if height >= 30.0 { rect.min.x + 15.0 } else { rect.min.x + 12.0 };
+    let g_rect = Rect::from_center_size(egui::pos2(g_cx, rect.center().y), vec2(g_side, g_side));
+    let icon_col = if enabled { t.accent } else { t.muted };
+    match glyph {
+        PillGlyph::Icon(icon) => icons::paint_ribbon(ui, g_rect, icon, icon_col),
+        PillGlyph::Eraser => {
+            let er = Rect::from_center_size(g_rect.center(), vec2(13.0, 9.5));
+            let split = er.min.x + er.width() * 0.48;
+            painter.rect_filled(Rect::from_min_max(er.min, egui::pos2(split, er.max.y)), 1.8, Color32::from_rgb(0xdf, 0xe1, 0xe5));
+            painter.rect_filled(Rect::from_min_max(egui::pos2(split - 1.0, er.min.y), er.max), 1.8, Color32::from_rgb(0xe4, 0xc4, 0xee));
+            painter.rect_stroke(er, 1.8, egui::Stroke::new(1.0, Color32::from_rgb(0x8f, 0x94, 0x9d)), egui::StrokeKind::Inside);
         }
-        Tool::Pencil => {
-            // A compact hexagonal coloured pencil: the writing colour is the lacquered body,
-            // but the wood and graphite make it unmistakably different from a marker.
-            let (w, lw) = (4.7, 4.1);
-            let wood = foot - 13.0;
-            let lacquer = crate::theme::mix(ink, egui::Color32::WHITE, 0.08);
-            painter.add(shape(vec![at(-w, top), at(w, top), at(lw, wood), at(-lw, wood)], lacquer, darker(ink, 0.42)));
-            painter.line_segment([at(-w * 0.42, top + 3.0), at(-lw * 0.42, wood - 2.0)], egui::Stroke::new(1.0, shine));
-            painter.line_segment([at(-w, top + 7.0), at(w, top + 7.0)], egui::Stroke::new(1.5, collar));
-            painter.add(shape(
-                vec![at(-lw, wood), at(lw, wood), at(1.35, foot - 3.2), at(-1.35, foot - 3.2)],
-                egui::Color32::from_rgb(0xe8, 0xd0, 0xa6),
-                egui::Color32::from_rgb(0xb2, 0x95, 0x66),
-            ));
-            painter.add(shape(
-                vec![at(-1.35, foot - 3.2), at(1.35, foot - 3.2), at(0.0, foot)],
-                egui::Color32::from_gray(60),
-                egui::Color32::from_gray(40),
-            ));
-        }
-        Tool::FountainPen => {
-            // A fountain pen has a shorter barrel and a broad metal nib, unlike the small
-            // ball tip of the ordinary pen.
-            let (w, lw) = (4.8, 4.4);
-            let grip = top + 8.0;
-            let nib = foot - 14.0;
-            hold(painter, w, lw, grip);
-            painter.add(shape(vec![at(-4.5, grip), at(4.5, grip), at(3.9, nib), at(-3.9, nib)], darker(ink, 0.08), darker(ink, 0.48)));
-            painter.line_segment([at(-4.1, grip + 3.0), at(4.1, grip + 3.0)], egui::Stroke::new(1.8, collar));
-            // A broad split nib with a visible slit and breather hole.
-            painter.add(shape(
-                vec![at(-3.9, nib), at(3.9, nib), at(1.3, foot), at(-1.3, foot)],
-                egui::Color32::from_rgb(0xc8, 0xcc, 0xd2),
-                body_edge,
-            ));
-            painter.line_segment([at(0.0, nib + 1.0), at(0.0, foot - 1.0)], egui::Stroke::new(0.8, egui::Color32::from_gray(75)));
-            painter.circle_filled(at(0.0, nib + 3.4), 1.15, egui::Color32::from_gray(75));
-        }
-        Tool::BrushPen => {
-            // A loaded brush has a soft ferrule and a visibly flexible, tapered bristle bundle.
-            let (w, lw) = (5.8, 5.2);
-            let grip = top + 8.0;
-            let ferrule = foot - 15.0;
-            hold(painter, w, lw, grip);
-            painter.add(shape(vec![at(-5.4, grip), at(5.4, grip), at(4.8, ferrule), at(-4.8, ferrule)], darker(ink, 0.12), darker(ink, 0.5)));
-            painter.line_segment([at(-3.7, ferrule), at(3.7, ferrule)], egui::Stroke::new(1.8, collar));
-            painter.add(shape(
-                vec![at(-4.8, ferrule), at(4.8, ferrule), at(2.4, ferrule + 7.0), at(0.55, foot), at(-0.55, foot), at(-2.4, ferrule + 7.0)],
-                darker(ink, 0.08),
-                darker(ink, 0.5),
-            ));
-            for offset in [-2.0, 0.0, 2.0] {
-                painter.line_segment([at(offset * 0.72, ferrule + 1.5), at(offset * 0.18, foot - 1.0)], egui::Stroke::new(0.55, shine));
+        PillGlyph::ColourDot(page_colour) => {
+            let center = g_rect.center();
+            if let Some(c) = page_colour {
+                let dark = t.editor.r() < 128;
+                let (r, g, b) = c.rgb(dark);
+                painter.circle_filled(center, 6.5, Color32::from_rgb(r, g, b));
+                painter.circle_stroke(center, 6.5, egui::Stroke::new(1.0, t.container_border));
+            } else {
+                painter.circle_filled(center + vec2(-3.3, -3.0), 3.1, Color32::from_rgb(239, 68, 68));
+                painter.circle_filled(center + vec2(3.3, -3.0), 3.1, Color32::from_rgb(245, 158, 11));
+                painter.circle_filled(center + vec2(-3.3, 3.0), 3.1, Color32::from_rgb(34, 197, 94));
+                painter.circle_filled(center + vec2(3.3, 3.0), 3.1, Color32::from_rgb(59, 130, 246));
             }
         }
-        Tool::Pen => {
-            // The ordinary pen is the clean, slim ballpoint: narrow barrel, small metal cone,
-            // and a round tip rather than the broad point shared by the other tools.
-            let (w, lw) = (4.2, 3.8);
-            let grip = top + 9.0;
-            let nib = foot - 12.0;
-            hold(painter, w, lw, grip);
-            painter.add(shape(vec![at(-3.9, grip), at(3.9, grip), at(3.5, nib), at(-3.5, nib)], ink, darker(ink, 0.48)));
-            painter.line_segment([at(-3.4, grip + 3.0), at(3.4, grip + 3.0)], egui::Stroke::new(1.0, shine));
-            painter.add(shape(
-                vec![at(-3.5, nib), at(3.5, nib), at(0.65, foot - 2.2), at(-0.65, foot - 2.2)],
-                egui::Color32::from_rgb(0xb9, 0xbd, 0xc5),
-                body_edge,
-            ));
-            painter.circle_filled(at(0.0, foot - 1.0), 0.8, egui::Color32::from_gray(55));
+    }
+
+    let mut text_x = if height >= 30.0 { rect.min.x + 28.0 } else { rect.min.x + 23.0 };
+    if let Some(dot_col) = dot {
+        let dot_c = egui::pos2(text_x + 4.0, rect.center().y);
+        painter.circle_filled(dot_c, 4.2, dot_col);
+        painter.circle_stroke(dot_c, 4.2, egui::Stroke::new(0.8, t.text.gamma_multiply(0.45)));
+        text_x += 13.0;
+    }
+    let text_col = if enabled { t.text } else { t.muted };
+    let font_sz = if height >= 30.0 { 12.5 } else { 12.0 };
+    painter.text(egui::pos2(text_x, rect.center().y), Align2::LEFT_CENTER, label, egui::FontId::proportional(font_sz), text_col);
+    if dropdown {
+        chevron(&painter, egui::pos2(rect.max.x - 10.0, rect.center().y), if (resp.hovered() && enabled) || on { t.accent } else { t.muted });
+    }
+    let name = label.to_string();
+    resp.widget_info(move || egui::WidgetInfo::selected(egui::WidgetType::Button, enabled, on, name.clone()));
+    resp.on_hover_text(tip)
+}
+
+fn ribbon_colour_swatches(ui: &mut Ui, view: &View<'_>, active_nib: Nib, activate_draw: bool, t: &Tokens, acts: &mut Vec<Act>) -> bool {
+    let mut picked = false;
+    for chunk in DRAW_COLOURS.chunks(4) {
+        ui.horizontal(|ui| {
+            ui.spacing_mut().item_spacing = vec2(6.0, 6.0);
+            for (rgb, name) in chunk {
+                let here = active_nib.colour == *rgb;
+                let (cell, resp) = ui.allocate_exact_size(vec2(24.0, 24.0), Sense::click());
+                let painter = ui.painter_at(cell);
+                let c32 = Color32::from_rgb(rgb.0, rgb.1, rgb.2);
+                painter.circle_filled(cell.center(), 8.5, c32);
+                if here {
+                    painter.circle_stroke(cell.center(), 10.5, egui::Stroke::new(2.0, t.accent));
+                } else if resp.hovered() {
+                    painter.circle_stroke(cell.center(), 10.5, egui::Stroke::new(1.5, t.muted));
+                }
+                if resp.on_hover_text(*name).clicked() {
+                    acts.push(Act::InkRack(RackEdit::Set(view.nib, Nib::new(active_nib.tool, *rgb, active_nib.tenths))));
+                    if activate_draw {
+                        acts.push(Act::InkPointer(Pointer::Draw));
+                    }
+                    picked = true;
+                }
+            }
+        });
+    }
+    picked
+}
+
+fn ribbon_thickness_pills(ui: &mut Ui, view: &View<'_>, active_nib: Nib, activate_draw: bool, t: &Tokens, acts: &mut Vec<Act>) {
+    ui.horizontal(|ui| {
+        ui.spacing_mut().item_spacing = vec2(4.0, 0.0);
+        for (label, tenths) in [("Fin", 15u16), ("Moyen", 30u16), ("Épais", 55u16)] {
+            let on = (i32::from(active_nib.tenths) - i32::from(tenths)).abs() <= 8;
+            let btn = egui::Button::new(egui::RichText::new(label).size(11.5).color(if on { t.accent } else { t.text }))
+                .fill(if on { t.row_selected } else { t.editor })
+                .stroke(egui::Stroke::new(1.0, if on { t.accent } else { t.faint }))
+                .corner_radius(4.0)
+                .min_size(vec2(52.0, 22.0));
+            if ui.add(btn).clicked() {
+                acts.push(Act::InkRack(RackEdit::Set(view.nib, Nib::new(active_nib.tool, active_nib.colour, tenths))));
+                if activate_draw {
+                    acts.push(Act::InkPointer(Pointer::Draw));
+                }
+            }
         }
-    }
+    });
 }
 
-/// A plain name for a colour, so a pen can be told from its neighbour by a screen reader
-/// and by a test. Only the colours on the rack need one.
-fn swatch_name(colour: Rgb) -> &'static str {
-    match (colour.0, colour.1, colour.2) {
-        (0x20, 0x20, 0x20) => "black",
-        (0xd0, 0x21, 0x21) => "red",
-        (0x18, 0x55, 0xc4) => "blue",
-        (0x16, 0x7f, 0x3d) => "green",
-        (0x55, 0x55, 0x55) => "grey",
-        (0xff, 0xdd, 0x33) => "yellow",
-        (0x6f, 0xe3, 0x9a) => "mint",
-        _ => "custom",
-    }
-}
-
-/// A big button that is drawn but does nothing, for what OneNote has and ErgoNote does
-/// not. It keeps the tab's shape honest: the control is where a OneNote user looks for it,
-/// greyed, saying plainly that it is not here yet rather than being left out.
-/// A small button with an icon and a word, greyed when there is nothing for it to do.
-// i18n-ui-text: label,tip
-#[allow(dead_code)]
-fn row_button(ui: &mut Ui, icon: Icon, label: &str, tip: &str, live: bool, t: &Tokens) -> egui::Response {
-    let dim = Tokens { accent: t.muted, text: t.muted, ..*t };
-    let resp = ui.add_enabled_ui(live, |ui| small(ui, Some(icon), "", label, tip, false, if live { t } else { &dim })).inner;
-    if live {
-        resp
-    } else {
-        let label = crate::tl!(label);
-        let action = label.to_lowercase();
-        resp.on_hover_text(crate::i18n::format_message_id("ui.label_nothing_to_action", &[("label", label), ("action", &action)]))
-    }
-}
-
-/// OneNote's Shapes group: a row of regular shapes, and the one in hand is lit.
-///
-/// A shape drawn here is ink like any other stroke, so the eraser, Select and Undo Stroke
-/// all work on it the day it is drawn.
-fn shapes_group(ui: &mut Ui, view: &View<'_>, t: &Tokens, acts: &mut Vec<Act>) {
-    use ergonote_ink::shapes::Shape;
-    let active_nib = view.in_hand();
-    let active_col = egui::Color32::from_rgb(active_nib.colour.0, active_nib.colour.1, active_nib.colour.2);
-    group(ui, crate::tl_id!("ui.shapes"), t, |ui| {
-        let in_hand = |s: Shape| view.pointer == Pointer::Shape(s);
-        let mut row = |ui: &mut Ui, shapes: &[Shape]| {
-            ui.vertical(|ui| {
-                for s in shapes {
-                    if shape_button(ui, *s, in_hand(*s), active_col, t).clicked() {
-                        acts.push(Act::InkPointer(Pointer::Shape(*s)));
+fn draw_pen_menu(ui: &mut Ui, view: &View<'_>, active_nib: Nib, active_col: Color32, t: &Tokens, acts: &mut Vec<Act>) {
+    let drawing = view.pointer == Pointer::Draw;
+    let response = ribbon_selector_pill(
+        ui,
+        104.0,
+        33.0,
+        PillGlyph::Icon(Icon::Pen),
+        Some(active_col),
+        "Stylo",
+        true,
+        drawing,
+        "Dessiner : choisir le type de stylo, la couleur et l'épaisseur",
+        t,
+    );
+    egui::Popup::menu(&response).show(|ui| {
+        egui::Frame::popup(ui.style()).corner_radius(8.0).inner_margin(egui::Margin::same(8)).show(ui, |ui| {
+            ui.set_min_width(184.0);
+            ui.spacing_mut().item_spacing = vec2(4.0, 5.0);
+            ui.label(egui::RichText::new(crate::tl_id!("ui.student_tool")).small().color(t.muted));
+            ui.horizontal(|ui| {
+                ui.spacing_mut().item_spacing = vec2(4.0, 4.0);
+                for (tool, lbl) in [(Tool::Pen, "Stylo"), (Tool::Highlighter, "Surligneur"), (Tool::Pencil, "Crayon")] {
+                    let on = drawing && active_nib.tool == tool;
+                    let btn = egui::Button::new(egui::RichText::new(lbl).size(11.5).color(if on { t.accent } else { t.text }))
+                        .fill(if on { t.row_selected } else { t.editor })
+                        .stroke(egui::Stroke::new(1.0, if on { t.accent } else { t.faint }))
+                        .corner_radius(4.0)
+                        .min_size(vec2(54.0, 24.0));
+                    if ui.add(btn).clicked() {
+                        acts.push(Act::InkRack(RackEdit::Set(view.nib, Nib::new(tool, active_nib.colour, active_nib.tenths))));
+                        acts.push(Act::InkPointer(Pointer::Draw));
                     }
                 }
             });
-        };
-        row(ui, &[Shape::Rectangle, Shape::Circle, Shape::Line]);
-        row(ui, &[Shape::Square, Shape::Ellipse, Shape::Arrow]);
-        row(ui, &[Shape::Triangle, Shape::Diamond, Shape::Star]);
-        ui.vertical(|ui| {
-            ui.label(egui::RichText::new(crate::tl_id!("ui.colours")).size(10.5).color(t.muted));
-            let shape_colours: [(Rgb, &str); 8] = [
-                (Rgb(0x20, 0x20, 0x20), "Noir"),
-                (Rgb(0xd0, 0x21, 0x21), "Rouge"),
-                (Rgb(0x18, 0x55, 0xc4), "Bleu"),
-                (Rgb(0x16, 0x7f, 0x3d), "Vert"),
-                (Rgb(0xe6, 0x77, 0x00), "Orange"),
-                (Rgb(0x70, 0x48, 0xe8), "Violet"),
-                (Rgb(0xf5, 0x9f, 0x00), "Jaune"),
-                (Rgb(0xd6, 0x33, 0x6c), "Rose"),
+            ui.label(egui::RichText::new(crate::tl_id!("ui.colour")).small().color(t.muted));
+            ribbon_colour_swatches(ui, view, active_nib, true, t, acts);
+            ui.label(egui::RichText::new(crate::tl_id!("ui.thickness")).small().color(t.muted));
+            ribbon_thickness_pills(ui, view, active_nib, true, t, acts);
+        });
+    });
+}
+
+fn draw_shapes_menu(ui: &mut Ui, view: &View<'_>, active_nib: Nib, active_col: Color32, t: &Tokens, acts: &mut Vec<Act>) {
+    use ergonote_ink::shapes::Shape;
+    let in_shapes = matches!(view.pointer, Pointer::Shape(_));
+    let response = ribbon_selector_pill(
+        ui,
+        104.0,
+        33.0,
+        PillGlyph::Icon(Icon::Shapes),
+        Some(active_col),
+        "Formes",
+        true,
+        in_shapes,
+        "Tracer une forme géométrique avec la couleur choisie",
+        t,
+    );
+    egui::Popup::menu(&response).show(|ui| {
+        egui::Frame::popup(ui.style()).corner_radius(8.0).inner_margin(egui::Margin::same(8)).show(ui, |ui| {
+            ui.spacing_mut().item_spacing = vec2(6.0, 6.0);
+            ui.label(egui::RichText::new(crate::tl_id!("ui.student_shapes")).small().color(t.muted));
+            let in_hand = |s: Shape| view.pointer == Pointer::Shape(s);
+            let rows_of_shapes = [
+                [Shape::Rectangle, Shape::Square, Shape::Line],
+                [Shape::Circle, Shape::Ellipse, Shape::Arrow],
+                [Shape::Triangle, Shape::Diamond, Shape::Star],
             ];
-            for chunk in shape_colours.chunks(4) {
+            for row in rows_of_shapes {
                 ui.horizontal(|ui| {
-                    for (rgb, name) in chunk {
-                        let here = active_nib.colour == *rgb;
-                        let (cell, resp) = ui.allocate_exact_size(vec2(20.0, 20.0), Sense::click());
-                        let painter = ui.painter_at(cell);
-                        let c32 = egui::Color32::from_rgb(rgb.0, rgb.1, rgb.2);
-                        painter.circle_filled(cell.center(), 7.5, c32);
-                        if here {
-                            painter.circle_stroke(cell.center(), 9.0, egui::Stroke::new(2.0, t.text));
-                        }
-                        if resp.on_hover_text(*name).clicked() {
-                            acts.push(Act::InkRack(RackEdit::Set(view.nib, Nib::new(active_nib.tool, *rgb, active_nib.tenths))));
+                    ui.spacing_mut().item_spacing = vec2(4.0, 4.0);
+                    for s in row {
+                        if shape_button(ui, s, in_hand(s), active_col, t).clicked() {
+                            acts.push(Act::InkPointer(Pointer::Shape(s)));
+                            ui.close();
                         }
                     }
                 });
+            }
+            ui.separator();
+            ui.label(egui::RichText::new(crate::tl_id!("ui.student_shape_color_label")).small().color(t.muted));
+            ribbon_colour_swatches(ui, view, active_nib, false, t, acts);
+            ui.label(egui::RichText::new(crate::tl_id!("ui.thickness")).small().color(t.muted));
+            ribbon_thickness_pills(ui, view, active_nib, false, t, acts);
+        });
+    });
+}
+
+fn insert_draw_controls(ui: &mut Ui, view: &View<'_>, t: &Tokens, acts: &mut Vec<Act>) {
+    let active_nib = view.in_hand();
+    let active_col = Color32::from_rgb(active_nib.colour.0, active_nib.colour.1, active_nib.colour.2);
+    ui.vertical(|ui| {
+        ui.add_space(6.0);
+        ui.spacing_mut().item_spacing = vec2(6.0, 6.0);
+        ui.horizontal(|ui| {
+            ui.spacing_mut().item_spacing.x = 6.0;
+            draw_pen_menu(ui, view, active_nib, active_col, t, acts);
+            let erase_on = view.pointer == Pointer::Erase;
+            if ribbon_selector_pill(
+                ui,
+                88.0,
+                33.0,
+                PillGlyph::Eraser,
+                None,
+                "Gomme",
+                false,
+                erase_on,
+                "Gommer un tracé (re-cliquer pour revenir à l'écriture)",
+                t,
+            )
+            .clicked()
+            {
+                acts.push(Act::InkPointer(if erase_on { Pointer::Write } else { Pointer::Erase }));
+            }
+        });
+        ui.horizontal(|ui| {
+            ui.spacing_mut().item_spacing.x = 6.0;
+            draw_shapes_menu(ui, view, active_nib, active_col, t, acts);
+            if ribbon_selector_pill(ui, 88.0, 33.0, PillGlyph::Icon(Icon::Undo), None, "Annuler", false, false, "Annuler le dernier tracé", t)
+                .clicked()
+            {
+                acts.push(Act::InkUndo);
             }
         });
     });
 }
 
-/// One shape on the Shapes row: the shape itself, drawn small, with its name beside it.
+fn sticker_tile(
+    ui: &mut Ui,
+    sticker: &'static crate::stickers::Sticker,
+    tile: egui::Vec2,
+    icon_sz: egui::Vec2,
+    show_label: bool,
+    t: &Tokens,
+) -> bool {
+    let (rect, resp) = ui.allocate_exact_size(tile, Sense::click());
+    let painter = ui.painter_at(rect);
+    let bg = if resp.hovered() { t.row_hover } else { t.editor };
+    let edge = if resp.hovered() { t.accent } else { t.faint };
+    painter.rect_filled(rect, 6.0, bg);
+    painter.rect_stroke(rect, 6.0, egui::Stroke::new(1.0, edge), egui::StrokeKind::Inside);
+    let img_center_y = if show_label { rect.min.y + 24.0 } else { rect.center().y };
+    let img_rect = Rect::from_center_size(egui::pos2(rect.center().x, img_center_y), icon_sz);
+    egui::Image::from_bytes(crate::stickers::preview_uri(sticker), sticker.svg.as_bytes()).paint_at(ui, img_rect);
+    if show_label {
+        painter.text(egui::pos2(rect.center().x, rect.max.y - 10.0), Align2::CENTER_CENTER, sticker.label, egui::FontId::proportional(10.0), t.text);
+    }
+    let enabled = ui.is_enabled();
+    resp.widget_info(move || egui::WidgetInfo::labeled(egui::WidgetType::Button, enabled, sticker.label));
+    resp.on_hover_text(sticker.label).clicked()
+}
+
+fn sticker_grid_popup(ui: &mut Ui, items: &'static [crate::stickers::Sticker], cols: usize, t: &Tokens, acts: &mut Vec<Act>) {
+    ui.spacing_mut().item_spacing = vec2(5.0, 5.0);
+    for chunk in items.chunks(cols.max(1)) {
+        ui.horizontal(|ui| {
+            ui.spacing_mut().item_spacing = vec2(5.0, 5.0);
+            for s in chunk {
+                if sticker_tile(ui, s, vec2(44.0, 44.0), vec2(30.0, 30.0), false, t) {
+                    acts.push(Act::InsertSticker(s.id));
+                    ui.close();
+                }
+            }
+        });
+    }
+}
+
+fn big_sticker_menu_button(ui: &mut Ui, is_labo: bool, label: &str, tip: &str, t: &Tokens) -> egui::Response {
+    let font = egui::FontId::proportional(13.0);
+    let widest = ui.painter().layout_no_wrap(label.to_owned(), font.clone(), t.text).size().x;
+    let (rect, resp) = ui.allocate_exact_size(vec2(BIG.max(widest + BIG_PAD), GROUP_H - 20.0), Sense::click());
+    let painter = ui.painter_at(rect);
+    if resp.hovered() {
+        painter.rect_filled(rect, 8.0, t.row_hover);
+    }
+    let tint = if is_labo { Color32::from_rgb(0x25, 0x63, 0xEB) } else { Color32::from_rgb(0xD9, 0x77, 0x06) };
+    let badge = Rect::from_center_size(egui::pos2(rect.center().x, rect.min.y + ICON_Y), vec2(38.0, 34.0));
+    painter.rect_filled(badge, 9.0, crate::theme::mix(t.editor, tint, 0.14));
+    let c = badge.center();
+    if is_labo {
+        // Colorful 2D Erlenmeyer flask vector icon.
+        let top = c.y - 10.5;
+        let neck = c.y - 3.0;
+        let liq_top = c.y + 1.5;
+        let bot = c.y + 10.5;
+        let outline = vec![
+            egui::pos2(c.x - 3.2, top),
+            egui::pos2(c.x + 3.2, top),
+            egui::pos2(c.x + 3.2, neck),
+            egui::pos2(c.x + 10.0, bot),
+            egui::pos2(c.x - 10.0, bot),
+            egui::pos2(c.x - 3.2, neck),
+        ];
+        let liquid =
+            vec![egui::pos2(c.x - 5.6, liq_top), egui::pos2(c.x + 5.6, liq_top), egui::pos2(c.x + 9.2, bot - 0.8), egui::pos2(c.x - 9.2, bot - 0.8)];
+        painter.add(egui::Shape::convex_polygon(outline.clone(), Color32::from_rgba_unmultiplied(0xE0, 0xF2, 0xFE, 210), egui::Stroke::NONE));
+        painter.add(egui::Shape::convex_polygon(liquid, Color32::from_rgb(0x38, 0xBD, 0xF8), egui::Stroke::NONE));
+        painter.add(egui::Shape::closed_line(outline, egui::Stroke::new(1.5, Color32::from_rgb(0x1E, 0x3A, 0x8A))));
+        painter.line_segment([egui::pos2(c.x - 4.5, top), egui::pos2(c.x + 4.5, top)], egui::Stroke::new(1.8, Color32::from_rgb(0x1E, 0x3A, 0x8A)));
+        painter.circle_filled(egui::pos2(c.x - 2.2, c.y + 6.2), 1.4, Color32::from_rgb(0xFF, 0xFF, 0xFF));
+        painter.circle_filled(egui::pos2(c.x + 2.4, c.y + 4.2), 1.1, Color32::from_rgb(0xFF, 0xFF, 0xFF));
+    } else {
+        // Warm golden vector smiley icon.
+        painter.circle_filled(c, 11.5, Color32::from_rgb(0xFF, 0xD9, 0x3B));
+        painter.circle_stroke(c, 11.5, egui::Stroke::new(1.4, Color32::from_rgb(0xB4, 0x53, 0x09)));
+        painter.circle_filled(egui::pos2(c.x - 5.5, c.y + 1.5), 2.0, Color32::from_rgba_unmultiplied(0xF9, 0x73, 0x16, 120));
+        painter.circle_filled(egui::pos2(c.x + 5.5, c.y + 1.5), 2.0, Color32::from_rgba_unmultiplied(0xF9, 0x73, 0x16, 120));
+        painter.circle_filled(egui::pos2(c.x - 3.8, c.y - 2.5), 1.6, Color32::from_rgb(0x3B, 0x2B, 0x09));
+        painter.circle_filled(egui::pos2(c.x + 3.8, c.y - 2.5), 1.6, Color32::from_rgb(0x3B, 0x2B, 0x09));
+        let smile: Vec<egui::Pos2> = (0..=8)
+            .map(|i| {
+                let frac = (i as f32) / 8.0;
+                let ang = 0.22 * std::f32::consts::PI + frac * 0.56 * std::f32::consts::PI;
+                egui::pos2(c.x - 5.8 * ang.cos(), c.y + 0.5 + 5.8 * ang.sin())
+            })
+            .collect();
+        painter.add(egui::Shape::line(smile, egui::Stroke::new(1.7, Color32::from_rgb(0x3B, 0x2B, 0x09))));
+    }
+    painter.text(egui::pos2(rect.center().x, rect.min.y + LABEL_Y), Align2::CENTER_CENTER, label, font, t.text);
+    chevron(&painter, egui::pos2(rect.center().x, rect.min.y + LABEL_Y + LINE_H - 1.0), t.muted);
+    let enabled = ui.is_enabled();
+    let name = label.to_owned();
+    resp.widget_info(move || egui::WidgetInfo::labeled(egui::WidgetType::Button, enabled, name.clone()));
+    resp.on_hover_text(tip)
+}
+
+fn insert_stickers_controls(ui: &mut Ui, t: &Tokens, acts: &mut Vec<Act>) {
+    use crate::stickers::{EMOJIS, LABO, LabGroup, SMILEYS, Season, current_season, seasonal_emojis, seasonal_smileys};
+    let season = current_season();
+    let season_col = match season {
+        Season::Printemps => Color32::from_rgb(0xEC, 0x48, 0x99),
+        Season::Ete => Color32::from_rgb(0xF5, 0x9E, 0x0B),
+        Season::Automne => Color32::from_rgb(0xEA, 0x58, 0x0C),
+        Season::Hiver => Color32::from_rgb(0x0E, 0xA5, 0xE9),
+    };
+    let emojis_btn = big_sticker_menu_button(ui, false, "Émojis", "Insérer un smiley ou un émoji scolaire", t);
+    egui::Popup::menu(&emojis_btn).close_behavior(egui::PopupCloseBehavior::CloseOnClickOutside).show(|ui| {
+        egui::Frame::popup(ui.style()).corner_radius(8.0).inner_margin(egui::Margin::same(8)).show(ui, |ui| {
+            let tab_id = egui::Id::new("ribbon-emoji-tab");
+            let mut active_tab = ui.data(|d| d.get_temp::<u8>(tab_id).unwrap_or(0));
+            ui.horizontal(|ui| {
+                ui.spacing_mut().item_spacing = vec2(6.0, 0.0);
+                for (idx, title) in [(0u8, "Smileys"), (1u8, "Émojis")] {
+                    let on = active_tab == idx;
+                    let btn = egui::Button::new(egui::RichText::new(title).size(12.0).color(if on { t.accent } else { t.text }))
+                        .fill(if on { t.row_selected } else { t.editor })
+                        .stroke(egui::Stroke::new(1.0, if on { t.accent } else { t.faint }))
+                        .corner_radius(5.0)
+                        .min_size(vec2(138.0, 26.0));
+                    if ui.add(btn).clicked() {
+                        active_tab = idx;
+                    }
+                }
+            });
+            ui.data_mut(|d| d.insert_temp(tab_id, active_tab));
+            ui.add_space(6.0);
+            ui.horizontal(|ui| {
+                ui.spacing_mut().item_spacing.x = 5.0;
+                let (dot_r, _) = ui.allocate_exact_size(vec2(10.0, 14.0), Sense::hover());
+                ui.painter().circle_filled(dot_r.center(), 4.0, season_col);
+                ui.label(egui::RichText::new(format!("Saison : {}", season.label())).small().strong().color(season_col));
+            });
+            let seasonal = if active_tab == 0 { seasonal_smileys(season) } else { seasonal_emojis(season) };
+            ui.horizontal(|ui| {
+                ui.spacing_mut().item_spacing = vec2(5.0, 5.0);
+                for s in seasonal {
+                    if sticker_tile(ui, s, vec2(44.0, 44.0), vec2(30.0, 30.0), false, t) {
+                        acts.push(Act::InsertSticker(s.id));
+                        ui.close();
+                    }
+                }
+            });
+            ui.separator();
+            egui::ScrollArea::vertical().id_salt(("ribbon-sticker-scroll", active_tab)).max_height(250.0).show(ui, |ui| {
+                sticker_grid_popup(ui, if active_tab == 0 { SMILEYS } else { EMOJIS }, 6, t, acts);
+            });
+        });
+    });
+
+    let labo_btn = big_sticker_menu_button(ui, true, "Labo", "Insérer du matériel de chimie (bécher, pipette, fiole...) ou un pictogramme", t);
+    egui::Popup::menu(&labo_btn).show(|ui| {
+        egui::Frame::popup(ui.style()).corner_radius(8.0).inner_margin(egui::Margin::same(8)).show(ui, |ui| {
+            ui.spacing_mut().item_spacing = vec2(6.0, 6.0);
+            for (heading, grp) in [("Verrerie", LabGroup::Verrerie), ("Mesure & chauffage", LabGroup::Mesure), ("Sécurité (SGH)", LabGroup::Securite)]
+            {
+                ui.label(egui::RichText::new(heading).small().color(t.muted));
+                let list: Vec<&'static crate::stickers::Sticker> = LABO.iter().filter(|s| s.lab_group == Some(grp)).collect();
+                for chunk in list.chunks(4) {
+                    ui.horizontal(|ui| {
+                        ui.spacing_mut().item_spacing = vec2(6.0, 6.0);
+                        for s in chunk {
+                            if sticker_tile(ui, s, vec2(74.0, 62.0), vec2(34.0, 34.0), true, t) {
+                                acts.push(Act::InsertSticker(s.id));
+                                ui.close();
+                            }
+                        }
+                    });
+                }
+            }
+        });
+    });
+}
+
+/// One shape in the Shapes gallery: the shape itself, drawn small, with its name beside it.
 fn shape_button(ui: &mut Ui, shape: ergonote_ink::shapes::Shape, here: bool, stroke_col: Color32, t: &Tokens) -> egui::Response {
     let (rect, resp) = ui.allocate_exact_size(vec2(86.0, 20.0), Sense::click());
     if here || resp.hovered() {
@@ -3264,128 +2626,6 @@ fn shape_button(ui: &mut Ui, shape: ergonote_ink::shapes::Shape, here: bool, str
     let enabled = ui.is_enabled();
     resp.widget_info(|| egui::WidgetInfo::selected(egui::WidgetType::Button, enabled, here, shape_label));
     resp.on_hover_text(crate::i18n::format_message_id("ui.shape_drag_on_the_page_to_draw_one", &[(crate::tl_id!("ui.shape"), shape_label)]))
-}
-
-fn soon(ui: &mut Ui, icon: Icon, label: &str, t: &Tokens) {
-    let dim = Tokens { accent: t.muted, text: t.muted, ..*t };
-    let resp = ui.add_enabled_ui(false, |ui| big(ui, icon, label, crate::tl_id!("ui.not_built_yet"), &dim)).inner;
-    resp.on_hover_text(crate::i18n::format_message_id("ui.label_not_built_yet", &[(crate::tl_id!("ui.label"), crate::tl!(label))]));
-}
-
-/// OneNote's History tab, with the same groups and controls. ErgoNote does not yet keep
-/// unread flags or authors, so those controls are visible but disabled.
-#[allow(dead_code)]
-fn history_tab(ui: &mut Ui, view: &View<'_>, t: &Tokens, acts: &mut Vec<Act>) {
-    group(ui, crate::tl_id!("ui.unread"), t, |ui| {
-        if big(ui, Icon::PageStack, crate::tl_id!("ui.next_unread_2"), crate::tl_id!("ui.go_to_the_next_page_changed_since_you_last_read_it"), t)
-            .clicked()
-        {
-            acts.push(Act::NextUnread);
-        }
-        let (label, tip) = if view.page_marked_unread {
-            (crate::tl_id!("ui.mark_as_read_2"), crate::tl_id!("ui.mark_this_page_as_read"))
-        } else {
-            (crate::tl_id!("ui.mark_as_unread_2"), crate::tl_id!("ui.mark_this_page_as_unread_to_come_back_to_it"))
-        };
-        if ui.add_enabled_ui(view.has_page, |ui| big(ui, Icon::Todo, label, tip, t)).inner.clicked() {
-            acts.push(Act::ToggleRead);
-        }
-    });
-    group(ui, crate::tl_id!("ui.authors"), t, |ui| {
-        if big(ui, Icon::Clock, crate::tl_id!("ui.recent_edits_2"), crate::tl_id!("ui.see_the_pages_changed_lately"), t).clicked() {
-            acts.push(Act::RecentEdits);
-        }
-        soon(ui, Icon::Search, "Find by\nAuthor", t);
-        soon(ui, Icon::Page, "Hide\nAuthors", t);
-    });
-    group(ui, crate::tl_id!("ui.history"), t, |ui| {
-        if ui
-            .add_enabled_ui(view.has_page, |ui| {
-                big(ui, Icon::PageStack, crate::tl_id!("ui.page_versions_4"), crate::tl_id!("ui.see_and_restore_saved_copies_of_this_page"), t)
-            })
-            .inner
-            .clicked()
-        {
-            acts.push(Act::PageVersions);
-        }
-        if ui
-            .add_enabled_ui(view.has_page, |ui| {
-                big(
-                    ui,
-                    Icon::Notebook,
-                    crate::tl_id!("ui.notebook_recycle_bin_3"),
-                    crate::tl_id!("ui.restore_pages_sections_and_groups_removed_from_this_notebook"),
-                    t,
-                )
-            })
-            .inner
-            .clicked()
-        {
-            acts.push(Act::RecycleBin);
-        }
-    });
-}
-
-/// OneNote's Draw tab, group for group, and built the way OneNote builds it: big buttons
-/// with the mark each one makes above its name. What ErgoNote cannot do yet is greyed and
-/// says so, rather than being left out, so the tab is an honest map of the ink work.
-fn draw_tab(ui: &mut Ui, view: &View<'_>, t: &Tokens, acts: &mut Vec<Act>) {
-    group(ui, crate::tl_id!("ui.undo"), t, |ui| {
-        // Named apart from the group they sit in, so a screen reader and a test can tell
-        // the Undo group from the Undo button inside it.
-        if big(ui, Icon::Undo, crate::tl_id!("ui.undo_stroke"), crate::tl_id!("ui.take_the_last_stroke_back"), t).clicked() {
-            acts.push(Act::InkUndo);
-        }
-        // Follows the drawing's own redo steps, as Undo stroke follows its undo steps (#264).
-        if ui
-            .add_enabled_ui(view.can_ink_redo, |ui| {
-                big(ui, Icon::Redo, crate::tl_id!("ui.redo_stroke"), crate::tl_id!("ui.put_back_the_stroke_undo_stroke_took_back"), t)
-            })
-            .inner
-            .clicked()
-        {
-            acts.push(Act::InkRedo);
-        }
-    });
-    group(ui, crate::tl_id!("ui.selection"), t, |ui| {
-        // OneNote has no such button: there, the pointer is always the caret until a pen
-        // is picked up. Ours needs one, because picking ink up and writing words are both
-        // things a plain click does, and only the person knows which they meant.
-        if big_on(
-            ui,
-            Icon::DirLtr,
-            crate::tl_id!("ui.type"),
-            crate::tl_id!("ui.put_the_pointer_back_to_the_words_and_the_caret"),
-            view.pointer == Pointer::Write,
-            t,
-        )
-        .clicked()
-        {
-            acts.push(Act::InkPointer(Pointer::Write));
-        }
-    });
-    group(ui, crate::tl_id!("ui.drawing_tools"), t, |ui| {
-        if eraser_on_rack(ui, view.pointer == Pointer::Erase, t).clicked() {
-            acts.push(Act::InkPointer(Pointer::Erase));
-        }
-        for (i, nib) in view.rack.iter().enumerate() {
-            let chosen = view.pointer == Pointer::Draw && view.nib == i;
-            if pen_on_rack(ui, i, *nib, chosen, view.rack.len(), t, acts) {
-                acts.push(Act::InkPen(i));
-            }
-        }
-        add_menu(ui, t, acts);
-    });
-    shapes_group(ui, view, t, acts);
-    group(ui, crate::tl_id!("ui.input_mode"), t, |ui| {
-        let on = view.pointer == Pointer::Pan;
-        if big_on(ui, Icon::Hand, crate::tl_id!("ui.panning_hand_2"), crate::tl_id!("ui.drag_to_move_around_the_page"), on, t).clicked() {
-            acts.push(Act::InkPointer(if on { Pointer::Write } else { Pointer::Pan }));
-        }
-        if big(ui, Icon::Shapes, crate::tl_id!("ui.collect_all"), crate::tl_id!("ui.collect_all_tip"), t).clicked() {
-            acts.push(Act::CollectAll);
-        }
-    });
 }
 
 /// Fixed-width pill button so stacked Table ribbon rows align to the exact pixel.
@@ -3478,7 +2718,7 @@ fn compact_delete_btn(ui: &mut Ui, tip: &str, widget_label: &str, t: &Tokens) ->
 fn table_tab(ui: &mut Ui, view: &View<'_>, t: &Tokens, acts: &mut Vec<Act>) {
     use crate::pageedit::TableEdit as E;
     use ergonote_model::tablecols::Align as A;
-    group(ui, "Lignes et colonnes", t, |ui| {
+    group(ui, crate::tl_id!("ui.student_rows_and_cols_group"), t, |ui| {
         ui.vertical(|ui| {
             ui.add_space(6.0);
             ui.spacing_mut().item_spacing = vec2(5.0, 6.0);
@@ -3506,7 +2746,7 @@ fn table_tab(ui: &mut Ui, view: &View<'_>, t: &Tokens, acts: &mut Vec<Act>) {
             });
         });
     });
-    group(ui, "Apparence", t, |ui| {
+    group(ui, crate::tl_id!("ui.student_appearance_group"), t, |ui| {
         shading_menu(ui, view, t, acts);
         ui.vertical(|ui| {
             ui.add_space(6.0);
@@ -3525,7 +2765,7 @@ fn table_tab(ui: &mut Ui, view: &View<'_>, t: &Tokens, acts: &mut Vec<Act>) {
             });
         });
     });
-    group(ui, "Tableau", t, |ui| {
+    group(ui, crate::tl_id!("ui.student_table_group"), t, |ui| {
         if compact_delete_btn(ui, "Supprimer tout le tableau", "Supprimer le tableau", t).clicked() {
             acts.push(Act::ConfirmDeleteTable(None));
         }
@@ -3536,7 +2776,7 @@ fn table_tab(ui: &mut Ui, view: &View<'_>, t: &Tokens, acts: &mut Vec<Act>) {
 /// crop/rotate/scan enhancement, pure-Rust offline OCR, background lock, and deletion.
 fn image_tab(ui: &mut Ui, view: &View<'_>, t: &Tokens, acts: &mut Vec<Act>) {
     use crate::turn::{Enhance, Turn};
-    group(ui, "Modifier", t, |ui| {
+    group(ui, crate::tl_id!("ui.student_edit_group"), t, |ui| {
         ui.vertical(|ui| {
             ui.add_space(6.0);
             ui.spacing_mut().item_spacing = vec2(5.0, 6.0);
@@ -3578,16 +2818,16 @@ fn image_tab(ui: &mut Ui, view: &View<'_>, t: &Tokens, acts: &mut Vec<Act>) {
             });
         });
     });
-    group(ui, "Texte (OCR)", t, |ui| {
+    group(ui, crate::tl_id!("ui.student_ocr_group"), t, |ui| {
         let ocr_label = if view.ocr_busy { "OCR en\ncours..." } else { "Extraire\nle texte" };
-        if big(ui, Icon::InkToText, ocr_label, "Reconnaître le texte de l'image (OCR hors-ligne)", t).clicked() && !view.ocr_busy {
+        if big(ui, Icon::InkToText, ocr_label, crate::tl_id!("ui.student_ocr_extract_tip"), t).clicked() && !view.ocr_busy {
             acts.push(Act::OcrPicture { speak: false });
         }
-        if big(ui, Icon::ReadAloud, "Lire\nl'image", "Reconnaître le texte de l'image et le lire à voix haute", t).clicked() && !view.ocr_busy {
+        if big(ui, Icon::ReadAloud, crate::tl_id!("ui.student_ocr_read"), crate::tl_id!("ui.student_ocr_read_tip"), t).clicked() && !view.ocr_busy {
             acts.push(Act::OcrPicture { speak: true });
         }
     });
-    group(ui, "Image", t, |ui| {
+    group(ui, crate::tl_id!("ui.student_image_group"), t, |ui| {
         let lock_label = if view.lock_images { "Déverrouiller\nle fond" } else { "Verrouiller\nen fond" };
         let lock_tip = "Verrouiller les PDF et images en fond pour écrire dessus sans les déplacer par erreur";
         if big_on(ui, Icon::Page, lock_label, lock_tip, view.lock_images, t).clicked() {
@@ -3602,20 +2842,28 @@ fn image_tab(ui: &mut Ui, view: &View<'_>, t: &Tokens, acts: &mut Vec<Act>) {
 /// Page setup and compact view controls placed at the right end of Home.
 fn page_setup_group(ui: &mut Ui, view: &View<'_>, t: &Tokens, acts: &mut Vec<Act>) {
     group(ui, crate::tl_id!("ui.page_setup"), t, |ui| {
-        rule_lines_menu(ui, view, t, acts);
+        if big_on(ui, Icon::Folder, crate::tl_id!("ui.student_section_tabs"), crate::tl_id!("ui.student_section_tabs_tip"), view.section_tabs_bar, t)
+            .clicked()
+        {
+            acts.push(Act::ToggleSectionTabs);
+        }
         ui.vertical(|ui| {
-            ui.add_space(4.0);
-            ui.spacing_mut().item_spacing = vec2(4.0, 5.0);
-            // Row 1: two compact icon + short-label popups (Couleur + Papier).
+            ui.add_space(6.0);
+            ui.spacing_mut().item_spacing = vec2(6.0, 6.0);
             ui.horizontal(|ui| {
-                ui.spacing_mut().item_spacing.x = 4.0;
+                ui.spacing_mut().item_spacing.x = 6.0;
+                compact_rule_lines_button(ui, view, t, acts);
                 ui.add_enabled_ui(view.has_page, |ui| {
-                    let colour_resp = compact_colour_menu_button(
+                    let colour_resp = ribbon_selector_pill(
                         ui,
+                        98.0,
+                        33.0,
+                        PillGlyph::ColourDot(view.page_colour),
+                        None,
                         "Couleur",
+                        true,
+                        false,
                         crate::tl_id!("ui.page_colour"),
-                        crate::tl_id!("ui.page_colour"),
-                        view.page_colour,
                         t,
                     );
                     egui::Popup::menu(&colour_resp).show(|ui| {
@@ -3624,12 +2872,19 @@ fn page_setup_group(ui: &mut Ui, view: &View<'_>, t: &Tokens, acts: &mut Vec<Act
                         }
                     });
                 });
+            });
+            ui.horizontal(|ui| {
+                ui.spacing_mut().item_spacing.x = 6.0;
                 ui.add_enabled_ui(view.has_page, |ui| {
-                    let paper_resp = compact_icon_menu_button(
+                    let paper_resp = ribbon_selector_pill(
                         ui,
-                        Icon::Page,
+                        98.0,
+                        33.0,
+                        PillGlyph::Icon(Icon::Page),
+                        None,
                         "Papier",
-                        crate::tl_id!("ui.paper_size"),
+                        true,
+                        false,
                         crate::tl_id!("ui.the_sheet_this_page_is_written_for_its_size_turn_and_margins"),
                         t,
                     );
@@ -3637,30 +2892,16 @@ fn page_setup_group(ui: &mut Ui, view: &View<'_>, t: &Tokens, acts: &mut Vec<Act
                         .close_behavior(egui::PopupCloseBehavior::CloseOnClickOutside)
                         .show(|ui| paper_size_menu(ui, view.paper_size, t, acts));
                 });
-            });
-            // Row 2: icon-only fullscreen + compact Onglets + Simple toggles.
-            ui.horizontal(|ui| {
-                ui.spacing_mut().item_spacing.x = 4.0;
-                if compact_toggle_icon(
+                if ribbon_selector_pill(
                     ui,
-                    Icon::Folder,
-                    "Onglets",
-                    "Onglets matières",
-                    "Afficher les onglets (Français, Maths...) en barre horizontale sous le ruban",
-                    view.section_tabs_bar,
-                    t,
-                )
-                .clicked()
-                {
-                    acts.push(Act::ToggleSectionTabs);
-                }
-                if compact_toggle_icon(
-                    ui,
-                    Icon::Tiles,
+                    98.0,
+                    33.0,
+                    PillGlyph::Icon(Icon::Tiles),
+                    None,
                     "Simple",
-                    "Mode simple",
-                    "Interface ultra simple en tuiles (idéale pour les enfants ou les petits écrans)",
+                    false,
                     view.simple_mode,
+                    "Interface ultra simple en tuiles (idéale pour les enfants ou les petits écrans)",
                     t,
                 )
                 .clicked()
@@ -3670,107 +2911,6 @@ fn page_setup_group(ui: &mut Ui, view: &View<'_>, t: &Tokens, acts: &mut Vec<Act
             });
         });
     });
-}
-
-fn compact_icon_menu_button(ui: &mut Ui, icon: Icon, label: &str, spoken_label: &str, tip: &str, t: &Tokens) -> egui::Response {
-    let font = egui::FontId::proportional(12.0);
-    let text_col = if ui.is_enabled() { t.text } else { t.muted };
-    let text = ui.painter().layout_no_wrap(label.to_owned(), font.clone(), text_col).size();
-    let (rect, resp) = ui.allocate_exact_size(vec2(text.x + 36.0, 24.0), Sense::click());
-    let painter = ui.painter_at(rect);
-    let bg = if resp.hovered() && ui.is_enabled() { t.row_hover } else { t.editor };
-    painter.rect_filled(rect, 5.0, bg);
-    painter.rect_stroke(rect, 5.0, egui::Stroke::new(1.0, t.faint), egui::StrokeKind::Inside);
-    icons::paint_ribbon(ui, Rect::from_center_size(egui::pos2(rect.min.x + 11.0, rect.center().y), vec2(15.0, 15.0)), icon, t.accent);
-    painter.text(egui::pos2(rect.min.x + 22.0, rect.center().y), Align2::LEFT_CENTER, label, font, text_col);
-    let cx = rect.max.x - 8.0;
-    let cy = rect.center().y;
-    painter.add(egui::Shape::line(
-        vec![egui::pos2(cx - 2.6, cy - 1.2), egui::pos2(cx, cy + 1.6), egui::pos2(cx + 2.6, cy - 1.2)],
-        egui::Stroke::new(1.2, t.muted),
-    ));
-    let enabled = ui.is_enabled();
-    let name = spoken_label.to_owned();
-    resp.widget_info(move || egui::WidgetInfo::labeled(egui::WidgetType::Button, enabled, name.clone()));
-    resp.on_hover_text(tip)
-}
-
-fn compact_colour_menu_button(
-    ui: &mut Ui,
-    label: &str,
-    spoken_label: &str,
-    tip: &str,
-    page_colour: Option<ergonote_model::NodeColor>,
-    t: &Tokens,
-) -> egui::Response {
-    let font = egui::FontId::proportional(12.0);
-    let text_col = if ui.is_enabled() { t.text } else { t.muted };
-    let text = ui.painter().layout_no_wrap(label.to_owned(), font.clone(), text_col).size();
-    let (rect, resp) = ui.allocate_exact_size(vec2(text.x + 36.0, 24.0), Sense::click());
-    let painter = ui.painter_at(rect);
-    let bg = if resp.hovered() && ui.is_enabled() { t.row_hover } else { t.editor };
-    painter.rect_filled(rect, 5.0, bg);
-    painter.rect_stroke(rect, 5.0, egui::Stroke::new(1.0, t.faint), egui::StrokeKind::Inside);
-    let center = egui::pos2(rect.min.x + 11.0, rect.center().y);
-    if let Some(c) = page_colour {
-        let dark = t.editor.r() < 128;
-        let (r, g, b) = c.rgb(dark);
-        painter.circle_filled(center, 6.0, Color32::from_rgb(r, g, b));
-        painter.circle_stroke(center, 6.0, egui::Stroke::new(1.0, t.container_border));
-    } else {
-        // Multi-colour mini palette dots so the colour button is instantly recognisable at a glance.
-        painter.circle_filled(center + vec2(-3.2, -2.8), 3.0, Color32::from_rgb(239, 68, 68));
-        painter.circle_filled(center + vec2(3.2, -2.8), 3.0, Color32::from_rgb(245, 158, 11));
-        painter.circle_filled(center + vec2(-3.2, 2.8), 3.0, Color32::from_rgb(34, 197, 94));
-        painter.circle_filled(center + vec2(3.2, 2.8), 3.0, Color32::from_rgb(59, 130, 246));
-    }
-    painter.text(egui::pos2(rect.min.x + 22.0, rect.center().y), Align2::LEFT_CENTER, label, font, text_col);
-    let cx = rect.max.x - 8.0;
-    let cy = rect.center().y;
-    painter.add(egui::Shape::line(
-        vec![egui::pos2(cx - 2.6, cy - 1.2), egui::pos2(cx, cy + 1.6), egui::pos2(cx + 2.6, cy - 1.2)],
-        egui::Stroke::new(1.2, t.muted),
-    ));
-    let enabled = ui.is_enabled();
-    let name = spoken_label.to_owned();
-    resp.widget_info(move || egui::WidgetInfo::labeled(egui::WidgetType::Button, enabled, name.clone()));
-    resp.on_hover_text(tip)
-}
-
-/// A control that is listed so nobody goes looking for it, and says it is not built.
-/// Something OneNote has that ErgoNote does not, among the small controls: drawn as a
-/// greyed chip the size of a control rather than as a line of writing, so a row of them
-/// reads as buttons that are off and not as a paragraph.
-// i18n-ui-text: label
-#[allow(dead_code)]
-fn not_built(ui: &mut Ui, label: &str, t: &Tokens) {
-    let label = crate::tl!(label);
-    let font = egui::FontId::proportional(11.5);
-    let width = ui.painter().layout_no_wrap(label.to_string(), font.clone(), t.muted).size().x + 12.0;
-    let (rect, resp) = ui.allocate_exact_size(vec2(width, SMALL_H), Sense::hover());
-    let painter = ui.painter_at(rect);
-    painter.rect_stroke(rect, 4.0, egui::Stroke::new(1.0, crate::theme::mix(t.panel, t.text, 0.14)), egui::StrokeKind::Inside);
-    painter.text(rect.center(), Align2::CENTER_CENTER, label, font, t.muted);
-    // Unavailable, and said so to screen readers and automation as well as on screen: a
-    // placeholder is never an enabled button, whatever the ui around it is (#257).
-    let name = crate::i18n::format_message_id("ui.label_not_built", &[("label", label)]);
-    resp.widget_info(move || egui::WidgetInfo::labeled(egui::WidgetType::Button, false, &name));
-    resp.on_hover_text(crate::i18n::format_message_id("ui.label_not_built_yet", &[("label", crate::tl!(label))]));
-}
-
-/// A compact action in the ink-tool popup. The same treatment is used for unavailable
-/// actions and the destructive tool removal, with the accent colour making the state clear
-/// without overpowering the swatches above it.
-// i18n-ui-text: label,tip
-fn popup_action_button(ui: &mut Ui, label: &str, enabled: bool, colour: egui::Color32, tip: &str) -> egui::Response {
-    let fg = if enabled { colour } else { ui.visuals().widgets.noninteractive.fg_stroke.color };
-    let fill = crate::theme::mix(ui.visuals().panel_fill, colour, if enabled { 0.10 } else { 0.04 });
-    let stroke = crate::theme::mix(ui.visuals().panel_fill, colour, if enabled { 0.45 } else { 0.18 });
-    let button = egui::Button::new(egui::RichText::new(label).size(11.0).color(fg))
-        .min_size(vec2(196.0, 22.0))
-        .fill(fill)
-        .stroke(egui::Stroke::new(1.0, stroke));
-    ui.add_enabled(enabled, button).on_hover_text(tip)
 }
 
 fn source_tab(ui: &mut Ui, format: Option<PageFormat>, t: &Tokens, acts: &mut Vec<Act>) {
@@ -3787,27 +2927,6 @@ fn source_tab(ui: &mut Ui, format: Option<PageFormat>, t: &Tokens, acts: &mut Ve
             ui.label(egui::RichText::new(crate::tl_id!("ui.the_format_is_set_when_the_page_is_created")).size(10.0).color(t.muted));
         });
     });
-}
-
-/// A compact big button that draws one of the ribbon's own marks (used for Paste in Clipboard).
-// i18n-ui-text: label,tip
-fn big_mark_compact(ui: &mut Ui, mark: Mark, label: &str, tip: &str, t: &Tokens) -> egui::Response {
-    let label = crate::tl!(label);
-    let tip = crate::tl!(tip);
-    let (rect, resp) = ui.allocate_exact_size(vec2(46.0, GROUP_H - 20.0), Sense::click());
-    let painter = ui.painter_at(rect);
-    if resp.hovered() {
-        painter.rect_filled(rect, 8.0, t.row_hover);
-    }
-    let col = mark.color(t.text, t.accent);
-    let badge = Rect::from_center_size(egui::pos2(rect.center().x, rect.min.y + ICON_Y), vec2(32.0, 30.0));
-    painter.rect_filled(badge, 8.0, crate::theme::mix(t.editor, col, 0.14));
-    ribbon_icons::paint(&painter, Rect::from_center_size(egui::pos2(rect.center().x, rect.min.y + ICON_Y), vec2(22.0, 22.0)), mark, col);
-    painter.text(egui::pos2(rect.center().x, rect.min.y + LABEL_Y), Align2::CENTER_CENTER, label, egui::FontId::proportional(12.0), t.text);
-    let enabled = ui.is_enabled();
-    let name = label.to_string();
-    resp.widget_info(move || egui::WidgetInfo::labeled(egui::WidgetType::Button, enabled, name.clone()));
-    resp.on_hover_text(tip)
 }
 
 #[cfg(test)]
@@ -3849,11 +2968,11 @@ mod tests {
 
     #[test]
     fn the_tabs_are_office_like_and_source_comes_and_goes() {
-        // Owner decision, 2026-11-20: View was folded into Home, so only Home and Draw remain.
-        assert_eq!(tabs(false, false, false), vec!["Home", "Draw"]);
-        assert_eq!(tabs(true, false, false), vec!["Home", "Draw", "Source"]);
+        // Owner decision, 2026-11-27: Draw was folded into Home > Insérer, leaving Home + contextual tabs.
+        assert_eq!(tabs(false, false, false), vec!["Home"]);
+        assert_eq!(tabs(true, false, false), vec!["Home", "Source"]);
         assert_eq!(resolve_tab("Insert", false, false, false), "Home");
-        assert_eq!(resolve_tab("Draw", false, false, false), "Draw");
+        assert_eq!(resolve_tab("Draw", false, false, false), "Home", "Draw was folded into Home");
         assert_eq!(resolve_tab("View", false, false, false), "Home", "the View tab was folded into Home");
         assert_eq!(resolve_tab("Source", true, false, false), "Source");
         assert_eq!(resolve_tab("Source", false, false, false), "Home", "the Source tab goes when the source pane does");
@@ -3862,12 +2981,12 @@ mod tests {
 
         // The Table tab goes with the caret: it is offered only while the caret is in a
         // table, and leaving one takes the tab and its commands away.
-        assert_eq!(tabs(false, true, false), vec!["Home", "Draw", "Table"]);
+        assert_eq!(tabs(false, true, false), vec!["Home", "Table"]);
         assert_eq!(resolve_tab("Table", false, true, false), "Table");
         assert_eq!(resolve_tab("Table", false, false, false), "Home", "out of the table, out of the tab");
 
         // The Image tab appears when an image / PDF is on the page.
-        assert_eq!(tabs(false, false, true), vec!["Home", "Draw", "Image"]);
+        assert_eq!(tabs(false, false, true), vec!["Home", "Image"]);
         assert_eq!(resolve_tab("Image", false, false, true), "Image");
         assert_eq!(resolve_tab("Image", false, false, false), "Home");
     }

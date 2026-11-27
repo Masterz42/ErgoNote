@@ -1755,7 +1755,7 @@ checksum = "00d174d5400e5e8fd687ad1049e2f578285fa914201b1af7e8b112a4546bd826"
 
 [[package]]
 name = "ergonote"
-version = "2026.11.26"
+version = "2026.11.27"
 dependencies = [
  "eframe",
  "egui",
@@ -1776,7 +1776,7 @@ dependencies = [
 
 [[package]]
 name = "ergonote-android"
-version = "2026.11.26"
+version = "2026.11.27"
 dependencies = [
  "android_logger",
  "eframe",
@@ -1795,7 +1795,7 @@ dependencies = [
 
 [[package]]
 name = "ergonote-cli"
-version = "2026.11.26"
+version = "2026.11.27"
 dependencies = [
  "ergonote-engine",
  "ergonote-import",
@@ -1807,7 +1807,7 @@ dependencies = [
 
 [[package]]
 name = "ergonote-demo"
-version = "2026.11.26"
+version = "2026.11.27"
 dependencies = [
  "ergonote-formats",
  "ergonote-ink",
@@ -1817,14 +1817,14 @@ dependencies = [
 
 [[package]]
 name = "ergonote-diagram"
-version = "2026.11.26"
+version = "2026.11.27"
 dependencies = [
  "mermaid-rs-renderer",
 ]
 
 [[package]]
 name = "ergonote-engine"
-version = "2026.11.26"
+version = "2026.11.27"
 dependencies = [
  "ergonote-formats",
  "ergonote-model",
@@ -1834,14 +1834,14 @@ dependencies = [
 
 [[package]]
 name = "ergonote-formats"
-version = "2026.11.26"
+version = "2026.11.27"
 dependencies = [
  "ergonote-model",
 ]
 
 [[package]]
 name = "ergonote-import"
-version = "2026.11.26"
+version = "2026.11.27"
 dependencies = [
  "cab",
  "ergonote-formats",
@@ -1852,18 +1852,18 @@ dependencies = [
 
 [[package]]
 name = "ergonote-ink"
-version = "2026.11.26"
+version = "2026.11.27"
 
 [[package]]
 name = "ergonote-input-language"
-version = "2026.11.26"
+version = "2026.11.27"
 dependencies = [
  "windows-sys 0.61.2",
 ]
 
 [[package]]
 name = "ergonote-ios"
-version = "2026.11.26"
+version = "2026.11.27"
 dependencies = [
  "eframe",
  "egui",
@@ -1877,7 +1877,7 @@ dependencies = [
 
 [[package]]
 name = "ergonote-math"
-version = "2026.11.26"
+version = "2026.11.27"
 dependencies = [
  "ratex-font",
  "ratex-layout",
@@ -1887,7 +1887,7 @@ dependencies = [
 
 [[package]]
 name = "ergonote-mcp"
-version = "2026.11.26"
+version = "2026.11.27"
 dependencies = [
  "ergonote-engine",
  "ergonote-store",
@@ -1896,18 +1896,18 @@ dependencies = [
 
 [[package]]
 name = "ergonote-model"
-version = "2026.11.26"
+version = "2026.11.27"
 dependencies = [
  "web-time",
 ]
 
 [[package]]
 name = "ergonote-onenote"
-version = "2026.11.26"
+version = "2026.11.27"
 
 [[package]]
 name = "ergonote-setup"
-version = "2026.11.26"
+version = "2026.11.27"
 dependencies = [
  "ergonote-store",
  "rfd",
@@ -1915,7 +1915,7 @@ dependencies = [
 
 [[package]]
 name = "ergonote-store"
-version = "2026.11.26"
+version = "2026.11.27"
 dependencies = [
  "ergonote-formats",
  "ergonote-ink",
@@ -1925,7 +1925,7 @@ dependencies = [
 
 [[package]]
 name = "ergonote-text"
-version = "2026.11.26"
+version = "2026.11.27"
 dependencies = [
  "ergonote-model",
  "parley",
@@ -1933,7 +1933,7 @@ dependencies = [
 
 [[package]]
 name = "ergonote-ui-egui"
-version = "2026.11.26"
+version = "2026.11.27"
 dependencies = [
  "arboard",
  "craft-i18n",
@@ -1973,7 +1973,7 @@ dependencies = [
 
 [[package]]
 name = "ergonote-web"
-version = "2026.11.26"
+version = "2026.11.27"
 dependencies = [
  "eframe",
  "egui",
@@ -7949,7 +7949,7 @@ checksum = "ec7a2a501ed189703dba8b08142f057e887dfc4b2cc4db2d343ac6376ba3e0b9"
 
 [[package]]
 name = "xtask"
-version = "2026.11.26"
+version = "2026.11.27"
 dependencies = [
  "proc-macro2",
  "serde_json",

@@ -22,7 +22,7 @@ use crate::ribbon_icons::Mark;
 use crate::theme::Tokens;
 use egui::{Id, Key, Pos2, Rect, Sense, Ui, pos2, vec2};
 use ergonote_formats::markdown::Block;
-use ergonote_model::{Container, container};
+use ergonote_model::{Container, NodeColor, container};
 
 /// The height of the bar at the top of a container, which is what it is dragged by. Wide
 /// enough to hit without aiming: a thin strip is what makes dragging feel unreliable.
@@ -181,6 +181,32 @@ fn selection_box_id() -> Id {
     Id::new("containers-selection-box")
 }
 
+/// True when a container is currently being dragged or resized by an edge.
+pub fn is_container_drag_active(ctx: &egui::Context) -> bool {
+    ctx.data(|d| d.get_temp::<bool>(container_drag_active_id()).unwrap_or(false))
+}
+
+fn container_drag_active_id() -> Id {
+    Id::new("containers-drag-active")
+}
+
+fn style_popover_id() -> Id {
+    Id::new("containers-style-popover")
+}
+
+fn container_border_color(color: NodeColor, t: &Tokens) -> egui::Color32 {
+    let dark = crate::theme::luminance(t.editor) < 0.2;
+    let (r, g, b) = color.swatch_rgb(dark);
+    egui::Color32::from_rgb(r, g, b)
+}
+
+fn container_fill_color(color: NodeColor, t: &Tokens) -> egui::Color32 {
+    let dark = crate::theme::luminance(t.editor) < 0.2;
+    let (r, g, b) = color.swatch_rgb(dark);
+    let tint = egui::Color32::from_rgb(r, g, b);
+    crate::theme::mix(t.editor, tint, if dark { 0.24 } else { 0.16 })
+}
+
 /// True when a container took this frame's right click, so the page's own menu stays shut.
 pub fn took_right_click(ctx: &egui::Context) -> bool {
     ctx.data(|d| d.get_temp::<u64>(claimed_id())) == Some(ctx.cumulative_pass_nr())
@@ -230,6 +256,9 @@ pub fn drop_if_blank(blocks: &mut Vec<Block>, boxes: &mut Vec<Container>, caret:
         return None;
     }
     if caret.as_ref().is_some_and(|c| range.contains(&c.block)) {
+        return None;
+    }
+    if boxes[left].has_style() {
         return None;
     }
     // A to-do box with nothing written beside it yet is still a box somebody made on purpose.
@@ -465,6 +494,7 @@ pub fn show(
         return out;
     }
     let mut frames: Vec<Rect> = Vec::with_capacity(boxes.len());
+    let mut any_container_drag = false;
 
     for i in 0..boxes.len() {
         let Some(b) = boxes.get(i).copied() else { continue };
@@ -716,24 +746,32 @@ pub fn show(
         }
         let mut resize_drag_active = false;
         let bar = Rect::from_min_size(at, vec2(frame.width(), handle));
-        // A box with nothing in it is only where the cursor was put: it is not drawn, so it has no
-        // strip to move it by and no edge to size it from either.
+        // A box with nothing in it is only where the cursor was put: it is not drawn unless it
+        // carries a visible frame/style, in which case it stays movable and resizable on creation.
         let locked_image_box = lock_images && (image_object || contains_image);
+        let styled_box = b.has_style() && !image_object;
+        let interactive_box = (!holds_nothing || styled_box || editing || sel == Some(i)) && !locked_image_box;
         let (move_sense, size_sense) =
-            if holds_nothing || locked_image_box { (Sense::hover(), Sense::hover()) } else { (Sense::click_and_drag(), Sense::drag()) };
+            if !interactive_box { (Sense::hover(), Sense::hover()) } else { (Sense::click_and_drag(), Sense::click_and_drag()) };
         let drag = ui.interact(bar, ui.id().with(("container-move", i)), move_sense);
-        let drag = if holds_nothing || locked_image_box { drag } else { drag.on_hover_cursor(egui::CursorIcon::Move) };
-        let edge = Rect::from_min_size(pos2(frame.max.x - grip_width, frame.min.y), vec2(grip_width, frame.height().max(grip_width)));
-        let grip = ui.interact(edge, ui.id().with(("container-size", i)), size_sense);
-        let grip = if holds_nothing || locked_image_box { grip } else { grip.on_hover_cursor(egui::CursorIcon::ResizeHorizontal) };
+        let drag = if !interactive_box { drag } else { drag.on_hover_cursor(egui::CursorIcon::Move) };
+        let edge_w = if touch_nav { 14.0 } else { grip_width.max(10.0) };
+        let edge_right = Rect::from_min_max(
+            pos2(frame.max.x - edge_w * 0.5, frame.min.y),
+            pos2(frame.max.x + edge_w * 0.5, frame.max.y.max(frame.min.y + edge_w)),
+        );
+        let edge_left = Rect::from_min_max(
+            pos2(frame.min.x - edge_w * 0.5, frame.min.y),
+            pos2(frame.min.x + edge_w * 0.5, frame.max.y.max(frame.min.y + edge_w)),
+        );
+        let grip = ui.interact(edge_right, ui.id().with(("container-size", i)), size_sense);
+        let grip = if !interactive_box { grip } else { grip.on_hover_cursor(egui::CursorIcon::ResizeHorizontal) };
+        let grip_left = ui.interact(edge_left, ui.id().with(("container-size-left", i)), size_sense);
+        let grip_left = if !interactive_box { grip_left } else { grip_left.on_hover_cursor(egui::CursorIcon::ResizeHorizontal) };
 
-        // A click or right click on the handle selects the container, as in OneNote. A right
-        // click on the words belongs to the words: the page's menu opens and the box stays
-        // as it was.
+        // A click or right click on the handle or edges selects the container. A right click on
+        // the words belongs to the words: the page's menu opens and the box stays as it was.
         let words_selected = words_in.is_some_and(|w| w.0 == i);
-        // A right click on selected words: the text box is about to forget the selection, so
-        // ask for it back. The page's own menu opens, and its Cut, Copy and the toolbar's Bold
-        // find the words where they were.
         if right_click
             && words_selected
             && pointer.is_some_and(|p| frame.contains(p))
@@ -742,14 +780,19 @@ pub fn show(
             ui.data_mut(|d| d.insert_temp(pageedit::restore_selection_id(), (block_at, primary, secondary)));
         }
         let image_right_click = image_hit.as_ref().is_some_and(|response| response.secondary_clicked());
-        let right_here = right_click && pointer.is_some_and(|p| bar.contains(p)) && !words_selected && !image_right_click;
-        if drag.clicked() || right_here {
-            // One box picked by its strip is the selection, not the group it may have been in.
+        let right_here = right_click
+            && pointer.is_some_and(|p| bar.contains(p) || edge_left.contains(p) || edge_right.contains(p))
+            && !words_selected
+            && !image_right_click;
+        let edge_clicked = !locked_image_box && !image_object && (grip.clicked() || grip_left.clicked());
+        if drag.clicked() || edge_clicked || right_here {
+            // One box picked by its strip or edge is the selection, not the group it may have been in.
             group.clear();
             sel = Some(i);
             *caret = None;
             out.changed.caret = true;
         }
+        any_container_drag |= drag.dragged() || grip.dragged() || grip_left.dragged();
         if right_here {
             log::debug!("container {}: right-clicked, selected={:?}", i, sel);
             menu_at = pointer;
@@ -1023,7 +1066,7 @@ pub fn show(
             let pull = scroll_at_edges(ui, area.min.y, zoom);
             if let Some(c) = boxes.get_mut(i) {
                 let to = moved_to(ui, picture_grab_id(ui, range.start), area.min, (c.x, c.y), response.drag_started(), zoom, pull, snap);
-                *c = Container::new(to.0, to.1, c.width, c.blocks);
+                *c = c.with_geometry(to.0, to.1, c.width);
             }
             out.boxes = true;
             log::debug!("image moved: container={i} block={} delta={d:?}", range.start);
@@ -1035,48 +1078,77 @@ pub fn show(
             ui.painter().rect_stroke(frame, 3.0 * zoom, egui::Stroke::new(1.5 * zoom, t.accent), egui::StrokeKind::Inside);
         } else if is_sel {
             // Its strip is part of it: a press there drags the selection, it does not let go.
-            sel_frame = Some(frame.union(bar));
+            sel_frame = Some(frame.union(bar).union(edge_left).union(edge_right));
             // Everything in the box is selected: shade it all, behind the words.
-            ui.painter().set(shading, egui::Shape::rect_filled(frame, 3.0, t.row_selected));
-            ui.painter().rect_stroke(frame, 3.0 * zoom, egui::Stroke::new(1.5 * zoom, t.accent), egui::StrokeKind::Inside);
+            let sel_fill = b.fill_color.map_or(t.row_selected, |fc| crate::theme::mix(container_fill_color(fc, t), t.row_selected, 0.45));
+            ui.painter().set(shading, egui::Shape::rect_filled(frame, 3.0 * zoom, sel_fill));
+            if let Some(bc) = b.border_color {
+                let stroke_w = f32::from(b.border_width.clamp(1, 3)) * zoom;
+                ui.painter().rect_stroke(frame, 3.0 * zoom, egui::Stroke::new(stroke_w, container_border_color(bc, t)), egui::StrokeKind::Inside);
+                ui.painter().rect_stroke(frame.expand(2.0 * zoom), 4.0 * zoom, egui::Stroke::new(1.5 * zoom, t.accent), egui::StrokeKind::Outside);
+            } else {
+                ui.painter().rect_stroke(frame, 3.0 * zoom, egui::Stroke::new(1.5 * zoom, t.accent), egui::StrokeKind::Inside);
+            }
             if caret.is_none() && !ui.ctx().egui_wants_keyboard_input() && ui.input(|i| i.key_pressed(Key::Delete) || i.key_pressed(Key::Backspace)) {
                 delete_at = Some(i);
             }
-        } else if !primary_sheet_box && !image_object && !contains_image && (!holds_nothing || editing) {
-            let over_bg_image = (0..i).any(|j| {
-                frames.get(j).is_some_and(|fj| fj.intersects(frame))
-                    && blocks.get(container::blocks_of(boxes, j)).is_some_and(|held| held.iter().any(block_has_image))
-            });
-            if !over_bg_image {
-                ui.painter().set(shading, egui::Shape::rect_filled(frame, 3.0, box_tokens.editor));
+        } else if !image_object && !contains_image {
+            if let Some(fc) = b.fill_color {
+                ui.painter().set(shading, egui::Shape::rect_filled(frame, 3.0 * zoom, container_fill_color(fc, t)));
+            } else if !primary_sheet_box && (!holds_nothing || editing || b.has_style()) {
+                let over_bg_image = (0..i).any(|j| {
+                    frames.get(j).is_some_and(|fj| fj.intersects(frame))
+                        && blocks.get(container::blocks_of(boxes, j)).is_some_and(|held| held.iter().any(block_has_image))
+                });
+                if !over_bg_image {
+                    ui.painter().set(shading, egui::Shape::rect_filled(frame, 3.0 * zoom, box_tokens.editor));
+                }
             }
         }
 
-        // Drawn only when the pointer is in the container, the caret is in it, or it is
-        // being dragged, the way a container shows its edges in OneNote. The drag strip sits
-        // above the frame, so the pointer on the strip counts as in the container: moving up
-        // onto it to drag the box used to make the edges and the strip itself vanish.
-        let busy = drag.dragged() || grip.dragged();
-        let hovered = hovered || drag.hovered() || grip.hovered();
-        // A box with nothing in it is only where the cursor was put, as in OneNote: no edges and no
-        // strip until something is written in it.
-        if (hovered || editing || busy || is_sel) && !holds_nothing && !(primary_sheet_box && boxes.len() == 1 && !is_sel) {
+        if !image_object && !is_sel && !group.contains(&i) && (b.framed || b.border_color.is_some() || b.border_width > 1) {
+            let stroke_w = f32::from(b.border_width.clamp(1, 3)) * zoom;
+            let stroke_col = b.border_color.map_or_else(|| if editing { t.accent } else { t.container_border }, |bc| container_border_color(bc, t));
+            ui.painter().rect_stroke(frame, 3.0 * zoom, egui::Stroke::new(stroke_w, stroke_col), egui::StrokeKind::Inside);
+            if editing && b.border_color.is_some() {
+                ui.painter().rect_stroke(
+                    frame.expand(2.0 * zoom),
+                    4.0 * zoom,
+                    egui::Stroke::new(1.0 * zoom, t.accent.gamma_multiply(0.65)),
+                    egui::StrokeKind::Outside,
+                );
+            }
+        }
+
+        let busy = drag.dragged() || grip.dragged() || grip_left.dragged();
+        let hovered = hovered || drag.hovered() || grip.hovered() || grip_left.hovered();
+        let show_chrome = (hovered || editing || busy || is_sel)
+            && (!holds_nothing || b.has_style())
+            && !(primary_sheet_box && boxes.len() == 1 && !is_sel && !b.has_style());
+        if show_chrome {
             log::debug!("render: i={} image_object={} hovered={} editing={} busy={} is_sel={}", i, image_object, hovered, editing, busy, is_sel);
-            // Skip faint stroke for images; the selection affordance shows the picture boundary
-            if !image_object {
-                log::debug!("draw faint stroke for non-image");
+            if !image_object && !(b.framed || b.border_color.is_some() || b.border_width > 1) {
                 ui.painter().rect_stroke(frame, 3.0 * zoom, egui::Stroke::new(1.0 * zoom, t.container_border), egui::StrokeKind::Inside);
             }
-            // Images: affordance is drawn in selection block above (on object_rect, the picture rect)
             if !image_object {
                 ui.painter().rect_filled(bar, 3.0 * zoom, if drag.hovered() || drag.dragged() { t.row_hover } else { t.faint });
                 for n in 0..3 {
                     let c = pos2(bar.center().x + (n as f32 - 1.0) * 5.0 * zoom, bar.center().y);
                     ui.painter().circle_filled(c, 1.2 * zoom, t.muted);
                 }
+                if b.has_style() || is_sel || editing {
+                    let cue_h = (16.0 * zoom).min((frame.height() - 4.0).max(6.0));
+                    for cx in [frame.min.x, frame.max.x] {
+                        let pill = Rect::from_center_size(pos2(cx, frame.center().y), vec2(4.0 * zoom, cue_h));
+                        ui.painter().rect_filled(pill, 2.0 * zoom, t.accent.gamma_multiply(0.55));
+                    }
+                }
             }
             if grip.hovered() || grip.dragged() {
-                ui.painter().rect_filled(edge.shrink2(vec2(2.0, 4.0)), 2.0, t.row_hover);
+                ui.painter().rect_filled(edge_right.shrink2(vec2(2.0, 4.0)), 2.0, t.accent.gamma_multiply(0.45));
+            }
+            if grip_left.hovered() || grip_left.dragged() {
+                ui.painter().rect_filled(edge_left.shrink2(vec2(2.0, 4.0)), 2.0, t.accent.gamma_multiply(0.45));
             }
         }
         if drag.drag_started() || drag.dragged() || drag.drag_stopped() {
@@ -1100,7 +1172,7 @@ pub fn show(
                 let old = *c;
                 let (requested_x, requested_y) =
                     moved_to(ui, ui.id().with(("grab", i)), area.min, (old.x, old.y), drag.drag_started(), zoom, pull, snap);
-                let moved = Container::new(requested_x, requested_y, old.width, old.blocks);
+                let moved = old.with_geometry(requested_x, requested_y, old.width);
                 log::debug!(
                     "CONTAINER_MOVE: container={i} delta_screen=({:.2},{:.2}) delta_page=({:.2},{:.2}) old=({:.2},{:.2}) requested=({requested_x:.2},{requested_y:.2}) stored=({:.2},{:.2}) clamped_x={} clamped_y={}",
                     d.x,
@@ -1136,11 +1208,28 @@ pub fn show(
                     grip.drag_started(),
                     snap,
                 );
-                *c = Container::new(c.x, c.y, right - c.x, c.blocks);
+                *c = c.with_geometry(c.x, c.y, right - c.x);
+            }
+            out.boxes = true;
+        }
+        if grip_left.dragged() {
+            if let Some(c) = boxes.get_mut(i) {
+                let fixed_right = c.x + c.width.max(width);
+                let (left, _) = dragged_to(
+                    ui,
+                    ui.id().with(("snap-size-left", i)),
+                    (c.x, 0.0),
+                    egui::vec2(grip_left.drag_delta().x / zoom, 0.0),
+                    grip_left.drag_started(),
+                    snap,
+                );
+                let new_left = left.clamp(0.0, (fixed_right - container::MIN_WIDTH).max(0.0));
+                *c = c.with_geometry(new_left, c.y, fixed_right - new_left);
             }
             out.boxes = true;
         }
     }
+    ui.data_mut(|d| d.insert_temp(container_drag_active_id(), any_container_drag));
 
     // A picture taken hold of in a box shared with other blocks: the box becomes up to three, the
     // blocks before it, the picture, and the blocks after it. Each stays where it was drawn, so
@@ -1166,7 +1255,7 @@ pub fn show(
             let pull = scroll_at_edges(ui, area.min.y, zoom);
             if let Some(c) = boxes.get_mut(picture_box) {
                 let to = moved_to(ui, picture_grab_id(ui, lift.block), area.min, (c.x, c.y), true, zoom, pull, snap);
-                *c = Container::new(to.0, to.1, c.width, c.blocks);
+                *c = c.with_geometry(to.0, to.1, c.width);
             }
             // Boxes were renumbered: what was picked by number is let go, the picture is what is
             // picked now.
@@ -1220,11 +1309,46 @@ pub fn show(
             }
         }
     }
+    // Floating customization & delete bar for an active or selected non-image text box.
+    let mut style_bar_rects: Vec<Rect> = Vec::new();
+    let style_target = if menu_at.is_some() || !group.is_empty() {
+        None
+    } else {
+        sel.or_else(|| caret.as_ref().and_then(|c| container::place(boxes, c.block)).map(|(idx, _)| idx)).filter(|&i| {
+            boxes.get(i).is_some_and(|b| {
+                let range = container::blocks_of(boxes, i);
+                let has_img = blocks.get(range).is_some_and(|held| held.iter().any(block_has_image));
+                let primary = i == 0 && b.x.abs() < 1.0 && b.y.abs() < 1.0;
+                !has_img && (b.has_style() || !primary)
+            })
+        })
+    };
+    if let Some(i) = style_target
+        && let (Some(frame), Some(b)) = (frames.get(i).copied(), boxes.get_mut(i))
+    {
+        let mut delete_box = false;
+        let mut style_changed = false;
+        style_bar_rects = show_container_style_bar(ui, i, &page_key, frame, zoom, b, caret, t, &mut style_changed, &mut delete_box);
+        if style_changed {
+            out.boxes = true;
+            ui.ctx().request_repaint();
+        }
+        if delete_box {
+            delete_at = Some(i);
+        }
+    } else {
+        ui.data_mut(|d| d.remove::<(usize, u8, String)>(style_popover_id()));
+    }
+
     // The selected container's menu, where the right click fell.
     let mut menu_rect: Option<Rect> = None;
     if let (Some(i), Some(at)) = (sel, menu_at) {
         let mut picked = false;
         let mut copy = false;
+        let menu_is_image = {
+            let range = container::blocks_of(boxes, i);
+            range.len() == 1 && blocks.get(range.start).is_some_and(block_has_image)
+        };
         let area = egui::Area::new(menu_id().with("area"))
             .order(egui::Order::Foreground)
             .fixed_pos(at)
@@ -1241,8 +1365,16 @@ pub fn show(
                         copy = true;
                         picked = true;
                     }
+                    if !menu_is_image && let Some(box_item) = boxes.get_mut(i) {
+                        floating::menu_separator(menu, t);
+                        if container_style_menu_section(menu, box_item, t) {
+                            out.boxes = true;
+                            picked = true;
+                        }
+                    }
                     floating::menu_separator(menu, t);
-                    if floating::menu_row(menu, Some(Glyph::Mark(Mark::Delete)), crate::tl_id!("ui.delete"), t).clicked() {
+                    let del_label = if menu_is_image { crate::tl_id!("ui.delete") } else { "Supprimer la zone de texte" };
+                    if floating::menu_row(menu, Some(Glyph::Mark(Mark::Delete)), del_label, t).clicked() {
                         delete_at = Some(i);
                         picked = true;
                     }
@@ -1281,7 +1413,9 @@ pub fn show(
         // Ink picked up with the box is part of the selection: a press on it moves them, it does
         // not let go of them.
         let on_held_ink = |p: Pos2| crate::inkpad::held_area(ui.ctx()).is_some_and(|r| r.contains(p));
-        let away = |p: Pos2| !sel_frame.is_some_and(|f| f.contains(p)) && !menu_rect.is_some_and(|m| m.contains(p)) && !on_held_ink(p);
+        let on_style_bar = |p: Pos2| style_bar_rects.iter().any(|r| r.contains(p));
+        let away =
+            |p: Pos2| !sel_frame.is_some_and(|f| f.contains(p)) && !menu_rect.is_some_and(|m| m.contains(p)) && !on_held_ink(p) && !on_style_bar(p);
         // Only a press on the page lets go of it: the ribbon's buttons act on the selected box, so a
         // press there must leave it selected.
         // A list the ribbon has opened over the page (the styles) is not the page either: a press on one of
@@ -1722,7 +1856,7 @@ pub fn show(
     if let Some((moved, dx, dy)) = group_shift {
         for &j in group.iter().filter(|j| **j != moved) {
             if let Some(c) = boxes.get_mut(j) {
-                *c = Container::new(c.x + dx, c.y + dy, c.width, c.blocks);
+                *c = c.with_geometry(c.x + dx, c.y + dy, c.width);
             }
         }
         out.boxes = true;
@@ -2220,7 +2354,7 @@ fn start_a_box(blocks: &mut Vec<Block>, boxes: &mut Vec<Container>, caret: &mut 
     blocks.push(Block::Paragraph(Vec::new()));
     let block_idx = blocks.len() - 1;
     let box_idx = boxes.len();
-    boxes.push(Container { x: at.x, y: at.y, width, blocks: 1 });
+    boxes.push(Container::new(at.x, at.y, width, 1));
     log::debug!("CREATE_BOX: i={} at_pos=({:.0},{:.0}) width={:.0} holds_block={} (triggered by click)", box_idx, at.x, at.y, width, block_idx);
     *caret = Some(pageedit::Caret {
         block: block_idx,
@@ -2232,6 +2366,290 @@ fn start_a_box(blocks: &mut Vec<Block>, boxes: &mut Vec<Container>, caret: &mut 
         span: None,
         inline: None,
     });
+}
+
+fn paint_container_swatch_grid(ui: &mut Ui, selected: Option<NodeColor>, is_border: bool, t: &Tokens, cols: usize, size: f32) -> Option<NodeColor> {
+    let mut picked = None;
+    for chunk in NodeColor::ALL.chunks(cols.max(1)) {
+        ui.horizontal(|ui| {
+            ui.spacing_mut().item_spacing = vec2(3.0, 3.0);
+            for &nc in chunk {
+                let (rect, resp) = ui.allocate_exact_size(vec2(size, size), Sense::click());
+                let painter = ui.painter_at(rect);
+                let color = if is_border { container_border_color(nc, t) } else { container_fill_color(nc, t) };
+                if is_border {
+                    painter.rect_filled(rect.shrink(2.0), 4.0, t.editor);
+                    painter.rect_stroke(rect.shrink(3.0), 4.0, egui::Stroke::new(2.5, color), egui::StrokeKind::Inside);
+                } else {
+                    painter.rect_filled(rect.shrink(2.0), 4.0, color);
+                }
+                let stroke = if selected == Some(nc) || resp.hovered() { egui::Stroke::new(1.5, t.accent) } else { egui::Stroke::new(1.0, t.faint) };
+                painter.rect_stroke(rect.shrink(1.0), 4.0, stroke, egui::StrokeKind::Inside);
+                if resp.on_hover_text(crate::tl!(nc.label())).clicked() {
+                    picked = Some(nc);
+                }
+            }
+        });
+    }
+    picked
+}
+
+fn style_pill_button(
+    ui: &mut Ui,
+    label: &str,
+    active: bool,
+    chip_border: Option<egui::Color32>,
+    chip_fill: Option<egui::Color32>,
+    t: &Tokens,
+) -> bool {
+    let fill = if active { t.row_selected } else { t.editor };
+    let stroke_col = if active { t.accent } else { t.container_border };
+    let text_col = if active { t.accent } else { t.text };
+    let resp = ui.add(
+        egui::Button::new(egui::RichText::new(label).size(12.0).color(text_col))
+            .fill(fill)
+            .stroke(egui::Stroke::new(1.0, stroke_col))
+            .corner_radius(5.0)
+            .min_size(vec2(0.0, 24.0)),
+    );
+    if chip_border.is_some() || chip_fill.is_some() {
+        let chip = Rect::from_min_size(pos2(resp.rect.min.x + 5.0, resp.rect.center().y - 4.0), vec2(8.0, 8.0));
+        if let Some(fill) = chip_fill {
+            ui.painter().rect_filled(chip, 2.0, fill);
+        }
+        if let Some(border) = chip_border {
+            ui.painter().rect_stroke(chip, 2.0, egui::Stroke::new(1.5, border), egui::StrokeKind::Inside);
+        }
+    }
+    resp.clicked()
+}
+
+fn container_style_menu_section(menu: &mut Ui, box_item: &mut Container, t: &Tokens) -> bool {
+    let mut changed = false;
+    menu.add_space(3.0);
+    menu.horizontal(|ui| {
+        ui.label(egui::RichText::new(crate::tl_id!("ui.student_border")).small().color(t.muted));
+        if ui.small_button(crate::tl_id!("ui.student_default")).clicked() {
+            box_item.framed = true;
+            box_item.border_color = None;
+            changed = true;
+        }
+        if ui.small_button(crate::tl_id!("ui.student_none")).clicked() {
+            box_item.framed = false;
+            box_item.border_color = None;
+            box_item.border_width = 1;
+            changed = true;
+        }
+    });
+    if let Some(nc) = paint_container_swatch_grid(menu, box_item.border_color, true, t, 8, 19.0) {
+        box_item.framed = true;
+        box_item.border_color = Some(nc);
+        changed = true;
+    }
+    menu.horizontal(|ui| {
+        ui.label(egui::RichText::new(crate::tl_id!("ui.thickness")).small().color(t.muted));
+        for (lbl, w) in [("Fin", 1u8), ("Moyen", 2u8), ("\u{00C9}pais", 3u8)] {
+            if style_pill_button(ui, lbl, box_item.framed && box_item.border_width == w, None, None, t) {
+                box_item.framed = true;
+                box_item.border_width = w;
+                changed = true;
+            }
+        }
+    });
+    menu.add_space(4.0);
+    menu.horizontal(|ui| {
+        ui.label(egui::RichText::new(crate::tl_id!("ui.student_fill")).small().color(t.muted));
+        if ui.small_button(crate::tl_id!("ui.student_transparent")).clicked() {
+            box_item.fill_color = None;
+            changed = true;
+        }
+    });
+    if let Some(nc) = paint_container_swatch_grid(menu, box_item.fill_color, false, t, 8, 19.0) {
+        box_item.fill_color = Some(nc);
+        changed = true;
+    }
+    menu.add_space(3.0);
+    changed
+}
+
+fn style_icon_button(
+    ui: &mut Ui,
+    kind: u8,
+    active: bool,
+    border_preview: Option<egui::Color32>,
+    fill_preview: Option<egui::Color32>,
+    tip: &str,
+    label: &str,
+    t: &Tokens,
+) -> bool {
+    let (rect, resp) = ui.allocate_exact_size(vec2(28.0, 28.0), Sense::click());
+    let painter = ui.painter_at(rect);
+    let bg = if active {
+        t.row_selected
+    } else if resp.hovered() {
+        t.row_hover
+    } else {
+        t.editor
+    };
+    let edge = if active { t.accent } else { t.container_border };
+    painter.rect_filled(rect, 6.0, bg);
+    painter.rect_stroke(rect, 6.0, egui::Stroke::new(1.0, edge), egui::StrokeKind::Inside);
+    let icon = Rect::from_center_size(rect.center(), vec2(15.0, 15.0));
+    match kind {
+        0 => {
+            let stroke_col = border_preview.unwrap_or(t.muted);
+            painter.rect_stroke(icon, 2.5, egui::Stroke::new(2.2, stroke_col), egui::StrokeKind::Inside);
+            if border_preview.is_none() {
+                painter.line_segment([icon.left_bottom(), icon.right_top()], egui::Stroke::new(1.3, t.muted));
+            }
+        }
+        1 => {
+            if let Some(fill) = fill_preview {
+                painter.rect_filled(icon, 3.0, fill);
+                painter.rect_stroke(icon, 3.0, egui::Stroke::new(1.2, t.text.gamma_multiply(0.55)), egui::StrokeKind::Inside);
+            } else {
+                painter.rect_filled(icon, 3.0, t.editor);
+                painter.rect_stroke(icon, 3.0, egui::Stroke::new(1.2, t.muted), egui::StrokeKind::Inside);
+                painter.line_segment([icon.left_bottom(), icon.right_top()], egui::Stroke::new(1.3, t.muted));
+            }
+            painter.circle_filled(pos2(icon.max.x - 2.0, icon.min.y + 2.0), 2.5, t.accent);
+        }
+        _ => {
+            crate::ribbon_icons::paint(&painter, icon, Mark::Delete, t.warn);
+        }
+    }
+    let enabled = ui.is_enabled();
+    let name = label.to_string();
+    resp.widget_info(move || egui::WidgetInfo::selected(egui::WidgetType::Button, enabled, active, name.clone()));
+    resp.on_hover_text(tip).clicked()
+}
+
+#[allow(clippy::too_many_arguments)]
+fn show_container_style_bar(
+    ui: &mut Ui,
+    container_idx: usize,
+    page_key: &str,
+    frame: Rect,
+    zoom: f32,
+    box_item: &mut Container,
+    caret: &mut Option<Caret>,
+    t: &Tokens,
+    style_changed: &mut bool,
+    delete_requested: &mut bool,
+) -> Vec<Rect> {
+    let mut rects = Vec::new();
+    let screen = ui.ctx().content_rect();
+    let bar_y = (frame.min.y - HANDLE * zoom - 38.0).max(screen.min.y + 4.0);
+    let bar_x = frame.min.x.clamp(screen.min.x + 4.0, (screen.max.x - 120.0).max(screen.min.x + 4.0));
+    let mut popover = ui
+        .data(|d| d.get_temp::<(usize, u8, String)>(style_popover_id()))
+        .filter(|(idx, _, on)| *idx == container_idx && on == page_key)
+        .map(|(_, mode, _)| mode);
+
+    let border_preview = box_item.border_color.map(|c| container_border_color(c, t)).or_else(|| box_item.framed.then_some(t.accent));
+    let fill_preview = box_item.fill_color.map(|c| container_fill_color(c, t));
+
+    let bar_resp = egui::Area::new(Id::new(("container-style-bar", container_idx)))
+        .order(egui::Order::Foreground)
+        .fixed_pos(pos2(bar_x, bar_y))
+        .show(ui.ctx(), |bar_ui| {
+            egui::Frame::new()
+                .fill(t.panel)
+                .stroke(egui::Stroke::new(1.0, t.container_border))
+                .corner_radius(8.0)
+                .inner_margin(egui::Margin::symmetric(5, 3))
+                .show(bar_ui, |bar_ui| {
+                    bar_ui.horizontal(|bar_ui| {
+                        bar_ui.spacing_mut().item_spacing = vec2(4.0, 0.0);
+                        if style_icon_button(bar_ui, 0, popover == Some(1), border_preview, None, "Contour du cadre", "Contour", t) {
+                            popover = if popover == Some(1) { None } else { Some(1) };
+                        }
+                        if style_icon_button(bar_ui, 1, popover == Some(2), None, fill_preview, "Couleur de fond", "Fond", t) {
+                            popover = if popover == Some(2) { None } else { Some(2) };
+                        }
+                        if style_icon_button(bar_ui, 2, false, None, None, "Supprimer la zone de texte", "Supprimer", t) {
+                            *delete_requested = true;
+                            popover = None;
+                        }
+                    });
+                });
+        })
+        .response;
+    rects.push(bar_resp.rect);
+
+    if let Some(mode) = popover {
+        let pop_x = bar_resp.rect.min.x.clamp(screen.min.x + 4.0, (screen.max.x - 210.0).max(screen.min.x + 4.0));
+        let pop_y = bar_resp.rect.max.y + 4.0;
+        let pop_resp = egui::Area::new(Id::new(("container-style-popover-area", container_idx, mode)))
+            .order(egui::Order::Foreground)
+            .fixed_pos(pos2(pop_x, pop_y))
+            .show(ui.ctx(), |pop_ui| {
+                egui::Frame::popup(pop_ui.style()).inner_margin(egui::Margin::same(8)).show(pop_ui, |pop_ui| {
+                    pop_ui.spacing_mut().item_spacing = vec2(6.0, 6.0);
+                    if mode == 1 {
+                        pop_ui.horizontal(|ui| {
+                            if style_pill_button(ui, "D\u{00E9}faut", box_item.framed && box_item.border_color.is_none(), None, None, t) {
+                                box_item.framed = true;
+                                box_item.border_color = None;
+                                *style_changed = true;
+                            }
+                            if style_pill_button(ui, "Sans contour", !box_item.framed && box_item.border_color.is_none(), None, None, t) {
+                                box_item.framed = false;
+                                box_item.border_color = None;
+                                box_item.border_width = 1;
+                                *style_changed = true;
+                            }
+                        });
+                        if let Some(nc) = paint_container_swatch_grid(pop_ui, box_item.border_color, true, t, 8, 22.0) {
+                            box_item.framed = true;
+                            box_item.border_color = Some(nc);
+                            *style_changed = true;
+                        }
+                        pop_ui.horizontal(|ui| {
+                            ui.label(egui::RichText::new(crate::tl_id!("ui.thickness")).small().color(t.muted));
+                            for (lbl, w) in [("Fin", 1u8), ("Moyen", 2u8), ("\u{00C9}pais", 3u8)] {
+                                if style_pill_button(ui, lbl, box_item.framed && box_item.border_width == w, None, None, t) {
+                                    box_item.framed = true;
+                                    box_item.border_width = w;
+                                    *style_changed = true;
+                                }
+                            }
+                        });
+                    } else {
+                        if style_pill_button(pop_ui, "Transparent", box_item.fill_color.is_none(), None, None, t) {
+                            box_item.fill_color = None;
+                            *style_changed = true;
+                        }
+                        if let Some(nc) = paint_container_swatch_grid(pop_ui, box_item.fill_color, false, t, 8, 22.0) {
+                            box_item.fill_color = Some(nc);
+                            *style_changed = true;
+                        }
+                    }
+                });
+            })
+            .response;
+        rects.push(pop_resp.rect);
+        let pointer = ui.ctx().pointer_latest_pos();
+        let clicked_outside =
+            ui.input(|i| i.pointer.primary_pressed()) && pointer.is_some_and(|p| !bar_resp.rect.contains(p) && !pop_resp.rect.contains(p));
+        if clicked_outside || ui.input(|i| i.key_pressed(Key::Escape)) {
+            popover = None;
+        }
+    }
+
+    if *style_changed && let Some(c) = caret.as_mut() {
+        c.focus = true;
+    }
+
+    ui.data_mut(|d| match popover {
+        Some(mode) => {
+            d.insert_temp(style_popover_id(), (container_idx, mode, page_key.to_string()));
+        }
+        None => {
+            d.remove::<(usize, u8, String)>(style_popover_id());
+        }
+    });
+    rects
 }
 
 #[cfg(test)]

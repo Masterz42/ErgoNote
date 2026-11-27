@@ -4,7 +4,7 @@ members = ["crates/*", "apps/*", "android", "ios", "xtask", "docs/demo/scripts"]
 default-members = ["crates/*", "apps/ergonote", "apps/ergonote-cli", "apps/ergonote-setup", "xtask"]
 
 [workspace.package]
-version = "2026.11.26"
+version = "2026.11.27"
 edition = "2024"
 rust-version = "1.95"
 license = "LicenseRef-ErgoNote-Freeware"

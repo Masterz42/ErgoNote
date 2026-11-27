@@ -29,7 +29,7 @@
 
 use crate::markdown::{self, Block, Span};
 use crate::{html, render};
-use ergonote_model::{Container, PageFormat};
+use ergonote_model::{Container, NodeColor, PageFormat};
 
 /// The class a box's element carries.
 pub const CLASS: &str = "nc-box";
@@ -40,7 +40,7 @@ const STRAY_WIDTH: f32 = 360.0;
 /// One run of a body: a box, or text outside any box.
 enum Piece {
     Stray(String),
-    Box { x: f32, y: f32, width: f32, inner: String },
+    Box { container: Container, inner: String },
 }
 
 /// Reads a page body. The boxes are `None` when the body has none in its text: it is one column.
@@ -56,9 +56,10 @@ pub fn read(format: PageFormat, body: &str) -> (Vec<Block>, Option<Vec<Container
     let mut boxes: Vec<Container> = Vec::new();
     for piece in pieces {
         match piece {
-            Piece::Box { x, y, width, inner } => {
+            Piece::Box { mut container, inner } => {
                 let inside = plain(format, &inner);
-                boxes.push(Container::new(x, y, width, inside.len()));
+                container.blocks = inside.len();
+                boxes.push(container);
                 blocks.extend(inside);
             }
             Piece::Stray(text) => {
@@ -128,25 +129,64 @@ fn pt(v: f32) -> i64 {
     v.round() as i64
 }
 
+fn style_attrs(c: &Container) -> String {
+    let mut out = String::new();
+    if c.framed {
+        out.push_str(" data-frame=\"1\"");
+    }
+    if let Some(bc) = c.border_color {
+        out.push_str(&format!(" data-border=\"{}\"", bc.id()));
+    }
+    if c.border_width > 1 {
+        out.push_str(&format!(" data-bw=\"{}\"", c.border_width.clamp(1, 3)));
+    }
+    if let Some(fc) = c.fill_color {
+        out.push_str(&format!(" data-fill=\"{}\"", fc.id()));
+    }
+    out
+}
+
 fn html_box(c: &Container, inside: &str) -> String {
     let (x, y, w) = (pt(c.x), pt(c.y), pt(c.width));
+    let extra = style_attrs(c);
     let open = format!(
-        "<div class=\"{CLASS}\" data-x=\"{x}\" data-y=\"{y}\" data-width=\"{w}\" style=\"position:absolute;left:{x}px;top:{y}px;width:{w}px\">"
+        "<div class=\"{CLASS}\" data-x=\"{x}\" data-y=\"{y}\" data-width=\"{w}\"{extra} style=\"position:absolute;left:{x}px;top:{y}px;width:{w}px\">"
     );
     if inside.trim().is_empty() { format!("{open}</div>") } else { format!("{open}\n{}\n</div>", inside.trim_matches('\n')) }
 }
 
 fn markdown_box(c: &Container, inside: &str) -> String {
-    let open = format!("<div class=\"{CLASS}\" data-x=\"{}\" data-y=\"{}\" data-width=\"{}\">", pt(c.x), pt(c.y), pt(c.width));
+    let extra = style_attrs(c);
+    let open = format!("<div class=\"{CLASS}\" data-x=\"{}\" data-y=\"{}\" data-width=\"{}\"{extra}>", pt(c.x), pt(c.y), pt(c.width));
     if inside.trim().is_empty() { format!("{open}\n\n</div>\n") } else { format!("{open}\n\n{}\n\n</div>\n", inside.trim_matches('\n')) }
+}
+
+fn attr<'a>(tag: &'a str, name: &str) -> Option<&'a str> {
+    let key = format!("{name}=\"");
+    let start = tag.find(&key).map(|i| i + key.len())?;
+    tag.get(start..).and_then(|rest| rest.split('"').next())
 }
 
 /// The value of an attribute in a tag, as a number. Missing or unreadable is zero.
 fn number(tag: &str, name: &str) -> f32 {
-    let key = format!("{name}=\"");
-    let Some(start) = tag.find(&key).map(|i| i + key.len()) else { return 0.0 };
-    let value = tag.get(start..).and_then(|rest| rest.split('"').next()).unwrap_or("");
-    value.trim().parse::<f32>().ok().filter(|v| v.is_finite()).unwrap_or(0.0)
+    attr(tag, name).and_then(|v| v.trim().parse::<f32>().ok()).filter(|v| v.is_finite()).unwrap_or(0.0)
+}
+
+fn parse_container(tag: &str) -> Container {
+    let mut c = Container::new(number(tag, "data-x"), number(tag, "data-y"), number(tag, "data-width"), 0);
+    if attr(tag, "data-frame").is_some_and(|v| v.trim() == "1") {
+        c.framed = true;
+    }
+    if let Some(border) = attr(tag, "data-border").and_then(NodeColor::parse) {
+        c.border_color = Some(border);
+    }
+    if let Some(bw) = attr(tag, "data-bw").and_then(|v| v.trim().parse::<u8>().ok()).filter(|bw| (1..=3).contains(bw)) {
+        c.border_width = bw;
+    }
+    if let Some(fill) = attr(tag, "data-fill").and_then(NodeColor::parse) {
+        c.fill_color = Some(fill);
+    }
+    c
 }
 
 fn is_box_tag(tag: &str) -> bool {
@@ -209,12 +249,7 @@ fn html_pieces(body: &str) -> Vec<Piece> {
             pieces.push(Piece::Stray(std::mem::take(&mut stray)));
         }
         stray.clear();
-        pieces.push(Piece::Box {
-            x: number(tag, "data-x"),
-            y: number(tag, "data-y"),
-            width: number(tag, "data-width"),
-            inner: after.get(..inner_len).unwrap_or("").to_string(),
-        });
+        pieces.push(Piece::Box { container: parse_container(tag), inner: after.get(..inner_len).unwrap_or("").to_string() });
         rest = after.get(inner_len + close_len..).unwrap_or("");
     }
     stray.push_str(rest);
@@ -243,7 +278,7 @@ fn markdown_pieces(body: &str) -> Vec<Piece> {
         }
     };
     let finish = |tag: &str, lines: &[&str], pieces: &mut Vec<Piece>| {
-        pieces.push(Piece::Box { x: number(tag, "data-x"), y: number(tag, "data-y"), width: number(tag, "data-width"), inner: lines.join("\n") });
+        pieces.push(Piece::Box { container: parse_container(tag), inner: lines.join("\n") });
     };
     for line in body.split('\n') {
         let t = line.trim();
@@ -483,5 +518,22 @@ mod tests {
         let body = "<p><span style=\"font-size: 10pt\">kept</span></p><p><span class=\"other\">lost</span></p>";
         let (blocks, _) = read(PageFormat::Html, body);
         assert_eq!(span_audit(body, &blocks), SpanAudit { raw_tags: 2, styled: 1 });
+    }
+
+    #[test]
+    fn styled_boxes_round_trip_in_both_formats() {
+        let blocks = vec![Block::Paragraph(vec![Span { text: "Note".into(), ..Span::default() }])];
+        let styled = Container {
+            border_color: Some(NodeColor::Blue),
+            border_width: 2,
+            fill_color: Some(NodeColor::Yellow),
+            ..Container::new(90.0, 40.0, 280.0, 1).with_frame(true)
+        };
+        for format in [PageFormat::Html, PageFormat::Cmgfm] {
+            let text = write(format, &blocks, Some(&[styled]));
+            let (read_blocks, read_boxes) = read(format, &text);
+            assert_eq!(read_blocks, blocks);
+            assert_eq!(read_boxes, Some(vec![styled]), "round-trip failed for {format:?}");
+        }
     }
 }

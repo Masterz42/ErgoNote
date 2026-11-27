@@ -1,6 +1,6 @@
 ---
 id: e9dcc4d20c93f404aa30
-title: "Welcome to ErgoNote (Ver 2026.11.25)"
+title: "Welcome to ErgoNote (Ver 2026.11.27)"
 order: 10
 created: 2026-10-18T00:00:00Z
 updated: 2026-10-18T00:00:00Z
@@ -13,7 +13,7 @@ tags: []
 
 This notebook is ErgoNote showing itself. Every page in it is an ordinary page: open it, change it, delete it.
 
-**Demo build:** ErgoNote 2026.11.25. This notebook is the release demonstration and regression reference for both HTML and CMGFM page formats.
+**Demo build:** ErgoNote 2026.11.27. This notebook is the release demonstration and regression reference for both HTML and CMGFM page formats.
 
 ## How it is organised
 

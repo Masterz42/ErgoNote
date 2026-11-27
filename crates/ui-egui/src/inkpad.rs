@@ -106,6 +106,8 @@ pub struct Pad {
     /// How far held ink was moved by hand in the ordinary pointer since the window last asked,
     /// in page points: the boxes picked up with it follow ([`Pad::take_shift`]).
     shift: (f32, f32),
+    /// Where the pointer was when erasing on the previous frame, so fast swipes stay continuous.
+    erase_prev: Option<(f32, f32)>,
     /// The strokes as they were after the last finished change, and before each change the ones
     /// undo can go back to, newest last, with when that change was made. Whatever the change (a
     /// stroke drawn, rubbed out, deleted, moved or stretched), undo puts back what was there.
@@ -157,6 +159,7 @@ impl Pad {
             shape_from: None,
             grabbed: None,
             shift: (0.0, 0.0),
+            erase_prev: None,
             kept: Vec::new(),
             undo_steps: Vec::new(),
             redo_steps: Vec::new(),
@@ -415,6 +418,23 @@ impl Pad {
         self.touched |= went;
         went
     }
+
+    /// Removes every stroke on the page as a single undoable step.
+    pub fn clear_all(&mut self) -> bool {
+        if self.drawing.strokes.is_empty() && self.drawing_now.is_none() {
+            return false;
+        }
+        self.let_go();
+        self.drawing_now = None;
+        self.shape_from = None;
+        self.erase_prev = None;
+        self.settle();
+        self.drawing.strokes.clear();
+        self.dirty = true;
+        self.touched = true;
+        self.settle();
+        true
+    }
 }
 
 /// Where held ink can be taken hold of on screen this frame, for the boxes under it: a press
@@ -632,10 +652,32 @@ pub fn show(
     let down = resp.is_pointer_button_down_on();
     let at = ui.ctx().pointer_interact_pos().filter(|p| body.contains(*p)).map(|p| ((p.x - origin.x) / zoom, (p.y - origin.y) / zoom));
     let mut changed = false;
+    if pen.pointer != Pointer::Erase {
+        pad.erase_prev = None;
+    }
     match pen.pointer {
         Pointer::Erase => {
-            if let Some((x, y)) = at.filter(|_| down) {
-                changed = pad.drawing.erase_at(x, y, pen.width.max(6.0) / 2.0) > 0;
+            let touch_erase = crate::pageedit::touch_navigation(ui.ctx());
+            let radius = if touch_erase { (pen.width * 2.5).max(16.0 / zoom.max(0.35)) } else { (pen.width * 1.5).max(10.0) };
+            let screen_pos = ui.ctx().pointer_interact_pos().or_else(|| ui.ctx().pointer_hover_pos()).filter(|p| body.contains(*p));
+            if let Some(pos) = screen_pos {
+                painter.circle_stroke(pos, radius * zoom, egui::Stroke::new(1.5, t.accent));
+            }
+            if down || resp.clicked() {
+                let mut points: Vec<(f32, f32)> = frame_moves(ui, body, origin, zoom, pressure).into_iter().map(|(x, y, _)| (x, y)).collect();
+                if points.is_empty()
+                    && let Some(pt) = at
+                {
+                    points.push(pt);
+                }
+                if let Some(prev) = pad.erase_prev {
+                    points.insert(0, prev);
+                }
+                changed |= erase_along(&mut pad.drawing, &points, radius);
+                pad.erase_prev = if down { points.last().copied() } else { None };
+                ui.ctx().request_repaint();
+            } else {
+                pad.erase_prev = None;
             }
         }
         Pointer::Draw => {
@@ -1031,6 +1073,28 @@ fn round_cap(
 
 /// The pointer's movements over `body` this frame, in page points, each with the force of the
 /// touch reported just before it, or `pressure` until one is (a mouse reports none).
+#[allow(clippy::cast_possible_truncation, clippy::cast_precision_loss, clippy::cast_sign_loss)]
+fn erase_along(drawing: &mut Drawing, points: &[(f32, f32)], radius: f32) -> bool {
+    let Some(&first) = points.first() else {
+        return false;
+    };
+    let mut changed = drawing.erase_at(first.0, first.1, radius) > 0;
+    let step = (radius * 0.45).max(2.0);
+    for seg in points.windows(2) {
+        let (ax, ay) = seg[0];
+        let (bx, by) = seg[1];
+        let dist = (bx - ax).hypot(by - ay);
+        let steps = (dist / step).ceil().clamp(1.0, 200.0) as usize;
+        for k in 1..=steps {
+            let u = k as f32 / steps as f32;
+            let px = ax + (bx - ax) * u;
+            let py = ay + (by - ay) * u;
+            changed |= drawing.erase_at(px, py, radius) > 0;
+        }
+    }
+    changed
+}
+
 fn frame_moves(ui: &Ui, body: egui::Rect, origin: egui::Pos2, zoom: f32, pressure: f32) -> Vec<(f32, f32, f32)> {
     ui.input(|i| {
         let mut force = pressure;

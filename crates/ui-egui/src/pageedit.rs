@@ -1947,7 +1947,8 @@ fn table(
         egui::pos2((table_right - btn_sz).max(left), (edge_y[0] - btn_sz * 0.5).max(ui.clip_rect().min.y)),
         vec2(btn_sz, btn_sz),
     );
-    let del_resp = ui.interact(btn_rect, ui.make_persistent_id(("table-delete-btn", i)), Sense::click()).on_hover_text("Supprimer le tableau");
+    let del_resp =
+        ui.interact(btn_rect, ui.make_persistent_id(("table-delete-btn", i)), Sense::click()).on_hover_text(crate::tl_id!("ui.student_delete_table"));
     let on_delete_btn = del_resp.hovered() || del_resp.clicked() || at.is_some_and(|p| btn_rect.contains(p));
     if del_resp.hovered() {
         ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);

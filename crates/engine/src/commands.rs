@@ -137,6 +137,12 @@ fn node_move_down(s: &mut Session, p: &Params) -> Result<Output, EngineError> {
     Ok(Output::Path(ops::move_page(&s.resolve(req(p, "path")?)?, false)?))
 }
 
+fn node_reorder(s: &mut Session, p: &Params) -> Result<Output, EngineError> {
+    let path = s.resolve(req(p, "path")?)?;
+    let index: usize = req(p, "index")?.trim().parse().map_err(|_| EngineError::BadParam("index must be a non-negative integer".into()))?;
+    Ok(Output::Path(ops::reorder_sibling(&path, index)?))
+}
+
 fn node_color(s: &mut Session, p: &Params) -> Result<Output, EngineError> {
     let path = s.resolve(req(p, "path")?)?;
     let raw = req(p, "color")?.trim();
@@ -536,6 +542,13 @@ name (required): the template's name",
         params: "path (required): the page to move down",
         changes_tree: true,
         run: node_move_down,
+    },
+    CommandSpec {
+        id: "node.reorder",
+        label: "Move a section, group or page to a new zero-based position among siblings of the same kind",
+        params: "path (required): the node to move\nindex (required): target zero-based index among same-kind siblings",
+        changes_tree: true,
+        run: node_reorder,
     },
     CommandSpec {
         id: "node.color",
@@ -1303,6 +1316,12 @@ mod tests {
             other => panic!("{other:?}"),
         }
         assert_eq!(s.tree()[0].count(), 2);
+        let sec2 =
+            path_of(s.run("node.create", &p(&[("parent", nb.to_str().expect("utf8")), ("kind", "section"), ("title", "Archive")])).expect("sec2"));
+        s.run("node.reorder", &p(&[("path", sec2.to_str().expect("utf8")), ("index", "0")])).expect("reorder");
+        s.refresh();
+        assert_eq!(s.tree()[0].children[0].info.title, "Archive");
+        assert_eq!(s.tree()[0].children[1].info.title, "Projects");
     }
 
     #[test]

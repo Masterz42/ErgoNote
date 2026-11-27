@@ -3,7 +3,7 @@
 # ErgoNote
 
 **Cahier numérique scolaire adapté aux élèves TND**  
-*(DYS, TDAH, troubles du graphisme et des apprentissages — 100 % gratuit, hors ligne et sans pub)*
+*(DYS, TDAH, troubles du graphisme et des apprentissages - 100 % gratuit, hors ligne et sans pub)*
 
 [![Version](https://img.shields.io/badge/Version-v2026.11.26-2f5fb3?style=for-the-badge)](https://github.com/Masterz42/ErgoNote/releases/tag/v2026.11.26)
 [![Téléchargements](https://img.shields.io/github/downloads/Masterz42/ErgoNote/total?style=for-the-badge&label=T%C3%A9l%C3%A9chargements&color=2f5fb3)](https://github.com/Masterz42/ErgoNote/releases)
@@ -128,7 +128,7 @@ Conçu pour remplacer les interfaces surchargées par un **classeur numérique c
 
 ## Licence et soutien
 
-**Licence d'utilisation :** ErgoNote est un logiciel gratuit (freeware) — Tous droits réservés © ErgoNote.  
+**Licence d'utilisation :** ErgoNote est un logiciel gratuit (freeware) - Tous droits réservés © ErgoNote.  
 L'utilisation et la redistribution du fichier d'installation d'origine sont librement autorisées pour un usage personnel, familial, scolaire, associatif ou dans le cadre d'un suivi de soin (ergothérapie, orthophonie, etc.).  
 Toute vente, location, intégration dans un produit ou service commercial, modification ou décompilation est strictement interdite sans l'autorisation écrite préalable de l'auteur.
 

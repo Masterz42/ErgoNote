@@ -34,34 +34,50 @@
 @id	ui.about_ergonote	$$$About ErgoNote@@@
 @id	ui.accent_accent	$$$Accent: {accent}@@@
 @id	ui.accept	$$$Accept@@@
+@id	ui.account_autosave_label	$$$Automatic saving: Active (real-time + automatic backup every minute)@@@
+@id	ui.account_desc	$$$This application runs 100% locally so students never lose access due to passwords or internet issues.@@@
+@id	ui.account_heading	$$$Student Profile & Local Storage@@@
+@id	ui.account_mode_label	$$$Operating mode: 100% Local & Offline (No Microsoft account required)@@@
+@id	ui.account_save_profile	$$$Save profile@@@
+@id	ui.account_student_class	$$$Class / Grade:@@@
+@id	ui.account_student_name	$$$Student name:@@@
 @id	ui.add	$$$Add@@@
 @id	ui.add_a_blank_paragraph_at_the_caret	$$$Add a blank paragraph at the caret@@@
+@id	ui.add_a_page_from_this_template	$$$Add a page to this section from this template@@@
 @id	ui.add_a_page_here	$$$Add a page here@@@
 @id	ui.add_a_sub_page	$$$Add a sub-page@@@
 @id	ui.add_another_tool	$$$Add another {tool}@@@
 @id	ui.add_file	$$$Add file@@@
 @id	ui.add_file_to_this_page	$$$Add file to this page@@@
 @id	ui.add_inside_this_kind	$$$Add inside this {kind}@@@
+@id	ui.add_inside_this_page	$$$Add inside this page@@@
+@id	ui.add_inside_this_section	$$$Add inside this section@@@
 @id	ui.add_name	$$$Add {name}@@@
 @id	ui.add_name_left_more	$$$Add {name} ({left} more)@@@
 @id	ui.add_page	$$$Add page@@@
+@id	ui.add_tag	$$$Add tag@@@
 @id	ui.add_the_welcome_notebook	$$$Add the welcome notebook@@@
 @id	ui.add_tool	$$$Add {tool}@@@
 @id	ui.added_a_link_to_name_at_the_end_of_the_page	$$$Added a link to {name} at the end of the page@@@
 @id	ui.added_a_tool	$$$Added a {tool}@@@
 @id	ui.address	$$$Address@@@
-@id	ui.android_no_file_picker	$$$Android cannot show this file dialog yet. Notebooks are in Android/data/com.ergonote.app/files/ErgoNote.@@@
-@id	ui.the_line_changed_put_the_link_in_again	$$$The line changed; put the link in again@@@
-@id	ui.select_words_in_one_line_for_a_link	$$$Select words in one line for a link@@@
-@id	ui.that_address_cannot_be_used_for_a_link	$$$That address cannot be used for a link@@@
-@id	ui.remove_link	$$$Remove link@@@
-@id	ui.text_to_display	$$$Text to display@@@
+@id	ui.align_left_ctrl_l	$$$Align Left (Ctrl+L)@@@
+@id	ui.align_right_ctrl_r	$$$Align Right (Ctrl+R)@@@
+@id	ui.aligned_left	$$$Aligned left@@@
+@id	ui.aligned_right	$$$Aligned right@@@
 @id	ui.alignment	$$$Alignment@@@
 @id	ui.alignment_and_direction	$$$Alignment and direction@@@
 @id	ui.alignment_and_which_way_this_paragraph_reads	$$$Alignment, and which way this paragraph reads@@@
+@id	ui.alignment_goes_on_a_paragraph_or_a_heading	$$$Alignment goes on a paragraph or a heading@@@
 @id	ui.all_of_them_live_in_folder	$$$All of them live in {folder}@@@
+@id	ui.all_open_notebooks	$$$All open notebooks@@@
+@id	ui.all_time	$$$All time@@@
 @id	ui.always_on_top	$$$Always on top@@@
+@id	ui.am	$$$AM@@@
+@id	ui.amber	$$$Amber@@@
 @id	ui.an_equation_written_in_tex_pick_one_to_start_from	$$$An equation, written in TeX: pick one to start from@@@
+@id	ui.an_older_version_read_only_the_page_is_not_changed_unless_you_restore_it	$$$An older version, read-only. The page is not changed unless you restore it.@@@
+@id	ui.android_no_file_picker	$$$Android cannot show this file dialog yet. Notebooks are in Android/data/com.ergonote.app/files/ErgoNote.@@@
 @id	ui.app_preferences_reset_restart_ergonote_to_apply_every_default	$$$App preferences reset. Restart ErgoNote to apply every default.@@@
 @id	ui.appearance	$$$Appearance@@@
 @id	ui.append_link	$$$Append link@@@
@@ -73,55 +89,30 @@
 @id	ui.attachment_recovery	$$$Attachment recovery@@@
 @id	ui.authors	$$$Authors@@@
 @id	ui.auto	$$$Auto@@@
+@id	ui.auto_pages_have_no_edges_choose_a_size_to_see_the_sheet	$$$An Auto page has no edges. Choose a size to see the sheet and its margins.@@@
+@id	ui.auto_the_page_grows_with_what_is_on_it	$$$Auto (the page grows with what is on it)@@@
+@id	ui.automatic_rule_lines	$$$Automatic lines@@@
 @id	ui.automatic_system_language	$$$Automatic (system language)@@@
 @id	ui.back	$$$Back@@@
+@id	ui.back_to_the_list	$$$Back to the list@@@
 @id	ui.back_to_the_notebook	$$$Back to the notebook@@@
 @id	ui.back_to_the_page_before_alt_left	$$$Back to the page before (Alt+Left)@@@
+@id	ui.backstage_about	$$$About@@@
+@id	ui.backstage_account	$$$Account@@@
+@id	ui.backstage_export	$$$Export@@@
+@id	ui.backstage_info	$$$Info@@@
+@id	ui.backstage_new	$$$New@@@
+@id	ui.backstage_print	$$$Print@@@
+@id	ui.backstage_share	$$$Share@@@
+@id	ui.backup_recovery	$$$Backup / Restore@@@
 @id	ui.basic_text	$$$Basic Text@@@
-@id	ui.font_size	$$$Font Size@@@
-@id	ui.font_family	$$$Font Family@@@
-@id	ui.loading_fonts	$$$Loading fonts...@@@
-@id	ui.font_family_box	$$$Font name@@@
-@id	ui.pick_date	$$$Pick a date@@@
-@id	ui.pick_time	$$$Pick a time@@@
-@id	ui.am	$$$AM@@@
-@id	ui.pm	$$$PM@@@
-@id	ui.pick_date_and_time	$$$Pick a date and time@@@
-@id	ui.today	$$$Today@@@
-@id	ui.month_1	$$$January@@@
-@id	ui.month_2	$$$February@@@
-@id	ui.month_3	$$$March@@@
-@id	ui.month_4	$$$April@@@
-@id	ui.month_5	$$$May@@@
-@id	ui.month_6	$$$June@@@
-@id	ui.month_7	$$$July@@@
-@id	ui.month_8	$$$August@@@
-@id	ui.month_9	$$$September@@@
-@id	ui.month_10	$$$October@@@
-@id	ui.month_11	$$$November@@@
-@id	ui.month_12	$$$December@@@
-@id	ui.weekday_short_0	$$$Su@@@
-@id	ui.weekday_short_1	$$$Mo@@@
-@id	ui.weekday_short_2	$$$Tu@@@
-@id	ui.weekday_short_3	$$$We@@@
-@id	ui.weekday_short_4	$$$Th@@@
-@id	ui.weekday_short_5	$$$Fr@@@
-@id	ui.weekday_short_6	$$$Sa@@@
-@id	ui.font_size_box	$$$Font size@@@
-@id	ui.mixed	$$$Mixed@@@
-@id	ui.font_catalog_unavailable	$$$Installed fonts could not be listed on this device.@@@
-@id	ui.underline	$$$Underline@@@
-@id	ui.subscript	$$$Subscript@@@
-@id	ui.superscript	$$$Superscript@@@
-@id	ui.inline_mark_whole_line	$$$This formatting is not available for this selection or caret position yet. Select a whole line instead.@@@
-@id	ui.fonts_unavailable	$$$These fonts could not be loaded; fallback fonts are shown: {fonts}@@@
-@id	ui.select_text_before_changing_font_size	$$$Select text before changing font size.@@@
 @id	ui.black	$$$black@@@
 @id	ui.blue	$$$blue@@@
 @id	ui.blue_2	$$$Blue@@@
 @id	ui.bold	$$$Bold@@@
 @id	ui.bold_ctrl_b	$$$Bold (Ctrl+B)@@@
 @id	ui.both_as_the_page_s_own_stamp_is_written	$$$Both, as the page's own stamp is written@@@
+@id	ui.bottom_margin_mm	$$$Bottom@@@
 @id	ui.browse_for_a_notebook	$$$Browse for a notebook…@@@
 @id	ui.browse_notebooks_in_folder_or_choose_another_folder	$$$Browse notebooks in {folder} or choose another folder.@@@
 @id	ui.brush_pen	$$$Brush Pen@@@
@@ -130,6 +121,7 @@
 @id	ui.cancel	$$$Cancel@@@
 @id	ui.cancel_import	$$$Cancel import@@@
 @id	ui.cannot_open_gridcraft_error	$$$Cannot open GridCraft: {error}@@@
+@id	ui.cannot_open_that_version_error	$$$Cannot open that version: {error}@@@
 @id	ui.cannot_open_the_table_in_gridcraft_error	$$$Cannot open the table in GridCraft: {error}@@@
 @id	ui.cannot_read_the_picture_error	$$$Cannot read the picture: {error}@@@
 @id	ui.cannot_save_the_pasted_picture_error	$$$Cannot save the pasted picture: {error}@@@
@@ -137,6 +129,11 @@
 @id	ui.cannot_write_the_drawing_error	$$$Cannot write the drawing: {error}@@@
 @id	ui.cannot_write_the_picture_error	$$$Cannot write the picture: {error}@@@
 @id	ui.cannot_write_this_page_s_ink	$$$Cannot write this page's ink@@@
+@id	ui.center	$$$Center@@@
+@id	ui.centred	$$$Centered@@@
+@id	ui.check_for_updates	$$$Check for updates@@@
+@id	ui.check_for_updates_hint	$$$Asks GitHub for the newest release and, if it is newer, downloads it, checks it and installs it. Nothing is sent until you press the button.@@@
+@id	ui.choose	$$$Choose…@@@
 @id	ui.choose_a_custom_ink_colour	$$$Choose a custom ink colour@@@
 @id	ui.choose_a_file_to_attach	$$$Choose a file to attach@@@
 @id	ui.choose_a_file_to_import	$$$Choose a file to import@@@
@@ -148,6 +145,7 @@
 @id	ui.choose_a_section_to_see_its_pages	$$$Choose a section to see its pages.@@@
 @id	ui.choose_a_symbol_to_insert_at_the_caret	$$$Choose a symbol to insert at the caret@@@
 @id	ui.choose_how_to_insert_a_picture	$$$Choose how to insert a picture@@@
+@id	ui.choose_the_folder_for_the_copy	$$$Choose the folder for the copy@@@
 @id	ui.choose_what_ergonote_records_locally_nothing_is_upl_fc372d68e8	$$$Choose what ErgoNote records locally. Nothing is uploaded automatically.@@@
 @id	ui.chosen_for_this_page	$$$chosen for this page@@@
 @id	ui.circle	$$$Circle@@@
@@ -160,11 +158,15 @@
 @id	ui.click_in_the_page_first	$$$Click in the page first@@@
 @id	ui.click_in_the_page_first_then_use_the_ribbon	$$$Click in the page first, then use the ribbon@@@
 @id	ui.click_in_the_table_first	$$$Click in the table first@@@
+@id	ui.click_in_the_words_whose_formatting_to_copy	$$$Click in the words whose formatting to copy@@@
 @id	ui.clipboard	$$$Clipboard@@@
 @id	ui.close	$$$Close@@@
 @id	ui.close_notebook	$$$Close notebook@@@
+@id	ui.close_search	$$$Close search@@@
 @id	ui.close_the_find_bar_escape	$$$Close the Find bar (Escape)@@@
+@id	ui.close_the_page_templates	$$$Close the page templates@@@
 @id	ui.close_the_source_pane	$$$Close the source pane@@@
+@id	ui.close_the_tags_summary	$$$Close the tags summary@@@
 @id	ui.cloud_import_is_not_implemented_yet	$$$Cloud import is not implemented yet.@@@
 @id	ui.code_2	$$$Code@@@
 @id	ui.code_in_one_line	$$$Code, in one line@@@
@@ -172,15 +174,35 @@
 @id	ui.collapse_all	$$$Collapse all@@@
 @id	ui.collapse_subpages	$$$Collapse Subpages@@@
 @id	ui.collapse_the_ribbon_ctrl_f1	$$$Collapse the ribbon (Ctrl+F1)@@@
+@id	ui.collect_all	$$$Collect@@@\n$$$All@@@
+@id	ui.collect_all_tip	$$$Bring the boxes and ink that drifted apart on the page back together@@@
 @id	ui.college	$$$College@@@
 @id	ui.college_ruled	$$$College ruled@@@
 @id	ui.colour	$$$Colour@@@
+@id	ui.colour_amber	$$$Amber@@@
+@id	ui.colour_blue	$$$Blue@@@
+@id	ui.colour_coral	$$$Coral@@@
+@id	ui.colour_cyan	$$$Cyan@@@
+@id	ui.colour_gray	$$$Gray@@@
+@id	ui.colour_green	$$$Green@@@
 @id	ui.colour_hex	$$${colour} {hex}@@@
+@id	ui.colour_lavender	$$$Lavender@@@
+@id	ui.colour_lime	$$$Lime@@@
+@id	ui.colour_lines	$$${colour} lines@@@
+@id	ui.colour_magenta	$$$Magenta@@@
+@id	ui.colour_navy	$$$Navy@@@
+@id	ui.colour_orange	$$$Orange@@@
+@id	ui.colour_pink	$$$Pink@@@
+@id	ui.colour_purple	$$$Purple@@@
+@id	ui.colour_red	$$$Red@@@
 @id	ui.colour_removed	$$$Colour removed@@@
 @id	ui.colour_set_to_colour	$$$Colour set to {colour}@@@
+@id	ui.colour_teal	$$$Teal@@@
+@id	ui.colour_yellow	$$$Yellow@@@
 @id	ui.colours	$$$Colours@@@
 @id	ui.columns_x_rows_table	$$${columns} x {rows} Table@@@
 @id	ui.commonmark_gfm	$$$CommonMark + GFM@@@
+@id	ui.compare_with_the_page	$$$Compare with the page@@@
 @id	ui.contact	$$$Contact@@@
 @id	ui.convert	$$$Convert@@@
 @id	ui.convert_to_gridcraft_2	$$$Convert to@@@\n$$$GridCraft@@@
@@ -189,8 +211,10 @@
 @id	ui.copies_the_file_and_inserts_one_picture_for_each_printed_page	$$$Copies the file and inserts one picture for each printed page.@@@
 @id	ui.copy	$$$Copy@@@
 @id	ui.copy_full_path	$$$Copy full path@@@
+@id	ui.copy_into_this_folder	$$$Copy into this folder@@@
 @id	ui.copy_link_to_page	$$$Copy link to page@@@
 @id	ui.copy_the_selection	$$$Copy the selection@@@
+@id	ui.coral	$$$Coral@@@
 @id	ui.could_not_attach_name_before_rendering_its_pages	$$$Could not attach {name} before rendering its pages@@@
 @id	ui.could_not_attach_name_to_this_page	$$$Could not attach {name} to this page.@@@
 @id	ui.could_not_complete_the_action_error	$$$Could not complete the action: {error}@@@
@@ -200,8 +224,10 @@
 @id	ui.could_not_repair_the_icon_for_name_error	$$$Could not repair the icon for {name}: {error}@@@
 @id	ui.could_not_reset_app_preferences_error	$$$Could not reset app preferences: {error}@@@
 @id	ui.could_not_restore_the_link_for_name_error	$$$Could not restore the link for {name}: {error}@@@
+@id	ui.could_not_save_the_copy_why	$$$Could not save the copy: {why}@@@
 @id	ui.could_not_save_the_interface_language_error	$$$Could not save the interface language: {error}@@@
 @id	ui.could_not_save_the_interface_size_error	$$$Could not save the interface size: {error}@@@
+@id	ui.could_not_save_your_tags_error	$$$Could not save your tags: {error}@@@
 @id	ui.could_not_store_printout_page_page_error	$$$Could not store printout page {page}: {error}@@@
 @id	ui.count_deleted	$$${count} · {deleted}@@@
 @id	ui.count_items_colour_colour	$$${count} items, {colour} colour@@@
@@ -213,10 +239,16 @@
 @id	ui.ctrl_z_takes_back_the_last_change	$$$Ctrl+Z takes back the last change@@@
 @id	ui.current_session_id	$$$Current session: {id}@@@
 @id	ui.custom	$$$custom@@@
+@id	ui.custom_size	$$$Custom size@@@
+@id	ui.custom_tags_explained	$$$Your tags are kept in your settings and work in every notebook. Renaming a tag keeps it on every line that has it. Removing one leaves those lines as they are, marker word and all, so making the same tag again brings it back.@@@
+@id	ui.custom_tags_none_yet	$$$You have no tags of your own yet.@@@
 @id	ui.customize_quick_access_toolbar	$$$Customize Quick Access Toolbar@@@
+@id	ui.customize_tags	$$$Customize Tags...@@@
+@id	ui.customize_tags_title	$$$Customize Tags@@@
 @id	ui.cut	$$$Cut@@@
 @id	ui.cut_2	$$$cut@@@
 @id	ui.cut_the_selection	$$$Cut the selection@@@
+@id	ui.cyan	$$$Cyan@@@
 @id	ui.dark	$$$Dark@@@
 @id	ui.data	$$$Data@@@
 @id	ui.date	$$$Date@@@
@@ -238,10 +270,12 @@
 @id	ui.delete_notebook_title_and_everything_inside_it	$$$Delete notebook "{title}" and everything inside it?@@@
 @id	ui.delete_permanently	$$$Delete permanently@@@
 @id	ui.delete_rows_2	$$$Delete@@@\n$$$Rows@@@
+@id	ui.delete_table_2	$$$Delete\nTable@@@
 @id	ui.delete_tool	$$$Delete Tool@@@
 @id	ui.delete_tool_2	$$$Delete {tool}@@@
 @id	ui.deleted_notebook	$$$Deleted notebook@@@
 @id	ui.deleted_notebook_path	$$$Deleted notebook {path}@@@
+@id	ui.deleted_the_table	$$$Deleted the table@@@
 @id	ui.deny	$$$Deny@@@
 @id	ui.diagram	$$$Diagram@@@
 @id	ui.diamond	$$$Diamond@@@
@@ -254,6 +288,7 @@
 @id	ui.document_renderer_coming_soon	$$$Document renderer coming soon@@@
 @id	ui.don_t_show_this_again_in_this_session	$$$Don't show this again in this session@@@
 @id	ui.don_t_show_this_ever	$$$Don't show this ever@@@
+@id	ui.drag_to_move_around_the_page	$$$Drag to move around the page@@@
 @id	ui.draw	$$$Draw@@@
 @id	ui.draw_a_loop_round_ink_to_pick_it_up	$$$Draw a loop round ink to pick it up@@@
 @id	ui.draw_here_2	$$$Draw@@@\n$$$here@@@
@@ -270,6 +305,11 @@
 @id	ui.equation	$$$Equation@@@
 @id	ui.equation_name	$$$Equation: {name}@@@
 @id	ui.eraser	$$$Eraser@@@
+@id	ui.ergonote	$$$ErgoNote@@@
+@id	ui.ergonote_found_an_attachment_that_is_not_referenced_8c0eb51257	$$$ErgoNote found an attachment that is not referenced by this page:@@@
+@id	ui.ergonote_found_an_attachment_without_its_generated_icon_name	$$$ErgoNote found an attachment without its generated icon:@@@
+@id	ui.ergonote_ruled	$$$ErgoNote ruled@@@
+@id	ui.ergonote_squares	$$$ErgoNote squares@@@
 @id	ui.error	$$$error@@@
 @id	ui.every_fifth_line_is_slightly_stronger_for_easier_counting	$$$Every fifth line is slightly stronger for easier counting.@@@
 @id	ui.every_line_of_this_page_decides_for_itself	$$$Every line of this page decides for itself@@@
@@ -279,28 +319,47 @@
 @id	ui.expand_subpages	$$$Expand Subpages@@@
 @id	ui.export_creates_a_user_selected_zip_then_removes_the_66f2bf3400	$$$Export creates a user-selected ZIP, then removes the exported session folder.@@@
 @id	ui.export_current_session_zip	$$$Export current session ZIP@@@
+@id	ui.export_doc_btn	$$$Export page for Word / LibreOffice (.odt)@@@
+@id	ui.export_heading	$$$Export page or notebook@@@
+@id	ui.export_html_btn	$$$Export page as standalone Web page (.html)@@@
+@id	ui.export_notebook_section	$$$Export the whole notebook@@@
+@id	ui.export_page_section	$$$Export the current page@@@
+@id	ui.export_pdf_btn	$$$Export page as PDF (.pdf)@@@
 @id	ui.export_telemetry_zip	$$$Export telemetry ZIP@@@
+@id	ui.export_zip_btn	$$$Export whole notebook as ZIP archive (.zip)@@@
 @id	ui.eyedropper	$$$Eyedropper@@@
 @id	ui.eyedropper_not_built	$$$The eyedropper is not built yet@@@
+@id	ui.eyedropper_put_down_the_pen_is_as_it_was	$$$Eyedropper put down; the pen is as it was@@@
 @id	ui.file	$$$File@@@
 @id	ui.file_attachment_2	$$$File@@@\n$$$Attachment@@@
 @id	ui.file_options	$$$File options@@@
 @id	ui.file_printout_2	$$$File@@@\n$$$Printout@@@
 @id	ui.files	$$$Files@@@
 @id	ui.files_in_this_page	$$$FILES IN THIS PAGE@@@
+@id	ui.filter	$$$Filter@@@
+@id	ui.filter_by_title_section_or_notebook	$$$Filter by title, section or notebook@@@
 @id	ui.find	$$$Find@@@
 @id	ui.find_in_this_file	$$$Find in this file@@@
 @id	ui.find_tags	$$$Find Tags@@@
 @id	ui.find_tags_3	$$$Find@@@\n$$$Tags@@@
 @id	ui.fit_the_page_to_the_available_width	$$$Fit the page to the available width@@@
+@id	ui.flip_horizontal	$$$Flip Horizontal@@@
+@id	ui.flip_vertical	$$$Flip Vertical@@@
+@id	ui.flipped_the_picture	$$$Flipped the picture@@@
+@id	ui.flipped_the_picture_ink_on_the_page_stays_where_it_is	$$$Flipped the picture. Ink on the page stays where it is@@@
+@id	ui.folder	$$$Folder@@@
 @id	ui.folder_folder	$$$Folder: {folder}@@@
 @id	ui.follow_the_system_light_or_dark_setting	$$$Follow the system light or dark setting@@@
+@id	ui.font_catalog_unavailable	$$$Installed fonts could not be listed on this device.@@@
+@id	ui.font_family	$$$Font Family@@@
+@id	ui.font_family_box	$$$Font name@@@
+@id	ui.font_size	$$$Font Size@@@
+@id	ui.font_size_box	$$$Font size@@@
+@id	ui.fonts_unavailable	$$$These fonts could not be loaded; fallback fonts are shown: {fonts}@@@
 @id	ui.format	$$$Format@@@
 @id	ui.format_background_2	$$$Format@@@\n$$$Background@@@
 @id	ui.format_for_this_page	$$$Format for this page@@@
 @id	ui.format_painter	$$$Format Painter@@@
-@id	ui.click_in_the_words_whose_formatting_to_copy	$$$Click in the words whose formatting to copy@@@
-@id	ui.pick_the_words_to_give_that_formatting	$$$Pick the words to give that formatting@@@
 @id	ui.format_painter_keeps_painting_until_escape	$$$Format Painter keeps painting until Escape@@@
 @id	ui.format_painter_put_down	$$$Format Painter put down@@@
 @id	ui.format_painter_tip	$$$Copy the formatting at the caret to the next words you pick. Double-click to keep painting until Escape.@@@
@@ -313,24 +372,19 @@
 @id	ui.full_page_view_2	$$$Full Page@@@\n$$$View@@@
 @id	ui.full_path_copied	$$$Full path copied@@@
 @id	ui.give_the_page_the_whole_window	$$$Give the page the whole window@@@
+@id	ui.go_to_the_next_page_changed_since_you_last_read_it	$$$Go to the next page changed since you last read it@@@
 @id	ui.gray	$$$Gray@@@
 @id	ui.green	$$$Green@@@
 @id	ui.green_2	$$$green@@@
 @id	ui.grey	$$$grey@@@
 @id	ui.gridcraft_is_not_installed	$$$GridCraft is not installed@@@
+@id	ui.height_mm	$$$Height (mm)@@@
 @id	ui.help	$$$Help@@@
 @id	ui.hide	$$$Hide@@@
 @id	ui.hide_everything_but_the_page	$$$Hide everything but the page@@@
 @id	ui.hide_page_title	$$$Hide page title@@@
 @id	ui.hide_the_page_source	$$$Hide the page source@@@
 @id	ui.hide_the_page_title	$$$Hide the page title@@@
-@id	ui.snap_boxes_to_the_page_s_grid_hold_alt_to_place_one_freely	$$$Snap boxes to the page's grid when you move or resize them. Hold Alt to place one freely.@@@
-@id	ui.snap_to_grid	$$$Snap to grid@@@
-@id	ui.sort_ascending_2	$$$Sort@@@\n$$$Ascending@@@
-@id	ui.sort_descending_2	$$$Sort@@@\n$$$Descending@@@
-@id	ui.sort_the_rows_by_the_caret_s_column_a_to_z	$$$Sort the rows by the caret's column, A to Z and 1 to 9. The heading stays on top.@@@
-@id	ui.sort_the_rows_by_the_caret_s_column_z_to_a	$$$Sort the rows by the caret's column, Z to A and 9 to 1. The heading stays on top.@@@
-@id	ui.the_rows_are_already_in_that_order	$$$The rows are already in that order@@@
 @id	ui.highlight	$$$Highlight@@@
 @id	ui.highlighter	$$$Highlighter@@@
 @id	ui.history	$$$History@@@
@@ -343,14 +397,19 @@
 @id	ui.import_file	$$$Import file@@@
 @id	ui.import_from_the_cloud	$$$Import from the cloud@@@
 @id	ui.import_notebook_folder	$$$Import notebook folder@@@
+@id	ui.import_zip_btn	$$$Import ZIP archive (.zip)@@@
 @id	ui.important	$$$Important@@@
 @id	ui.importing	$$$Importing…@@@
 @id	ui.importing_onenote	$$$Importing OneNote@@@
 @id	ui.increase_indentation	$$$Increase indentation@@@
 @id	ui.increase_indentation_tab	$$$Increase indentation (Tab)@@@
+@id	ui.index_card_3_x_5_in	$$$Index Card (3 x 5 in)@@@
+@id	ui.index_card_4_x_6_in	$$$Index Card (4 x 6 in)@@@
+@id	ui.index_card_5_x_8_in	$$$Index Card (5 x 8 in)@@@
 @id	ui.index_of_total_sections	$$${index} of {total} sections@@@
 @id	ui.info	$$$info@@@
 @id	ui.inherit_notebook_section_or_global_setting	$$$Inherit (notebook, section or global setting)@@@
+@id	ui.inline_mark_whole_line	$$$This formatting is not available for this selection or caret position yet. Select a whole line instead.@@@
 @id	ui.input_mode	$$$Input Mode@@@
 @id	ui.insert	$$$Insert@@@
 @id	ui.insert_a_common_symbol	$$$Insert a common symbol@@@
@@ -360,7 +419,11 @@
 @id	ui.insert_row_above_2	$$$Insert Row@@@\n$$$Above@@@
 @id	ui.insert_row_below_2	$$$Insert Row@@@\n$$$Below@@@
 @id	ui.insert_space_2	$$$Insert@@@\n$$$Space@@@
+@id	ui.insert_space_how	$$$Drag down where you want more room, or up to take room away. Esc puts the tool down.@@@
+@id	ui.insert_space_tip	$$$Drag down the page to add room, or up to take it away@@@
 @id	ui.insert_symbol	$$$Insert symbol@@@
+@id	ui.insert_table	$$$Insert Table@@@
+@id	ui.insert_table_2	$$$Insert Table…@@@
 @id	ui.insert_table_not_built	$$$Insert Table... (not built)@@@
 @id	ui.insert_the_picture	$$$Insert the picture@@@
 @id	ui.insert_the_recording	$$$Insert the recording@@@
@@ -372,48 +435,73 @@
 @id	ui.interface_size_hint	$$$Makes the ribbon, the menus and the page larger or smaller on this screen.@@@
 @id	ui.interface_size_percent	$$${percent}%@@@
 @id	ui.issues_the_roadmap_and_the_documentation_are_all_the_2beb6e100f	$$$Issues, the roadmap and the documentation are all there. Nothing in ErgoNote talks to it, or to any other service, by itself.@@@
+@id	ui.it_is_in_place_now	$$$It is in {place} now@@@
 @id	ui.it_is_listed_so_the_page_s_folder_is_not_a_secret	$$$It is listed so the page's folder is not a secret.@@@
 @id	ui.italic	$$$Italic@@@
 @id	ui.italic_ctrl_i	$$$Italic (Ctrl+I)@@@
 @id	ui.json	$$$JSON@@@
 @id	ui.justification_goes_on_a_paragraph_of_text	$$$Justification goes on a paragraph of text@@@
+@id	ui.justify_high	$$$Justify High@@@
+@id	ui.justify_low	$$$Justify Low@@@
+@id	ui.justify_medium	$$$Justify Medium@@@
 @id	ui.keep_this_window_above_the_others	$$$Keep this window above the others@@@
+@id	ui.kept_in_this_tab	$$$Kept in this tab@@@
 @id	ui.kept_the_original_drawing_file_path	$$$This page's drawing file held lines ErgoNote cannot edit. The file as it was is kept as {path}.@@@
 @id	ui.label	$$$label@@@
 @id	ui.label_not_built	$$${label} (not built)@@@
 @id	ui.label_not_built_yet	$$${label}: not built yet@@@
 @id	ui.label_nothing_to_action	$$${label}: nothing to {action}@@@
+@id	ui.landscape	$$$Landscape@@@
 @id	ui.language_click_to_change_it	$$${language}. Click to change it.@@@
 @id	ui.large	$$$Large@@@
 @id	ui.large_squares	$$$Large squares@@@
 @id	ui.laser_pointer	$$$Laser Pointer@@@
+@id	ui.laser_pointer_put_down	$$$Laser pointer put down@@@
 @id	ui.lasso_select	$$$Lasso@@@\n$$$Select@@@
+@id	ui.last_30_days	$$$Last 30 days@@@
+@id	ui.last_7_days	$$$Last 7 days@@@
+@id	ui.lavender	$$$Lavender@@@
 @id	ui.layout	$$$Layout@@@
+@id	ui.least_line_height_points	$$$Line height, at least (points)@@@
 @id	ui.leave_it	$$$Leave it@@@
+@id	ui.left_margin_mm	$$$Left@@@
 @id	ui.left_to_right	$$$Left-to-Right@@@
 @id	ui.level	$$$Level:@@@
 @id	ui.licence	$$$Licence@@@
 @id	ui.light	$$$Light@@@
 @id	ui.light_or_dark_and_the_accent_colour	$$$Light or dark, and the accent colour@@@
+@id	ui.lime	$$$Lime@@@
 @id	ui.line	$$$Line@@@
+@id	ui.lines_marked_are_only_in_this_version_lines_marked_are_only_in_the_page	$$$Lines marked − are only in this version; lines marked + are only in the page now.@@@
 @id	ui.lines_or_squares_behind_the_page_as_on_paper	$$$Lines or squares behind the page, as on paper@@@
 @id	ui.link	$$$Link@@@
 @id	ui.link_to_the_file_where_it_is	$$$Link to the file where it is@@@
 @id	ui.link_to_title_copied	$$$Link to "{title}" copied@@@
 @id	ui.linked_name_where_it_is_the_file_was_not_copied	$$$Linked {name} where it is; the file was not copied@@@
 @id	ui.links	$$$Links@@@
+@id	ui.list_the_tagged_notes_and_go_to_them	$$$List the tagged notes and go to them@@@
 @id	ui.live_captions	$$$Live captions@@@
+@id	ui.loading_fonts	$$$Loading fonts...@@@
 @id	ui.local_collection_level	$$$Local collection level@@@
 @id	ui.local_diagnostics	$$$Local diagnostics@@@
 @id	ui.local_diagnostics_and_usage	$$$Local diagnostics and usage@@@
 @id	ui.logging_folder_folder	$$$Logging folder: {folder}@@@
 @id	ui.logs_and_telemetry_stay_on_this_device_ergonote_doe_87b8387dee	$$$Logs and telemetry stay on this device. ErgoNote does not send them automatically.@@@
+@id	ui.look_again_for_tagged_notes	$$$Look again for tagged notes@@@
 @id	ui.magenta	$$$Magenta@@@
 @id	ui.make_subpage	$$$Make Subpage@@@
 @id	ui.make_the_page_larger	$$$Make the page larger@@@
 @id	ui.make_the_page_smaller	$$$Make the page smaller@@@
+@id	ui.make_your_own_tags_with_a_name_symbol_and_colour	$$$Make your own tags, each with a name, a symbol and a colour@@@
 @id	ui.many_thanks_to_its_authors_and_contributors	$$$— many thanks to its authors and contributors.@@@
+@id	ui.margins_mm	$$$Margins (mm)@@@
+@id	ui.mark_as_read_2	$$$Mark as\nRead@@@
+@id	ui.mark_as_unread_2	$$$Mark as\nUnread@@@
+@id	ui.mark_this_page_as_read	$$$Mark this page as read@@@
+@id	ui.mark_this_page_as_unread_to_come_back_to_it	$$$Mark this page as unread, to come back to it@@@
 @id	ui.markdown	$$$Markdown@@@
+@id	ui.marked_as_read	$$$Marked as read@@@
+@id	ui.marked_as_unread	$$$Marked as unread@@@
 @id	ui.match_case	$$$Match case@@@
 @id	ui.math	$$$Math@@@
 @id	ui.maximize	$$$Maximize@@@
@@ -428,20 +516,40 @@
 @id	ui.mermaid	$$$Mermaid@@@
 @id	ui.mint	$$$mint@@@
 @id	ui.mit_license	$$$MIT license@@@
-@id	ui.mit_or_apache_2_0_at_your_option_the_koala_artwork_i_2ad8f523c0	ErgoNote is free software (freeware). All rights reserved (c) ErgoNote. Using and redistributing the original installer is freely allowed for personal, family, school, community or care-related use (occupational therapy, speech therapy, etc.). Any sale, rental, inclusion in a commercial product or service, modification or decompilation is strictly forbidden without the author's prior written permission.
+@id	ui.mit_or_apache_2_0_at_your_option_the_koala_artwork_i_2ad8f523c0	$$$ErgoNote is free software (freeware). All rights reserved (c) ErgoNote. Using and redistributing the original installer is freely allowed for personal, family, school, community or care-related use (occupational therapy, speech therapy, etc.). Any sale, rental, inclusion in a commercial product or service, modification or decompilation is strictly forbidden without the author's prior written permission.@@@
+@id	ui.mixed	$$$Mixed@@@
 @id	ui.mode	$$$Mode@@@
 @id	ui.modify_tool	$$$Modify Tool@@@
+@id	ui.month_1	$$$January@@@
+@id	ui.month_10	$$$October@@@
+@id	ui.month_11	$$$November@@@
+@id	ui.month_12	$$$December@@@
+@id	ui.month_2	$$$February@@@
+@id	ui.month_3	$$$March@@@
+@id	ui.month_4	$$$April@@@
+@id	ui.month_5	$$$May@@@
+@id	ui.month_6	$$$June@@@
+@id	ui.month_7	$$$July@@@
+@id	ui.month_8	$$$August@@@
+@id	ui.month_9	$$$September@@@
 @id	ui.more	$$$More...@@@
 @id	ui.more_2	$$$More@@@
 @id	ui.more_colours	$$$More Colours@@@
 @id	ui.more_styles	$$$More styles@@@
 @id	ui.more_tags	$$$More tags@@@
+@id	ui.move	$$$Move@@@
 @id	ui.move_down	$$$Move Down@@@
 @id	ui.move_left	$$$Move Left@@@
+@id	ui.move_name_down	$$$Move {name} down@@@
+@id	ui.move_name_up	$$$Move {name} up@@@
+@id	ui.move_or_copy	$$$Move or Copy@@@
+@id	ui.move_or_copy_ellipsis	$$$Move or Copy...@@@
+@id	ui.move_or_copy_title_to	$$$Move or copy "{title}" to:@@@
 @id	ui.move_right	$$$Move Right@@@
 @id	ui.move_title_and_everything_inside_it_n_item_to_this_n_20c3146ea1	$$$Move "{title}" and everything inside it ({n} item) to this notebook's recycle bin?|Move "{title}" and everything inside it ({n} items) to this notebook's recycle bin?@@@
 @id	ui.move_to_recycle_bin	$$$Move to recycle bin@@@
 @id	ui.move_up	$$$Move Up@@@
+@id	ui.moved	$$$Moved@@@
 @id	ui.moved_moved_strokes_from_this_page_s_old_drawing_ont_11ecd930d5	$$$Moved {moved} strokes from this page's old drawing onto the page itself@@@
 @id	ui.moved_moved_strokes_onto_the_page_left_old_drawing_f_89f765dcef	$$$Moved {moved} strokes onto the page; {left} old drawing files could not be removed@@@
 @id	ui.moved_to_the_notebook_recycle_bin	$$$Moved to the notebook recycle bin@@@
@@ -456,30 +564,37 @@
 @id	ui.name_not_used_by_the_page	$$${name}: not used by the page@@@
 @id	ui.narrow	$$$Narrow@@@
 @id	ui.narrow_ruled	$$$Narrow ruled@@@
+@id	ui.navy	$$$Navy@@@
 @id	ui.new_gridcraft_spreadsheet	$$$New GridCraft Spreadsheet@@@
 @id	ui.new_gridcraft_spreadsheet_not_installed	$$$New GridCraft Spreadsheet (not installed)@@@
 @id	ui.new_notebook	$$$New notebook@@@
 @id	ui.new_notebook_2	$$$New notebook...@@@
 @id	ui.new_page	$$$New page@@@
-@id	ui.new_section_button	$$$+ New section@@@
 @id	ui.new_page_2	$$$New page...@@@
 @id	ui.new_page_cmd_n	$$$New Page (Cmd+N)@@@
 @id	ui.new_page_ctrl_n	$$$New Page (Ctrl+N)@@@
 @id	ui.new_pages	$$$New pages:@@@
 @id	ui.new_pages_use_format_unless_the_notebook_or_section_2678c9f7e6	$$$New pages use {format} unless the notebook or section says otherwise@@@
 @id	ui.new_quick_note	$$$New quick note@@@
+@id	ui.new_section_button	$$$+ New section@@@
+@id	ui.new_tag_name	$$$New tag name@@@
 @id	ui.new_window	$$$New window@@@
 @id	ui.next	$$$Next@@@
 @id	ui.next_match_enter_f3	$$$Next match (Enter, F3)@@@
+@id	ui.next_unread_2	$$$Next\nUnread@@@
 @id	ui.no	$$$no@@@
 @id	ui.no_colour	$$$No colour@@@
 @id	ui.no_generated_preview_icon_is_available	$$$No generated preview icon is available.@@@
+@id	ui.no_ink_here	$$$No ink here@@@
 @id	ui.no_lines_behind_the_page	$$$No lines behind the page@@@
 @id	ui.no_name_beside_this_page_hand_the_table_over_first	$$$No {name} beside this page: hand the table over first@@@
 @id	ui.no_notebooks_yet_use_new_notebook	$$$No notebooks yet. Use "New notebook".@@@
 @id	ui.no_pages_in_this_section_yet	$$$No pages in this section yet.@@@
 @id	ui.no_pages_match	$$$No pages match.@@@
+@id	ui.no_pages_were_changed_in_this_time	$$$No pages were changed in this time.@@@
+@id	ui.no_saved_templates	$$$No saved templates yet.@@@
 @id	ui.no_saved_versions_yet_ergonote_keeps_a_copy_when_th_aa2e25acad	$$$No saved versions yet. ErgoNote keeps a copy when the page changes.@@@
+@id	ui.no_tagged_notes_here	$$$No tagged notes here.@@@
 @id	ui.none	$$$None@@@
 @id	ui.normal_view	$$$Normal@@@\n$$$view@@@
 @id	ui.not_built	$$$Not built@@@
@@ -500,17 +615,14 @@
 @id	ui.notebooks_folder_folder	$$$Notebooks folder: {folder}@@@
 @id	ui.notebooks_items_folder	$$${notebooks} · {items} | {folder}@@@
 @id	ui.notebooks_you_open_will_appear_here	$$$Notebooks you open will appear here.@@@
-@id	ui.ergonote	$$$ErgoNote@@@
-@id	ui.ergonote_found_an_attachment_that_is_not_referenced_8c0eb51257	$$$ErgoNote found an attachment that is not referenced by this page:@@@
-@id	ui.ergonote_found_an_attachment_without_its_generated_icon_name	$$$ErgoNote found an attachment without its generated icon:@@@
-@id	ui.ergonote_ruled	$$$ErgoNote ruled@@@
-@id	ui.ergonote_squares	$$$ErgoNote squares@@@
 @id	ui.notes_as_plain_folders_open_a_page_or_create_a_notebook_to_start	$$$Notes as plain folders. Open a page, or create a notebook to start.@@@
 @id	ui.nothing_at_path_the_link_points_to_a_page_or_file_th_18d71ccd21	$$$Nothing at {path}: the link points to a page or file that is not there@@@
 @id	ui.nothing_here_can_show_this_kind_of_file	$$$Nothing here can show this kind of file.@@@
 @id	ui.nothing_is_copied_the_link_breaks_if_the_file_moves	$$$Nothing is copied. The link breaks if the file moves.@@@
 @id	ui.nothing_to_redo	$$$Nothing to redo@@@
 @id	ui.nothing_to_undo	$$$Nothing to undo@@@
+@id	ui.number_of_columns	$$$Number of columns@@@
+@id	ui.number_of_rows	$$$Number of rows@@@
 @id	ui.numbering	$$$Numbering@@@
 @id	ui.off	$$$OFF@@@
 @id	ui.off_2	$$$off@@@
@@ -529,7 +641,9 @@
 @id	ui.open_a_folder	$$$Open a folder...@@@
 @id	ui.open_a_notebook	$$$Open a notebook@@@
 @id	ui.open_a_page_first	$$$Open a page first@@@
+@id	ui.open_a_page_first_save_a_copy_copies_it_its_section_or_its_notebook	$$$Open a page first: Save a Copy copies it, its section or its notebook.@@@
 @id	ui.open_a_page_first_then_drop_files_onto_it	$$$Open a page first, then drop files onto it.@@@
+@id	ui.open_a_section_first_for_a_template	$$$Open a section first: the new page goes in it@@@
 @id	ui.open_attachment	$$$Open attachment@@@
 @id	ui.open_every_level	$$$Open every level@@@
 @id	ui.open_folder	$$$Open folder@@@
@@ -537,6 +651,7 @@
 @id	ui.open_name	$$$Open {name}@@@
 @id	ui.open_telemetry_folder	$$$Open telemetry folder@@@
 @id	ui.open_the_artcraft_discord	$$$Open the ArtCraft Discord@@@
+@id	ui.open_the_releases_page	$$$Open the releases page@@@
 @id	ui.open_this_notebook	$$$Open this notebook@@@
 @id	ui.open_using_shell	$$$Open using shell@@@
 @id	ui.open_with_associated_app	$$$Open with associated app@@@
@@ -549,25 +664,40 @@
 @id	ui.opening_path	$$$Opening {path}@@@
 @id	ui.options	$$$Options@@@
 @id	ui.orange	$$$Orange@@@
+@id	ui.orientation	$$$Orientation@@@
 @id	ui.page	$$$Page@@@
 @id	ui.page_colour	$$$Page colour@@@
 @id	ui.page_direction_from_the_words	$$$Page direction from the words@@@
 @id	ui.page_format	$$$Page format@@@
+@id	ui.page_from_template	$$$New page from the {name} template@@@
 @id	ui.page_left_to_right	$$$Page left to right@@@
 @id	ui.page_right_to_left	$$$Page right to left@@@
 @id	ui.page_setup	$$$Page Setup@@@
 @id	ui.page_source	$$$Page source@@@
+@id	ui.page_templates	$$$Page@@@\n$$$Templates@@@
+@id	ui.page_templates_hint	$$$Click a template to add a page to this section.@@@
+@id	ui.page_templates_tip	$$$Start a new page from a template, or keep this page as one@@@
+@id	ui.page_templates_title	$$$Page Templates@@@
 @id	ui.page_versions_2	$$$Page versions@@@
 @id	ui.page_versions_4	$$$Page@@@\n$$$Versions@@@
 @id	ui.page_width	$$$Page Width@@@
 @id	ui.pages	$$$Pages@@@
+@id	ui.panning_hand_2	$$$Panning\nHand@@@
 @id	ui.paper_behind_the_page	$$${paper} behind the page@@@
+@id	ui.paper_custom	$$$Custom@@@
+@id	ui.paper_executive	$$$Executive@@@
+@id	ui.paper_legal	$$$Legal@@@
+@id	ui.paper_letter	$$$Letter@@@
 @id	ui.paper_size	$$$Paper size@@@
+@id	ui.paper_tabloid	$$$Tabloid@@@
 @id	ui.para	$$$Para@@@
 @id	ui.paragraph_direction_from_the_words	$$$Paragraph direction from the words@@@
 @id	ui.paragraph_left_to_right	$$$Paragraph left to right@@@
 @id	ui.paragraph_right_to_left	$$$Paragraph right to left@@@
 @id	ui.paragraph_selected	$$$Paragraph selected@@@
+@id	ui.paragraph_spacing	$$$Paragraph Spacing@@@
+@id	ui.paragraph_spacing_options	$$$Paragraph Spacing Options…@@@
+@id	ui.paragraph_spacing_set	$$$Paragraph spacing set@@@
 @id	ui.paste	$$$Paste@@@
 @id	ui.pasted	$$$Pasted@@@
 @id	ui.pasted_a_picture_width_by_height	$$$Pasted a picture, {width} by {height}@@@
@@ -577,24 +707,41 @@
 @id	ui.pdf_document	$$$PDF document@@@
 @id	ui.pdf_text_inspection	$$$PDF text inspection@@@
 @id	ui.pen	$$$Pen@@@
+@id	ui.pen_keys_picked	$$$Pen {number} (Alt+{number})@@@
+@id	ui.pen_keys_typing	$$$Typing (Alt+0)@@@
 @id	ui.pencil	$$$Pencil@@@
 @id	ui.permanently_delete	$$$Permanently delete?@@@
 @id	ui.permanently_delete_title_and_everything_inside_it	$$$Permanently delete "{title}" and everything inside it?@@@
 @id	ui.permanently_deleted	$$$Permanently deleted@@@
 @id	ui.phone_number	$$$Phone number@@@
 @id	ui.pick_a_pdf_or_office_document_and_insert_its_pages_as_pictures	$$$Pick a PDF or Office document and insert its pages as pictures@@@
+@id	ui.pick_date	$$$Pick a date@@@
+@id	ui.pick_date_and_time	$$$Pick a date and time@@@
 @id	ui.pick_the_caret_s_column	$$$Pick the caret's column@@@
 @id	ui.pick_the_caret_s_row	$$$Pick the caret's row@@@
 @id	ui.pick_the_whole_table	$$$Pick the whole table@@@
+@id	ui.pick_the_words_to_give_that_formatting	$$$Pick the words to give that formatting@@@
+@id	ui.pick_time	$$$Pick a time@@@
 @id	ui.picture_from_a_file	$$$Picture from a file@@@
 @id	ui.pictures	$$$Pictures@@@
+@id	ui.pink	$$$Pink@@@
+@id	ui.place_separator	$$$›@@@
 @id	ui.plain	$$$Plain@@@
 @id	ui.plain_text	$$$Plain text@@@
+@id	ui.pm	$$$PM@@@
+@id	ui.point_at_the_page_without_drawing_on_it	$$$Point at the page without drawing on it@@@
+@id	ui.portrait	$$$Portrait@@@
 @id	ui.powered_by	$$$Powered by@@@
 @id	ui.pressure_sensitivity_now_of_100	$$$Pressure sensitivity {now} of 100@@@
 @id	ui.pressure_sensitivity_unavailable	$$$Pressure sensitivity unavailable@@@
+@id	ui.preview	$$$Preview@@@
 @id	ui.previous	$$$Previous@@@
 @id	ui.previous_match_shift_enter	$$$Previous match (Shift+Enter)@@@
+@id	ui.print_browser_btn	$$$Open printable version in browser@@@
+@id	ui.print_desc	$$$Generate a clean printable A4 PDF of the current page (including text boxes, PDF worksheets, pictures, and your drawings/shapes).@@@
+@id	ui.print_direct_btn	$$$Send directly to default printer@@@
+@id	ui.print_heading	$$$Print the page@@@
+@id	ui.print_preview_btn	$$$Preview & Print (PDF)@@@
 @id	ui.printout_is_available_for_pdf_and_office_documents	$$$Printout is available for PDF and Office documents.@@@
 @id	ui.privacy_is_our_top_priority_all_logs_and_telemetry_s_d87cae4eac	$$$Privacy is our top priority. All logs and telemetry stay on this device. ErgoNote never sends them automatically.@@@
 @id	ui.privacy_is_our_top_priority_logs_and_telemetry_stay_17a34813d0	$$$Privacy is our top priority. Logs and telemetry stay on this device. ErgoNote does not send them to us.@@@
@@ -602,8 +749,14 @@
 @id	ui.purple	$$$Purple@@@
 @id	ui.put_a_sheet_to_draw_on_into_the_page	$$$Put a sheet to draw on into the page@@@
 @id	ui.put_another_tool_on_the_rack	$$$Put another tool on the rack@@@
+@id	ui.put_back_the_stroke_undo_stroke_took_back	$$$Put back the stroke Undo stroke took back@@@
+@id	ui.put_the_caret_in_a_table_first	$$$Put the caret in a table first@@@
 @id	ui.put_the_pointer_back_to_the_words_and_the_caret	$$$Put the pointer back to the words and the caret@@@
 @id	ui.put_what_the_spreadsheet_holds_back_into_this_table	$$$Put what the spreadsheet holds back into this table@@@
+@id	ui.qat_hide	$$$Hide Quick Access Toolbar@@@
+@id	ui.qat_show	$$$Show Quick Access Toolbar@@@
+@id	ui.qat_show_above	$$$Show Above the Ribbon@@@
+@id	ui.qat_show_below	$$$Show Below the Ribbon@@@
 @id	ui.question	$$$Question@@@
 @id	ui.quote_2	$$$Quote@@@
 @id	ui.quote_this_paragraph	$$$Quote this paragraph@@@
@@ -612,6 +765,8 @@
 @id	ui.read_only	$$$read-only@@@
 @id	ui.read_only_text_extraction_full_document_rendering_is_coming_soon	$$$Read-only text extraction. Full document rendering is coming soon.@@@
 @id	ui.ready_2	$$$Ready@@@
+@id	ui.recent_edits	$$$Recent edits@@@
+@id	ui.recent_edits_2	$$$Recent\nEdits@@@
 @id	ui.recently_opened	$$$Recently opened@@@
 @id	ui.recording	$$$Recording@@@
 @id	ui.rectangle	$$$Rectangle@@@
@@ -619,18 +774,16 @@
 @id	ui.red_2	$$$Red@@@
 @id	ui.redo	$$$Redo@@@
 @id	ui.redo_ctrl_y	$$$Redo (Ctrl+Y)@@@
+@id	ui.redo_stroke	$$$Redo\nstroke@@@
+@id	ui.refresh	$$$Refresh@@@
 @id	ui.remember_for_later	$$$Remember for later@@@
 @id	ui.remove_from_list	$$$Remove from list@@@
+@id	ui.remove_link	$$$Remove link@@@
+@id	ui.remove_name	$$$Remove {name}@@@
 @id	ui.remove_this_tool_from_the_rack	$$$Remove this tool from the rack@@@
 @id	ui.removed_notebook_from_the_known_notebooks_list	$$$Removed notebook from the known notebooks list@@@
 @id	ui.rename	$$$Rename@@@
 @id	ui.rename_ellipsis	$$$Rename...@@@
-@id	ui.it_is_in_place_now	$$$It is in {place} now@@@
-@id	ui.move_or_copy_title_to	$$$Move or copy "{title}" to:@@@
-@id	ui.moved	$$$Moved@@@
-@id	ui.move	$$$Move@@@
-@id	ui.move_or_copy	$$$Move or Copy@@@
-@id	ui.move_or_copy_ellipsis	$$$Move or Copy...@@@
 @id	ui.renamed	$$$Renamed@@@
 @id	ui.rendered_svg_preview	$$$Rendered SVG preview@@@
 @id	ui.repair_icon	$$$Repair icon@@@
@@ -642,42 +795,71 @@
 @id	ui.reset_preferences	$$$Reset preferences@@@
 @id	ui.reset_themes_layout_ribbon_choices_and_other_saved_n_61cc3d1cfb	$$$Reset themes, layout, ribbon choices, and other saved ErgoNote preferences to their defaults.@@@
 @id	ui.restore	$$$Restore@@@
+@id	ui.restore_default_margins	$$$Restore default margins@@@
 @id	ui.restore_pages_sections_and_groups_removed_from_this_notebook	$$$Restore pages, sections and groups removed from this notebook@@@
+@id	ui.restore_this_version	$$$Restore this version@@@
 @id	ui.restored_the_saved_page_version	$$$Restored the saved page version@@@
 @id	ui.restored_to_the_original_location	$$$Restored to the original location@@@
+@id	ui.right_margin_mm	$$$Right@@@
 @id	ui.right_to_left	$$$Right-to-Left@@@
+@id	ui.rotate_left_90	$$$Rotate Left 90°@@@
+@id	ui.rotate_right_90	$$$Rotate Right 90°@@@
+@id	ui.rotated_the_picture	$$$Rotated the picture@@@
+@id	ui.rotated_the_picture_ink_on_the_page_stays_where_it_is	$$$Rotated the picture. Ink on the page stays where it is@@@
 @id	ui.rounded	$$$Rounded@@@
 @id	ui.rub_out_whatever_the_pointer_passes_over	$$$Rub out whatever the pointer passes over@@@
+@id	ui.rule_line_colour	$$$Rule line colour@@@
 @id	ui.rule_line_colour_not_built	$$$Rule line colour (not built)@@@
 @id	ui.ruled	$$$Ruled@@@
-@id	ui.save_picture_as	$$$Save picture as...@@@
+@id	ui.save_a_copy	$$$Save a Copy@@@
+@id	ui.save_as_template	$$$Save as Template@@@
+@id	ui.save_current_page_as_a_template	$$$Save current page as a template:@@@
 @id	ui.save_picture_2	$$$Save@@@\n$$$picture@@@
+@id	ui.save_picture_as	$$$Save picture as...@@@
+@id	ui.save_the_copy	$$$Save the copy@@@
 @id	ui.saved	$$$Saved@@@
+@id	ui.saved_a_copy_in_path	$$$Saved a copy in {path}@@@
+@id	ui.saved_as_template	$$$Saved this page as the template {name}@@@
 @id	ui.saved_copies_of_this_page	$$$Saved copies of this page@@@
 @id	ui.saved_picture_as_path	$$$Saved picture as: {path}@@@
 @id	ui.saved_the_drawing_as_a_picture_path	$$$Saved the drawing as a picture: {path}@@@
 @id	ui.saved_time	$$$Saved {time}@@@
+@id	ui.saving	$$$Saving...@@@
+@id	ui.scope_title	$$${scope}: {title}@@@
+@id	ui.scroll_the_page_sideways	$$$Scroll the page sideways@@@
 @id	ui.search	$$$Search@@@
 @id	ui.search_all_pages	$$$Search all pages@@@
 @id	ui.section	$$$Section@@@
 @id	ui.section_group	$$$Section group@@@
 @id	ui.see_and_restore_saved_copies_of_this_page	$$$See and restore saved copies of this page@@@
+@id	ui.see_the_pages_changed_lately	$$$See the pages changed lately@@@
 @id	ui.select	$$$Select@@@
 @id	ui.select_columns_2	$$$Select@@@\n$$$Columns@@@
 @id	ui.select_rows_2	$$$Select@@@\n$$$Rows@@@
 @id	ui.select_some_words_first	$$$Select some words first@@@
 @id	ui.select_table_2	$$$Select@@@\n$$$Table@@@
+@id	ui.select_text_before_changing_font_size	$$$Select text before changing font size.@@@
+@id	ui.select_words_in_one_line_for_a_link	$$$Select words in one line for a link@@@
 @id	ui.selected_text_next_typing	$$$Selected text / next typing@@@
 @id	ui.selection	$$$Selection@@@
 @id	ui.send_page	$$$Send Page@@@
 @id	ui.send_page_3	$$$Send@@@\n$$$Page@@@
 @id	ui.separate_pages	$$$Separate pages@@@
 @id	ui.session_id_id	$$$Session ID: {id}@@@
+@id	ui.session_only_storage_notice	$$$Session-only notes: changes disappear when you reload or close this tab.@@@
+@id	ui.session_storage_guard_failed	$$$Could not enable a tab-close warning. Copy your notes before reloading or closing this tab.@@@
 @id	ui.set_the_direction_of_selected_text_or_the_text_typed_next	$$$Set the direction of selected text, or the text typed next@@@
 @id	ui.shape	$$$shape@@@
 @id	ui.shape_drag_on_the_page_to_draw_one	$$${shape}: drag on the page to draw one@@@
 @id	ui.shapes	$$$Shapes@@@
+@id	ui.share_copy_text_btn	$$$Copy all page text to clipboard@@@
+@id	ui.share_desc	$$$Easily share the current page or notebook by email, school platform (Pronote / ENT), or USB drive.@@@
+@id	ui.share_email_btn	$$$Send page by Email@@@
+@id	ui.share_heading	$$$Share your lesson or worksheet@@@
+@id	ui.share_pdf_btn	$$$Prepare PDF for Pronote / ENT / Email@@@
 @id	ui.show	$$$Show@@@
+@id	ui.show_more_of_the_ribbon_to_the_left	$$$Show more of the ribbon to the left@@@
+@id	ui.show_more_of_the_ribbon_to_the_right	$$$Show more of the ribbon to the right@@@
 @id	ui.show_notebooks_folder	$$$Show notebooks folder@@@
 @id	ui.show_or_hide_the_notebooks_column	$$$Show or hide the notebooks column@@@
 @id	ui.show_the_code	$$$Show the code@@@
@@ -687,14 +869,28 @@
 @id	ui.show_the_page_source	$$$Show the page source@@@
 @id	ui.show_the_ribbon_ctrl_f1	$$$Show the ribbon (Ctrl+F1)@@@
 @id	ui.show_the_strokes	$$$Show the strokes@@@
+@id	ui.size	$$$Size@@@
 @id	ui.size_kb	$$${size} KB@@@
 @id	ui.size_pt	$$${size} pt@@@
 @id	ui.small	$$$Small@@@
 @id	ui.small_squares	$$$Small squares@@@
+@id	ui.snap_boxes_to_the_page_s_grid_hold_alt_to_place_one_freely	$$$Snap boxes to the page's grid when you move or resize them. Hold Alt to place one freely.@@@
+@id	ui.snap_to_grid	$$$Snap to grid@@@
 @id	ui.somewhere_else	$$$Somewhere else@@@
+@id	ui.sort_ascending_2	$$$Sort@@@\n$$$Ascending@@@
+@id	ui.sort_descending_2	$$$Sort@@@\n$$$Descending@@@
+@id	ui.sort_the_rows_by_the_caret_s_column_a_to_z	$$$Sort the rows by the caret's column, A to Z and 1 to 9. The heading stays on top.@@@
+@id	ui.sort_the_rows_by_the_caret_s_column_z_to_a	$$$Sort the rows by the caret's column, Z to A and 9 to 1. The heading stays on top.@@@
 @id	ui.source	$$$Source@@@
+@id	ui.space_after_points	$$$Space after (points)@@@
+@id	ui.space_before_points	$$$Space before (points)@@@
+@id	ui.spacing_goes_on_text	$$$Spacing goes on a paragraph, a heading, a list item or a quote@@@
+@id	ui.spacing_limits	$$$Each value is a whole number of points from 0 to {max}. Leave one empty to keep what each paragraph has.@@@
+@id	ui.spacing_mixed	$$$Mixed@@@
+@id	ui.spacing_reset	$$$Reset@@@
 @id	ui.split	$$$Split@@@
 @id	ui.spreadsheet	$$$Spreadsheet@@@
+@id	ui.spreadsheet_gridcraft_is_not_installed	$$$Spreadsheet: GridCraft is not installed@@@
 @id	ui.square	$$$Square@@@
 @id	ui.squares	$$$Squares@@@
 @id	ui.standard	$$$Standard@@@
@@ -704,27 +900,197 @@
 @id	ui.stencils	$$$Stencils@@@
 @id	ui.strike_through	$$$Strike through@@@
 @id	ui.strikethrough	$$$Strikethrough@@@
+@id	ui.student_about_features	$$$Built-in adaptations: Horizontal subject tabs, 16-colour palette (including bright yellow), DYS/TND font and spacing, reading ruler, read aloud, locked PDF background sheets, and school templates (conversion, place value, proportionality).@@@
+@id	ui.student_about_subtitle	$$$ErgoNote - School notebook adapted for DYS/TND@@@
+@id	ui.student_about_title	$$$About ErgoNote@@@
+@id	ui.student_add_sheet	$$$+ Sheet@@@
+@id	ui.student_add_sheet_tip	$$$Add an extra sheet below@@@
+@id	ui.student_aid_tnd_group	$$$TND Help@@@
+@id	ui.student_appearance_group	$$$Appearance@@@
+@id	ui.student_autosave_minute	$$$Autosaved (every minute)@@@
+@id	ui.student_autosave_notice	$$$Your notes are saved automatically on this device.@@@
+@id	ui.student_bg_label	$$$Page\nColor@@@
+@id	ui.student_bg_tip	$$$Cycle page background between White, Soft Cream, Soft Blue and Soft Green (with A4 borders)@@@
+@id	ui.student_board_label	$$$Board\nPhoto@@@
+@id	ui.student_board_tip	$$$Take or insert a photo of the classroom board and place a text box right beside it@@@
+@id	ui.student_border	$$$Border@@@
+@id	ui.student_buy_coffee	$$$Buy a coffee (Ko-fi)@@@
+@id	ui.student_cancel	$$$Cancel@@@
+@id	ui.student_cancel_crop	$$$✕ Cancel@@@
+@id	ui.student_cell_bg_tip	$$$Cell background colour@@@
+@id	ui.student_clear_ink_tip	$$$Clear all drawings@@@
+@id	ui.student_clip_label	$$$Screen\nClipping@@@
+@id	ui.student_clip_tip	$$$Select an area of the screen to insert as a picture in the page@@@
+@id	ui.student_crop_apply	$$$✓ Apply@@@
+@id	ui.student_crop_handles_hint	$$$Drag the handles on the image@@@
+@id	ui.student_default	$$$Default@@@
+@id	ui.student_delete_table	$$$Delete table@@@
+@id	ui.student_delete_table_confirm	$$$Delete this table?@@@
+@id	ui.student_dictate	$$$Dictate\n(Voice)@@@
+@id	ui.student_dictate_tip	$$$Dictate text by voice at the cursor@@@
+@id	ui.student_dictation_finish	$$$Finish and write@@@
+@id	ui.student_draw_tip	$$$Switch between typing with the keyboard and drawing/highlighting@@@
+@id	ui.student_draw_toggle	$$$Pen /\nKeyboard@@@
+@id	ui.student_dys_group	$$$Bearings & DYS@@@
+@id	ui.student_dys_label	$$$DYS\nComfort@@@
+@id	ui.student_dys_tip	$$$Toggle A4 sheet borders, soft cream background, blue lines and grid snapping@@@
+@id	ui.student_edit_group	$$$Edit@@@
+@id	ui.student_empty_folder	$$$This folder is empty.@@@
+@id	ui.student_equation_row	$$$Math equation@@@
+@id	ui.student_feedback_prompt	$$$Found an issue, a layout glitch, or a suggestion for students?@@@
+@id	ui.student_feedback_tip	$$$Report a bug or suggest an improvement (no account needed)@@@
+@id	ui.student_fill	$$$Fill@@@
+@id	ui.student_fill_label	$$$Background colour@@@
+@id	ui.student_heading1_tip	$$$Heading (H1)@@@
+@id	ui.student_ignore	$$$Ignore@@@
+@id	ui.student_image_group	$$$Image@@@
+@id	ui.student_important_row	$$$Important (!)@@@
+@id	ui.student_important_tag	$$$Important@@@
+@id	ui.student_important_tip	$$$Mark this line with a star as important to remember@@@
+@id	ui.student_insert_group	$$$Insert@@@
+@id	ui.student_insert_menu	$$$Insert@@@
+@id	ui.student_insert_menu_tip	$$$Insert a photo, PDF, or other file@@@
+@id	ui.student_kofi_tip	$$$Buy a coffee to support ErgoNote (Ko-fi)@@@
+@id	ui.student_later	$$$Later@@@
+@id	ui.student_lines_label	$$$Lines /\nGrid@@@
+@id	ui.student_lines_tip	$$$Cycle between ruled lines, small squares and plain paper@@@
+@id	ui.student_listen_correction	$$$Listen to this correction@@@
+@id	ui.student_listen_word	$$$Listen to this word@@@
+@id	ui.student_mobile_new_page	$$$+ New page@@@
+@id	ui.student_mobile_up	$$$Go up in folder@@@
+@id	ui.student_more	$$$More@@@
+@id	ui.student_more_tip	$$$Page templates, symbols, equations, links, tags...@@@
+@id	ui.student_next_sheet	$$$Next sheet@@@
+@id	ui.student_none	$$$None@@@
+@id	ui.student_normal	$$$Normal@@@
+@id	ui.student_ocr_edit_hint	$$$Review or edit the extracted text before inserting, copying, or reading aloud:@@@
+@id	ui.student_ocr_extract_tip	$$$Recognize text from the image (offline OCR)@@@
+@id	ui.student_ocr_group	$$$Text (OCR)@@@
+@id	ui.student_ocr_read	$$$Read\nimage@@@
+@id	ui.student_ocr_read_tip	$$$Recognize text from the image and read it aloud@@@
+@id	ui.student_open_feedback	$$$Open feedback form@@@
+@id	ui.student_open_support	$$$Open the ErgoNote support page@@@
+@id	ui.student_other_file	$$$Other file (attachment)@@@
+@id	ui.student_pdf_doc	$$$PDF document@@@
+@id	ui.student_pdf_label	$$$PDF\nWorksheet@@@
+@id	ui.student_pdf_tip	$$$Import a PDF or document worksheet to write on top or beside it@@@
+@id	ui.student_photo	$$$Photo@@@
+@id	ui.student_photo_file	$$$Photo / Image (file)@@@
+@id	ui.student_photo_tip	$$$Take or insert a photo (board, exercise, camera)@@@
+@id	ui.student_prev_sheet	$$$Previous sheet@@@
+@id	ui.student_question_row	$$$Question (?)@@@
+@id	ui.student_question_tag	$$$Question@@@
+@id	ui.student_question_tip	$$$Mark this line with a question mark to ask the teacher@@@
+@id	ui.student_read_aloud	$$$Read\naloud@@@
+@id	ui.student_read_aloud_inline	$$$Read aloud@@@
+@id	ui.student_read_aloud_inline_tip	$$$Read the selected text or page aloud@@@
+@id	ui.student_read_aloud_tip	$$$Read the selected text or whole page aloud (speech synthesis)@@@
+@id	ui.student_reading_ruler	$$$Reading\nruler@@@
+@id	ui.student_reading_ruler_tip	$$$Show a horizontal visual guide following the cursor@@@
+@id	ui.student_recenter_label	$$$Recenter\nPage@@@
+@id	ui.student_recenter_tip	$$$Gather drifted text boxes and drawings back onto the page and reset zoom@@@
+@id	ui.student_reset	$$$Reset@@@
+@id	ui.student_rows_and_cols_group	$$$Rows & columns@@@
+@id	ui.student_school_templates_hdr	$$$School templates (1 click)@@@
+@id	ui.student_section_tabs	$$$Tabs@@@
+@id	ui.student_section_tabs_tip	$$$Show subject tabs in a horizontal bar under the ribbon@@@
+@id	ui.student_shape_color	$$$Shape & Pen Color@@@
+@id	ui.student_shape_color_label	$$$Shape colour@@@
+@id	ui.student_shapes	$$$Shapes@@@
+@id	ui.student_sheet_group	$$$My Sheet@@@
+@id	ui.student_spell_analysed	$$$Analysed text:@@@
+@id	ui.student_spell_none	$$$No spelling, homophone, or agreement errors found.@@@
+@id	ui.student_spell_preview	$$$Preview after correction:@@@
+@id	ui.student_spellcheck	$$$Check\nspelling@@@
+@id	ui.student_spellcheck_tip	$$$Check spelling, homophones, and grammar for the selection or page@@@
+@id	ui.student_support_about	$$$ErgoNote is 100% free, ad-free, and built for neurodivergent (DYS / ADHD) students on Windows, Linux, macOS, and Android.@@@
+@id	ui.student_support_ask	$$$If the app helps you every day, you can buy a coffee (voluntary tip) to support upcoming releases:@@@
+@id	ui.student_symbol_row	$$$Symbol (±, ×, ÷, °, €...)@@@
+@id	ui.student_table_group	$$$Table@@@
+@id	ui.student_templates_row	$$$Page templates (cards)@@@
+@id	ui.student_textbox_label	$$$Text\nBox@@@
+@id	ui.student_textbox_placed	$$$New text box inserted — type your text or drag the top bar to move it@@@
+@id	ui.student_textbox_prompt	$$$Click anywhere on the page to place the new text box (or click Text Box again to insert it below)@@@
+@id	ui.student_textbox_tip	$$$Insert a new movable text box anywhere on the page (click here, then click on the page)@@@
+@id	ui.student_todo_row	$$$To-Do box@@@
+@id	ui.student_tool	$$$Tool@@@
+@id	ui.student_tools	$$$School & Board@@@
+@id	ui.student_transparent	$$$Transparent@@@
+@id	ui.student_tts_read_line	$$$Read this line@@@
+@id	ui.student_tts_speed	$$$Speed:@@@
+@id	ui.student_tts_stop	$$$Stop@@@
+@id	ui.student_underline_color_tip	$$$Underline in {colour}@@@
+@id	ui.student_update_browser_note	$$$Nothing is replaced automatically: this button simply opens the download in your browser.@@@
+@id	ui.student_update_notes	$$$Notes@@@
+@id	ui.student_word_prediction	$$$Word\nprediction@@@
+@id	ui.student_word_prediction_tip	$$$Enable or disable word prediction and spellchecking (turn off during dictation)@@@
 @id	ui.styles	$$$Styles@@@
 @id	ui.styles_2	$$$styles@@@
+@id	ui.subscript	$$$Subscript@@@
+@id	ui.superscript	$$$Superscript@@@
 @id	ui.svg_source	$$$SVG source@@@
 @id	ui.symbol	$$$Symbol@@@
 @id	ui.symbols	$$$Symbols@@@
 @id	ui.table_3	$$$Table@@@
+@id	ui.table_align_center	$$$Center@@@
+@id	ui.table_align_center_tip	$$$Put the words in the middle of the cell@@@
+@id	ui.table_align_left	$$$Align@@@\n$$$Left@@@
+@id	ui.table_align_left_tip	$$$Line the words up with the left of the cell@@@
+@id	ui.table_align_right	$$$Align@@@\n$$$Right@@@
+@id	ui.table_align_right_tip	$$$Line the words up with the right of the cell@@@
+@id	ui.table_shading	$$$Shading@@@
+@id	ui.table_shading_tip	$$$A colour behind the picked cells@@@
+@id	ui.table_size_limits	$$$Columns: 1 to {columns}. Rows: 1 to {rows}.@@@
 @id	ui.tables	$$$Tables@@@
 @id	ui.tabs_layout	$$$Tabs layout@@@
+@id	ui.tag_colour_for_name	$$$Colour for {name}@@@
+@id	ui.tag_name	$$$Tag name@@@
+@id	ui.tag_name_added	$$$Tag {name} added@@@
+@id	ui.tag_name_removed	$$$Tag {name} removed; lines that had it keep their words@@@
+@id	ui.tag_symbol_for_name	$$$Symbol for {name}@@@
 @id	ui.tag_tag	$$${tag} tag@@@
 @id	ui.tags	$$$Tags@@@
+@id	ui.tags_empty_line	$$$(an empty line)@@@
+@id	ui.tags_look_in	$$$Look in@@@
+@id	ui.tags_only_unchecked_to_do_items	$$$Only unchecked To Do items@@@
+@id	ui.tags_scope_all_notebooks	$$$All notebooks@@@
+@id	ui.tags_scope_this_notebook	$$$This notebook@@@
+@id	ui.tags_scope_this_page	$$$This page@@@
+@id	ui.tags_scope_this_section	$$$This section@@@
+@id	ui.tags_summary	$$$Tags Summary@@@
+@id	ui.take_a_colour_from_ink_on_the_page	$$$Take a colour from ink on the page@@@
 @id	ui.take_the_caret_s_column_out	$$$Take the caret's column out@@@
 @id	ui.take_the_caret_s_row_out	$$$Take the caret's row out@@@
 @id	ui.take_the_last_stroke_back	$$$Take the last stroke back@@@
 @id	ui.take_the_marks_off	$$$Take the marks off@@@
+@id	ui.take_the_whole_table_out	$$$Take the whole table out@@@
 @id	ui.teal_2	$$$Teal@@@
+@id	ui.telemetry_error	$$$error@@@
+@id	ui.telemetry_none	$$$none@@@
+@id	ui.telemetry_usage	$$$usage@@@
+@id	ui.telemetry_warning	$$$warning@@@
+@id	ui.template_category_academic	$$$Academic@@@
+@id	ui.template_category_blank	$$$Blank@@@
+@id	ui.template_category_business	$$$Business@@@
+@id	ui.template_category_mine	$$$My Templates@@@
+@id	ui.template_category_planners	$$$Planners@@@
+@id	ui.template_college_ruled	$$$College Ruled@@@
+@id	ui.template_grid	$$$Grid@@@
+@id	ui.template_lecture_notes	$$$Lecture Notes@@@
+@id	ui.template_meeting_notes	$$$Meeting Notes@@@
+@id	ui.template_name	$$$Template name@@@
+@id	ui.template_project_overview	$$$Project Overview@@@
+@id	ui.template_study_guide	$$$Study Guide@@@
+@id	ui.template_to_do_list	$$$To Do List@@@
+@id	ui.template_weekly_planner	$$$Weekly Planner@@@
 @id	ui.text	$$$Text@@@
 @id	ui.text_122	$$$█@@@
 @id	ui.text_74	$$${} {}@@@
 @id	ui.text_inspection_is_shown_below	$$$Text inspection is shown below.@@@
 @id	ui.text_run_direction	$$$Text run direction@@@
+@id	ui.text_to_display	$$$Text to display@@@
 @id	ui.thank_you_for_trying_ergonote	$$$Thank you for trying ErgoNote!@@@
+@id	ui.that_address_cannot_be_used_for_a_link	$$$That address cannot be used for a link@@@
 @id	ui.that_file_has_nothing_in_it_to_put_back	$$$That file has nothing in it to put back@@@
 @id	ui.that_file_is_not_in_this_page_s_folder	$$$That file is not in this page's folder@@@
 @id	ui.that_is_not_something_a_page_can_hold	$$$That is not something a page can hold@@@
@@ -733,6 +1099,7 @@
 @id	ui.the_attachment_returned_an_invalid_page_link	$$$The attachment returned an invalid page link@@@
 @id	ui.the_built_in_default	$$$the built-in default@@@
 @id	ui.the_code	$$$The code@@@
+@id	ui.the_copy_is_a_folder_of_its_own_with_the_files_and_ink_but_not_the_saved_versions_the_original_stays_open	$$$The copy is a folder of its own, with the page files, pictures and ink but not the saved versions or the recycle bin. The original stays open and unchanged.@@@
 @id	ui.the_diagnostics_folder_could_not_be_created_error	$$$The diagnostics folder could not be created: {error}@@@
 @id	ui.the_file_could_not_be_opened_error	$$$The file could not be opened: {error}@@@
 @id	ui.the_file_is_gone	$$$The file is gone@@@
@@ -743,25 +1110,36 @@
 @id	ui.the_format_is_set_when_the_page_is_created	$$$The format is set when the page is created@@@
 @id	ui.the_global_setting	$$$the global setting@@@
 @id	ui.the_last_tool_stays_on_the_rack	$$$The last tool stays on the rack@@@
+@id	ui.the_line_changed_put_the_link_in_again	$$$The line changed; put the link in again@@@
+@id	ui.the_lines_are_colour	$$$The page's lines are {colour}@@@
+@id	ui.the_lines_are_the_theme_s_own_colour	$$$The page's lines are the theme's own colour@@@
 @id	ui.the_notebook_could_not_be_deleted_error	$$$The notebook could not be deleted: {error}@@@
 @id	ui.the_notebook_or_section_setting	$$$the notebook or section setting@@@
 @id	ui.the_original_file_is_still_safe_ergonote_can_regene_f10ded524a	$$$The original file is still safe. ErgoNote can regenerate the icon beside it.@@@
 @id	ui.the_page_beside_the_notebooks	$$$The page beside the notebooks@@@
+@id	ui.the_page_is_auto_it_grows_with_what_is_on_it	$$$The page is Auto: it grows with what is on it@@@
 @id	ui.the_page_is_colour	$$$The page is {colour}@@@
 @id	ui.the_page_is_the_theme_s_own_colour	$$$The page is the theme's own colour@@@
+@id	ui.the_page_is_written_on_size_turn	$$$The page is written on {size}, {turn}@@@
 @id	ui.the_page_source_beside_the_page	$$$The page source, beside the page@@@
 @id	ui.the_paper_and_colour_apply_to_this_page_only	$$$The paper and colour apply to this page only.@@@
+@id	ui.the_paragraph_follows_its_words_again	$$$The paragraph is aligned the way its words read again@@@
+@id	ui.the_pen_takes_colour	$$$The pen takes the colour {colour}@@@
+@id	ui.the_rows_are_already_in_that_order	$$$The rows are already in that order@@@
+@id	ui.the_sheet_this_page_is_written_for_its_size_turn_and_margins	$$$The sheet this page is written for: its size, which way it is turned and its margins@@@
 @id	ui.the_theme_could_not_be_saved_error	$$$The theme could not be saved: {error}@@@
 @id	ui.the_time_now	$$$The time now@@@
 @id	ui.the_welcome_notebook	$$$The welcome notebook@@@
 @id	ui.the_whole_page_reads_left_to_right	$$$The whole page reads left to right@@@
 @id	ui.the_whole_page_reads_right_to_left_arabic_hebrew	$$$The whole page reads right to left (Arabic, Hebrew)@@@
 @id	ui.the_window_drawn_on_the_gpu_the_icons_are_drawn_in_c_27f197a70f	$$$The window, drawn on the GPU. The icons are drawn in code. The logo is the only picture.@@@
+@id	ui.the_word_written_in_the_page	$$$The word written in the page@@@
 @id	ui.theme	$$$Theme@@@
 @id	ui.theme_theme	$$$Theme {theme}@@@
 @id	ui.theme_theme_2	$$$Theme: {theme}@@@
 @id	ui.theme_theme_click_to_change_it	$$${theme} theme. Click to change it.@@@
 @id	ui.there_are_no_notebooks_yet_new_starts_one	$$$There are no notebooks yet. "New" starts one.@@@
+@id	ui.there_are_no_unread_pages	$$$There are no unread pages.@@@
 @id	ui.there_is_no_drawing_on_this_page	$$$There is no drawing on this page@@@
 @id	ui.there_is_no_earlier_page	$$$There is no earlier page@@@
 @id	ui.there_is_no_later_page	$$$There is no later page@@@
@@ -775,9 +1153,11 @@
 @id	ui.this_file_will_be_opened_by_its_associated_application	$$$This file will be opened by its associated application.@@@
 @id	ui.this_is_the_first_page	$$$This is the first page@@@
 @id	ui.this_is_the_last_page	$$$This is the last page@@@
+@id	ui.this_notebook	$$$This notebook@@@
 @id	ui.this_notebook_s_recycle_bin_is_empty	$$$This notebook's recycle bin is empty.@@@
 @id	ui.this_page	$$$This page@@@
 @id	ui.this_page_holds_markup_ergonote_does_not_edit_yet_s_bc3b3b6a92	$$$This page holds markup ErgoNote does not edit yet, so it is shown as it reads.@@@
+@id	ui.this_page_keeps_no_time_of_its_own_this_is_when_its_file_was_last_changed	$$$This page keeps no time of its own: this is when its file was last changed.@@@
 @id	ui.this_page_reads_left_to_right	$$$This page reads left to right@@@
 @id	ui.this_page_reads_right_to_left	$$$This page reads right to left@@@
 @id	ui.this_paragraph_decides_from_its_own_first_letter	$$$This paragraph decides from its own first letter@@@
@@ -790,10 +1170,14 @@
 @id	ui.this_paragraph_reads_right_to_left_arabic_hebrew	$$$This paragraph reads right to left (Arabic, Hebrew)@@@
 @id	ui.this_paragraph_reads_whichever_way_its_words_do	$$$This paragraph reads whichever way its words do@@@
 @id	ui.this_picture_cannot_be_shown_here	$$$This picture cannot be shown here.@@@
+@id	ui.this_picture_cannot_be_turned_here	$$$This picture cannot be rotated or flipped@@@
 @id	ui.this_removes_the_notebook_folder_from_disk_and_cannot_be_undone	$$$This removes the notebook folder from disk and cannot be undone.@@@
 @id	ui.this_run_reads_left_to_right_a_mixed_line_is_still_d_af62d34d2f	$$$This run reads left to right. A mixed line is still drawn in one order; see the roadmap@@@
 @id	ui.this_run_reads_right_to_left_a_mixed_line_is_still_d_d2a74de074	$$$This run reads right to left. A mixed line is still drawn in one order; see the roadmap@@@
+@id	ui.this_section	$$$This section@@@
 @id	ui.this_svg_cannot_be_rendered_here	$$$This SVG cannot be rendered here.@@@
+@id	ui.this_version	$$$This version@@@
+@id	ui.this_version_has_the_same_words_as_the_page	$$$This version has the same words as the page.@@@
 @id	ui.this_window_behaves_like_the_others	$$$This window behaves like the others@@@
 @id	ui.this_window_stays_on_top	$$$This window stays on top@@@
 @id	ui.time	$$$Time@@@
@@ -801,8 +1185,10 @@
 @id	ui.title_2	$$$Title@@@
 @id	ui.title_saved	$$$Title saved@@@
 @id	ui.title_the_folder_name_does_not_change	$$$Title (the folder name does not change)@@@
+@id	ui.title_unread	$$${title}, unread@@@
 @id	ui.to_do_2	$$$To Do@@@
 @id	ui.to_do_tag_2	$$$To Do@@@\n$$$Tag@@@
+@id	ui.today	$$$Today@@@
 @id	ui.today_s_date	$$$Today's date@@@
 @id	ui.toml	$$$TOML@@@
 @id	ui.took_it_off_the_rack	$$$Took it off the rack@@@
@@ -810,16 +1196,31 @@
 @id	ui.tool_colour	$$${tool} {colour}@@@
 @id	ui.tools	$$$Tools@@@
 @id	ui.top	$$$Top@@@
+@id	ui.top_margin_mm	$$$Top@@@
 @id	ui.triangle	$$$Triangle@@@
 @id	ui.type	$$$Type@@@
 @id	ui.under_the	$$$under the@@@
+@id	ui.underline	$$$Underline@@@
 @id	ui.undo	$$$Undo@@@
 @id	ui.undo_ctrl_z	$$$Undo (Ctrl+Z)@@@
 @id	ui.undo_stroke	$$$Undo@@@\n$$$stroke@@@
 @id	ui.unread	$$$Unread@@@
+@id	ui.untitled_page	$$$Untitled page@@@
+@id	ui.update_checking	$$$Looking for a newer version…@@@
+@id	ui.update_downloading	$$$Downloading ErgoNote {version}: {done} MB…@@@
+@id	ui.update_downloading_of	$$$Downloading ErgoNote {version}: {done} of {total} MB…@@@
+@id	ui.update_failed	$$$The update did not work: {reason}@@@
+@id	ui.update_handed	$$$ErgoNote {version} was downloaded and opened in your system's software installer.@@@
+@id	ui.update_manual	$$$ErgoNote {version} is out, but it cannot be installed from here on this computer. Download it from the releases page.@@@
+@id	ui.update_manual_this_build	$$$This build cannot install updates itself. The releases page has the newest version.@@@
+@id	ui.update_restarting	$$$ErgoNote {version} is ready. ErgoNote closes now to put it in place, then starts again.@@@
+@id	ui.update_up_to_date	$$$ErgoNote is up to date. The newest release is {version}.@@@
+@id	ui.update_verifying	$$$Checking the download of ErgoNote {version} against its published checksum…@@@
 @id	ui.updated_the_welcome_notebook	$$$Updated the welcome notebook@@@
 @id	ui.use_ergonote_s_own_title_bar	$$$Use ErgoNote's own title bar@@@
 @id	ui.use_the_system_title_bar	$$$Use the system title bar@@@
+@id	ui.version_and_updates	$$$Version and updates@@@
+@id	ui.version_saved_when	$$$Version saved {when}@@@
 @id	ui.version_version_alpha	$$$Version {version} (alpha)@@@
 @id	ui.very_large	$$$Very large@@@
 @id	ui.very_large_squares	$$$Very large squares@@@
@@ -827,11 +1228,34 @@
 @id	ui.views	$$$Views@@@
 @id	ui.warn	$$$warn@@@
 @id	ui.web_site_to_visit	$$$Web site to visit@@@
+@id	ui.weekday_short_0	$$$Su@@@
+@id	ui.weekday_short_1	$$$Mo@@@
+@id	ui.weekday_short_2	$$$Tu@@@
+@id	ui.weekday_short_3	$$$We@@@
+@id	ui.weekday_short_4	$$$Th@@@
+@id	ui.weekday_short_5	$$$Fr@@@
+@id	ui.weekday_short_6	$$$Sa@@@
+@id	ui.welcome_format_body	$$$ErgoNote saves each page as HTML (recommended) or as CommonMark + GFM Markdown. New pages use the format you choose here. You can change it later.@@@
+@id	ui.welcome_format_next	$$$Next@@@
+@id	ui.welcome_format_title	$$$Choose a page format@@@
+@id	ui.welcome_notebook_action_failed	$$$Could not update the Welcome notebook: {error}@@@
+@id	ui.welcome_notebook_add_no	$$$No, not now@@@
+@id	ui.welcome_notebook_add_yes	$$$Yes, add it@@@
+@id	ui.welcome_notebook_prompt_body	$$$Add this release's Welcome notebook to your notebooks. If one already exists, it will be deleted and replaced with the new copy.@@@
+@id	ui.welcome_notebook_prompt_format	$$$Format: {format}.@@@
+@id	ui.welcome_notebook_prompt_title	$$$Add the Welcome notebook?@@@
+@id	ui.welcome_notebook_replace_warning	$$$Changes made to the existing Welcome notebook will be lost. Other notebooks will not change.@@@
 @id	ui.welcome_to_ergonote	$$$Welcome to ErgoNote@@@
+@id	ui.welcome_wizard_back	$$$Back@@@
+@id	ui.welcome_wizard_done_body	$$$ErgoNote is ready to use. Your choices are saved. This setup appears again only after you reset the preferences.@@@
+@id	ui.welcome_wizard_done_title	$$$Thank you@@@
+@id	ui.welcome_wizard_finish	$$$Finish@@@
 @id	ui.what_should_happen_to_this_file	$$$What should happen to this file?@@@
 @id	ui.what_to_add	$$$What to add@@@
+@id	ui.what_to_copy	$$$What to copy@@@
 @id	ui.wide	$$$Wide@@@
 @id	ui.wide_ruled	$$$Wide ruled@@@
+@id	ui.width_mm	$$$Width (mm)@@@
 @id	ui.window	$$$Window@@@
 @id	ui.write_anywhere_on_the_page	$$$Write anywhere on the page@@@
 @id	ui.write_the_drawing_again_with_no_pen_readings_in_it_f_09e93dbd9f	$$$Write the drawing again with no pen readings in it, for sending on@@@
@@ -840,240 +1264,10 @@
 @id	ui.yaml	$$$YAML@@@
 @id	ui.yellow	$$$Yellow@@@
 @id	ui.yellow_2	$$$yellow@@@
+@id	ui.you_are_running_version	$$$You are running ErgoNote {version}.@@@
 @id	ui.you_can_continue_working_while_the_import_runs	$$$You can continue working while the import runs.@@@
 @id	ui.you_can_restore_it_from_history	$$$You can restore it from History.@@@
 @id	ui.zoom	$$$Zoom@@@
 @id	ui.zoom_in	$$$Zoom In@@@
 @id	ui.zoom_out	$$$Zoom Out@@@
 @id	ui.zoom_to_100	$$$Zoom to 100%@@@
-@id	ui.welcome_format_title	$$$Choose a page format@@@
-@id	ui.welcome_format_body	$$$ErgoNote saves each page as HTML (recommended) or as CommonMark + GFM Markdown. New pages use the format you choose here. You can change it later.@@@
-@id	ui.welcome_format_next	$$$Next@@@
-@id	ui.welcome_notebook_prompt_format	$$$Format: {format}.@@@
-@id	ui.welcome_notebook_prompt_title	$$$Add the Welcome notebook?@@@
-@id	ui.welcome_notebook_prompt_body	$$$Add this release's Welcome notebook to your notebooks. If one already exists, it will be deleted and replaced with the new copy.@@@
-@id	ui.welcome_notebook_replace_warning	$$$Changes made to the existing Welcome notebook will be lost. Other notebooks will not change.@@@
-@id	ui.welcome_notebook_add_yes	$$$Yes, add it@@@
-@id	ui.welcome_notebook_add_no	$$$No, not now@@@
-@id	ui.welcome_notebook_action_failed	$$$Could not update the Welcome notebook: {error}@@@
-@id	ui.welcome_wizard_back	$$$Back@@@
-@id	ui.welcome_wizard_finish	$$$Finish@@@
-@id	ui.welcome_wizard_done_title	$$$Thank you@@@
-@id	ui.welcome_wizard_done_body	$$$ErgoNote is ready to use. Your choices are saved. This setup appears again only after you reset the preferences.@@@
-@id	ui.kept_in_this_tab	$$$Kept in this tab@@@
-@id	ui.session_only_storage_notice	$$$Session-only notes: changes disappear when you reload or close this tab.@@@
-@id	ui.session_storage_guard_failed	$$$Could not enable a tab-close warning. Copy your notes before reloading or closing this tab.@@@
-@id	ui.table_align_left	$$$Align@@@\n$$$Left@@@
-@id	ui.table_align_left_tip	$$$Line the words up with the left of the cell@@@
-@id	ui.table_align_center	$$$Center@@@
-@id	ui.table_align_center_tip	$$$Put the words in the middle of the cell@@@
-@id	ui.table_align_right	$$$Align@@@\n$$$Right@@@
-@id	ui.table_align_right_tip	$$$Line the words up with the right of the cell@@@
-@id	ui.table_shading	$$$Shading@@@
-@id	ui.table_shading_tip	$$$A colour behind the picked cells@@@
-@id	ui.list_the_tagged_notes_and_go_to_them	$$$List the tagged notes and go to them@@@
-@id	ui.tags_summary	$$$Tags Summary@@@
-@id	ui.close_the_tags_summary	$$$Close the tags summary@@@
-@id	ui.tags_look_in	$$$Look in@@@
-@id	ui.tags_scope_this_page	$$$This page@@@
-@id	ui.tags_scope_this_section	$$$This section@@@
-@id	ui.tags_scope_this_notebook	$$$This notebook@@@
-@id	ui.tags_scope_all_notebooks	$$$All notebooks@@@
-@id	ui.tags_only_unchecked_to_do_items	$$$Only unchecked To Do items@@@
-@id	ui.refresh	$$$Refresh@@@
-@id	ui.look_again_for_tagged_notes	$$$Look again for tagged notes@@@
-@id	ui.no_tagged_notes_here	$$$No tagged notes here.@@@
-@id	ui.tags_empty_line	$$$(an empty line)@@@
-@id	ui.scroll_the_page_sideways	$$$Scroll the page sideways@@@
-@id	ui.collect_all	$$$Collect@@@\n$$$All@@@
-@id	ui.collect_all_tip	$$$Bring the boxes and ink that drifted apart on the page back together@@@
-@id	ui.page_templates	$$$Page@@@\n$$$Templates@@@
-@id	ui.page_templates_tip	$$$Start a new page from a template, or keep this page as one@@@
-@id	ui.page_templates_title	$$$Page Templates@@@
-@id	ui.close_the_page_templates	$$$Close the page templates@@@
-@id	ui.page_templates_hint	$$$Click a template to add a page to this section.@@@
-@id	ui.add_a_page_from_this_template	$$$Add a page to this section from this template@@@
-@id	ui.no_saved_templates	$$$No saved templates yet.@@@
-@id	ui.save_current_page_as_a_template	$$$Save current page as a template:@@@
-@id	ui.template_name	$$$Template name@@@
-@id	ui.save_as_template	$$$Save as Template@@@
-@id	ui.page_from_template	$$$New page from the {name} template@@@
-@id	ui.saved_as_template	$$$Saved this page as the template {name}@@@
-@id	ui.open_a_section_first_for_a_template	$$$Open a section first: the new page goes in it@@@
-@id	ui.template_category_academic	$$$Academic@@@
-@id	ui.template_category_blank	$$$Blank@@@
-@id	ui.template_category_business	$$$Business@@@
-@id	ui.template_category_planners	$$$Planners@@@
-@id	ui.template_category_mine	$$$My Templates@@@
-@id	ui.template_lecture_notes	$$$Lecture Notes@@@
-@id	ui.template_study_guide	$$$Study Guide@@@
-@id	ui.template_college_ruled	$$$College Ruled@@@
-@id	ui.template_grid	$$$Grid@@@
-@id	ui.template_meeting_notes	$$$Meeting Notes@@@
-@id	ui.template_project_overview	$$$Project Overview@@@
-@id	ui.template_to_do_list	$$$To Do List@@@
-@id	ui.template_weekly_planner	$$$Weekly Planner@@@
-@id	ui.insert_space_tip	$$$Drag down the page to add room, or up to take it away@@@
-@id	ui.insert_space_how	$$$Drag down where you want more room, or up to take room away. Esc puts the tool down.@@@
-@id	ui.pen_keys_typing	$$$Typing (Alt+0)@@@
-@id	ui.pen_keys_picked	$$$Pen {number} (Alt+{number})@@@
-@id	ui.spreadsheet_gridcraft_is_not_installed	$$$Spreadsheet: GridCraft is not installed@@@
-@id	ui.redo_stroke	$$$Redo\nstroke@@@
-@id	ui.put_back_the_stroke_undo_stroke_took_back	$$$Put back the stroke Undo stroke took back@@@
-@id	ui.version_and_updates	$$$Version and updates@@@
-@id	ui.you_are_running_version	$$$You are running ErgoNote {version}.@@@
-@id	ui.check_for_updates	$$$Check for updates@@@
-@id	ui.check_for_updates_hint	$$$Asks GitHub for the newest release and, if it is newer, downloads it, checks it and installs it. Nothing is sent until you press the button.@@@
-@id	ui.open_the_releases_page	$$$Open the releases page@@@
-@id	ui.update_checking	$$$Looking for a newer version…@@@
-@id	ui.update_up_to_date	$$$ErgoNote is up to date. The newest release is {version}.@@@
-@id	ui.update_downloading_of	$$$Downloading ErgoNote {version}: {done} of {total} MB…@@@
-@id	ui.update_downloading	$$$Downloading ErgoNote {version}: {done} MB…@@@
-@id	ui.update_verifying	$$$Checking the download of ErgoNote {version} against its published checksum…@@@
-@id	ui.update_restarting	$$$ErgoNote {version} is ready. ErgoNote closes now to put it in place, then starts again.@@@
-@id	ui.update_handed	$$$ErgoNote {version} was downloaded and opened in your system's software installer.@@@
-@id	ui.update_manual	$$$ErgoNote {version} is out, but it cannot be installed from here on this computer. Download it from the releases page.@@@
-@id	ui.update_manual_this_build	$$$This build cannot install updates itself. The releases page has the newest version.@@@
-@id	ui.update_failed	$$$The update did not work: {reason}@@@
-@id	ui.panning_hand_2	$$$Panning\nHand@@@
-@id	ui.drag_to_move_around_the_page	$$$Drag to move around the page@@@
-@id	ui.insert_table	$$$Insert Table@@@
-@id	ui.insert_table_2	$$$Insert Table…@@@
-@id	ui.number_of_columns	$$$Number of columns@@@
-@id	ui.number_of_rows	$$$Number of rows@@@
-@id	ui.table_size_limits	$$$Columns: 1 to {columns}. Rows: 1 to {rows}.@@@
-@id	ui.delete_table_2	$$$Delete\nTable@@@
-@id	ui.take_the_whole_table_out	$$$Take the whole table out@@@
-@id	ui.put_the_caret_in_a_table_first	$$$Put the caret in a table first@@@
-@id	ui.deleted_the_table	$$$Deleted the table@@@
-@id	ui.align_left_ctrl_l	$$$Align Left (Ctrl+L)@@@
-@id	ui.center	$$$Center@@@
-@id	ui.align_right_ctrl_r	$$$Align Right (Ctrl+R)@@@
-@id	ui.alignment_goes_on_a_paragraph_or_a_heading	$$$Alignment goes on a paragraph or a heading@@@
-@id	ui.the_paragraph_follows_its_words_again	$$$The paragraph is aligned the way its words read again@@@
-@id	ui.aligned_left	$$$Aligned left@@@
-@id	ui.centred	$$$Centered@@@
-@id	ui.aligned_right	$$$Aligned right@@@
-@id	ui.point_at_the_page_without_drawing_on_it	$$$Point at the page without drawing on it@@@
-@id	ui.laser_pointer_put_down	$$$Laser pointer put down@@@
-@id	ui.rule_line_colour	$$$Rule line colour@@@
-@id	ui.automatic_rule_lines	$$$Automatic lines@@@
-@id	ui.the_lines_are_colour	$$$The page's lines are {colour}@@@
-@id	ui.the_lines_are_the_theme_s_own_colour	$$$The page's lines are the theme's own colour@@@
-@id	ui.colour_lines	$$${colour} lines@@@
-@id	ui.rotate_right_90	$$$Rotate Right 90°@@@
-@id	ui.rotate_left_90	$$$Rotate Left 90°@@@
-@id	ui.flip_horizontal	$$$Flip Horizontal@@@
-@id	ui.flip_vertical	$$$Flip Vertical@@@
-@id	ui.this_picture_cannot_be_turned_here	$$$This picture cannot be rotated or flipped@@@
-@id	ui.rotated_the_picture	$$$Rotated the picture@@@
-@id	ui.flipped_the_picture	$$$Flipped the picture@@@
-@id	ui.rotated_the_picture_ink_on_the_page_stays_where_it_is	$$$Rotated the picture. Ink on the page stays where it is@@@
-@id	ui.flipped_the_picture_ink_on_the_page_stays_where_it_is	$$$Flipped the picture. Ink on the page stays where it is@@@
-@id	ui.save_a_copy	$$$Save a Copy@@@
-@id	ui.open_a_page_first_save_a_copy_copies_it_its_section_or_its_notebook	$$$Open a page first: Save a Copy copies it, its section or its notebook.@@@
-@id	ui.what_to_copy	$$$What to copy@@@
-@id	ui.this_section	$$$This section@@@
-@id	ui.scope_title	$$${scope}: {title}@@@
-@id	ui.copy_into_this_folder	$$$Copy into this folder@@@
-@id	ui.folder	$$$Folder@@@
-@id	ui.choose	$$$Choose…@@@
-@id	ui.the_copy_is_a_folder_of_its_own_with_the_files_and_ink_but_not_the_saved_versions_the_original_stays_open	$$$The copy is a folder of its own, with the page files, pictures and ink but not the saved versions or the recycle bin. The original stays open and unchanged.@@@
-@id	ui.saved_a_copy_in_path	$$$Saved a copy in {path}@@@
-@id	ui.could_not_save_the_copy_why	$$$Could not save the copy: {why}@@@
-@id	ui.choose_the_folder_for_the_copy	$$$Choose the folder for the copy@@@
-@id	ui.this_notebook	$$$This notebook@@@
-@id	ui.save_the_copy	$$$Save the copy@@@
-@id	ui.next_unread_2	$$$Next\nUnread@@@
-@id	ui.go_to_the_next_page_changed_since_you_last_read_it	$$$Go to the next page changed since you last read it@@@
-@id	ui.mark_as_read_2	$$$Mark as\nRead@@@
-@id	ui.mark_as_unread_2	$$$Mark as\nUnread@@@
-@id	ui.mark_this_page_as_read	$$$Mark this page as read@@@
-@id	ui.mark_this_page_as_unread_to_come_back_to_it	$$$Mark this page as unread, to come back to it@@@
-@id	ui.there_are_no_unread_pages	$$$There are no unread pages.@@@
-@id	ui.marked_as_read	$$$Marked as read@@@
-@id	ui.marked_as_unread	$$$Marked as unread@@@
-@id	ui.title_unread	$$${title}, unread@@@
-@id	ui.recent_edits_2	$$$Recent\nEdits@@@
-@id	ui.see_the_pages_changed_lately	$$$See the pages changed lately@@@
-@id	ui.recent_edits	$$$Recent edits@@@
-@id	ui.all_open_notebooks	$$$All open notebooks@@@
-@id	ui.filter_by_title_section_or_notebook	$$$Filter by title, section or notebook@@@
-@id	ui.no_pages_were_changed_in_this_time	$$$No pages were changed in this time.@@@
-@id	ui.this_page_keeps_no_time_of_its_own_this_is_when_its_file_was_last_changed	$$$This page keeps no time of its own: this is when its file was last changed.@@@
-@id	ui.last_7_days	$$$Last 7 days@@@
-@id	ui.last_30_days	$$$Last 30 days@@@
-@id	ui.all_time	$$$All time@@@
-@id	ui.untitled_page	$$$Untitled page@@@
-@id	ui.place_separator	$$$›@@@
-@id	ui.filter	$$$Filter@@@
-@id	ui.version_saved_when	$$$Version saved {when}@@@
-@id	ui.an_older_version_read_only_the_page_is_not_changed_unless_you_restore_it	$$$An older version, read-only. The page is not changed unless you restore it.@@@
-@id	ui.this_version	$$$This version@@@
-@id	ui.compare_with_the_page	$$$Compare with the page@@@
-@id	ui.this_version_has_the_same_words_as_the_page	$$$This version has the same words as the page.@@@
-@id	ui.lines_marked_are_only_in_this_version_lines_marked_are_only_in_the_page	$$$Lines marked − are only in this version; lines marked + are only in the page now.@@@
-@id	ui.restore_this_version	$$$Restore this version@@@
-@id	ui.back_to_the_list	$$$Back to the list@@@
-@id	ui.preview	$$$Preview@@@
-@id	ui.cannot_open_that_version_error	$$$Cannot open that version: {error}@@@
-@id	ui.the_sheet_this_page_is_written_for_its_size_turn_and_margins	$$$The sheet this page is written for: its size, which way it is turned and its margins@@@
-@id	ui.size	$$$Size@@@
-@id	ui.auto_the_page_grows_with_what_is_on_it	$$$Auto (the page grows with what is on it)@@@
-@id	ui.custom_size	$$$Custom size@@@
-@id	ui.auto_pages_have_no_edges_choose_a_size_to_see_the_sheet	$$$An Auto page has no edges. Choose a size to see the sheet and its margins.@@@
-@id	ui.width_mm	$$$Width (mm)@@@
-@id	ui.height_mm	$$$Height (mm)@@@
-@id	ui.orientation	$$$Orientation@@@
-@id	ui.portrait	$$$Portrait@@@
-@id	ui.landscape	$$$Landscape@@@
-@id	ui.margins_mm	$$$Margins (mm)@@@
-@id	ui.top_margin_mm	$$$Top@@@
-@id	ui.bottom_margin_mm	$$$Bottom@@@
-@id	ui.left_margin_mm	$$$Left@@@
-@id	ui.right_margin_mm	$$$Right@@@
-@id	ui.restore_default_margins	$$$Restore default margins@@@
-@id	ui.the_page_is_written_on_size_turn	$$$The page is written on {size}, {turn}@@@
-@id	ui.the_page_is_auto_it_grows_with_what_is_on_it	$$$The page is Auto: it grows with what is on it@@@
-@id	ui.paper_letter	$$$Letter@@@
-@id	ui.paper_legal	$$$Legal@@@
-@id	ui.paper_tabloid	$$$Tabloid@@@
-@id	ui.paper_executive	$$$Executive@@@
-@id	ui.index_card_3_x_5_in	$$$Index Card (3 x 5 in)@@@
-@id	ui.index_card_4_x_6_in	$$$Index Card (4 x 6 in)@@@
-@id	ui.index_card_5_x_8_in	$$$Index Card (5 x 8 in)@@@
-@id	ui.customize_tags	$$$Customize Tags...@@@
-@id	ui.customize_tags_title	$$$Customize Tags@@@
-@id	ui.make_your_own_tags_with_a_name_symbol_and_colour	$$$Make your own tags, each with a name, a symbol and a colour@@@
-@id	ui.custom_tags_none_yet	$$$You have no tags of your own yet.@@@
-@id	ui.custom_tags_explained	$$$Your tags are kept in your settings and work in every notebook. Renaming a tag keeps it on every line that has it. Removing one leaves those lines as they are, marker word and all, so making the same tag again brings it back.@@@
-@id	ui.tag_name	$$$Tag name@@@
-@id	ui.tag_symbol_for_name	$$$Symbol for {name}@@@
-@id	ui.tag_colour_for_name	$$$Colour for {name}@@@
-@id	ui.move_name_up	$$$Move {name} up@@@
-@id	ui.move_name_down	$$$Move {name} down@@@
-@id	ui.remove_name	$$$Remove {name}@@@
-@id	ui.new_tag_name	$$$New tag name@@@
-@id	ui.add_tag	$$$Add tag@@@
-@id	ui.tag_name_added	$$$Tag {name} added@@@
-@id	ui.tag_name_removed	$$$Tag {name} removed; lines that had it keep their words@@@
-@id	ui.the_word_written_in_the_page	$$$The word written in the page@@@
-@id	ui.could_not_save_your_tags_error	$$$Could not save your tags: {error}@@@
-@id	ui.take_a_colour_from_ink_on_the_page	$$$Take a colour from ink on the page@@@
-@id	ui.no_ink_here	$$$No ink here@@@
-@id	ui.the_pen_takes_colour	$$$The pen takes the colour {colour}@@@
-@id	ui.eyedropper_put_down_the_pen_is_as_it_was	$$$Eyedropper put down; the pen is as it was@@@
-@id	ui.show_more_of_the_ribbon_to_the_left	$$$Show more of the ribbon to the left@@@
-@id	ui.show_more_of_the_ribbon_to_the_right	$$$Show more of the ribbon to the right@@@
-@id	ui.paragraph_spacing_options	$$$Paragraph Spacing Options…@@@
-@id	ui.paragraph_spacing	$$$Paragraph Spacing@@@
-@id	ui.space_before_points	$$$Space before (points)@@@
-@id	ui.space_after_points	$$$Space after (points)@@@
-@id	ui.least_line_height_points	$$$Line height, at least (points)@@@
-@id	ui.spacing_mixed	$$$Mixed@@@
-@id	ui.spacing_reset	$$$Reset@@@
-@id	ui.spacing_limits	$$$Each value is a whole number of points from 0 to {max}. Leave one empty to keep what each paragraph has.@@@
-@id	ui.spacing_goes_on_text	$$$Spacing goes on a paragraph, a heading, a list item or a quote@@@
-@id	ui.paragraph_spacing_set	$$$Paragraph spacing set@@@
-@id	ui.close_search	$$$Close search@@@
-

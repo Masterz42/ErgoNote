@@ -63,6 +63,7 @@ pub mod ribbon_icons;
 pub mod saver;
 pub mod snippets;
 pub mod spellcheck;
+pub mod stickers;
 pub mod stylus;
 pub mod telemetry_export;
 #[cfg(test)]

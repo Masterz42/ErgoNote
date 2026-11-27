@@ -1071,7 +1071,7 @@ asyncio.run(main())";
                             if ui.add(pause_btn).clicked() {
                                 toggle_pause = true;
                             }
-                            let stop_btn = egui::Button::new(egui::RichText::new("Fin").strong().color(t.warn))
+                            let stop_btn = egui::Button::new(egui::RichText::new(crate::tl_id!("ui.student_tts_stop")).strong().color(t.warn))
                                 .fill(crate::theme::mix(t.panel, t.warn, 0.14))
                                 .corner_radius(6.0)
                                 .min_size(vec2(52.0, 26.0));
@@ -1079,7 +1079,7 @@ asyncio.run(main())";
                                 do_stop = true;
                             }
                             ui.separator();
-                            ui.label(egui::RichText::new("Vitesse :").size(12.0).color(t.muted));
+                            ui.label(egui::RichText::new(crate::tl_id!("ui.student_tts_speed")).size(12.0).color(t.muted));
                             for speed in TtsSpeed::ALL {
                                 let active = self.tts_speed == speed;
                                 let btn = egui::Button::new(egui::RichText::new(speed.label()).size(12.0).strong().color(if active {
@@ -1098,7 +1098,7 @@ asyncio.run(main())";
                                 ui.separator();
                                 if ui
                                     .add(
-                                        egui::Button::new(egui::RichText::new("Lire cette ligne").size(12.0).color(t.strong))
+                                        egui::Button::new(egui::RichText::new(crate::tl_id!("ui.student_tts_read_line")).size(12.0).color(t.strong))
                                             .fill(crate::theme::mix(t.panel, t.accent, 0.12))
                                             .corner_radius(5.0)
                                             .min_size(vec2(0.0, 24.0)),
@@ -1688,7 +1688,7 @@ asyncio.run(main())";
                                 if sresp.hovered() { crate::theme::mix(t.panel, t.accent, 0.28) } else { crate::theme::mix(t.panel, t.accent, 0.14) };
                             sp.rect_filled(srect, 5.0, sfill);
                             icons::paint(&sp, srect.shrink(4.0), Icon::ReadAloud, t.accent);
-                            if sresp.on_hover_text("Écouter ce mot").clicked() {
+                            if sresp.on_hover_text(crate::tl_id!("ui.student_listen_word")).clicked() {
                                 speak_word = Some(sugg.clone());
                             }
                         });
@@ -1984,10 +1984,12 @@ asyncio.run(main())";
                             if !cfg!(target_os = "android")
                                 && ui
                                     .add(
-                                        egui::Button::new(egui::RichText::new("Terminer et écrire").strong().color(Color32::WHITE))
-                                            .fill(t.accent)
-                                            .corner_radius(6.0)
-                                            .min_size(vec2(126.0, 26.0)),
+                                        egui::Button::new(
+                                            egui::RichText::new(crate::tl_id!("ui.student_dictation_finish")).strong().color(Color32::WHITE),
+                                        )
+                                        .fill(t.accent)
+                                        .corner_radius(6.0)
+                                        .min_size(vec2(126.0, 26.0)),
                                     )
                                     .clicked()
                             {
@@ -1995,7 +1997,7 @@ asyncio.run(main())";
                             }
                             if ui
                                 .add(
-                                    egui::Button::new(egui::RichText::new("Annuler").color(t.warn))
+                                    egui::Button::new(egui::RichText::new(crate::tl_id!("ui.student_cancel")).color(t.warn))
                                         .fill(crate::theme::mix(t.panel, t.warn, 0.14))
                                         .corner_radius(6.0)
                                         .min_size(vec2(70.0, 26.0)),

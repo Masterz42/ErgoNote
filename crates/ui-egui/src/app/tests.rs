@@ -1702,6 +1702,132 @@ mod section_tabs_bar_tests {
     }
 
     #[test]
+    fn creating_new_section_opens_a_fresh_blank_page() {
+        let t = ergonote_store::testing::TempDir::new("section-tabs-new-blank");
+        let settings = ergonote_store::Settings::at(t.path().join("settings.toml"));
+        settings.set("privacy_welcome_seen", "true").expect("settings");
+        let mut session = Session::new(&t.path().join("notebooks"), settings).expect("session");
+        let sample = ergonote_engine::sample::create_sample(&mut session, None).expect("sample");
+        let old_section = sample.html_page.parent().expect("section").to_path_buf();
+        let notebook_dir = old_section.parent().expect("notebook").to_path_buf();
+
+        let mut app = ErgoNoteApp::new(session);
+        app.open_path(&sample.html_page.to_string_lossy());
+        app.apply(Act::AddKind(notebook_dir.clone(), NodeKind::Notebook, NodeKind::Section));
+
+        let mut h: H = egui_kittest::Harness::builder()
+            .with_size(vec2(1280.0, 800.0))
+            .with_accessibility_check(false)
+            .build_ui_state(|ui, app: &mut ErgoNoteApp| app.show(ui), app);
+        for _ in 0..2 {
+            h.step();
+        }
+        {
+            let st = h.state_mut();
+            if let Some(Dialog::Add { title, .. }) = st.dialog.as_mut() {
+                *title = "Physique".to_string();
+            } else {
+                panic!("expected Dialog::Add");
+            }
+        }
+        use egui_kittest::kittest::Queryable as _;
+        let create_btn = h.get_by_label(crate::tl_id!("ui.create"));
+        create_btn.click();
+        for _ in 0..3 {
+            h.step();
+        }
+        let st = h.state();
+        let ed = st.editor.as_ref().expect("fresh page opened automatically");
+        assert!(!ed.dir.starts_with(&old_section), "expected editor to leave old section {old_section:?}, stayed at {:?}", ed.dir);
+        let new_sec = ed.dir.parent().expect("new section parent");
+        let new_sec_info = ergonote_store::tree::read_node(new_sec).expect("new section info");
+        assert_eq!(new_sec_info.title, "Physique");
+    }
+
+    #[test]
+    fn section_tab_context_menu_offers_delete_and_color() {
+        let t = ergonote_store::testing::TempDir::new("section-tabs-ctx-delete");
+        let settings = ergonote_store::Settings::at(t.path().join("settings.toml"));
+        settings.set("privacy_welcome_seen", "true").expect("settings");
+        let mut session = Session::new(&t.path().join("notebooks"), settings).expect("session");
+        let sample = ergonote_engine::sample::create_sample(&mut session, None).expect("sample");
+
+        let mut app = ErgoNoteApp::new(session);
+        app.open_path(&sample.html_page.to_string_lossy());
+        let section_title = {
+            let sec_dir = sample.html_page.parent().expect("section");
+            ergonote_store::tree::read_node(sec_dir).expect("sec info").title
+        };
+
+        let mut h: H = egui_kittest::Harness::builder()
+            .with_size(vec2(1280.0, 800.0))
+            .with_accessibility_check(false)
+            .build_ui_state(|ui, app: &mut ErgoNoteApp| app.show(ui), app);
+        for _ in 0..3 {
+            h.step();
+        }
+        use egui_kittest::kittest::Queryable as _;
+        let tab = h.get_by_label(&section_title);
+        tab.click_secondary();
+        for _ in 0..2 {
+            h.step();
+        }
+        let delete_row = h.query_by_label("Supprimer la matière…").expect("delete option in section tab context menu");
+        delete_row.click();
+        for _ in 0..2 {
+            h.step();
+        }
+        assert!(matches!(h.state().dialog, Some(Dialog::Delete { .. })), "expected Dialog::Delete to open for section");
+    }
+
+    #[test]
+    fn section_tabs_reorder_persists_new_order() {
+        let t = ergonote_store::testing::TempDir::new("section-tabs-reorder");
+        let settings = ergonote_store::Settings::at(t.path().join("settings.toml"));
+        settings.set("privacy_welcome_seen", "true").expect("settings");
+        let mut session = Session::new(&t.path().join("notebooks"), settings).expect("session");
+        let sample = ergonote_engine::sample::create_sample(&mut session, None).expect("sample");
+        let nb_dir = sample.html_page.parent().expect("sec").parent().expect("nb").to_path_buf();
+        let nb_str = nb_dir.to_string_lossy().into_owned();
+        let sec2 = match session.run("node.create", &params(&[("parent", &nb_str), ("kind", "section"), ("title", "Biologie")])) {
+            Ok(Output::Path(p)) => p,
+            other => panic!("expected sec2, got {other:?}"),
+        };
+
+        let mut app = ErgoNoteApp::new(session);
+        app.open_path(&sample.html_page.to_string_lossy());
+        assert!(app.run("node.reorder", &params(&[("path", &sec2.to_string_lossy()), ("index", "0")])).is_some());
+        app.session.refresh();
+
+        let mut h: H = egui_kittest::Harness::builder()
+            .with_size(vec2(1280.0, 800.0))
+            .with_accessibility_check(false)
+            .build_ui_state(|ui, app: &mut ErgoNoteApp| app.show(ui), app);
+        for _ in 0..3 {
+            h.step();
+        }
+        fn find_sections<'a>(nodes: &'a [ergonote_store::tree::Node], parent: &Path, out: &mut Vec<&'a str>) {
+            for n in nodes {
+                if n.path == parent {
+                    for c in &n.children {
+                        if c.info.kind == NodeKind::Section {
+                            out.push(c.info.title.as_str());
+                        }
+                    }
+                    return;
+                }
+                find_sections(&n.children, parent, out);
+            }
+        }
+        let mut tree_sections = Vec::new();
+        find_sections(h.state().session.tree(), &nb_dir, &mut tree_sections);
+        assert_eq!(tree_sections.first().copied(), Some("Biologie"));
+        use egui_kittest::kittest::Queryable as _;
+        let bio_rect = h.get_by_label("Biologie").rect();
+        assert!(bio_rect.height() >= 34.0, "expected larger section tab height >= 34, got {}", bio_rect.height());
+    }
+
+    #[test]
     fn dys_features_v1_1_work_and_persist() {
         let t = ergonote_store::testing::TempDir::new("dys-v1-1");
         let settings_path = t.path().join("settings.toml");
@@ -2837,5 +2963,168 @@ mod section_tabs_bar_tests {
         assert_eq!(caret.place, Some(0));
         assert!(caret.focus);
         assert_eq!(crate::pageedit::block_text(&ed.blocks[caret.block]), "");
+    }
+
+    #[test]
+    fn place_textbox_starts_framed_and_can_be_styled_resized_and_deleted() {
+        let t = ergonote_store::testing::TempDir::new("textbox-styled-persist");
+        let settings = ergonote_store::Settings::at(t.path().join("settings.toml"));
+        let _ = settings.set("privacy_welcome_seen", "true");
+        let mut session = Session::new(&t.path().join("notebooks"), settings).expect("session");
+        let sample = ergonote_engine::sample::create_sample(&mut session, None).expect("sample");
+        let section_dir = sample.html_page.parent().expect("section");
+        let sec_str = section_dir.to_string_lossy().into_owned();
+        let blank_page = match session.run("node.create", &params(&[("parent", &sec_str), ("kind", "page"), ("title", "Cadres")])) {
+            Ok(ergonote_engine::Output::Path(p)) => p,
+            other => panic!("expected blank page path, got {other:?}"),
+        };
+
+        let mut app = ErgoNoteApp::new(session);
+        app.open_path(&blank_page.to_string_lossy());
+        app.place_textbox_at(140.0, 120.0);
+
+        let path_str = blank_page.to_string_lossy().into_owned();
+        let boxes_spec = {
+            let ed = app.editor.as_mut().expect("editor");
+            let tb = ed.boxes.last_mut().expect("new textbox");
+            assert!(tb.framed, "new floating textbox must show a visible frame by default");
+            tb.border_color = Some(NodeColor::Blue);
+            tb.border_width = 2;
+            tb.fill_color = Some(NodeColor::Yellow);
+            *tb = tb.with_geometry(90.0, 120.0, 310.0);
+            ergonote_model::container::write(&ed.boxes)
+        };
+        app.save_in_background();
+        app.take_saves(true);
+        app.run("page.containers", &params(&[("path", &path_str), ("boxes", &boxes_spec)]));
+
+        // Reload page and confirm frame, border, fill, and resized bounds persisted.
+        app.open_path(&path_str);
+        {
+            let ed = app.editor.as_mut().expect("editor");
+            let tb = ed.boxes.last().expect("persisted textbox");
+            assert!(tb.framed);
+            assert_eq!(tb.border_color, Some(NodeColor::Blue));
+            assert_eq!(tb.border_width, 2);
+            assert_eq!(tb.fill_color, Some(NodeColor::Yellow));
+            assert!((tb.x - 90.0).abs() < 1.0 && (tb.width - 310.0).abs() < 1.0);
+
+            let idx = ed.boxes.len() - 1;
+            assert!(crate::containers::remove_container(&mut ed.blocks, &mut ed.boxes, idx));
+        }
+        assert_eq!(app.editor.as_ref().expect("ed").boxes.len(), 0);
+    }
+
+    #[test]
+    fn portrait_mobile_eraser_erases_stroke_and_clear_all_works() {
+        use egui_kittest::kittest::Queryable;
+
+        let t = ergonote_store::testing::TempDir::new("portrait-mobile-erase");
+        let settings = ergonote_store::Settings::at(t.path().join("settings.toml"));
+        let _ = settings.set("privacy_welcome_seen", "true");
+        let mut session = Session::new(&t.path().join("notebooks"), settings).expect("session");
+        let sample = ergonote_engine::sample::create_sample(&mut session, None).expect("sample");
+        let section_dir = sample.html_page.parent().expect("section");
+        let sec_str = section_dir.to_string_lossy().into_owned();
+        let blank_page = match session.run("node.create", &params(&[("parent", &sec_str), ("kind", "page"), ("title", "Croquis")])) {
+            Ok(ergonote_engine::Output::Path(p)) => p,
+            other => panic!("expected blank page path, got {other:?}"),
+        };
+
+        let mut app = ErgoNoteApp::new(session).with_simple_mobile(true);
+        app.open_path(&blank_page.to_string_lossy());
+        app.full_page = true;
+        app.compact_full_page = true;
+        app.ribbon_act(ribbon::Act::InkPointer(ribbon::Pointer::Draw));
+
+        let mut h: H = egui_kittest::Harness::builder()
+            .with_size(vec2(390.0, 844.0))
+            .with_accessibility_check(false)
+            .build_ui_state(|ui, app: &mut ErgoNoteApp| app.show(ui), app);
+        h.step();
+
+        let press = |x: f32, y: f32| egui::Event::PointerButton {
+            pos: egui::pos2(x, y),
+            button: egui::PointerButton::Primary,
+            pressed: true,
+            modifiers: egui::Modifiers::NONE,
+        };
+        let release = |x: f32, y: f32| egui::Event::PointerButton {
+            pos: egui::pos2(x, y),
+            button: egui::PointerButton::Primary,
+            pressed: false,
+            modifiers: egui::Modifiers::NONE,
+        };
+
+        // 1. Draw a horizontal stroke in portrait smartphone viewport.
+        h.input_mut().events.push(egui::Event::PointerMoved(egui::pos2(100.0, 320.0)));
+        h.input_mut().events.push(press(100.0, 320.0));
+        h.step();
+        h.input_mut().events.push(egui::Event::PointerMoved(egui::pos2(240.0, 320.0)));
+        h.step();
+        h.input_mut().events.push(release(240.0, 320.0));
+        h.step();
+        assert_eq!(h.state().pad.as_ref().map_or(0, crate::inkpad::Pad::strokes), 1, "portrait draw creates stroke");
+
+        // 2. Switch to Gomme and swipe vertically across the stroke in portrait mode.
+        h.get_by_label("Gomme").click();
+        h.step();
+        assert_eq!(h.state().pointer, ribbon::Pointer::Erase);
+        h.input_mut().events.push(egui::Event::PointerMoved(egui::pos2(170.0, 305.0)));
+        h.input_mut().events.push(press(170.0, 305.0));
+        h.step();
+        h.input_mut().events.push(egui::Event::PointerMoved(egui::pos2(170.0, 335.0)));
+        h.step();
+        h.input_mut().events.push(release(170.0, 335.0));
+        h.step();
+        assert_eq!(h.state().pad.as_ref().map_or(99, crate::inkpad::Pad::strokes), 0, "portrait eraser swipe removes stroke");
+
+        // 3. Draw another stroke and verify Effacer button clears it + Undo restores it.
+        h.get_by_label("Stylo").click();
+        h.step();
+        h.input_mut().events.push(egui::Event::PointerMoved(egui::pos2(110.0, 350.0)));
+        h.input_mut().events.push(press(110.0, 350.0));
+        h.step();
+        h.input_mut().events.push(egui::Event::PointerMoved(egui::pos2(220.0, 350.0)));
+        h.step();
+        h.input_mut().events.push(release(220.0, 350.0));
+        h.step();
+        assert_eq!(h.state().pad.as_ref().map_or(0, crate::inkpad::Pad::strokes), 1);
+        assert!(h.query_by_label("Effacer").is_some(), "Effacer button must appear in portrait draw bar");
+        h.get_by_label("Effacer").click();
+        h.step();
+        assert_eq!(h.state().pad.as_ref().map_or(99, crate::inkpad::Pad::strokes), 0, "Effacer clears strokes in portrait");
+        h.state_mut().ribbon_act(ribbon::Act::InkUndo);
+        assert_eq!(h.state().pad.as_ref().map_or(0, crate::inkpad::Pad::strokes), 1, "InkUndo restores cleared drawing");
+    }
+
+    #[test]
+    fn insert_sticker_attaches_svg_and_creates_image_block() {
+        let t = ergonote_store::testing::TempDir::new("insert-stickers");
+        let settings = ergonote_store::Settings::at(t.path().join("settings.toml"));
+        let _ = settings.set("privacy_welcome_seen", "true");
+        let mut session = Session::new(&t.path().join("notebooks"), settings).expect("session");
+        let sample = ergonote_engine::sample::create_sample(&mut session, None).expect("sample");
+        let section_dir = sample.html_page.parent().expect("section");
+        let sec_str = section_dir.to_string_lossy().into_owned();
+        let blank_page = match session.run("node.create", &params(&[("parent", &sec_str), ("kind", "page"), ("title", "Chimie")])) {
+            Ok(ergonote_engine::Output::Path(p)) => p,
+            other => panic!("expected blank page path, got {other:?}"),
+        };
+
+        let mut app = ErgoNoteApp::new(session);
+        app.open_path(&blank_page.to_string_lossy());
+        for (id, expected_w) in [("smiley-sourire", 52.0f32), ("emoji-etoile", 52.0f32), ("labo-becher", 110.0f32)] {
+            app.ribbon_act(ribbon::Act::InsertSticker(id));
+            let ed = app.editor.as_ref().expect("editor");
+            assert!(
+                ed.blocks.iter().any(|b| matches!(
+                    b,
+                    ergonote_formats::Block::Image { src, width: Some(w), .. } if src.contains(id) && (*w - expected_w).abs() < 0.5
+                )),
+                "missing image block for {id}"
+            );
+            assert!(blank_page.join("assets").join(format!("{id}.svg")).is_file(), "expected svg asset for {id}");
+        }
     }
 }

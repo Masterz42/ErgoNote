@@ -26,12 +26,17 @@ fn require_clean_tree(root: &Path) -> Result<(), String> {
     }
 }
 
+fn base_ref(branch: &str) -> &'static str {
+    if branch == "source" { "origin/source" } else { "origin/main" }
+}
+
 fn validation_stamp(root: &Path) -> Result<String, String> {
     require_clean_tree(root)?;
     let branch = git(root, &["symbolic-ref", "--short", "-q", "HEAD"])?;
+    let base_name = base_ref(&branch);
     let head = git(root, &["rev-parse", "HEAD"])?;
-    let main = git(root, &["rev-parse", "origin/main"])?;
-    Ok(format!("branch={branch}\nhead={head}\norigin_main={main}\n"))
+    let base = git(root, &["rev-parse", base_name])?;
+    Ok(format!("branch={branch}\nhead={head}\nbase={base}\n"))
 }
 
 fn assert_current_branch(root: &Path) -> Result<(), String> {
@@ -45,8 +50,10 @@ pub fn prepare(root: &Path) -> Result<(), String> {
     assert_current_branch(root)?;
     require_clean_tree(root)?;
 
+    let branch = git(root, &["symbolic-ref", "--short", "-q", "HEAD"])?;
+    let base_name = base_ref(&branch);
     let pii = Command::new("bash")
-        .args(["SKILLS/nc-devx/scripts/check-pii.sh", "origin/main"])
+        .args(["SKILLS/nc-devx/scripts/check-pii.sh", base_name])
         .current_dir(root)
         .status()
         .map_err(|e| format!("cannot run the PII check: {e}"))?;
@@ -143,5 +150,12 @@ mod tests {
         fs::write(root.join("untracked.txt"), "changed\n").expect("write untracked file");
         assert!(require_clean_tree(&root).is_err());
         let _ = fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn base_ref_tracks_source_or_main() {
+        assert_eq!(base_ref("source"), "origin/source");
+        assert_eq!(base_ref("feat/test"), "origin/main");
+        assert_eq!(base_ref("release/0.0.10"), "origin/main");
     }
 }

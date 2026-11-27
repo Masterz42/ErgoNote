@@ -1177,4 +1177,97 @@
 @id	ui.navy	Bleu marine
 @id	ui.lavender	Lavande
 @id	ui.pink	Rose
-
+@id	ui.student_kofi_tip	Offrir un café pour soutenir ErgoNote (Ko-fi)
+@id	ui.student_feedback_tip	Signaler un bug ou proposer une amélioration (formulaire sans compte)
+@id	ui.student_update_notes	Notes
+@id	ui.student_later	Plus tard
+@id	ui.student_prev_sheet	Feuille précédente
+@id	ui.student_next_sheet	Feuille suivante
+@id	ui.student_add_sheet	+ Feuille
+@id	ui.student_add_sheet_tip	Ajouter une feuille supplémentaire en dessous
+@id	ui.student_crop_apply	✓ Valider
+@id	ui.student_reset	Réinitialiser
+@id	ui.student_cancel_crop	✕ Annuler
+@id	ui.student_autosave_notice	Vos cours sont enregistrés automatiquement en continu sur cet appareil.
+@id	ui.student_spell_analysed	Texte analysé :
+@id	ui.student_spell_preview	Aperçu après correction :
+@id	ui.student_spell_none	Aucune faute d'orthographe, d'homophone ou d'accord détectée.
+@id	ui.student_listen_correction	Écouter cette correction
+@id	ui.student_ignore	Ignorer
+@id	ui.student_support_about	ErgoNote est 100 % gratuit, libre, sans publicité et respectueux des élèves DYS / TND sur Windows, Linux, macOS et Android.
+@id	ui.student_support_ask	Si l'application vous est utile au quotidien, vous pouvez offrir un café (don libre) ou soutenir les prochaines versions :
+@id	ui.student_open_support	Ouvrir la page de soutien ErgoNote
+@id	ui.student_buy_coffee	Offrir un café (Ko-fi)
+@id	ui.student_feedback_prompt	Un problème en cours, un affichage gênant ou une suggestion pour les élèves ?
+@id	ui.student_open_feedback	Ouvrir le formulaire de retour
+@id	ui.student_delete_table_confirm	Voulez-vous supprimer le tableau ?
+@id	ui.student_ocr_edit_hint	Vérifiez ou modifiez le texte extrait avant de l'insérer, de le copier ou de l'écouter :
+@id	ui.student_mobile_up	Remonter dans le dossier
+@id	ui.student_heading1_tip	Titre (H1)
+@id	ui.student_clear_ink_tip	Effacer tout le dessin
+@id	ui.student_crop_handles_hint	Tirez les poignées sur l'image
+@id	ui.student_mobile_new_page	+ Nouvelle page
+@id	ui.student_empty_folder	Ce dossier est vide.
+@id	ui.student_tts_stop	Fin
+@id	ui.student_tts_speed	Vitesse :
+@id	ui.student_tts_read_line	Lire cette ligne
+@id	ui.student_listen_word	Écouter ce mot
+@id	ui.student_dictation_finish	Terminer et écrire
+@id	ui.student_cancel	Annuler
+@id	ui.student_update_browser_note	Rien n'est remplacé automatiquement : ce bouton ouvre simplement le téléchargement dans votre navigateur.
+@id	ui.student_about_title	À propos d'ErgoNote
+@id	ui.student_about_subtitle	ErgoNote — Cahier numérique adapté TND
+@id	ui.student_about_features	Adaptations intégrées : Onglets matières en barre horizontale, palette 16 couleurs (dont Jaune vif), police et espacement TND, règle de lecture visuelle, lecture à voix haute, verrouillage des exercices PDF en fond et gabarits scolaires (conversion, numération, proportionnalité).
+@id	ui.student_border	Contour
+@id	ui.student_default	Défaut
+@id	ui.student_none	Aucun
+@id	ui.student_normal	Normal
+@id	ui.student_fill	Fond
+@id	ui.student_transparent	Transparent
+@id	ui.student_read_aloud_inline	Lire à voix haute
+@id	ui.student_read_aloud_inline_tip	Lire le texte sélectionné ou la page à voix haute
+@id	ui.student_delete_table	Supprimer le tableau
+@id	ui.student_insert_menu	Insérer
+@id	ui.student_insert_menu_tip	Insérer une photo, un PDF ou un autre fichier
+@id	ui.student_photo_file	Photo / Image (fichier)
+@id	ui.student_pdf_doc	Document PDF
+@id	ui.student_other_file	Autre fichier (pièce jointe)
+@id	ui.student_more	Plus
+@id	ui.student_more_tip	Modèles de pages, symboles, équations, lien, indicateurs...
+@id	ui.student_templates_row	Modèles de pages (fiches)
+@id	ui.student_symbol_row	Symbole (±, ×, ÷, °, €...)
+@id	ui.student_equation_row	Équation mathématique
+@id	ui.student_todo_row	Case À faire
+@id	ui.student_important_row	Important (!)
+@id	ui.student_question_row	Question (?)
+@id	ui.student_insert_group	Insérer
+@id	ui.student_photo	Photo
+@id	ui.student_photo_tip	Prendre ou insérer une photo (tableau, exercice, caméra)
+@id	ui.student_aid_tnd_group	Aide TND
+@id	ui.student_read_aloud	Lire à\nvoix haute
+@id	ui.student_read_aloud_tip	Lire à voix haute le texte sélectionné ou la page entière (synthèse vocale TND)
+@id	ui.student_dictate	Dicter\n(Voix)
+@id	ui.student_dictate_tip	Dicter un texte à voix haute au curseur (reconnaissance vocale multi-OS)
+@id	ui.student_reading_ruler	Règle de\nlecture
+@id	ui.student_reading_ruler_tip	Afficher un guide-ligne visuel horizontal qui suit le curseur pour ne pas sauter de ligne
+@id	ui.student_word_prediction	Prédiction\nde mots
+@id	ui.student_word_prediction_tip	Activer ou désactiver la prédiction de mots et le correcteur orthographique (à désactiver pendant une dictée)
+@id	ui.student_spellcheck	Corriger\northographe
+@id	ui.student_spellcheck_tip	Analyser les fautes d'orthographe, les homophones et la syntaxe de la sélection ou de la page
+@id	ui.student_cell_bg_tip	Couleur de fond des cellules
+@id	ui.student_fill_label	Couleur de fond
+@id	ui.student_school_templates_hdr	Gabarits scolaires TND (1 clic)
+@id	ui.student_tool	Outil
+@id	ui.student_shapes	Formes
+@id	ui.student_shape_color_label	Couleur de la forme
+@id	ui.student_rows_and_cols_group	Lignes et colonnes
+@id	ui.student_appearance_group	Apparence
+@id	ui.student_table_group	Tableau
+@id	ui.student_edit_group	Modifier
+@id	ui.student_ocr_group	Texte (OCR)
+@id	ui.student_ocr_extract_tip	Reconnaître le texte de l'image (OCR hors-ligne)
+@id	ui.student_ocr_read	Lire\nl'image
+@id	ui.student_ocr_read_tip	Reconnaître le texte de l'image et le lire à voix haute
+@id	ui.student_image_group	Image
+@id	ui.student_section_tabs	Onglets
+@id	ui.student_section_tabs_tip	Afficher les onglets (Français, Maths...) en barre horizontale sous le ruban

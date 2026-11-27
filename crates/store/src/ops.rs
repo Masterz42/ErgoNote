@@ -395,6 +395,39 @@ pub fn move_page(path: &Path, up: bool) -> Result<PathBuf> {
     Ok(page)
 }
 
+/// Moves a section, section group, or page to `target_index` among siblings of the same kind,
+/// rewriting the parent's child order numbers so tree ordering persists on disk.
+pub fn reorder_sibling(path: &Path, target_index: usize) -> Result<PathBuf> {
+    let node = fs::canonicalize(path).map_err(|e| StoreError::io("open", path, e))?;
+    let info = read_node(&node).ok_or_else(|| StoreError::invalid("the target is not a notebook node"))?;
+    if info.kind == NodeKind::Notebook {
+        return Err(StoreError::invalid("notebooks cannot be reordered within a parent"));
+    }
+    let parent = node.parent().ok_or_else(|| StoreError::invalid("the node has no parent"))?;
+    let mut siblings = node_children(parent);
+    let same_kind_slots: Vec<usize> =
+        siblings.iter().enumerate().filter_map(|(i, p)| read_node(p).is_some_and(|n| n.kind == info.kind).then_some(i)).collect();
+    let cur_pos = same_kind_slots
+        .iter()
+        .position(|&slot| siblings.get(slot) == Some(&node))
+        .ok_or_else(|| StoreError::invalid("the node is not in its parent's tree"))?;
+    let dest_pos = target_index.min(same_kind_slots.len().saturating_sub(1));
+    if cur_pos != dest_pos {
+        let mut reordered_kind: Vec<PathBuf> = same_kind_slots.iter().filter_map(|&slot| siblings.get(slot).cloned()).collect();
+        let moved = reordered_kind.remove(cur_pos);
+        reordered_kind.insert(dest_pos, moved);
+        for (slot, item) in same_kind_slots.into_iter().zip(reordered_kind) {
+            if let Some(target) = siblings.get_mut(slot) {
+                *target = item;
+            }
+        }
+    }
+    for (position, sibling) in siblings.iter().enumerate() {
+        set_node_order(sibling, u32::try_from(position).unwrap_or(u32::MAX).saturating_add(1).saturating_mul(10))?;
+    }
+    Ok(node)
+}
+
 fn canonical_page(path: &Path) -> Result<PathBuf> {
     let page = fs::canonicalize(path).map_err(|e| StoreError::io("open", path, e))?;
     if !read_node(&page).is_some_and(|info| info.kind == NodeKind::Page) {

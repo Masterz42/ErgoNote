@@ -167,11 +167,7 @@ fn version_and_updates(ui: &mut Ui, update: &crate::update::Status, t: &Tokens, 
                     acts.push(Act::OpenReleases);
                 }
             });
-            ui.label(
-                egui::RichText::new("Rien n'est remplacé automatiquement : ce bouton ouvre simplement le téléchargement dans votre navigateur.")
-                    .size(11.5)
-                    .color(t.muted),
-            );
+            ui.label(egui::RichText::new(crate::tl_id!("ui.student_update_browser_note")).size(11.5).color(t.muted));
         }
         crate::update::Status::UpToDate { latest } => {
             let text = crate::i18n::format_message_id("ui.update_up_to_date", &[("version", latest)]);
@@ -572,24 +568,20 @@ fn about_page(
     t: &Tokens,
     acts: &mut Vec<Act>,
 ) {
-    heading(ui, "À propos d'ErgoNote", t);
+    heading(ui, crate::tl_id!("ui.student_about_title"), t);
     ui.horizontal_top(|ui| {
         ui.add(egui::Image::from_bytes("bytes://ergonote-logo", crate::LOGO_PNG).fit_to_exact_size(vec2(64.0, 64.0)));
         ui.add_space(8.0);
         ui.vertical(|ui| {
-            ui.label(egui::RichText::new("ErgoNote — Cahier numérique adapté TND").size(20.0).strong().color(t.accent));
-            ui.label(egui::RichText::new(format!("Version {VERSION} — Édition scolaire adaptée TND (par ErgoLib)")).size(12.5).strong().color(t.strong));
+            ui.label(egui::RichText::new(crate::tl_id!("ui.student_about_subtitle")).size(20.0).strong().color(t.accent));
+            ui.label(
+                egui::RichText::new(format!("Version {VERSION} — Édition scolaire adaptée TND (par ErgoLib)")).size(12.5).strong().color(t.strong),
+            );
             ui.label(
                 egui::RichText::new(crate::tl_id!("ui.note_taking_and_organization_in_pure_rust_your_notes_49e8095e25")).size(12.5).color(t.text),
             );
             ui.add_space(4.0);
-            ui.label(
-                egui::RichText::new(
-                    "Adaptations intégrées : Onglets matières en barre horizontale, palette 16 couleurs (dont Jaune vif), police et espacement TND, règle de lecture visuelle, lecture à voix haute, verrouillage des exercices PDF en fond et gabarits scolaires (conversion, numération, proportionnalité).",
-                )
-                .size(12.0)
-                .color(t.muted),
-            );
+            ui.label(egui::RichText::new(crate::tl_id!("ui.student_about_features")).size(12.0).color(t.muted));
         });
     });
     ui.add_space(14.0);

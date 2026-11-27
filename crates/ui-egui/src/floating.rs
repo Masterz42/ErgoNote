@@ -264,7 +264,11 @@ pub fn show_bar(ctx: &Context, id: Id, anchor: Rect, bar: &Bar, t: &Tokens, acts
                     t,
                     acts,
                 );
-                if ui.small_button("Lire à voix haute").on_hover_text("Lire le texte sélectionné ou la page à voix haute").clicked() {
+                if ui
+                    .small_button(crate::tl_id!("ui.student_read_aloud_inline"))
+                    .on_hover_text(crate::tl_id!("ui.student_read_aloud_inline_tip"))
+                    .clicked()
+                {
                     acts.push(Act::ReadAloud);
                     picked = true;
                 }

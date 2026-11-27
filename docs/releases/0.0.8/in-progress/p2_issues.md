@@ -172,7 +172,7 @@ Acceptance:
 
 - [issue_first_launch_dialog.md](../done/issue_first_launch_dialog.md)
 - [issue_missing_privacy_dialog.md](../done/issue_missing_privacy_dialog.md)
-- [`apps/notecraft/src/main.rs`](../../../../apps/notecraft/src/main.rs)
+- [`apps/ergonote/src/main.rs`](../../../../apps/ergonote/src/main.rs)
 - [`crates/ui-egui/src/app.rs`](../../../../crates/ui-egui/src/app.rs)
 
 The Welcome notebook auto-deployment code is removed from startup, but the
@@ -208,7 +208,7 @@ the same pattern may still exist in clipboard, file, import, and save errors.
 
 Audit at least:
 
-- [`apps/notecraft/src/main.rs`](../../../../apps/notecraft/src/main.rs)
+- [`apps/ergonote/src/main.rs`](../../../../apps/ergonote/src/main.rs)
 - [`crates/ui-egui/src/app.rs`](../../../../crates/ui-egui/src/app.rs)
 - [`crates/ui-egui/src/backstage.rs`](../../../../crates/ui-egui/src/backstage.rs)
 - [`crates/store/`](../../../../crates/store/)
